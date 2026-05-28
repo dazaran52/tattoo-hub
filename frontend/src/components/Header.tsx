@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { LogOut, Coins, Menu, X, LayoutDashboard, User, Settings } from 'lucide-react'
+import { LogOut, Coins, Menu, X, LayoutDashboard, Settings } from 'lucide-react'
 import { Profile } from '@/lib/supabase'
 
 interface HeaderProps {
@@ -55,10 +55,6 @@ export function Header({ profile, onLogout }: HeaderProps) {
                     Dashboard
                   </a>
                   <a href="/profile" className="flex items-center gap-3 px-4 py-2 text-sm text-neutral-300 hover:text-white hover:bg-neutral-800">
-                    <User className="w-4 h-4" />
-                    Profil
-                  </a>
-                  <a href="/settings" className="flex items-center gap-3 px-4 py-2 text-sm text-neutral-300 hover:text-white hover:bg-neutral-800">
                     <Settings className="w-4 h-4" />
                     Nastavení
                   </a>

@@ -116,6 +116,9 @@ async def update_profile(
     Update current user profile.
     """
     try:
+        print(f"DEBUG PUT: user_id={current_user.user_id}")
+        print(f"DEBUG PUT: update_data={update_data.model_dump()}")
+        
         # Build update dict with only provided fields
         update_dict = {}
         if update_data.display_name is not None:
@@ -125,28 +128,37 @@ async def update_profile(
         if update_data.bio is not None:
             update_dict["bio"] = update_data.bio
         
+        print(f"DEBUG PUT: update_dict={update_dict}")
+        
         if not update_dict:
             # No fields to update, return current profile
+            print("DEBUG PUT: No fields to update, fetching current profile")
             response = supabase.table("users") \
                 .select("*") \
                 .eq("id", current_user.user_id) \
                 .single() \
                 .execute()
             data = response.data
+            print(f"DEBUG PUT: fetched data={data}")
         else:
             # Update profile
+            print(f"DEBUG PUT: Executing update")
             response = supabase.table("users") \
                 .update(update_dict) \
                 .eq("id", current_user.user_id) \
                 .execute()
+            print(f"DEBUG PUT: response={response}")
+            print(f"DEBUG PUT: response.data={response.data}")
             data = response.data[0] if response.data else None
         
         if not data:
+            print("DEBUG PUT: No data returned")
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Profile not found"
             )
         
+        print(f"DEBUG PUT: Success, returning profile")
         return ProfileResponse(
             id=data["id"],
             email=data["email"],
@@ -160,6 +172,9 @@ async def update_profile(
     except HTTPException:
         raise
     except Exception as e:
+        print(f"DEBUG PUT ERROR: {type(e).__name__}: {e}")
+        import traceback
+        print(f"DEBUG PUT TRACEBACK: {traceback.format_exc()}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error updating profile: {str(e)}"

@@ -17,13 +17,13 @@ function Toggle({ checked, onChange, disabled = false }: { checked: boolean; onC
     <button
       onClick={onChange}
       disabled={disabled}
-      className={`relative w-12 h-7 rounded-full transition-colors duration-200 ease-in-out ${
+      className={`relative w-14 h-8 rounded-full transition-colors duration-200 ease-in-out ${
         checked ? 'bg-amber-500' : 'bg-neutral-700'
       } ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
     >
       <span
-        className={`absolute top-1 w-5 h-5 bg-white rounded-full transition-transform duration-200 ease-in-out ${
-          checked ? 'translate-x-6' : 'translate-x-1'
+        className={`absolute top-1 w-6 h-6 bg-white rounded-full shadow-md transition-all duration-200 ease-in-out ${
+          checked ? 'left-7' : 'left-1'
         }`}
       />
     </button>
