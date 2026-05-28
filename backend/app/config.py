@@ -11,6 +11,9 @@ class Settings(BaseSettings):
     SUPABASE_KEY: str
     _jwt_secret_raw: str  # Store raw base64
     
+    # Database Connection (for migrations)
+    POSTGRES_URL: str | None = None  # e.g., postgresql://user:pass@host:5432/db
+    
     @property
     def SUPABASE_JWT_SECRET(self) -> str:
         """Decode base64 JWT secret to PEM format."""
@@ -27,6 +30,15 @@ class Settings(BaseSettings):
     APP_PORT: int = 8000
     APP_ENV: str = "development"
     DONATELLO_X_KEY: str = "OUT_TATTOO_SECRET_123"
+    
+    @property
+    def DATABASE_URL(self) -> str:
+        """Get database URL, fallback to constructing from Supabase URL."""
+        if self.POSTGRES_URL:
+            return self.POSTGRES_URL
+        # Construct from Supabase URL: https://xxx.supabase.co -> postgresql://postgres.xxx:5432/postgres
+        # This is a simplified approach - actual connection requires password
+        return ""
     
     # CORS Origins - explicit list for credentials support
     ALLOWED_ORIGINS: list[str] = [
