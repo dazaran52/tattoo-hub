@@ -7,10 +7,12 @@
     @apply border-neutral-800;
   }
   
+  /* Default dark theme (before JS loads) */
   body {
     @apply bg-neutral-950 text-neutral-50 antialiased;
   }
   
+  /* Dark theme - when dark class IS present (same as default) */
   html.dark body {
     @apply bg-neutral-950 text-neutral-50;
   }
