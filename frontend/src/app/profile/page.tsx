@@ -7,8 +7,8 @@ import { supabase } from '@/lib/supabase'
 import { api, Profile } from '@/lib/api'
 import { 
   User, Mail, Coins, Calendar, Phone, FileText, Save, X, Edit2, 
-  Unlock, CreditCard, Settings, Bell, Globe, Lock, Moon, Sun, 
-  Trash2, AlertTriangle, ChevronRight, Eye, EyeOff, Check 
+  Unlock, CreditCard, Settings, Bell, Lock, 
+  Trash2, AlertTriangle, Eye, EyeOff, Check 
 } from 'lucide-react'
 
 // Toggle Switch Component
@@ -44,8 +44,6 @@ export default function ProfilePage() {
   const [bio, setBio] = useState('')
 
   // Settings state
-  const [language, setLanguage] = useState('cs')
-  const [theme, setTheme] = useState('dark')
   const [emailNotifications, setEmailNotifications] = useState(true)
   const [newLeadAlerts, setNewLeadAlerts] = useState(true)
   const [lowCreditAlerts, setLowCreditAlerts] = useState(true)
@@ -92,8 +90,6 @@ export default function ProfilePage() {
 
   const loadSettings = () => {
     if (typeof window !== 'undefined') {
-      setLanguage(localStorage.getItem('language') || 'cs')
-      setTheme(localStorage.getItem('theme') || 'dark')
       setEmailNotifications(localStorage.getItem('emailNotifications') !== 'false')
       setNewLeadAlerts(localStorage.getItem('newLeadAlerts') !== 'false')
       setLowCreditAlerts(localStorage.getItem('lowCreditAlerts') !== 'false')
@@ -337,60 +333,6 @@ export default function ProfilePage() {
                 <Settings className="w-5 h-5 text-neutral-400" />
                 Nastavení
               </h2>
-            </div>
-
-            {/* Language */}
-            <div className="p-6 border-b border-neutral-800">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <Globe className="w-5 h-5 text-neutral-400" />
-                  <div>
-                    <p className="text-white font-medium">Jazyk</p>
-                    <p className="text-neutral-400 text-sm">Vyberte preferovaný jazyk</p>
-                  </div>
-                </div>
-                <select
-                  value={language}
-                  onChange={(e) => {
-                    setLanguage(e.target.value)
-                    saveSetting('language', e.target.value)
-                  }}
-                  className="bg-neutral-800 border border-neutral-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-neutral-600"
-                >
-                  <option value="cs">Čeština</option>
-                  <option value="ru">Русский</option>
-                  <option value="en">English</option>
-                </select>
-              </div>
-            </div>
-
-            {/* Theme */}
-            <div className="p-6 border-b border-neutral-800">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  {theme === 'dark' ? <Moon className="w-5 h-5 text-neutral-400" /> : <Sun className="w-5 h-5 text-neutral-400" />}
-                  <div>
-                    <p className="text-white font-medium">Vzhled</p>
-                    <p className="text-neutral-400 text-sm">Světlý nebo tmavý režim</p>
-                  </div>
-                </div>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => { setTheme('dark'); saveSetting('theme', 'dark'); }}
-                    className={`px-4 py-2 rounded-lg transition-colors ${theme === 'dark' ? 'bg-neutral-50 text-neutral-950' : 'bg-neutral-800 text-white hover:bg-neutral-700'}`}
-                  >
-                    <Moon className="w-4 h-4 inline mr-2" />
-                    Tmavý
-                  </button>
-                  <button
-                    onClick={() => { setTheme('light'); saveSetting('theme', 'light'); }}
-                    className={`px-4 py-2 rounded-lg transition-colors ${theme === 'light' ? 'bg-neutral-50 text-neutral-950' : 'bg-neutral-800 text-white hover:bg-neutral-700'}`}
-                  >
-                    <Sun className="w-4 h-4 inline mr-2" />
-                    Světlý
-                  </button>
-                </div>
-              </div>
             </div>
 
             {/* Notifications */}
