@@ -5,6 +5,10 @@ export interface Profile {
   email: string
   credits: number
   is_admin: boolean
+  status: string
+  display_name?: string
+  phone?: string
+  bio?: string
   created_at: string
 }
 

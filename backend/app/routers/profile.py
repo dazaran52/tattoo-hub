@@ -18,6 +18,8 @@ class ProfileResponse(BaseModel):
     display_name: str | None = None
     phone: str | None = None
     bio: str | None = None
+    status: str = "pending"
+    is_admin: bool = False
 
 
 class ProfileCreate(BaseModel):
@@ -61,7 +63,9 @@ async def get_profile(
                 created_at=data.get("created_at"),
                 display_name=data.get("display_name"),
                 phone=data.get("phone"),
-                bio=data.get("bio")
+                bio=data.get("bio"),
+                status=data.get("status", "pending"),
+                is_admin=data.get("is_admin", False)
             )
         
     except Exception:
@@ -89,7 +93,9 @@ async def get_profile(
                 created_at=data.get("created_at"),
                 display_name=data.get("display_name"),
                 phone=data.get("phone"),
-                bio=data.get("bio")
+                bio=data.get("bio"),
+                status=data.get("status", "pending"),
+                is_admin=data.get("is_admin", False)
             )
         else:
             raise HTTPException(
@@ -166,7 +172,9 @@ async def update_profile(
             created_at=data.get("created_at"),
             display_name=data.get("display_name"),
             phone=data.get("phone"),
-            bio=data.get("bio")
+            bio=data.get("bio"),
+            status=data.get("status", "pending"),
+            is_admin=data.get("is_admin", False)
         )
         
     except HTTPException:

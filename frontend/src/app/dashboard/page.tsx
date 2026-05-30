@@ -127,8 +127,30 @@ export default function DashboardPage() {
           
         </div>
 
-        {/* Leads Feed */}
-        <LeadsFeed onUnlockSuccess={handleUnlockSuccess} />
+        {/* Leads Feed or Status Message */}
+        {profile.status === 'pending' ? (
+          <div className="text-center p-12 bg-white dark:bg-neutral-900 rounded-xl border border-amber-200 dark:border-amber-900 shadow-sm">
+            <div className="w-16 h-16 bg-amber-100 dark:bg-amber-900/50 rounded-full mx-auto mb-4 flex items-center justify-center">
+              <span className="text-2xl">⏳</span>
+            </div>
+            <h3 className="text-xl font-bold text-neutral-900 dark:text-white mb-2">Заявка на рассмотрении</h3>
+            <p className="text-neutral-600 dark:text-neutral-400 max-w-md mx-auto">
+              Ваш профиль мастера находится на ручной модерации. Как только администратор одобрит заявку, вы получите доступ к базе лидов.
+            </p>
+          </div>
+        ) : profile.status === 'rejected' ? (
+          <div className="text-center p-12 bg-white dark:bg-neutral-900 rounded-xl border border-red-200 dark:border-red-900 shadow-sm">
+            <div className="w-16 h-16 bg-red-100 dark:bg-red-900/50 rounded-full mx-auto mb-4 flex items-center justify-center">
+              <span className="text-2xl">🚫</span>
+            </div>
+            <h3 className="text-xl font-bold text-red-600 dark:text-red-400 mb-2">Доступ запрещен</h3>
+            <p className="text-neutral-600 dark:text-neutral-400 max-w-md mx-auto">
+              Ваша заявка была отклонена администратором. Вы не можете просматривать или покупать лиды.
+            </p>
+          </div>
+        ) : (
+          <LeadsFeed onUnlockSuccess={handleUnlockSuccess} />
+        )}
       </main>
     </div>
   )

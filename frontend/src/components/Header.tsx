@@ -75,6 +75,12 @@ export function Header({ profile, onLogout }: HeaderProps) {
                     <Settings className="w-4 h-4" />
                     {t('settings')}
                   </a>
+                  {profile.is_admin && (
+                    <a href="/admin" className="flex items-center gap-3 px-4 py-2 text-sm text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 hover:bg-neutral-100 dark:hover:bg-neutral-800">
+                      <LayoutDashboard className="w-4 h-4" />
+                      Admin Panel
+                    </a>
+                  )}
                   <div className="border-t border-neutral-200 dark:border-neutral-800 my-1"></div>
                   <button
                     onClick={onLogout}
