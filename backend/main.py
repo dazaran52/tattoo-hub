@@ -12,6 +12,7 @@ from app.routers.profile import router as profile_router
 from app.routers.leads import router as leads_router
 from app.routers.webhooks import router as webhooks_router
 from app.routers.admin import router as admin_router
+from app.routers.payments import router as payments_router
 
 
 def run_migrations():
@@ -146,6 +147,7 @@ def create_application() -> FastAPI:
     app.include_router(leads_router)
     app.include_router(webhooks_router)
     app.include_router(admin_router)
+    app.include_router(payments_router)
     
     @app.get("/health")
     async def health_check():

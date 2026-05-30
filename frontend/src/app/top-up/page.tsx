@@ -1,10 +1,29 @@
 'use client'
 
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, Gem, Sparkles, AlertCircle, CreditCard, Wallet, HeartHandshake, ExternalLink } from 'lucide-react'
+import { ArrowLeft, Gem, Sparkles, AlertCircle, CreditCard, Wallet, HeartHandshake, ExternalLink, Loader2 } from 'lucide-react'
+import { api } from '@/lib/api'
 
 export default function TopUpPage() {
   const router = useRouter()
+
+  const [amountCredits, setAmountCredits] = useState<number>(100)
+  const [isCryptoLoading, setIsCryptoLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const handleCryptoPay = async () => {
+    try {
+      setError(null)
+      setIsCryptoLoading(true)
+      const amountUsdt = amountCredits / 10 // 10 credits = 1 USDT
+      const { pay_url } = await api.createCryptoInvoice(amountUsdt)
+      window.location.href = pay_url
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Ошибка при создании чека')
+      setIsCryptoLoading(false)
+    }
+  }
 
   const topUpMethods = [
     {
@@ -15,27 +34,29 @@ export default function TopUpPage() {
       color: 'from-blue-100 to-blue-50 dark:from-blue-900/40 dark:to-blue-900/10',
       border: 'border-blue-200 dark:border-blue-800',
       actionText: 'Оплатить через Revolut',
-      link: 'https://revolut.me/YOUR_TAG' // TODO: Replace with actual Revolut link
+      link: 'https://checkout.revolut.com/pay/5ed4188d-af33-4d05-a5d6-5474f448f289'
     },
     {
       id: 'crypto',
       name: 'CryptoBot (Telegram)',
-      description: 'Оплата в USDT, TON, BTC или другой криптовалюте прямо через Telegram бота.',
+      description: `Оплата ${amountCredits / 10} USDT, TON, BTC или другой криптовалютой. Начисление автоматически!`,
       icon: <Wallet className="w-8 h-8 text-blue-500" />,
       color: 'from-sky-100 to-sky-50 dark:from-sky-900/40 dark:to-sky-900/10',
       border: 'border-sky-200 dark:border-sky-800',
       actionText: 'Оплатить криптой',
-      link: 'https://t.me/CryptoBot?start=YOUR_INVOICE' // TODO: Replace with actual CryptoBot link
+      isDynamic: true,
+      onClick: handleCryptoPay,
+      isLoading: isCryptoLoading
     },
     {
       id: 'donatello',
       name: 'Donatello',
-      description: 'Удобная оплата с украинских или международных карт (Visa/Mastercard) через донат-платформу.',
+      description: 'Автоматическое начисление! ВАЖНО: укажите ваш Email аккаунта в комментарии к донату.',
       icon: <HeartHandshake className="w-8 h-8 text-rose-500" />,
       color: 'from-rose-100 to-rose-50 dark:from-rose-900/40 dark:to-rose-900/10',
       border: 'border-rose-200 dark:border-rose-800',
-      actionText: 'Поддержать на Donatello',
-      link: 'https://donatello.to/YOUR_PAGE' // TODO: Replace with actual Donatello link
+      actionText: 'Оплата через Donatello',
+      link: 'https://donatello.to/out_tattoo_leads'
     }
   ]
 
@@ -75,6 +96,38 @@ export default function TopUpPage() {
               </p>
             </div>
 
+            {error && (
+              <div className="max-w-xl mx-auto mb-8 bg-red-100 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 p-4 rounded-xl text-center font-medium">
+                {error}
+              </div>
+            )}
+
+            <div className="max-w-md mx-auto mb-10 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-6 rounded-2xl shadow-sm">
+              <label className="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-3 text-center">
+                Количество кредитов для пополнения
+              </label>
+              <div className="flex items-center justify-center gap-4">
+                <button 
+                  onClick={() => setAmountCredits(Math.max(10, amountCredits - 10))}
+                  className="w-12 h-12 rounded-xl bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white font-bold text-xl hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
+                >
+                  -
+                </button>
+                <div className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-500 to-purple-500 w-24 text-center">
+                  {amountCredits}
+                </div>
+                <button 
+                  onClick={() => setAmountCredits(amountCredits + 10)}
+                  className="w-12 h-12 rounded-xl bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white font-bold text-xl hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
+                >
+                  +
+                </button>
+              </div>
+              <p className="text-center text-sm text-neutral-500 mt-4">
+                Эквивалент: <span className="font-semibold text-neutral-900 dark:text-white">{amountCredits / 10} EUR / USDT</span>
+              </p>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
               {topUpMethods.map((method) => (
                 <div 
@@ -88,15 +141,30 @@ export default function TopUpPage() {
                   <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-6 flex-grow">
                     {method.description}
                   </p>
-                  <a 
-                    href={method.link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-full py-3 px-4 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 font-semibold rounded-xl hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
-                  >
-                    {method.actionText}
-                    <ExternalLink className="w-4 h-4" />
-                  </a>
+                  {method.isDynamic ? (
+                    <button 
+                      onClick={method.onClick}
+                      disabled={method.isLoading}
+                      className="w-full py-3 px-4 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 font-semibold rounded-xl hover:opacity-90 transition-opacity flex items-center justify-center gap-2 disabled:opacity-50"
+                    >
+                      {method.isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : (
+                        <>
+                          {method.actionText}
+                          <ExternalLink className="w-4 h-4" />
+                        </>
+                      )}
+                    </button>
+                  ) : (
+                    <a 
+                      href={method.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full py-3 px-4 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 font-semibold rounded-xl hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
+                    >
+                      {method.actionText}
+                      <ExternalLink className="w-4 h-4" />
+                    </a>
+                  )}
                 </div>
               ))}
             </div>

@@ -92,5 +92,28 @@ export const api = {
       throw new Error(err.detail || 'Failed to unlock lead')
     }
     return res.json()
+  },
+
+  async createCryptoInvoice(amountUsdt: number): Promise<{pay_url: string}> {
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session?.user) throw new Error('Not logged in')
+    
+    const res = await fetch(`${API_URL}/api/payments/crypto/invoice`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        user_id: session.user.id,
+        amount_usdt: amountUsdt
+      })
+    })
+    
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}))
+      throw new Error(err.detail || 'Failed to create invoice')
+    }
+    
+    return res.json()
   }
 }
