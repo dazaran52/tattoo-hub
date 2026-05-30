@@ -61,6 +61,15 @@ export const api = {
     return res.json()
   },
 
+  async deleteProfile(): Promise<void> {
+    const headers = await getAuthHeaders()
+    const res = await fetch(`${API_URL}/api/profile`, {
+      method: 'DELETE',
+      headers
+    })
+    if (!res.ok) throw new Error('Failed to delete profile')
+  },
+
   // Leads
   async getLeads() {
     const headers = await getAuthHeaders()

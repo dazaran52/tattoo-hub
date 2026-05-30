@@ -187,3 +187,26 @@ async def update_profile(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error updating profile: {str(e)}"
         )
+
+
+@router.delete("/profile", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_profile(
+    current_user: AuthUser = Depends(get_current_user),
+    supabase: Client = Depends(get_supabase_client)
+):
+    """
+    Delete current user profile from DB and delete their auth account from Supabase Auth.
+    """
+    try:
+        # 1. Delete public.users table record
+        supabase.table("users").delete().eq("id", current_user.user_id).execute()
+        
+        # 2. Delete Supabase Auth account
+        supabase.auth.admin.delete_user(current_user.user_id)
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error deleting profile: {str(e)}"
+        )
+

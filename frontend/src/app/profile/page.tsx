@@ -206,8 +206,26 @@ export default function ProfilePage() {
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
-    router.push('/login')
+    document.cookie = 'sb-access-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT'
+    document.cookie = 'sb-refresh-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT'
+    window.location.href = '/login'
   }
+
+  const handleDeleteAccount = async () => {
+    try {
+      setError(null)
+      setIsLoading(true)
+      await api.deleteProfile()
+      await supabase.auth.signOut()
+      document.cookie = 'sb-access-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT'
+      document.cookie = 'sb-refresh-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT'
+      window.location.href = '/login'
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Nepodařilo se smazat účet')
+      setIsLoading(false)
+    }
+  }
+
 
   if (isLoading) {
     return (
@@ -588,6 +606,7 @@ export default function ProfilePage() {
                   />
                   <div className="flex gap-2">
                     <button
+                      onClick={handleDeleteAccount}
                       disabled={deleteConfirmText !== (language === 'ru' ? 'УДАЛИТЬ' : language === 'cs' ? 'SMAZAT' : 'DELETE')}
                       className="px-4 py-2 bg-red-600 text-neutral-900 dark:text-white rounded-lg font-medium hover:bg-red-500 transition-colors disabled:opacity-50 text-sm"
                     >
