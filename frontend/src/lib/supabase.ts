@@ -1,7 +1,8 @@
 import { createBrowserClient, createServerClient, type CookieOptions } from '@supabase/ssr'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder-project.supabase.co'
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-anon-key'
+
 
 // Client-side Supabase instance
 export const supabase = createBrowserClient(supabaseUrl, supabaseKey)
@@ -11,7 +12,11 @@ export type Profile = {
   email: string
   credits: number
   is_admin: boolean
+  status: string
   created_at: string | null
+  display_name?: string | null
+  phone?: string | null
+  bio?: string | null
 }
 
 // Server-side helper (for server components)
