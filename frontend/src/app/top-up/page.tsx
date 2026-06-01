@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, Gem, Sparkles, AlertCircle, CreditCard, Wallet, HeartHandshake, ExternalLink, Loader2, X, Copy, Check } from 'lucide-react'
+import { ArrowLeft, Gem, Sparkles, AlertCircle, CreditCard, Wallet, HeartHandshake, ExternalLink, Loader2, X, Copy, Check, MessageCircle } from 'lucide-react'
 import { api } from '@/lib/api'
 import { supabase } from '@/lib/supabase'
 import toast from 'react-hot-toast'
@@ -50,26 +50,6 @@ export default function TopUpPage() {
       setIsCreatingRequest(true)
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) return
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/payments/requests`,
-        {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${session.access_token}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            amount_credits: amountCredits,
-            provider: 'revolut',
-            currency: 'EUR'
-          })
-        }
-      )
-      
-      const data = await response.json()
-      if (!response.ok) {
-        throw new Error(data.detail || 'Failed to create payment request')
-      }
       
       // Open Revolut link
       window.open('https://checkout.revolut.com/pay/e79e0c52-e699-4abc-ab7d-ac68b1a62276', '_blank')
@@ -77,7 +57,7 @@ export default function TopUpPage() {
       // Redirect to dashboard
       router.push('/dashboard')
     } catch (err: any) {
-      toast.error(err.message || 'Ошибка создания заявки')
+      toast.error('Произошла ошибка при перенаправлении')
     } finally {
       setIsCreatingRequest(false)
       setShowRevolutModal(false)
@@ -93,7 +73,7 @@ export default function TopUpPage() {
           <li>• Быстрая оплата вводом реквизитов карты</li>
           <li>• ⚠️ Apple Pay/Google Pay НЕ поддерживаются</li>
           <li>• Автоматическое зачисление</li>
-          <li className="text-green-600 dark:text-green-400 font-semibold mt-2">ВАЖНО: укажите ваш Email в комментарии к донату.</li>
+          <li className="text-green-600 dark:text-green-400 font-semibold mt-2">ВАЖНО: укажите ваш Email в комментарии к платежу.</li>
         </ul>
       ),
       icon: <HeartHandshake className="w-8 h-8 text-rose-500" />,
@@ -253,14 +233,24 @@ export default function TopUpPage() {
                 </div>
 
                 {/* Bottom info section */}
-                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-neutral-100 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700 rounded-2xl p-6 text-left mt-6">
-                  <div>
+                <div className="flex flex-col gap-4 mt-6">
+                  <div className="bg-neutral-100 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700 rounded-2xl p-6 text-left">
                     <h4 className="font-bold text-neutral-900 dark:text-white flex items-center gap-2 mb-1">
                       <AlertCircle className="w-5 h-5 text-cyan-500" />
                       Как работает пополнение?
                     </h4>
                     <p className="text-sm text-neutral-600 dark:text-neutral-400">
                       Оба метода обрабатываются <b>автоматически</b>. Главное правило — обязательно укажите ваш Email в комментарии (Note) к платежу, чтобы система смогла вас распознать. Кредиты зачисляются в течение 1-2 минут после оплаты.
+                    </p>
+                  </div>
+
+                  <div className="bg-neutral-100 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700 rounded-2xl p-6 text-left">
+                    <h4 className="font-bold text-neutral-900 dark:text-white flex items-center gap-2 mb-1">
+                      <MessageCircle className="w-5 h-5 text-rose-500" />
+                      Проблемы с зачислением кредитов?
+                    </h4>
+                    <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                      Напиши в поддержку в правом нижнем углу страницы, и мы всё исправим!
                     </p>
                   </div>
                 </div>
@@ -359,7 +349,7 @@ export default function TopUpPage() {
                 Сумма к оплате: <strong>{amountCredits * 4} UAH</strong> или <strong>{amountCredits / 10} EUR</strong>.<br /><br />
                 Вы можете оплатить картой украинского банка (в гривнах) или картой ЕС (в евро), выбрав нужный метод на странице оплаты.<br /><br />
                 ⚠️ <b>Внимание:</b> Apple Pay и Google Pay не работают. Потребуется ввести реквизиты карты вручную.<br /><br />
-                Для <b>автоматического</b> зачисления кредитов, обязательно скопируйте ваш Email ниже и вставьте в комментарий к донату.
+                Для <b>автоматического</b> зачисления кредитов, обязательно скопируйте ваш Email ниже и вставьте в комментарий к платежу.
               </p>
               
               <div className="bg-white dark:bg-neutral-950 p-3 rounded-xl border border-neutral-200 dark:border-neutral-800 flex items-center justify-between gap-3">
