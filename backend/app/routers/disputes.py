@@ -53,14 +53,17 @@ async def create_dispute(
             raise HTTPException(status_code=500, detail="Failed to create dispute.")
             
         # Admin notification
-        admin_res = supabase.table("users").select("id").eq("is_admin", True).execute()
-        for admin in (admin_res.data or []):
-            supabase.table("notifications").insert({
-                "user_id": admin["id"],
-                "title": "Новый спор (Dispute)",
-                "message": f"Мастер подал жалобу на лид {dispute.lead_id}.",
-                "type": "system"
-            }).execute()
+        try:
+            admin_res = supabase.table("users").select("id").eq("is_admin", True).execute()
+            for admin in (admin_res.data or []):
+                supabase.table("notifications").insert({
+                    "user_id": admin["id"],
+                    "title": "Новый спор (Dispute)",
+                    "message": f"Мастер подал жалобу на лид {dispute.lead_id}.",
+                    "type": "system"
+                }).execute()
+        except Exception as e:
+            print(f"Warning: Failed to create admin notification for dispute {res.data[0]['id']}: {e}")
 
         return res.data[0]
 
