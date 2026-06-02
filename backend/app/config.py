@@ -58,6 +58,8 @@ class Settings(BaseSettings):
         "https://localhost:3000",
         "https://out-tattoo-web.vercel.app",
         "https://out-tattoo-leads.vercel.app",
+        "https://tattoo-hub.xyz",
+        "https://www.tattoo-hub.xyz"
     ]
     
     class Config:
