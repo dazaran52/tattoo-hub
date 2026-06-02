@@ -9,7 +9,7 @@ import { getTranslation, Language } from '@/lib/i18n'
 import { 
   User, Mail, Coins, Calendar, Phone, FileText, Save, X, Edit2, 
   Unlock, CreditCard, Settings, Bell, Lock, Globe, Moon, Sun,
-  Trash2, AlertTriangle, Eye, EyeOff, Check, ArrowLeft, Gem, Tag, Copy
+  Trash2, AlertTriangle, Eye, EyeOff, Check, ArrowLeft, Gem, Tag, Copy, Gift
 } from 'lucide-react'
 
 // Toggle Switch Component
@@ -290,20 +290,7 @@ export default function ProfilePage() {
                 </div>
                 <p className="text-neutral-600 dark:text-neutral-400 text-sm mb-2">{profile.email}</p>
                 
-                {profile.own_referral_code && (
-                  <div className="mb-4 inline-flex items-center gap-2 bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-400 border border-purple-200 dark:border-purple-800 px-3 py-1.5 rounded-lg text-sm">
-                    <Tag className="w-4 h-4" />
-                    <span className="font-semibold">Код: {profile.own_referral_code}</span>
-                    <button 
-                      onClick={() => navigator.clipboard.writeText(profile.own_referral_code || '')}
-                      className="ml-1 hover:text-purple-900 dark:hover:text-purple-200 transition-colors"
-                      title="Скопировать"
-                    >
-                      <Copy className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                )}
-                
+
                 <div className="flex items-center justify-center md:justify-start gap-2 text-cyan-500">
                   <Gem className="w-5 h-5" />
                   <span className="font-bold text-lg">{profile.credits}</span>
@@ -312,7 +299,7 @@ export default function ProfilePage() {
               </div>
 
               {/* Stats */}
-              <div className="flex-1 grid grid-cols-3 gap-4">
+              <div className="flex-1 grid grid-cols-2 sm:grid-cols-4 gap-4">
                 <div className="bg-neutral-100 dark:bg-neutral-800 rounded-lg p-4 text-center">
                   <Unlock className="w-5 h-5 text-neutral-600 dark:text-neutral-400 mx-auto mb-2" />
                   <p className="text-neutral-900 dark:text-white font-medium">{profile.unlocked_leads_count || 0}</p>
@@ -324,12 +311,52 @@ export default function ProfilePage() {
                   <p className="text-neutral-600 dark:text-neutral-400 text-xs">{t('spent')}</p>
                 </div>
                 <div className="bg-neutral-100 dark:bg-neutral-800 rounded-lg p-4 text-center">
+                  <Tag className="w-5 h-5 text-neutral-600 dark:text-neutral-400 mx-auto mb-2" />
+                  <p className="text-neutral-900 dark:text-white font-medium">{profile.discount_tokens || 0}</p>
+                  <p className="text-neutral-600 dark:text-neutral-400 text-xs">Скидки</p>
+                </div>
+                <div className="bg-neutral-100 dark:bg-neutral-800 rounded-lg p-4 text-center">
                   <Calendar className="w-5 h-5 text-neutral-600 dark:text-neutral-400 mx-auto mb-2" />
                   <p className="text-neutral-900 dark:text-white font-medium text-sm">
                     {new Date(profile.created_at).toLocaleDateString('cs-CZ')}
                   </p>
                   <p className="text-neutral-600 dark:text-neutral-400 text-xs">{t('memberSince')}</p>
                 </div>
+              </div>
+            </div>
+
+            {/* Referral Card */}
+            <div className="mt-6 bg-gradient-to-r from-purple-500/10 to-indigo-500/10 border border-purple-200 dark:border-purple-500/30 rounded-xl p-5 relative overflow-hidden">
+              <div className="absolute top-0 right-0 p-4 opacity-10 pointer-events-none">
+                <Gift className="w-24 h-24" />
+              </div>
+              <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                  <h3 className="text-lg font-bold text-neutral-900 dark:text-white flex items-center gap-2 mb-1">
+                    <Gift className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                    Пригласи друга - получи бонус!
+                  </h3>
+                  <p className="text-sm text-neutral-600 dark:text-neutral-400 max-w-md">
+                    Поделись своим кодом с другими мастерами. Когда их профиль одобрят, ты получишь 1 скидочный токен (скидка 50% на любую заявку).
+                  </p>
+                </div>
+                
+                {profile.own_referral_code && (
+                  <div className="flex flex-col items-center md:items-end">
+                    <div className="bg-white dark:bg-neutral-900 shadow-sm border border-purple-200 dark:border-purple-800 rounded-lg px-4 py-2 flex items-center gap-3">
+                      <span className="font-mono font-bold text-lg text-purple-700 dark:text-purple-400">
+                        {profile.own_referral_code}
+                      </span>
+                      <button 
+                        onClick={() => navigator.clipboard.writeText(profile.own_referral_code || '')}
+                        className="p-1.5 hover:bg-purple-100 dark:hover:bg-purple-900/30 text-purple-600 dark:text-purple-300 rounded transition-colors"
+                        title="Скопировать"
+                      >
+                        <Copy className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
