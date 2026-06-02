@@ -76,6 +76,13 @@ export const api = {
     if (!res.ok) throw new Error('Failed to delete profile')
   },
 
+  async getAnalytics(): Promise<any> {
+    const headers = await getAuthHeaders()
+    const res = await fetch(`${API_URL}/api/analytics`, { headers })
+    if (!res.ok) throw new Error('Failed to fetch analytics')
+    return res.json()
+  },
+
   // Leads
   async getLeads() {
     const headers = await getAuthHeaders()
