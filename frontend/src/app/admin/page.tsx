@@ -33,7 +33,7 @@ export default function AdminPage() {
   
   const [profile, setProfile] = useState<Profile | null>(null)
   const [users, setUsers] = useState<AdminUserResponse[]>([])
-  const [activeTab, setActiveTab] = useState<'users' | 'chats' | 'locations'>('users')
+  const [activeTab, setActiveTab] = useState<'users' | 'chats' | 'locations' | 'disputes'>('users')
   const [searchQuery, setSearchQuery] = useState('')
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest' | 'balance_desc' | 'balance_asc'>('newest')
 
