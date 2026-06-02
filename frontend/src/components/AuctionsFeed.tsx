@@ -23,6 +23,7 @@ interface Auction {
     title: string
     description: string
     price_credits: number
+    image_url?: string
   }
 }
 
