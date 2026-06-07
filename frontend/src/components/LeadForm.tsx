@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Upload, ChevronRight, ChevronLeft, Check, AlertCircle } from 'lucide-react'
+import { Upload, ChevronRight, ChevronLeft, Check, AlertCircle, Sparkles, Image as ImageIcon, MapPin, Send } from 'lucide-react'
 
 export function LeadForm() {
   const [step, setStep] = useState(1)
@@ -67,52 +67,128 @@ export function LeadForm() {
     }
   }
 
+  const stepIcons = [
+    <Sparkles key={1} className="w-5 h-5" />,
+    <MapPin key={2} className="w-5 h-5" />,
+    <ImageIcon key={3} className="w-5 h-5" />,
+    <Send key={4} className="w-5 h-5" />
+  ]
+
+  const stepTitles = [
+    "Опиши свою идею",
+    "Детали татуировки",
+    "Бюджет и референсы",
+    "Твои контакты"
+  ]
+
+  const inputClasses = "w-full bg-white/40 dark:bg-neutral-900/40 backdrop-blur-xl border border-white/60 dark:border-white/10 rounded-2xl p-4 text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500/50 focus:bg-white/60 dark:focus:bg-neutral-800/60 transition-all duration-300 shadow-sm"
+  const labelClasses = "block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2 ml-1"
+
   if (isSuccess) {
     return (
       <motion.div 
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="bg-white/10 dark:bg-neutral-900/40 backdrop-blur-xl border border-white/20 dark:border-white/10 rounded-3xl p-8 md:p-12 text-center shadow-2xl"
+        initial={{ opacity: 0, scale: 0.9, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{ type: "spring", duration: 0.6 }}
+        className="relative bg-white/40 dark:bg-neutral-900/40 backdrop-blur-3xl border border-white/60 dark:border-white/10 rounded-[2rem] p-8 md:p-12 text-center shadow-[0_8px_32px_0_rgba(31,38,135,0.07)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] overflow-hidden"
       >
-        <div className="w-20 h-20 bg-green-500/20 text-green-500 rounded-full flex items-center justify-center mx-auto mb-6">
-          <Check className="w-10 h-10" />
-        </div>
-        <h3 className="text-3xl font-bold text-neutral-900 dark:text-white mb-4">Заявка отправлена!</h3>
-        <p className="text-neutral-600 dark:text-neutral-300 text-lg max-w-md mx-auto mb-8">
-          Лучшие мастера твоего города скоро увидят твою идею и свяжутся с тобой, чтобы обсудить детали и предложить свои эскизы.
-        </p>
-        <button 
-          onClick={() => { setStep(1); setIsSuccess(false); setFormData({description: '', style: '', location: '', size: '', budget: '', city: '', name: '', contact: '', images: []}) }}
-          className="bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 px-8 py-4 rounded-xl font-bold transition-transform hover:scale-105"
+        <div className="absolute inset-0 bg-gradient-to-br from-violet-500/10 via-transparent to-fuchsia-500/10 pointer-events-none" />
+        
+        <motion.div 
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ type: "spring", delay: 0.2, bounce: 0.5 }}
+          className="w-24 h-24 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center mx-auto mb-8 shadow-lg shadow-emerald-500/30"
         >
-          Новая заявка
-        </button>
+          <motion.div
+            initial={{ pathLength: 0 }}
+            animate={{ pathLength: 1 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+          >
+            <Check className="w-12 h-12 text-white stroke-[3]" />
+          </motion.div>
+        </motion.div>
+        <motion.h3 
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-neutral-900 to-neutral-600 dark:from-white dark:to-neutral-400 mb-4"
+        >
+          Заявка отправлена!
+        </motion.h3>
+        <motion.p 
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          className="text-neutral-600 dark:text-neutral-300 text-lg max-w-md mx-auto mb-10 leading-relaxed"
+        >
+          Лучшие мастера твоего города скоро увидят твою идею и свяжутся с тобой, чтобы обсудить детали и предложить свои эскизы.
+        </motion.p>
+        <motion.button 
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+          onClick={() => { setStep(1); setIsSuccess(false); setFormData({description: '', style: '', location: '', size: '', budget: '', city: '', name: '', contact: '', images: []}) }}
+          className="group relative inline-flex items-center justify-center bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 px-8 py-4 rounded-2xl font-bold transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-neutral-900/20 dark:hover:shadow-white/20"
+        >
+          <span className="relative z-10">Новая заявка</span>
+          <div className="absolute inset-0 bg-white/20 dark:bg-black/10 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
+        </motion.button>
       </motion.div>
     )
   }
 
   return (
-    <div className="bg-white/70 dark:bg-neutral-900/60 backdrop-blur-2xl border border-white/40 dark:border-white/10 rounded-3xl shadow-2xl overflow-hidden relative">
+    <div className="relative bg-white/40 dark:bg-neutral-900/40 backdrop-blur-3xl border border-white/60 dark:border-white/10 rounded-[2rem] shadow-[0_8px_32px_0_rgba(31,38,135,0.07)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] overflow-hidden">
       
-      {/* Progress Bar */}
-      <div className="absolute top-0 left-0 w-full h-1 bg-neutral-200 dark:bg-neutral-800">
+      {/* Background ambient glow */}
+      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none -z-10">
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-violet-500/20 blur-[100px] rounded-full" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-fuchsia-500/20 blur-[100px] rounded-full" />
+      </div>
+
+      {/* Progress Bar Container */}
+      <div className="absolute top-0 left-0 w-full h-1.5 bg-neutral-200/50 dark:bg-neutral-800/50">
         <motion.div 
-          className="h-full bg-indigo-500"
+          className="h-full bg-gradient-to-r from-violet-500 via-fuchsia-500 to-pink-500 relative"
           initial={{ width: '25%' }}
           animate={{ width: `${(step / 4) * 100}%` }}
-          transition={{ duration: 0.3 }}
-        />
+          transition={{ type: "spring", stiffness: 50, damping: 15 }}
+        >
+          <div className="absolute top-0 right-0 bottom-0 w-10 bg-white/30 blur-[2px]" />
+        </motion.div>
       </div>
 
       <div className="p-8 md:p-12">
-        <div className="mb-8">
-          <h3 className="text-2xl font-bold text-neutral-900 dark:text-white">
-            {step === 1 && "Опиши свою идею"}
-            {step === 2 && "Детали татуировки"}
-            {step === 3 && "Бюджет и референсы"}
-            {step === 4 && "Твои контакты"}
-          </h3>
-          <p className="text-neutral-500 dark:text-neutral-400 mt-2">Шаг {step} из 4</p>
+        <div className="mb-10">
+          <div className="flex items-center gap-3 mb-2">
+            <motion.div 
+              key={step}
+              initial={{ scale: 0, rotate: -180 }}
+              animate={{ scale: 1, rotate: 0 }}
+              className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white flex items-center justify-center shadow-lg shadow-violet-500/30"
+            >
+              {stepIcons[step - 1]}
+            </motion.div>
+            <h3 className="text-2xl md:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-neutral-900 to-neutral-600 dark:from-white dark:to-neutral-400">
+              {stepTitles[step - 1]}
+            </h3>
+          </div>
+          <div className="flex items-center gap-2 mt-4">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="flex-1 h-1.5 rounded-full bg-neutral-200/50 dark:bg-neutral-800/50 overflow-hidden relative">
+                <motion.div 
+                  initial={false}
+                  animate={{ 
+                    width: step >= i ? '100%' : '0%',
+                    opacity: step >= i ? 1 : 0 
+                  }}
+                  className="absolute inset-0 bg-gradient-to-r from-violet-500 to-fuchsia-500"
+                />
+              </div>
+            ))}
+          </div>
+          <p className="text-neutral-500 dark:text-neutral-400 mt-3 text-sm font-medium">Шаг {step} из 4</p>
         </div>
 
         <form onSubmit={handleSubmit}>
@@ -120,35 +196,41 @@ export function LeadForm() {
             {step === 1 && (
               <motion.div 
                 key="step1"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
+                initial={{ opacity: 0, x: 20, filter: 'blur(4px)' }}
+                animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
+                exit={{ opacity: 0, x: -20, filter: 'blur(4px)' }}
+                transition={{ duration: 0.3 }}
                 className="space-y-6"
               >
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">Что будем бить?</label>
+                  <label className={labelClasses}>Что будем бить?</label>
                   <textarea 
                     value={formData.description}
                     onChange={e => setFormData({...formData, description: e.target.value})}
                     placeholder="Например: Хочу черно-белого дракона, обвивающего меч..."
-                    className="w-full bg-white/50 dark:bg-black/20 border border-neutral-300 dark:border-neutral-700 rounded-xl p-4 text-neutral-900 dark:text-white placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 min-h-[120px]"
+                    className={`${inputClasses} min-h-[140px] resize-none`}
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">Стиль (опционально)</label>
-                  <select 
-                    value={formData.style}
-                    onChange={e => setFormData({...formData, style: e.target.value})}
-                    className="w-full bg-white/50 dark:bg-black/20 border border-neutral-300 dark:border-neutral-700 rounded-xl p-4 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 appearance-none"
-                  >
-                    <option value="">Не знаю / Жду предложений</option>
-                    <option value="realism">Реализм</option>
-                    <option value="traditional">Олдскул (Traditional)</option>
-                    <option value="minimalism">Минимализм / Лайнворк</option>
-                    <option value="japanese">Япония (Irezumi)</option>
-                    <option value="blackwork">Блэкворк</option>
-                  </select>
+                  <label className={labelClasses}>Стиль (опционально)</label>
+                  <div className="relative">
+                    <select 
+                      value={formData.style}
+                      onChange={e => setFormData({...formData, style: e.target.value})}
+                      className={`${inputClasses} appearance-none cursor-pointer`}
+                    >
+                      <option value="">Не знаю / Жду предложений</option>
+                      <option value="realism">Реализм</option>
+                      <option value="traditional">Олдскул (Traditional)</option>
+                      <option value="minimalism">Минимализм / Лайнворк</option>
+                      <option value="japanese">Япония (Irezumi)</option>
+                      <option value="blackwork">Блэкворк</option>
+                    </select>
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                      <ChevronRight className="w-5 h-5 text-neutral-400 rotate-90" />
+                    </div>
+                  </div>
                 </div>
               </motion.div>
             )}
@@ -156,30 +238,31 @@ export function LeadForm() {
             {step === 2 && (
               <motion.div 
                 key="step2"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
+                initial={{ opacity: 0, x: 20, filter: 'blur(4px)' }}
+                animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
+                exit={{ opacity: 0, x: -20, filter: 'blur(4px)' }}
+                transition={{ duration: 0.3 }}
                 className="space-y-6"
               >
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">Место нанесения</label>
+                  <label className={labelClasses}>Место нанесения</label>
                   <input 
                     type="text"
                     value={formData.location}
                     onChange={e => setFormData({...formData, location: e.target.value})}
                     placeholder="Например: Предплечье, спина, бедро..."
-                    className="w-full bg-white/50 dark:bg-black/20 border border-neutral-300 dark:border-neutral-700 rounded-xl p-4 text-neutral-900 dark:text-white placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className={inputClasses}
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">Примерный размер</label>
+                  <label className={labelClasses}>Примерный размер</label>
                   <input 
                     type="text"
                     value={formData.size}
                     onChange={e => setFormData({...formData, size: e.target.value})}
                     placeholder="Например: 15х10 см, или просто 'большая'"
-                    className="w-full bg-white/50 dark:bg-black/20 border border-neutral-300 dark:border-neutral-700 rounded-xl p-4 text-neutral-900 dark:text-white placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className={inputClasses}
                     required
                   />
                 </div>
@@ -189,24 +272,29 @@ export function LeadForm() {
             {step === 3 && (
               <motion.div 
                 key="step3"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
+                initial={{ opacity: 0, x: 20, filter: 'blur(4px)' }}
+                animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
+                exit={{ opacity: 0, x: -20, filter: 'blur(4px)' }}
+                transition={{ duration: 0.3 }}
                 className="space-y-6"
               >
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">Ваш бюджет (опционально)</label>
+                  <label className={labelClasses}>Ваш бюджет (опционально)</label>
                   <input 
                     type="text"
                     value={formData.budget}
                     onChange={e => setFormData({...formData, budget: e.target.value})}
                     placeholder="Например: До 5000 Kč"
-                    className="w-full bg-white/50 dark:bg-black/20 border border-neutral-300 dark:border-neutral-700 rounded-xl p-4 text-neutral-900 dark:text-white placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className={inputClasses}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">Примеры и референсы</label>
-                  <div className="border-2 border-dashed border-neutral-300 dark:border-neutral-700 rounded-xl p-8 text-center bg-white/20 dark:bg-black/10 hover:bg-white/30 dark:hover:bg-black/20 transition-colors relative cursor-pointer">
+                  <label className={labelClasses}>Примеры и референсы</label>
+                  <motion.div 
+                    whileHover={{ scale: 1.01 }}
+                    whileTap={{ scale: 0.99 }}
+                    className="border-2 border-dashed border-violet-300/50 dark:border-violet-700/50 rounded-2xl p-8 text-center bg-white/20 dark:bg-neutral-900/20 hover:bg-violet-50/50 dark:hover:bg-violet-900/10 transition-colors relative cursor-pointer group"
+                  >
                     <input 
                       type="file" 
                       multiple 
@@ -214,18 +302,27 @@ export function LeadForm() {
                       className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                       accept="image/*"
                     />
-                    <Upload className="w-8 h-8 text-neutral-400 mx-auto mb-3" />
-                    <p className="text-neutral-600 dark:text-neutral-400">Нажмите или перетащите фото сюда</p>
+                    <div className="w-16 h-16 bg-white/50 dark:bg-neutral-800/50 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300 shadow-sm">
+                      <Upload className="w-8 h-8 text-violet-500" />
+                    </div>
+                    <p className="text-neutral-700 dark:text-neutral-300 font-medium">Нажмите или перетащите фото сюда</p>
+                    <p className="text-neutral-400 text-sm mt-1">PNG, JPG до 5MB</p>
                     {formData.images.length > 0 && (
-                      <div className="mt-4 flex flex-wrap gap-2 justify-center">
+                      <div className="mt-6 flex flex-wrap gap-2 justify-center">
                         {formData.images.map((img, i) => (
-                          <span key={i} className="bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 text-xs px-2 py-1 rounded-md">
-                            {img.name}
-                          </span>
+                          <motion.span 
+                            initial={{ opacity: 0, scale: 0.8 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            key={i} 
+                            className="bg-white/60 dark:bg-neutral-800/60 backdrop-blur-sm border border-violet-200 dark:border-violet-800 text-violet-700 dark:text-violet-300 text-xs px-3 py-1.5 rounded-lg shadow-sm flex items-center gap-1"
+                          >
+                            <ImageIcon className="w-3 h-3" />
+                            <span className="truncate max-w-[100px]">{img.name}</span>
+                          </motion.span>
                         ))}
                       </div>
                     )}
-                  </div>
+                  </motion.div>
                 </div>
               </motion.div>
             )}
@@ -233,89 +330,105 @@ export function LeadForm() {
             {step === 4 && (
               <motion.div 
                 key="step4"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
+                initial={{ opacity: 0, x: 20, filter: 'blur(4px)' }}
+                animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
+                exit={{ opacity: 0, x: -20, filter: 'blur(4px)' }}
+                transition={{ duration: 0.3 }}
                 className="space-y-6"
               >
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">Ваш Город</label>
+                  <label className={labelClasses}>Ваш Город</label>
                   <input 
                     type="text"
                     value={formData.city}
                     onChange={e => setFormData({...formData, city: e.target.value})}
                     placeholder="Например: Прага"
-                    className="w-full bg-white/50 dark:bg-black/20 border border-neutral-300 dark:border-neutral-700 rounded-xl p-4 text-neutral-900 dark:text-white placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className={inputClasses}
                     required
                   />
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">Как к вам обращаться?</label>
+                    <label className={labelClasses}>Как к вам обращаться?</label>
                     <input 
                       type="text"
                       value={formData.name}
                       onChange={e => setFormData({...formData, name: e.target.value})}
                       placeholder="Имя"
-                      className="w-full bg-white/50 dark:bg-black/20 border border-neutral-300 dark:border-neutral-700 rounded-xl p-4 text-neutral-900 dark:text-white placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className={inputClasses}
                       required
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">Email или Телефон</label>
+                    <label className={labelClasses}>Email или Телефон</label>
                     <input 
                       type="text"
                       value={formData.contact}
                       onChange={e => setFormData({...formData, contact: e.target.value})}
                       placeholder="+420... или email@..."
-                      className="w-full bg-white/50 dark:bg-black/20 border border-neutral-300 dark:border-neutral-700 rounded-xl p-4 text-neutral-900 dark:text-white placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className={inputClasses}
                       required
                     />
                   </div>
                 </div>
-                <div className="flex items-start gap-3 mt-4 bg-amber-50 dark:bg-amber-900/20 p-4 rounded-xl border border-amber-200 dark:border-amber-900/50">
-                  <AlertCircle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
-                  <p className="text-sm text-amber-700 dark:text-amber-400">
-                    Твои контакты будут скрыты и станут доступны только доверенным мастерам, которые захотят взять твою идею в работу.
+                <motion.div 
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 }}
+                  className="flex items-start gap-4 mt-6 bg-gradient-to-r from-amber-500/10 to-orange-500/10 dark:from-amber-500/5 dark:to-orange-500/5 backdrop-blur-md p-5 rounded-2xl border border-amber-500/20"
+                >
+                  <div className="bg-amber-500/20 p-2 rounded-full flex-shrink-0">
+                    <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+                  </div>
+                  <p className="text-sm text-neutral-700 dark:text-neutral-300 leading-relaxed">
+                    Твои контакты будут скрыты и станут доступны <span className="font-semibold">только доверенным мастерам</span>, которые захотят взять твою идею в работу.
                   </p>
-                </div>
+                </motion.div>
               </motion.div>
             )}
           </AnimatePresence>
 
           {/* Navigation */}
-          <div className="flex justify-between items-center mt-10">
+          <div className="flex justify-between items-center mt-12 pt-6 border-t border-neutral-200/50 dark:border-neutral-800/50">
             {step > 1 ? (
-              <button 
+              <motion.button 
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
                 type="button" 
                 onClick={prevStep}
-                className="flex items-center gap-2 text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white transition-colors"
+                className="flex items-center gap-2 text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white transition-colors font-medium px-4 py-2 rounded-xl hover:bg-neutral-100/50 dark:hover:bg-neutral-800/50"
               >
                 <ChevronLeft className="w-5 h-5" />
                 Назад
-              </button>
+              </motion.button>
             ) : (
               <div></div>
             )}
             
             {step < 4 ? (
-              <button 
+              <motion.button 
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
                 type="button" 
                 onClick={nextStep}
-                className="bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 px-8 py-3 rounded-xl font-bold flex items-center gap-2 transition-transform hover:scale-105 shadow-lg shadow-neutral-900/20 dark:shadow-white/10"
+                className="bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 px-8 py-3.5 rounded-2xl font-bold flex items-center gap-2 transition-all shadow-xl shadow-neutral-900/20 dark:shadow-white/10 group overflow-hidden relative"
               >
-                Далее
-                <ChevronRight className="w-5 h-5" />
-              </button>
+                <div className="absolute inset-0 bg-white/20 dark:bg-black/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out" />
+                <span className="relative z-10">Далее</span>
+                <ChevronRight className="w-5 h-5 relative z-10 group-hover:translate-x-1 transition-transform" />
+              </motion.button>
             ) : (
-              <button 
+              <motion.button 
+                whileHover={!isSubmitting ? { scale: 1.02 } : {}}
+                whileTap={!isSubmitting ? { scale: 0.98 } : {}}
                 type="submit" 
                 disabled={isSubmitting}
-                className="bg-indigo-600 hover:bg-indigo-500 text-white px-8 py-3 rounded-xl font-bold flex items-center gap-2 transition-transform hover:scale-105 shadow-lg shadow-indigo-500/30 disabled:opacity-70 disabled:hover:scale-100"
+                className="relative bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 text-white px-8 py-3.5 rounded-2xl font-bold flex items-center gap-2 transition-all shadow-xl shadow-violet-500/30 disabled:opacity-70 disabled:hover:scale-100 overflow-hidden group"
               >
-                {isSubmitting ? 'Отправляем...' : 'Оставить заявку'}
-                {!isSubmitting && <Check className="w-5 h-5" />}
-              </button>
+                <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out" />
+                <span className="relative z-10">{isSubmitting ? 'Отправляем...' : 'Оставить заявку'}</span>
+                {!isSubmitting && <Check className="w-5 h-5 relative z-10 group-hover:scale-110 transition-transform" />}
+              </motion.button>
             )}
           </div>
         </form>
