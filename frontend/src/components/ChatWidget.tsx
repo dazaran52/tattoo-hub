@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { MessageCircle, X, Send, Loader2 } from 'lucide-react'
 import { supabase, SupportMessage } from '@/lib/supabase'
 import toast from 'react-hot-toast'
@@ -197,11 +198,15 @@ export function ChatWidget() {
   if (!session?.user) {
     return (
       <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end pointer-events-none">
-        <div 
-          className={`mb-4 w-72 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl shadow-2xl transition-all duration-300 origin-bottom-right pointer-events-auto ${
-            isOpen ? 'scale-100 opacity-100 translate-y-0' : 'scale-95 opacity-0 translate-y-4 pointer-events-none'
-          }`}
-        >
+        <AnimatePresence>
+          {isOpen && (
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: 16 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 16 }}
+              transition={{ duration: 0.2 }}
+              className="mb-4 w-72 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl shadow-2xl origin-bottom-right pointer-events-auto"
+            >
           <div className="p-4 border-b border-neutral-100 dark:border-neutral-800 bg-gradient-to-r from-neutral-900 to-neutral-700 dark:from-white dark:to-neutral-300 rounded-t-2xl">
             <h3 className="font-bold text-white dark:text-neutral-950 flex items-center gap-2">
               <MessageCircle className="w-5 h-5" />
@@ -231,7 +236,9 @@ export function ChatWidget() {
               </button>
             </form>
           </div>
-        </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         <button
           onClick={() => setIsOpen(!isOpen)}
@@ -246,11 +253,15 @@ export function ChatWidget() {
   // Full Live Chat
   return (
     <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end pointer-events-none">
-      <div 
-        className={`mb-4 w-80 sm:w-96 h-[500px] flex flex-col bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl shadow-2xl transition-all duration-300 origin-bottom-right overflow-hidden pointer-events-auto ${
-          isOpen ? 'scale-100 opacity-100 translate-y-0' : 'scale-95 opacity-0 translate-y-4 pointer-events-none'
-        }`}
-      >
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95, y: 16 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 16 }}
+            transition={{ duration: 0.2 }}
+            className="mb-4 w-80 sm:w-96 h-[500px] flex flex-col bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl shadow-2xl origin-bottom-right overflow-hidden pointer-events-auto"
+          >
         <div className="p-4 bg-gradient-to-r from-cyan-500 to-blue-500 text-white flex justify-between items-center shrink-0">
           <h3 className="font-bold flex items-center gap-2">
             <MessageCircle className="w-5 h-5" />
@@ -326,7 +337,9 @@ export function ChatWidget() {
             {isSending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
           </button>
         </form>
-      </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <button
         onClick={() => setIsOpen(!isOpen)}
