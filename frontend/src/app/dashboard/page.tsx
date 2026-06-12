@@ -9,6 +9,7 @@ import { LeadsFeed } from '@/components/LeadsFeed'
 import { AuctionsFeed } from '@/components/AuctionsFeed'
 import { getTranslation, Language } from '@/lib/i18n'
 import { toast } from 'react-hot-toast'
+import { ClientDashboard } from '@/components/ClientDashboard'
 
 export default function DashboardPage() {
   const router = useRouter()
@@ -151,86 +152,92 @@ export default function DashboardPage() {
       <Header profile={profile} onLogout={handleLogout} />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Welcome Section */}
-        <div className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center">
-          <div>
-            <h2 className="text-2xl font-bold text-neutral-900 dark:text-neutral-50">
-              {t('welcome')}, {profile.email.split('@')[0]}
-            </h2>
-            <p className="mt-1 text-neutral-500 dark:text-neutral-400">
-              {t('availableLeads')}
-            </p>
-          </div>
-          
-          {/* Tabs */}
-          {profile.status === 'approved' && (
-            <div className="mt-4 md:mt-0 flex p-1 bg-neutral-100 dark:bg-neutral-800 rounded-lg">
-              <button
-                id="tour-leads"
-                onClick={() => setActiveTab('feed')}
-                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                  activeTab === 'feed'
-                    ? 'bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white shadow-sm'
-                    : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200'
-                }`}
-              >
-                Все лиды
-              </button>
-              <button
-                onClick={() => setActiveTab('my-leads')}
-                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                  activeTab === 'my-leads'
-                    ? 'bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white shadow-sm'
-                    : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200'
-                }`}
-              >
-                Мои лиды
-              </button>
-              <button
-                id="tour-auctions"
-                onClick={() => setActiveTab('auctions')}
-                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                  activeTab === 'auctions'
-                    ? 'bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white shadow-sm'
-                    : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200'
-                }`}
-              >
-                Аукционы
-              </button>
-            </div>
-          )}
-        </div>
-
-        {/* Leads Feed or Status Message */}
-        {profile.status === 'pending' ? (
-          <div className="text-center p-12 bg-white dark:bg-neutral-900 rounded-xl border border-amber-200 dark:border-amber-900 shadow-sm">
-            <div className="w-16 h-16 bg-amber-100 dark:bg-amber-900/50 rounded-full mx-auto mb-4 flex items-center justify-center">
-              <span className="text-2xl">⏳</span>
-            </div>
-            <h3 className="text-xl font-bold text-neutral-900 dark:text-white mb-2">{t('pendingReviewTitle')}</h3>
-            <p className="text-neutral-600 dark:text-neutral-400 max-w-md mx-auto">
-              {t('pendingReviewDesc')}
-            </p>
-          </div>
-        ) : profile.status === 'rejected' ? (
-          <div className="text-center p-12 bg-white dark:bg-neutral-900 rounded-xl border border-red-200 dark:border-red-900 shadow-sm">
-            <div className="w-16 h-16 bg-red-100 dark:bg-red-900/50 rounded-full mx-auto mb-4 flex items-center justify-center">
-              <span className="text-2xl text-red-600">❌</span>
-            </div>
-            <h3 className="text-xl font-bold text-neutral-900 dark:text-white mb-2">{t('rejectedTitle')}</h3>
-            <p className="text-neutral-600 dark:text-neutral-400 max-w-md mx-auto">
-              {t('rejectedDesc')}
-            </p>
-          </div>
-        ) : activeTab === 'auctions' ? (
-          <AuctionsFeed />
+        {profile.role === 'client' ? (
+          <ClientDashboard profile={profile} />
         ) : (
-          <LeadsFeed 
-            onUnlockSuccess={handleUnlockSuccess} 
-            isAdmin={profile.is_admin} 
-            showOnlyUnlocked={activeTab === 'my-leads'}
-            userCities={profile.city_ids || []}
-          />
+          <>
+            {/* Welcome Section */}
+            <div className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center">
+              <div>
+                <h2 className="text-2xl font-bold text-neutral-900 dark:text-neutral-50">
+                  {t('welcome')}, {profile.email.split('@')[0]}
+                </h2>
+                <p className="mt-1 text-neutral-500 dark:text-neutral-400">
+                  {t('availableLeads')}
+                </p>
+              </div>
+              
+              {/* Tabs */}
+              {profile.status === 'approved' && (
+                <div className="mt-4 md:mt-0 flex p-1 bg-neutral-100 dark:bg-neutral-800 rounded-lg">
+                  <button
+                    id="tour-leads"
+                    onClick={() => setActiveTab('feed')}
+                    className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                      activeTab === 'feed'
+                        ? 'bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white shadow-sm'
+                        : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200'
+                    }`}
+                  >
+                    Все лиды
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('my-leads')}
+                    className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                      activeTab === 'my-leads'
+                        ? 'bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white shadow-sm'
+                        : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200'
+                    }`}
+                  >
+                    Мои лиды
+                  </button>
+                  <button
+                    id="tour-auctions"
+                    onClick={() => setActiveTab('auctions')}
+                    className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                      activeTab === 'auctions'
+                        ? 'bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white shadow-sm'
+                        : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200'
+                    }`}
+                  >
+                    Аукционы
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Leads Feed or Status Message */}
+            {profile.status === 'pending' ? (
+              <div className="text-center p-12 bg-white dark:bg-neutral-900 rounded-xl border border-amber-200 dark:border-amber-900 shadow-sm">
+                <div className="w-16 h-16 bg-amber-100 dark:bg-amber-900/50 rounded-full mx-auto mb-4 flex items-center justify-center">
+                  <span className="text-2xl">⏳</span>
+                </div>
+                <h3 className="text-xl font-bold text-neutral-900 dark:text-white mb-2">{t('pendingReviewTitle')}</h3>
+                <p className="text-neutral-600 dark:text-neutral-400 max-w-md mx-auto">
+                  {t('pendingReviewDesc')}
+                </p>
+              </div>
+            ) : profile.status === 'rejected' ? (
+              <div className="text-center p-12 bg-white dark:bg-neutral-900 rounded-xl border border-red-200 dark:border-red-900 shadow-sm">
+                <div className="w-16 h-16 bg-red-100 dark:bg-red-900/50 rounded-full mx-auto mb-4 flex items-center justify-center">
+                  <span className="text-2xl text-red-600">❌</span>
+                </div>
+                <h3 className="text-xl font-bold text-neutral-900 dark:text-white mb-2">{t('rejectedTitle')}</h3>
+                <p className="text-neutral-600 dark:text-neutral-400 max-w-md mx-auto">
+                  {t('rejectedDesc')}
+                </p>
+              </div>
+            ) : activeTab === 'auctions' ? (
+              <AuctionsFeed />
+            ) : (
+              <LeadsFeed 
+                onUnlockSuccess={handleUnlockSuccess} 
+                isAdmin={profile.is_admin} 
+                showOnlyUnlocked={activeTab === 'my-leads'}
+                userCities={profile.city_ids || []}
+              />
+            )}
+          </>
         )}
       </main>
     </div>

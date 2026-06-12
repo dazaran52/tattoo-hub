@@ -15,8 +15,23 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [portfolioUrl, setPortfolioUrl] = useState('')
   const [referralCode, setReferralCode] = useState('')
+  const [role, setRole] = useState<'master' | 'client'>('master')
   const [error, setError] = useState('')
   const [language, setLanguage] = useState<string>('cs')
+
+  useEffect(() => {
+    // Read from URL if available
+    if (typeof window !== 'undefined') {
+      const searchParams = new URLSearchParams(window.location.search)
+      const registerParam = searchParams.get('register')
+      if (registerParam === 'client') {
+        setIsSignUp(true)
+        setRole('client')
+      } else if (registerParam === 'master') {
+        setIsSignUp(true)
+        setRole('master')
+      }
+    }
 
   useEffect(() => {
     const savedLang = localStorage.getItem('language')
@@ -88,6 +103,7 @@ export default function LoginPage() {
               referred_by: referralCode,
               country_ids: selectedCountry ? [selectedCountry] : [],
               city_ids: selectedCities,
+              role: role,
             }
           }
         })
@@ -151,12 +167,20 @@ export default function LoginPage() {
       <div className="max-w-md w-full space-y-8 relative z-10 animate-fade-in-up">
         {/* Header/Logo */}
         <div className="text-center">
-          <div className="flex items-center justify-center mb-6 transform hover:scale-105 transition-transform duration-300">
+          <div className="flex items-center justify-center mb-4 transform hover:scale-105 transition-transform duration-300">
             <Logo className="text-5xl" />
           </div>
-          <p className="text-neutral-500 dark:text-neutral-400 text-lg">
-            {t('exclusivePlatform')}
-          </p>
+          <div className="flex justify-center items-center gap-2 mb-6">
+            <div className={`px-4 py-1.5 rounded-full text-sm font-bold flex items-center gap-2 ${role === 'master' ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 border border-orange-200 dark:border-orange-800/50' : 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800/50'}`}>
+              {role === 'master' ? '🔥 Аккаунт Мастера' : '✨ Аккаунт Клиента'}
+            </div>
+            <button 
+              onClick={() => setRole(r => r === 'master' ? 'client' : 'master')}
+              className="text-xs text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 underline underline-offset-2 transition-colors"
+            >
+              (сменить)
+            </button>
+          </div>
         </div>
 
         {/* Glassmorphism Form Container */}
@@ -225,7 +249,7 @@ export default function LoginPage() {
                 </div>
               </div>
               
-              {isSignUp && (
+              {isSignUp && role === 'master' && (
                 <>
                   <div className="animate-fade-in-up">
                     <label htmlFor="portfolioUrl" className="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-2">
@@ -236,7 +260,7 @@ export default function LoginPage() {
                       <input
                         id="portfolioUrl"
                         type="url"
-                        required={isSignUp}
+                        required={isSignUp && role === 'master'}
                         value={portfolioUrl}
                         onChange={(e) => setPortfolioUrl(e.target.value)}
                         className="block w-full pl-12 pr-4 py-3.5 bg-white/50 dark:bg-neutral-950/50 border border-neutral-200 dark:border-neutral-800 rounded-xl text-neutral-900 dark:text-white placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-900 dark:focus:ring-white focus:border-transparent transition-all backdrop-blur-sm"

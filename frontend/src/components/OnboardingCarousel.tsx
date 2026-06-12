@@ -34,6 +34,7 @@ export function OnboardingCarousel({ onComplete, forceShow = false }: { onComple
   useEffect(() => {
     const hasSeen = localStorage.getItem('has_seen_onboarding')
     if (!hasSeen || forceShow) {
+      if (forceShow) setCurrentSlide(0) // Reset to first slide when explicitly shown
       setIsVisible(true)
     } else {
       onComplete()

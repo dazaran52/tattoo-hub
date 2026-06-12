@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useRouter } from 'next/navigation'
 import { LeadForm } from '@/components/LeadForm'
 import { Logo } from '@/components/Logo'
-import { Sparkles, X, UserCircle2, PenTool, HelpCircle, LogIn, UserPlus } from 'lucide-react'
+import { Sparkles, X, UserCircle2, Brush, HelpCircle, LogIn, UserPlus } from 'lucide-react'
 import { OnboardingCarousel } from '@/components/OnboardingCarousel'
 
 export default function HomePage() {
@@ -15,17 +15,14 @@ export default function HomePage() {
   const [forceShowOnboarding, setForceShowOnboarding] = useState(false)
 
   return (
-    <div className="dark min-h-screen bg-[#050505] text-white flex flex-col md:flex-row relative overflow-hidden">
+    <div className="dark min-h-[100dvh] bg-[#050505] text-white flex flex-col md:flex-row relative overflow-hidden">
       
       <OnboardingCarousel 
         forceShow={forceShowOnboarding}
         onComplete={() => setForceShowOnboarding(false)} 
       />
 
-      {/* Top Center Title (Mobile friendly) */}
-      <div className="absolute top-8 left-1/2 -translate-x-1/2 z-40 pointer-events-none">
-        <h1 className="text-2xl font-bold tracking-widest uppercase text-white/50">Кто ты?</h1>
-      </div>
+      {/* Removed "Кто ты?" for cleaner look */}
 
       {/* Top Left Logo */}
       <div className="absolute top-6 left-6 z-50 pointer-events-auto">
@@ -43,7 +40,7 @@ export default function HomePage() {
 
       {/* Master Side (Left / Top) */}
       <motion.div 
-        className="relative flex-1 overflow-hidden border-b md:border-b-0 md:border-r border-white/10 flex flex-col items-center justify-center p-8 group"
+        className="relative flex-1 overflow-hidden flex flex-col items-center justify-center p-8 group"
         onHoverStart={() => setHoveredSide('master')}
         onHoverEnd={() => setHoveredSide('none')}
         animate={{
@@ -61,15 +58,15 @@ export default function HomePage() {
         <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:40px_40px] z-0 opacity-50" />
         
         <div className="relative z-10 flex flex-col items-center text-center">
-          <div className="w-20 h-20 rounded-full bg-orange-950/30 border border-orange-900/50 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500 shadow-2xl shadow-orange-900/20">
-            <PenTool className="w-10 h-10 text-orange-500/80 group-hover:text-orange-400 transition-colors" />
+          <div className="w-20 h-20 rounded-full bg-orange-950 border border-orange-900 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500 shadow-2xl shadow-orange-900/50">
+            <Brush className="w-10 h-10 text-orange-400 group-hover:text-orange-300 transition-colors" />
           </div>
           <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4 text-neutral-300 group-hover:text-white transition-colors">Я тату-мастер</h2>
           <p className="text-neutral-500 max-w-sm group-hover:text-neutral-400 transition-colors mb-8">
             Получай горячие заявки от клиентов без затрат на рекламу.
           </p>
           
-          <div className="flex flex-col sm:flex-row gap-4 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity md:translate-y-4 md:group-hover:translate-y-0 duration-300">
+          <div className="flex flex-col sm:flex-row gap-4 transition-transform duration-300">
             <button 
               onClick={() => router.push('/login')}
               className="flex items-center gap-2 px-6 py-3 rounded-full bg-neutral-900 hover:bg-neutral-800 text-white font-medium transition-colors border border-neutral-800"
@@ -112,7 +109,7 @@ export default function HomePage() {
             Опиши идею один раз, и лучшие мастера города предложат свои эскизы.
           </p>
           
-          <div className="flex flex-col sm:flex-row gap-4 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity md:translate-y-4 md:group-hover:translate-y-0 duration-300">
+          <div className="flex flex-col sm:flex-row gap-4 transition-transform duration-300">
             <button 
               onClick={() => router.push('/login?register=client')}
               className="flex items-center gap-2 px-6 py-3 rounded-full bg-indigo-950 hover:bg-indigo-900 text-indigo-300 font-medium transition-colors border border-indigo-900"
