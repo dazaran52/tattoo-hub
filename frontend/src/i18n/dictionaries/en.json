@@ -1,0 +1,28 @@
+{
+  "landing": {
+    "welcome": "OUT Tattoo",
+    "description": "A platform to quickly find tattoo artists based on your ideas. Describe your design, and the best artists will offer you their prices.",
+    "start_btn": "Start!",
+    "who_are_you": "Who are you?",
+    "master_title": "I'm a Tattoo Artist",
+    "master_desc": "Get hot leads from clients without spending on ads.",
+    "client_title": "I want a Tattoo",
+    "client_desc": "Describe your idea once, and the best artists in town will offer their designs.",
+    "btn_apply": "Quick Apply",
+    "btn_login": "Log In",
+    "btn_register": "Sign Up"
+  },
+  "guide": {
+    "master_slide1_title": "Leads come to you",
+    "master_slide1_desc": "Clients leave their ideas, you see them in your feed and can offer your services and price.",
+    "master_slide2_title": "Rating & Reviews",
+    "master_slide2_desc": "The more successfully completed works, the higher your rating and trust from new clients.",
+    "client_slide1_title": "One request — dozens of offers",
+    "client_slide1_desc": "You don't need to text every artist separately. Just describe your idea here.",
+    "client_slide2_title": "Choose the best",
+    "client_slide2_desc": "Artists will contact you themselves. Check their portfolios, reviews, and prices to pick the perfect candidate.",
+    "next": "Next",
+    "skip": "Skip",
+    "understand": "Got it"
+  }
+}

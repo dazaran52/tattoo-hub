@@ -5,6 +5,8 @@ import { ThemeProvider } from '@/components/ThemeProvider'
 import { ChatWidget } from '@/components/ChatWidget'
 import { Toaster } from 'react-hot-toast'
 import { InstallPrompt } from '@/components/InstallPrompt'
+import { LanguageProvider } from '@/i18n/LanguageContext'
+import { CustomCursor } from '@/components/CustomCursor'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 
@@ -41,11 +43,14 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body className={`${inter.variable} font-sans`}>
-        <ThemeProvider />
-        <Toaster position="top-center" reverseOrder={false} />
-        {children}
-        <ChatWidget />
-        <InstallPrompt />
+        <LanguageProvider>
+          <CustomCursor />
+          <ThemeProvider />
+          <Toaster position="top-center" reverseOrder={false} />
+          {children}
+          <ChatWidget />
+          <InstallPrompt />
+        </LanguageProvider>
       </body>
     </html>
   )

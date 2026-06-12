@@ -51,3 +51,4 @@ html {
 :focus-visible {
   @apply outline outline-2 outline-offset-2 outline-neutral-400;
 }
+.pb-safe { padding-bottom: env(safe-area-inset-bottom, 20px); }

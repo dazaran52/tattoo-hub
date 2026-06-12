@@ -207,7 +207,26 @@ export default function DashboardPage() {
             </div>
 
             {/* Leads Feed or Status Message */}
-            {profile.status === 'pending' ? (
+            {profile.role === 'master' && !profile.is_verified_master ? (
+              <div className="text-center p-12 bg-white dark:bg-neutral-900 rounded-2xl border border-indigo-200 dark:border-indigo-900/50 shadow-2xl relative overflow-hidden mt-8">
+                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(79,70,229,0.15)_0%,transparent_70%)] pointer-events-none" />
+                <div className="relative z-10">
+                  <div className="w-24 h-24 bg-indigo-100 dark:bg-indigo-950 rounded-full mx-auto mb-6 flex items-center justify-center border border-indigo-500/30 shadow-[0_0_30px_rgba(79,70,229,0.2)]">
+                    <span className="text-4xl">🔒</span>
+                  </div>
+                  <h3 className="text-3xl font-extrabold text-neutral-900 dark:text-white mb-4 tracking-tight">Кабинет заблокирован</h3>
+                  <p className="text-neutral-600 dark:text-neutral-400 max-w-lg mx-auto mb-10 text-lg leading-relaxed">
+                    Мы создаем премиальный продукт и заботимся о качестве. Пожалуйста, перейдите в настройки профиля, загрузите портфолио и сертификаты, чтобы получить статус верифицированного мастера и доступ к горячим заявкам.
+                  </p>
+                  <button
+                    onClick={() => router.push('/profile')}
+                    className="px-10 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white rounded-full font-bold text-lg transition-all hover:scale-105 shadow-xl shadow-indigo-600/25"
+                  >
+                    Заполнить профиль
+                  </button>
+                </div>
+              </div>
+            ) : profile.status === 'pending' ? (
               <div className="text-center p-12 bg-white dark:bg-neutral-900 rounded-xl border border-amber-200 dark:border-amber-900 shadow-sm">
                 <div className="w-16 h-16 bg-amber-100 dark:bg-amber-900/50 rounded-full mx-auto mb-4 flex items-center justify-center">
                   <span className="text-2xl">⏳</span>
@@ -237,6 +256,7 @@ export default function DashboardPage() {
                 userCities={profile.city_ids || []}
               />
             )}
+
           </>
         )}
       </main>
