@@ -22,7 +22,7 @@ export function TouchEffect() {
       // Provide haptic feedback on mobile if supported
       if (typeof window !== 'undefined' && window.navigator && window.navigator.vibrate) {
         try {
-          window.navigator.vibrate(10) // subtle tick
+          window.navigator.vibrate(2) // extremely subtle tick
         } catch (err) {
           // Ignore if not supported/allowed
         }
