@@ -1,27 +1,27 @@
 export const metadata = {
-  title: 'Политика конфиденциальности | Tattoo HUB',
+  title: 'Privacy Policy | Tattoo HUB',
 }
 
 export default function PrivacyPage() {
   return (
     <>
-      <h1>Политика конфиденциальности (Privacy Policy)</h1>
-      <p>Последнее обновление: 2 Июня 2026 г.</p>
+      <h1>Privacy Policy</h1>
+      <p>Last updated: June 2, 2026</p>
 
-      <h2>1. Какую информацию мы собираем</h2>
-      <p>Мы собираем информацию, которую вы предоставляете нам напрямую, включая: имя, email, номер телефона, ссылки на портфолио, город проживания.</p>
+      <h2>1. Information We Collect</h2>
+      <p>We collect information that you provide directly to us, including: name, email, phone number, portfolio links, and city of residence.</p>
 
-      <h2>2. Использование данных</h2>
-      <p>Ваши данные используются исключительно для: предоставления доступа к платформе, связи с вами, защиты аккаунта от мошенничества, уведомлений о новых лидах и ответах.</p>
+      <h2>2. Use of Data</h2>
+      <p>Your data is used exclusively for: providing access to the platform, contacting you, protecting your account from fraud, and notifying you about new leads and responses.</p>
 
-      <h2>3. Передача третьим лицам</h2>
-      <p>Мы не продаем, не обмениваем и не передаем ваши личные данные сторонним компаниям, за исключением случаев, когда это необходимо для соблюдения закона.</p>
+      <h2>3. Sharing with Third Parties</h2>
+      <p>We do not sell, trade, or transfer your personal data to third-party companies, except when necessary to comply with the law.</p>
 
-      <h2>4. Защита данных</h2>
-      <p>Мы принимаем все необходимые меры безопасности для защиты вашей персональной информации от несанкционированного доступа.</p>
+      <h2>4. Data Protection</h2>
+      <p>We take all necessary security measures to protect your personal information from unauthorized access.</p>
 
-      <h2>5. Ваши права</h2>
-      <p>Вы имеете право в любой момент запросить удаление своего аккаунта и всех связанных с ним персональных данных. Для этого свяжитесь с поддержкой.</p>
+      <h2>5. Your Rights</h2>
+      <p>You have the right to request the deletion of your account and all associated personal data at any time. To do this, please contact support.</p>
     </>
   )
 }

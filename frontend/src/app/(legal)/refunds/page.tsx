@@ -1,30 +1,30 @@
 export const metadata = {
-  title: 'Политика возвратов | Tattoo HUB',
+  title: 'Refund Policy | Tattoo HUB',
 }
 
 export default function RefundsPage() {
   return (
     <>
-      <h1>Политика возвратов и отмены (Refund Policy)</h1>
-      <p>Последнее обновление: 2 Июня 2026 г.</p>
+      <h1>Refund Policy</h1>
+      <p>Last updated: June 2, 2026</p>
 
-      <h2>1. Возврат средств за пополнение баланса</h2>
-      <p>Средства, зачисленные на баланс в виде внутренней валюты (кредитов/кристаллов), возврату и обмену на реальные деньги не подлежат. Внутренняя валюта может быть использована только для услуг внутри платформы.</p>
+      <h2>1. Balance Top-up Refunds</h2>
+      <p>Funds credited to the balance in the form of internal currency (credits/crystals) are non-refundable and cannot be exchanged for real money. Internal currency can only be used for services within the platform.</p>
 
-      <h2>2. Возврат кредитов за некачественные лиды (Диспуты)</h2>
-      <p>Если вы купили лида, но он оказался некачественным (например, неверно указан номер телефона, клиент отрицает, что оставлял заявку), вы имеете право открыть "Диспут" (спор) в течение 48 часов с момента покупки.</p>
+      <h2>2. Credit Refunds for Low-Quality Leads (Disputes)</h2>
+      <p>If you purchased a lead but it turned out to be of low quality (e.g., incorrect phone number, the client denies submitting a request), you have the right to open a "Dispute" within 48 hours of purchase.</p>
       
-      <h3>Условия удовлетворения диспута:</h3>
+      <h3>Conditions for dispute approval:</h3>
       <ul>
-        <li>Контактные данные недействительны.</li>
-        <li>Клиент находится в другом городе и ищет мастера там.</li>
-        <li>Возраст клиента младше 18 лет, и он не может получить услугу.</li>
+        <li>Contact details are invalid.</li>
+        <li>The client is located in another city and is looking for an artist there.</li>
+        <li>The client is under 18 years of age and cannot receive the service.</li>
       </ul>
 
-      <p>Администрация рассматривает диспут в течение 1-3 рабочих дней. В случае одобрения кредиты будут возвращены на ваш баланс.</p>
+      <p>The administration reviews disputes within 1-3 business days. If approved, the credits will be returned to your balance.</p>
 
-      <h2>3. Исключения</h2>
-      <p>Кредиты не возвращаются, если: клиент просто прочитал сообщение и не ответил, клиент передумал делать татуировку после вашего ответа, или вы не смогли договориться о цене. В этих случаях услуга предоставления контакта считается оказанной.</p>
+      <h2>3. Exceptions</h2>
+      <p>Credits are not refunded if: the client simply read the message and did not respond, the client changed their mind about getting a tattoo after your response, or you could not agree on a price. In these cases, the service of providing the contact is considered rendered.</p>
     </>
   )
 }
