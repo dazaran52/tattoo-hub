@@ -182,6 +182,49 @@ def send_smtp_reply(to_email: str, subject: str, body_html: str, original_msg_id
         logger.error(f"Failed to send SMTP reply to {to_email}: {e}")
         return False
 
+def send_chat_notification_to_client(to_email: str, client_token: str, lead_title: str, message_preview: str):
+    """Sends a notification email to the client about a new chat message."""
+    settings = get_settings()
+    subject = f"Новое сообщение по заявке: {lead_title}"
+    
+    # URL to the client portal chat
+    # We assume frontend is running on a certain domain. We use frontend domain from env or default to localhost.
+    # In production, set NEXT_PUBLIC_SITE_URL in .env
+    frontend_url = getattr(settings, 'NEXT_PUBLIC_SITE_URL', 'http://localhost:3000')
+    if frontend_url.endswith('/'):
+        frontend_url = frontend_url[:-1]
+        
+    # We assume lead_id isn't directly passed here but we just use client token for login link or we need lead_id
+    # Wait, the portal link is /c/{lead_id}?token={client_token}. We need lead_id.
+    
+    body_html = f"""
+    <html>
+      <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+        <h2 style="color: #4f46e5;">У вас новое сообщение от мастера!</h2>
+        <p>Мастер ответил на вашу заявку <strong>"{lead_title}"</strong>.</p>
+        
+        <div style="background-color: #f3f4f6; padding: 15px; border-radius: 8px; margin: 20px 0; font-style: italic;">
+          "{message_preview}"
+        </div>
+        
+        <p>Чтобы ответить мастеру и продолжить обсуждение, перейдите в свой личный кабинет:</p>
+        <p>
+          <a href="{frontend_url}/c/login?token={client_token}" 
+             style="display: inline-block; padding: 12px 24px; background-color: #4f46e5; color: white; text-decoration: none; border-radius: 6px; font-weight: bold;">
+             Перейти в чат
+          </a>
+        </p>
+        
+        <p style="font-size: 0.9em; color: #666; margin-top: 30px;">
+          С уважением,<br>
+          Команда OUT Tattoo
+        </p>
+      </body>
+    </html>
+    """
+    
+    return send_smtp_reply(to_email, subject, body_html)
+
 async def process_lead_email(sender_name: str | None, sender_email: str, subject: str, body: str, attachments: list, original_msg_id: str | None):
     """Processes an incoming lead email through database storage and AI dialogue."""
     supabase = get_supabase_client()
@@ -373,6 +416,10 @@ async def process_lead_email(sender_name: str | None, sender_email: str, subject
         )
         contacts = f"Email: {sender_email}\nName: {sender_name or 'Client'}"
         
+        # Generate client token
+        import uuid
+        client_token = str(uuid.uuid4())
+        
         try:
             # Insert into leads table
             lead_insert = supabase.table("leads").insert({
@@ -380,23 +427,29 @@ async def process_lead_email(sender_name: str | None, sender_email: str, subject
                 "description": desc,
                 "contacts": contacts,
                 "image_urls": collected_data["images"],
-                "price_credits": price_credits
+                "price_credits": price_credits,
+                "client_token": client_token
             }).execute()
+            
+            lead_id = lead_insert.data[0]["id"]
             
             logger.info("Successfully created a new lead in public.leads!")
             
             # Send SMTP confirmation email to client
+            portal_url = f"https://out-tattoo.com/c/{lead_id}?token={client_token}"
             confirm_subject = f"Re: {subject}"
             confirm_body = (
                 f"<p>Здравствуйте, {sender_name or ''}!</p>"
-                f"<p>Ваша заявка успешно оформлена на платформе Tattoo Hub.</p>"
+                f"<p>Ваша заявка успешно оформлена на платформе Tattoo Hub. Мастера уже начали отправлять свои предложения.</p>"
+                f"<p><strong>👉 <a href='{portal_url}'>Перейдите по этой ссылке</a>, чтобы посмотреть отклики мастеров, пообщаться с ними и выбрать лучшего!</strong></p>"
+                f"<br/>"
                 f"<ul>"
                 f"<li><strong>Стиль:</strong> {collected_data.get('style') or 'не указан'}</li>"
                 f"<li><strong>Место нанесения:</strong> {collected_data.get('location') or 'не указано'}</li>"
                 f"<li><strong>Размер:</strong> {collected_data.get('size') or 'не указан'}</li>"
                 f"<li><strong>Бюджет:</strong> {collected_data.get('budget_amount') or 'не указан'} {collected_data.get('budget_currency') or ''}</li>"
                 f"</ul>"
-                f"<p>Наши лучшие мастера скоро ознакомятся с деталями и свяжутся с вами!</p>"
+                f"<p>Спасибо, что выбрали Tattoo Hub!</p>"
             )
             # Make sure language matches the last dialogue
             # (In production, you can let Gemini generate the confirmation, but this is a solid fallback)

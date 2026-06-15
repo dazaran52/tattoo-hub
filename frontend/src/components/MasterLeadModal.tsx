@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { X } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 import { getTranslation, Language } from '@/lib/i18n'
+import { supabase } from '@/lib/supabase'
+
 
 interface MasterLeadModalProps {
   isOpen: boolean
@@ -33,11 +35,13 @@ export function MasterLeadModal({ isOpen, onClose, onSuccess, language, cities, 
     
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+      const { data: { session } } = await supabase.auth.getSession()
+      const token = session?.access_token
       const res = await fetch(`${apiUrl}/api/leads/master`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify(formData)
       })

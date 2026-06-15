@@ -10,6 +10,7 @@ import { DisputeModal } from '@/components/DisputeModal'
 import { AuctionModal } from '@/components/AuctionModal'
 import { MasterLeadModal } from '@/components/MasterLeadModal'
 import { ProposalModal } from '@/components/ProposalModal'
+import { ChatModal } from '@/components/ChatModal'
 import toast from 'react-hot-toast'
 import { motion, AnimatePresence } from 'framer-motion'
 import { playSuccessSound, playErrorSound, triggerHaptic } from '@/lib/sounds'
@@ -34,6 +35,8 @@ export interface Lead {
   max_unlocks?: number
   client_priority?: string
   lowest_bid?: number
+  proposal_status?: string
+  chat_id?: string
 }
 
 interface LeadsFeedProps {
@@ -101,6 +104,7 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, showOnlyUnlocked =
   const [selectedDisputeLead, setSelectedDisputeLead] = useState<Lead | null>(null)
   const [selectedAuctionLead, setSelectedAuctionLead] = useState<Lead | null>(null)
   const [selectedProposalLead, setSelectedProposalLead] = useState<Lead | null>(null)
+  const [selectedChatLead, setSelectedChatLead] = useState<Lead | null>(null)
   const [isMasterModalOpen, setIsMasterModalOpen] = useState(false)
   const [pushEnabled, setPushEnabled] = useState(false)
 
@@ -525,22 +529,20 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, showOnlyUnlocked =
         onClose={() => setSelectedProposalLead(null)}
         lead={selectedProposalLead}
         language={language}
-        onUnlockSuccess={(newCredits) => {
-          onUnlockSuccess(newCredits)
-        }}
-        onSuccess={(contacts, newCredits) => {
-          // Success callback means the proposal was submitted and contacts revealed
-          setLeads(currentLeads => 
-            currentLeads.map(l => 
-              l.id === selectedProposalLead?.id 
-                ? { ...l, contacts, is_unlocked: true } 
-                : l
-            )
-          )
+        onSuccess={() => {
+          // Add status "pending" visually? Let's just refetch leads so backend state is shown
+          fetchLeads()
           setSelectedProposalLead(null)
           playSuccessSound()
           triggerHaptic('success')
         }}
+      />
+
+      <ChatModal
+        isOpen={!!selectedChatLead}
+        onClose={() => setSelectedChatLead(null)}
+        chatId={selectedChatLead?.chat_id || null}
+        leadTitle={selectedChatLead?.title || ''}
       />
 
       {selectedAuctionLead && (
@@ -586,7 +588,7 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, showOnlyUnlocked =
             />
           </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2 w-full sm:w-auto">
           {isAdmin ? (
             <button
               onClick={() => openLeadModal()}
@@ -842,7 +844,42 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, showOnlyUnlocked =
               </div>
               
               <div className="p-5 border-t border-neutral-100 dark:border-neutral-800/80 bg-neutral-50/50 dark:bg-neutral-900/50 backdrop-blur-sm">
-                {lead.is_unlocked || isAdmin ? (
+                {lead.proposal_status === 'accepted' ? (
+                  <div className="space-y-3">
+                    <div className="w-full py-3 px-4 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-900/50 rounded-xl text-sm font-bold shadow-inner flex items-center justify-center gap-2">
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                      {isAdmin ? "ADMIN VIEW" : "Выигран! Клиент выбрал вас"}
+                    </div>
+                    {lead.chat_id && (
+                      <button
+                        onClick={() => setSelectedChatLead(lead)}
+                        className="w-full py-3 px-4 bg-violet-100 hover:bg-violet-200 dark:bg-violet-900/30 dark:hover:bg-violet-900/50 text-violet-700 dark:text-violet-300 font-bold rounded-xl transition-colors flex items-center justify-center gap-2 text-sm"
+                      >
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
+                        Открыть чат
+                      </button>
+                    )}
+                  </div>
+                ) : lead.proposal_status === 'pending' ? (
+                  <div className="space-y-3">
+                    <div className="w-full py-3 px-4 bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-900/50 rounded-xl text-sm font-bold shadow-inner flex items-center justify-center gap-2">
+                      ⏳ Ожидает решения клиента
+                    </div>
+                    {lead.chat_id && (
+                      <button
+                        onClick={() => setSelectedChatLead(lead)}
+                        className="w-full py-3 px-4 bg-violet-100 hover:bg-violet-200 dark:bg-violet-900/30 dark:hover:bg-violet-900/50 text-violet-700 dark:text-violet-300 font-bold rounded-xl transition-colors flex items-center justify-center gap-2 text-sm"
+                      >
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
+                        Открыть чат
+                      </button>
+                    )}
+                  </div>
+                ) : lead.proposal_status === 'rejected' ? (
+                  <div className="w-full py-3 px-4 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-900/50 rounded-xl text-sm font-bold shadow-inner flex items-center justify-center gap-2">
+                    ❌ Клиент выбрал другого мастера
+                  </div>
+                ) : lead.is_unlocked || isAdmin ? (
                   <div className="space-y-3">
                     <div className="w-full py-3 px-4 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-900/50 rounded-xl text-sm font-bold shadow-inner flex items-center justify-center gap-2">
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>

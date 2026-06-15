@@ -26,11 +26,14 @@ export function WithdrawalModal({ isOpen, onClose, withdrawableCredits, onSucces
     
     setLoading(true)
     try {
-      const res = await fetch('/api/payments/withdraw', {
+      const { data: { session } } = await supabase.auth.getSession()
+      const token = session?.access_token
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+      const res = await fetch(`${apiUrl}/api/payments/withdraw`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
           amount,

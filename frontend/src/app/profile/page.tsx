@@ -510,14 +510,14 @@ export default function ProfilePage() {
                 <div className="flex gap-2">
                   <button
                     onClick={() => handleThemeChange('dark')}
-                    className={`px-4 py-2.5 rounded-xl transition-all font-semibold flex items-center shadow-sm ${theme === 'dark' ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-950 scale-[1.02]' : 'bg-neutral-200/50 dark:bg-neutral-800/50 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-300 dark:hover:bg-neutral-700'}`}
+                    className={`px-4 py-2.5 rounded-xl transition-all font-semibold flex items-center shadow-sm ${theme === 'dark' ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-950 scale-[1.02]' : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 hover:bg-neutral-200 dark:hover:bg-neutral-700'}`}
                   >
                     <Moon className="w-4 h-4 inline mr-2" />
                     {t('dark')}
                   </button>
                   <button
                     onClick={() => handleThemeChange('light')}
-                    className={`px-4 py-2.5 rounded-xl transition-all font-semibold flex items-center shadow-sm ${theme === 'light' ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-950 scale-[1.02]' : 'bg-neutral-200/50 dark:bg-neutral-800/50 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-300 dark:hover:bg-neutral-700'}`}
+                    className={`px-4 py-2.5 rounded-xl transition-all font-semibold flex items-center shadow-sm ${theme === 'light' ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-950 scale-[1.02]' : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 hover:bg-neutral-200 dark:hover:bg-neutral-700'}`}
                   >
                     <Sun className="w-4 h-4 inline mr-2" />
                     {t('light')}

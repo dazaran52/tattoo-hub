@@ -58,6 +58,10 @@ type Translations = {
     // Welcome
     welcome: string;
     availableLeads: string;
+    howItWorks: string;
+    analytics: string;
+    enablePushNotifications: string;
+    adminPanel: string;
     
     // Dashboard
     yourBalance: string;
@@ -197,6 +201,10 @@ const translations: Translations = {
     
     welcome: 'Vítejte',
     availableLeads: 'Dostupné poptávky k zakoupení',
+    howItWorks: 'Jak to funguje?',
+    analytics: 'Analytika',
+    enablePushNotifications: 'Povolit Push notifikace',
+    adminPanel: 'Admin Panel',
     
     yourBalance: 'Váš zůstatek',
     noLeads: 'Zatím nejsou k dispozici žádné poptávky',
@@ -329,6 +337,10 @@ const translations: Translations = {
     
     welcome: 'Добро пожаловать',
     availableLeads: 'Доступные тату-лиды для покупки',
+    howItWorks: 'Как это работает?',
+    analytics: 'Аналитика',
+    enablePushNotifications: 'Включить Push-уведомления',
+    adminPanel: 'Админ Панель',
     
     yourBalance: 'Ваш баланс',
     noLeads: 'Пока нет доступных заявок',
@@ -461,6 +473,10 @@ const translations: Translations = {
     
     welcome: 'Welcome',
     availableLeads: 'Available tattoo leads for purchase',
+    howItWorks: 'How it works?',
+    analytics: 'Analytics',
+    enablePushNotifications: 'Enable Push Notifications',
+    adminPanel: 'Admin Panel',
     
     yourBalance: 'Your Balance',
     noLeads: 'No leads available yet',

@@ -7,9 +7,12 @@ import { SkeletonCard } from '@/components/SkeletonCard'
 import { supabase, Profile } from '@/lib/supabase'
 import { LeadsFeed } from '@/components/LeadsFeed'
 import { AuctionsFeed } from '@/components/AuctionsFeed'
+import { CRMBoard } from '@/components/CRMBoard'
+import { MessagesList } from '@/components/MessagesList'
 import { getTranslation, Language } from '@/lib/i18n'
 import { toast } from 'react-hot-toast'
 import { ClientDashboard } from '@/components/ClientDashboard'
+import { MessageCircle, LayoutDashboard } from 'lucide-react'
 
 export default function DashboardPage() {
   const router = useRouter()
@@ -17,7 +20,7 @@ export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [language, setLanguage] = useState<string>('cs')
   const [currentSession, setCurrentSession] = useState<any>(null)
-  const [activeTab, setActiveTab] = useState<'feed' | 'my-leads' | 'auctions'>('feed')
+  const [activeTab, setActiveTab] = useState<'feed' | 'my-leads' | 'auctions' | 'crm' | 'messages'>('feed')
 
   // Load language from localStorage
   useEffect(() => {
@@ -175,38 +178,60 @@ export default function DashboardPage() {
               
               {/* Tabs */}
               {profile.status === 'approved' && (
-                <div className="mt-4 md:mt-0 flex p-1 bg-white/40 dark:bg-neutral-900/40 backdrop-blur-md border border-neutral-200/50 dark:border-white/5 rounded-xl shadow-sm">
+                <div className="mt-4 md:mt-0 flex overflow-x-auto p-1 bg-white/40 dark:bg-neutral-900/40 backdrop-blur-md border border-neutral-200/50 dark:border-white/5 rounded-xl shadow-sm gap-1 no-scrollbar">
                   <button
                     id="tour-leads"
                     onClick={() => setActiveTab('feed')}
-                    className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+                    className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all whitespace-nowrap ${
                       activeTab === 'feed'
                         ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-950 shadow-md scale-[1.02]'
-                        : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200'
+                        : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200 hover:bg-white/50 dark:hover:bg-neutral-800/50'
                     }`}
                   >
                     Все лиды
                   </button>
                   <button
                     onClick={() => setActiveTab('my-leads')}
-                    className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+                    className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all whitespace-nowrap ${
                       activeTab === 'my-leads'
                         ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-950 shadow-md scale-[1.02]'
-                        : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200'
+                        : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200 hover:bg-white/50 dark:hover:bg-neutral-800/50'
                     }`}
                   >
                     Мои лиды
                   </button>
                   <button
-                    id="tour-auctions"
                     onClick={() => setActiveTab('auctions')}
-                    className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+                    className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all whitespace-nowrap ${
                       activeTab === 'auctions'
                         ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-950 shadow-md scale-[1.02]'
-                        : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200'
+                        : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200 hover:bg-white/50 dark:hover:bg-neutral-800/50'
                     }`}
                   >
                     Аукционы
+                  </button>
+                  <div className="w-px h-6 bg-neutral-200 dark:bg-white/10 self-center mx-1"></div>
+                  <button
+                    onClick={() => setActiveTab('crm')}
+                    className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all whitespace-nowrap flex items-center gap-2 ${
+                      activeTab === 'crm'
+                        ? 'bg-violet-600 text-white shadow-md scale-[1.02]'
+                        : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200 hover:bg-white/50 dark:hover:bg-neutral-800/50'
+                    }`}
+                  >
+                    <LayoutDashboard className="w-4 h-4" />
+                    Моя CRM
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('messages')}
+                    className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all whitespace-nowrap flex items-center gap-2 ${
+                      activeTab === 'messages'
+                        ? 'bg-violet-600 text-white shadow-md scale-[1.02]'
+                        : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200 hover:bg-white/50 dark:hover:bg-neutral-800/50'
+                    }`}
+                  >
+                    <MessageCircle className="w-4 h-4" />
+                    Сообщения
                   </button>
                 </div>
               )}
@@ -252,15 +277,14 @@ export default function DashboardPage() {
                   {t('rejectedDesc')}
                 </p>
               </div>
-            ) : activeTab === 'auctions' ? (
-              <AuctionsFeed />
             ) : (
-              <LeadsFeed 
-                onUnlockSuccess={handleUnlockSuccess} 
-                isAdmin={profile.is_admin} 
-                showOnlyUnlocked={activeTab === 'my-leads'}
-                userCities={profile.city_ids || []}
-              />
+              <>
+                {activeTab === 'feed' && <LeadsFeed onUnlockSuccess={handleUnlockSuccess} isAdmin={profile.is_admin} userCities={profile.city_ids || []} />}
+                {activeTab === 'my-leads' && <LeadsFeed onUnlockSuccess={handleUnlockSuccess} isAdmin={profile.is_admin} showOnlyUnlocked={true} userCities={profile.city_ids || []} />}
+                {activeTab === 'auctions' && <AuctionsFeed />}
+                {activeTab === 'crm' && <CRMBoard />}
+                {activeTab === 'messages' && <MessagesList />}
+              </>
             )}
 
           </>

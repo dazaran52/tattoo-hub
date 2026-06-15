@@ -3,17 +3,17 @@ import { X, Send, AlertCircle } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Lead } from './LeadsFeed'
+import { supabase } from '@/lib/supabase'
 
 interface ProposalModalProps {
   isOpen: boolean
   onClose: () => void
   lead: Lead | null
-  onSuccess: (contacts: string, currentCredits: number) => void
-  onUnlockSuccess: (newCredits: number) => void
+  onSuccess: () => void
   language: string
 }
 
-export function ProposalModal({ isOpen, onClose, lead, onSuccess, onUnlockSuccess, language }: ProposalModalProps) {
+export function ProposalModal({ isOpen, onClose, lead, onSuccess, language }: ProposalModalProps) {
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
     price_offer: '',
@@ -32,29 +32,11 @@ export function ProposalModal({ isOpen, onClose, lead, onSuccess, onUnlockSucces
     setLoading(true)
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
-      const token = localStorage.getItem('token')
+      const { data: { session } } = await supabase.auth.getSession()
+      const token = session?.access_token
 
-      // Step 1: Unlock the lead
-      const unlockRes = await fetch(`${apiUrl}/api/leads/${lead.id}/unlock`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      })
-      
-      const unlockData = await unlockRes.json()
-      
-      if (!unlockRes.ok) {
-        throw new Error(unlockData.detail || 'Failed to unlock lead')
-      }
 
-      // Play success sounds (handled by parent or here, parent is better but we can just use the prop)
-      if (unlockData.current_credits !== undefined) {
-        onUnlockSuccess(unlockData.current_credits)
-      }
-
-      // Step 2: Submit Proposal
+      // Step 1: Submit Proposal (which also freezes credits and creates chat)
       const proposalRes = await fetch(`${apiUrl}/api/leads/${lead.id}/proposals`, {
         method: 'POST',
         headers: {
@@ -67,20 +49,20 @@ export function ProposalModal({ isOpen, onClose, lead, onSuccess, onUnlockSucces
         })
       })
 
+      const responseData = await proposalRes.json()
+
       if (!proposalRes.ok) {
-        // Even if proposal fails, the lead was unlocked, so we still succeed the unlock flow
-        console.error('Failed to submit proposal', await proposalRes.text())
-        toast.error('Лид открыт, но оффер не отправлен.')
-      } else {
-        toast.success('Оффер отправлен! Контакты открыты.')
+        if (responseData.detail === 'INSUFFICIENT_CREDITS') {
+          throw new Error('INSUFFICIENT_CREDITS')
+        }
+        throw new Error(responseData.detail || 'Failed to submit proposal')
       }
 
-      onSuccess(unlockData.contacts, unlockData.current_credits)
+      toast.success('Оффер отправлен! Ожидайте ответа клиента.')
+      onSuccess()
     } catch (err: any) {
       if (err.message === 'INSUFFICIENT_CREDITS') {
         onClose()
-        // Parent will handle LowBalanceModal via throwing or custom event, 
-        // to simplify, we just throw it up:
         throw err
       }
       toast.error(err.message || 'Ошибка')
@@ -108,7 +90,7 @@ export function ProposalModal({ isOpen, onClose, lead, onSuccess, onUnlockSucces
           <form onSubmit={handleSubmit} className="p-4 lg:p-6 space-y-5">
             <div className="bg-violet-500/10 text-violet-600 dark:text-violet-400 p-4 rounded-2xl text-sm flex gap-3 items-start">
               <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
-              <p>Отправьте ваш оффер клиенту. После этого вы мгновенно получите его контакты.</p>
+              <p>Отправьте ваш оффер клиенту. Заявка перейдет в статус ожидания. Кредиты спишутся только если клиент выберет вас!</p>
             </div>
 
             {lead.client_priority === 'cheap' && lead.lowest_bid && (
@@ -151,7 +133,7 @@ export function ProposalModal({ isOpen, onClose, lead, onSuccess, onUnlockSucces
                 <div className="w-6 h-6 border-2 border-white/20 border-t-white rounded-full animate-spin" />
               ) : (
                 <>
-                  <span>Отправить и открыть контакты</span>
+                  <span>Отправить оффер</span>
                   <Send className="w-5 h-5" />
                 </>
               )}

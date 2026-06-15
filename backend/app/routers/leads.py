@@ -5,6 +5,7 @@ from app.database import get_supabase_client
 from supabase import Client
 from typing import List, Optional
 import datetime
+import uuid
 
 router = APIRouter(prefix="/api/leads", tags=["leads"])
 
@@ -25,6 +26,8 @@ class LeadResponse(BaseModel):
     max_unlocks: int = 3
     client_priority: str = 'quality'
     lowest_bid: int | None = None
+    proposal_status: str | None = None
+    chat_id: str | None = None
 
 class UnlockResponse(BaseModel):
     contacts: str
@@ -42,21 +45,30 @@ async def get_leads(
     """
     try:
         # Fetch all leads
-        leads_res = supabase.table("leads").select("*").order("created_at", desc=True).execute()
+        leads_res = supabase.table("leads").select("*, cities(country_id)").order("created_at", desc=True).execute()
         leads = leads_res.data or []
 
         # Fetch ALL unlocks
         all_unlocks_res = supabase.table("lead_unlocks").select("lead_id, user_id, status").execute()
         all_unlocks = all_unlocks_res.data or []
 
-        # Fetch ALL proposals for lowest_bid calculation
-        proposals_res = supabase.table("lead_proposals").select("lead_id, price_offer").execute()
+        # Fetch ALL proposals for lowest_bid calculation and checking own proposals
+        proposals_res = supabase.table("lead_proposals").select("lead_id, user_id, price_offer, status").execute()
         proposals = proposals_res.data or []
         lowest_bids = {}
+        my_proposals = {}
+        
         for p in proposals:
             lid = p["lead_id"]
+            if p["user_id"] == current_user.user_id:
+                my_proposals[lid] = p["status"]
+                
             if lid not in lowest_bids or p["price_offer"] < lowest_bids[lid]:
                 lowest_bids[lid] = p["price_offer"]
+
+        # Fetch own chats
+        chats_res = supabase.table("lead_chats").select("lead_id, id").eq("master_id", current_user.user_id).execute()
+        my_chats = {c["lead_id"]: c["id"] for c in (chats_res.data or [])}
         
         unlocked_by_me = {u["lead_id"]: u["status"] for u in all_unlocks if u["user_id"] == current_user.user_id}
         
@@ -99,14 +111,16 @@ async def get_leads(
                 is_unlocked=is_unlocked,
                 image_urls=lead.get("image_urls") or [],
                 created_at=lead.get("created_at"),
-                country_id=lead.get("country_id"),
+                country_id=lead.get("cities", {}).get("country_id") if lead.get("cities") else None,
                 city_id=lead.get("city_id"),
                 trust_score=lead.get("trust_score", 100),
                 unlock_status=unlock_status,
                 unlock_count=lead_unlock_count,
                 max_unlocks=3,
                 client_priority=lead.get("client_priority", "quality"),
-                lowest_bid=lowest_bids.get(lead["id"]) if lead.get("client_priority") == 'cheap' else None
+                lowest_bid=lowest_bids.get(lead["id"]) if lead.get("client_priority") == 'cheap' else None,
+                proposal_status=my_proposals.get(lead["id"]),
+                chat_id=my_chats.get(lead["id"])
             ))
             
         return processed_leads
@@ -306,12 +320,17 @@ async def create_client_lead(
             # 5% of the total budget, but at least 10 credits
             price_credits = max(10, int(base_val * 0.05))
 
+        # Generate a unique token for the client portal
+        import uuid
+        client_token = str(uuid.uuid4())
+
         db_lead = {
             "title": title[:255],
             "description": full_description,
             "contacts": contacts,
             "price_credits": price_credits,
             "client_priority": lead_data.client_priority or 'quality',
+            "client_token": client_token,
             "trust_score": 100
         }
 
@@ -335,19 +354,26 @@ async def create_proposal(
     supabase: Client = Depends(get_supabase_client)
 ):
     """
-    Submit a proposal (price & dates) after unlocking a lead.
+    Submit a proposal (price & dates) and create a chat. Freezes credits implicitly by checking balance.
     """
     try:
-        # Check if user unlocked the lead
-        unlock_res = supabase.table("lead_unlocks").select("id").eq("lead_id", lead_id).eq("user_id", current_user.user_id).execute()
-        if not unlock_res.data:
-            raise HTTPException(status_code=403, detail="You must unlock the lead first")
+        # Check if lead exists and get price
+        lead_res = supabase.table("leads").select("price_credits, client_token").eq("id", lead_id).execute()
+        if not lead_res.data:
+            raise HTTPException(status_code=404, detail="Lead not found")
+        lead_data = lead_res.data[0]
+
+        # Check balance
+        user_res = supabase.table("users").select("credits").eq("id", current_user.user_id).execute()
+        if not user_res.data or user_res.data[0]["credits"] < lead_data["price_credits"]:
+            raise HTTPException(status_code=400, detail="INSUFFICIENT_CREDITS")
 
         db_proposal = {
             "lead_id": lead_id,
             "user_id": current_user.user_id,
             "price_offer": proposal.price_offer,
-            "proposed_dates": proposal.proposed_dates
+            "proposed_dates": proposal.proposed_dates,
+            "status": "pending"
         }
 
         # Use upsert in case they update their proposal
@@ -355,8 +381,52 @@ async def create_proposal(
         if not insert_res.data:
             raise HTTPException(status_code=400, detail="Failed to submit proposal")
 
+        # Create chat if not exists
+        try:
+            supabase.table("lead_chats").insert({
+                "lead_id": lead_id,
+                "master_id": current_user.user_id,
+                "client_session_id": lead_data["client_token"]
+            }).execute()
+        except Exception as e:
+            # ignore if chat already exists (unique constraint)
+            pass
+
         return {"success": True, "proposal": insert_res.data[0]}
     except Exception as e:
         if isinstance(e, HTTPException):
             raise e
         raise HTTPException(status_code=500, detail=str(e))
+
+class ProposalStatusUpdate(BaseModel):
+    status: str
+
+@router.put("/{lead_id}/proposals/status")
+async def update_proposal_status(
+    lead_id: str,
+    payload: ProposalStatusUpdate,
+    current_user: AuthUser = Depends(get_current_user),
+    supabase: Client = Depends(get_supabase_client)
+):
+    """
+    Update the status of an existing proposal for a master (e.g. booked, completed).
+    Clients update status to 'accepted' via the client_portal API.
+    """
+    valid_statuses = ['pending', 'accepted', 'rejected', 'booked', 'completed']
+    if payload.status not in valid_statuses:
+        raise HTTPException(status_code=400, detail="Invalid status")
+
+    try:
+        res = supabase.table("lead_proposals").update({
+            "status": payload.status
+        }).eq("lead_id", lead_id).eq("user_id", current_user.user_id).execute()
+
+        if not res.data:
+            raise HTTPException(status_code=404, detail="Proposal not found")
+
+        return {"success": True, "proposal": res.data[0]}
+    except Exception as e:
+        if isinstance(e, HTTPException):
+            raise e
+        raise HTTPException(status_code=500, detail=str(e))
+

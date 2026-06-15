@@ -252,8 +252,11 @@ async def get_admin_leads(
 ):
     """Get all leads with unmasked contacts for admin."""
     try:
-        response = supabase.table("leads").select("*").order("created_at", desc=True).execute()
-        return response.data or []
+        response = supabase.table("leads").select("*, cities(country_id)").order("created_at", desc=True).execute()
+        leads = response.data or []
+        for lead in leads:
+            lead["country_id"] = lead.get("cities", {}).get("country_id") if lead.get("cities") else None
+        return leads
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -268,7 +271,9 @@ async def create_lead(
 ):
     """Create a new lead."""
     try:
-        response = supabase.table("leads").insert(lead_data.model_dump()).execute()
+        data_dump = lead_data.model_dump()
+        data_dump.pop("country_id", None)
+        response = supabase.table("leads").insert(data_dump).execute()
         if not response.data:
             raise HTTPException(status_code=400, detail="Failed to create lead")
             
@@ -313,6 +318,7 @@ async def update_lead(
     """Update an existing lead."""
     try:
         update_dict = {k: v for k, v in lead_data.model_dump().items() if v is not None}
+        update_dict.pop("country_id", None)
         if not update_dict:
             raise HTTPException(status_code=400, detail="No fields to update")
             

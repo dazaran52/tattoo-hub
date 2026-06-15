@@ -65,13 +65,14 @@ export const triggerHaptic = (type: 'success' | 'error' | 'light' = 'success') =
   try {
     if ('vibrate' in navigator) {
       if (type === 'success') {
-        // Two light taps
-        navigator.vibrate([50, 100, 50]);
+        // Pixel-like crisp double click (two very brief 10ms pulses separated by a short break)
+        navigator.vibrate([10, 30, 10]);
       } else if (type === 'error') {
-        // One long heavy tap
-        navigator.vibrate(400);
+        // Deep soft warning tick (three quick pulses, much gentler than a heavy buzz)
+        navigator.vibrate([12, 40, 12, 40, 12]);
       } else if (type === 'light') {
-        navigator.vibrate(20);
+        // Standard light click feedback (very brief, tactile tick)
+        navigator.vibrate(12);
       }
     }
   } catch (e) {

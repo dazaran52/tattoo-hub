@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react'
 import { CheckCircle, XCircle, Clock, Loader2, RefreshCw } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 import { getTranslation, Language } from '@/lib/i18n'
+import { supabase } from '@/lib/supabase'
+
 
 interface WithdrawalRequest {
   id: string
@@ -24,9 +26,12 @@ export function AdminWithdrawals() {
   const fetchRequests = async () => {
     setLoading(true)
     try {
-      const res = await fetch('/api/admin/withdrawals', {
+      const { data: { session } } = await supabase.auth.getSession()
+      const token = session?.access_token
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+      const res = await fetch(`${apiUrl}/api/admin/withdrawals`, {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${token}`
         }
       })
       if (!res.ok) throw new Error('Failed to fetch')
@@ -46,11 +51,14 @@ export function AdminWithdrawals() {
   const handleProcess = async (id: string, action: 'approve' | 'reject') => {
     setActionLoading(id)
     try {
-      const res = await fetch(`/api/admin/withdrawals/${id}/process`, {
+      const { data: { session } } = await supabase.auth.getSession()
+      const token = session?.access_token
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+      const res = await fetch(`${apiUrl}/api/admin/withdrawals/${id}/process`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({ action })
       })

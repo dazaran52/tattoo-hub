@@ -325,6 +325,24 @@ async def get_my_leads(
             detail=f"Error fetching my leads: {str(e)}"
         )
 
+@router.get("/proposals")
+async def get_my_proposals(
+    current_user: AuthUser = Depends(get_current_user),
+    supabase: Client = Depends(get_supabase_client)
+):
+    """Get all proposals made by the current master for the CRM board."""
+    try:
+        props_res = supabase.table("lead_proposals").select(
+            "lead_id, status, price_offer, proposed_dates, leads(title, description, image_urls, client_priority)"
+        ).eq("user_id", current_user.user_id).execute()
+        
+        return props_res.data or []
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error fetching proposals: {str(e)}"
+        )
+
 @router.delete("/city/{city_id}")
 async def remove_city(
     city_id: str,

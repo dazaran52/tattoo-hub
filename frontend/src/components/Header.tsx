@@ -87,7 +87,7 @@ export function Header({ profile, onLogout }: HeaderProps) {
           </button>
 
           {/* Right Section */}
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-2 sm:gap-4 md:gap-6">
             {/* Email & Status */}
             <div className="hidden sm:flex items-center gap-3">
               <span className="text-sm text-neutral-600 dark:text-neutral-300">
@@ -110,7 +110,7 @@ export function Header({ profile, onLogout }: HeaderProps) {
               className="hidden sm:flex items-center gap-2 px-3 py-2 text-sm font-medium text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
             >
               <HelpCircle className="w-4 h-4" />
-              Как это работает?
+              {t('howItWorks')}
             </button>
 
             {/* Credits Counter & Top-up */}
@@ -160,21 +160,21 @@ export function Header({ profile, onLogout }: HeaderProps) {
                   </a>
                   <a href="/analytics" className="flex items-center gap-3 px-4 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800">
                     <BarChart2 className="w-4 h-4" />
-                    Аналитика
+                    {t('analytics')}
                   </a>
                   <div className="border-t border-neutral-200 dark:border-neutral-800 my-1"></div>
                   
                   <button onClick={handleSubscribe} disabled={isSubscribing} className="flex items-center gap-3 px-4 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 w-full text-left">
                     <Bell className={`w-4 h-4 ${isSubscribing ? 'animate-pulse' : ''}`} />
-                    Включить Push-уведомления
+                    {t('enablePushNotifications')}
                   </button>
                   <button onClick={toggleLanguage} className="flex items-center gap-3 px-4 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 w-full text-left">
                     <Globe className="w-4 h-4" />
-                    Язык: <span className="uppercase font-semibold">{language === 'cs' ? 'cz' : language}</span>
+                    {t('language')}: <span className="uppercase font-semibold">{language === 'cs' ? 'cz' : language}</span>
                   </button>
                   <button onClick={toggleTheme} className="flex items-center gap-3 px-4 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 w-full text-left">
                     {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-                    Тема оформления
+                    {t('theme')}
                   </button>
 
                   <div className="border-t border-neutral-200 dark:border-neutral-800 my-1"></div>
@@ -186,7 +186,7 @@ export function Header({ profile, onLogout }: HeaderProps) {
                   {profile.is_admin && (
                     <a href="/admin" className="flex items-center gap-3 px-4 py-2 text-sm text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 hover:bg-neutral-100 dark:hover:bg-neutral-800">
                       <Shield className="w-4 h-4" />
-                      Admin Panel
+                      {t('adminPanel')}
                     </a>
                   )}
                   {profile.own_referral_code && (
