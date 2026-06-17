@@ -10,16 +10,16 @@ interface WithdrawalModalProps {
   onSuccess: () => void
 }
 
-export function WithdrawalModal({ isOpen, onClose, withdrawableCredits, onSuccess }: WithdrawalModalProps) {
+export function WithdrawalModal({ isOpen, onClose, withdrawableBalance, onSuccess }: WithdrawalModalProps) {
   const [loading, setLoading] = useState(false)
-  const [amount, setAmount] = useState(withdrawableCredits)
+  const [amount, setAmount] = useState(withdrawableBalance)
   const [paymentDetails, setPaymentDetails] = useState('')
 
   if (!isOpen) return null
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (amount <= 0 || amount > withdrawableCredits) {
+    if (amount <= 0 || amount > withdrawableBalance) {
       toast.error('Некорректная сумма')
       return
     }
@@ -71,7 +71,7 @@ export function WithdrawalModal({ isOpen, onClose, withdrawableCredits, onSucces
         <form onSubmit={handleSubmit} className="p-4 space-y-4">
           <div className="bg-cyan-50 dark:bg-cyan-900/20 p-3 rounded-lg border border-cyan-100 dark:border-cyan-900/50">
             <p className="text-xs text-cyan-600 dark:text-cyan-400 font-medium mb-1">Доступно для вывода</p>
-            <p className="text-2xl font-bold text-cyan-700 dark:text-cyan-300">{withdrawableCredits} кредитов</p>
+            <p className="text-2xl font-bold text-cyan-700 dark:text-cyan-300">{withdrawableBalance} кредитов</p>
           </div>
           
           <div>
@@ -79,7 +79,7 @@ export function WithdrawalModal({ isOpen, onClose, withdrawableCredits, onSucces
             <input
               type="number"
               min="1"
-              max={withdrawableCredits}
+              max={withdrawableBalance}
               required
               className="w-full bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white border border-neutral-200 dark:border-neutral-700 rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-500 outline-none"
               value={amount}
