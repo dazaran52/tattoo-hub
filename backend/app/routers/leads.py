@@ -289,12 +289,17 @@ class ClientLeadCreate(BaseModel):
     contact: str
 
 @router.post("/client")
-def create_client_lead(
-    lead_data: ClientLeadCreate,
-    supabase: Client = Depends(get_supabase_client)
+async def create_client_lead(
+    lead_data: ClientLeadCreate
 ):
     """Public endpoint for clients submitting leads via the Landing Page."""
     try:
+        from app.config import get_settings
+        import httpx
+        import uuid
+        
+        settings = get_settings()
+
         # Format the lead for the DB
         title = f"{lead_data.style or 'Тату'} {lead_data.location or ''} {lead_data.size or ''}".strip()
         if not title:
@@ -320,8 +325,6 @@ def create_client_lead(
             # 5% of the total budget, but at least 10 credits
             price_credits = max(10, int(base_val * 0.05))
 
-        # Generate a unique token for the client portal
-        import uuid
         client_token = str(uuid.uuid4())
 
         db_lead = {
@@ -334,11 +337,23 @@ def create_client_lead(
             "trust_score": 100
         }
 
-        lead_insert = supabase.table("leads").insert(db_lead).execute()
-        if not lead_insert.data:
-            raise HTTPException(status_code=400, detail="Failed to create lead")
+        async with httpx.AsyncClient() as client:
+            res = await client.post(
+                f"{settings.SUPABASE_URL}/rest/v1/leads",
+                headers={
+                    "apikey": settings.SUPABASE_KEY,
+                    "Authorization": f"Bearer {settings.SUPABASE_KEY}",
+                    "Content-Type": "application/json",
+                    "Prefer": "return=representation"
+                },
+                json=db_lead
+            )
             
-        return {"success": True, "lead": lead_insert.data[0]}
+            if res.status_code >= 400:
+                raise HTTPException(status_code=400, detail=res.text)
+                
+            return {"success": True, "lead": res.json()[0]}
+            
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
