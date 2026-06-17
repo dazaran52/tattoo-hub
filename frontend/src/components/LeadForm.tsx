@@ -40,6 +40,22 @@ export function LeadForm() {
       .then(res => res.json())
       .then(data => setCountries(data))
       .catch(err => console.error(err))
+      
+    // Load pending lead if exists
+    const pendingLeadStr = localStorage.getItem('pending_lead')
+    if (pendingLeadStr) {
+      try {
+        const pendingLead = JSON.parse(pendingLeadStr)
+        setFormData(prev => ({
+          ...prev,
+          description: pendingLead.description || prev.description,
+          size: pendingLead.size || prev.size,
+          priority: pendingLead.priority || prev.priority
+        }))
+      } catch (e) {
+        console.error('Failed to parse pending lead', e)
+      }
+    }
   }, [])
 
   useEffect(() => {
@@ -152,6 +168,9 @@ export function LeadForm() {
       if (!res.ok) {
         throw new Error('Ошибка при отправке заявки')
       }
+      
+      // Clear pending lead if exists
+      localStorage.removeItem('pending_lead')
       
       setIsSuccess(true)
     } catch (error) {

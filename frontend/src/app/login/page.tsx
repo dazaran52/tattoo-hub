@@ -160,34 +160,6 @@ export default function LoginPage() {
           }
 
           let redirectUrl = '/dashboard'
-          const pendingLeadStr = localStorage.getItem('pending_lead')
-          
-          if (pendingLeadStr && role === 'client' && token) {
-            try {
-              const pendingLead = JSON.parse(pendingLeadStr)
-              const payload = {
-                description: pendingLead.description,
-                size: pendingLead.size,
-                client_priority: pendingLead.priority || 'quality'
-              }
-              const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
-              const res = await fetch(`${apiUrl}/api/leads/client`, {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                  'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify(payload)
-              })
-              if (res.ok) {
-                localStorage.removeItem('pending_lead')
-                redirectUrl = '/dashboard?lead_created=true'
-              }
-            } catch (e) {
-              console.error('Failed to submit pending lead', e)
-            }
-          }
-
           window.location.href = redirectUrl
         }
       } else {
@@ -209,34 +181,6 @@ export default function LoginPage() {
           document.cookie = `sb-access-token=${token};path=/;max-age=${maxAge};SameSite=Lax${window.location.protocol === 'https:' ? ';Secure' : ''}`
 
           let redirectUrl = '/dashboard'
-          const pendingLeadStr = localStorage.getItem('pending_lead')
-          
-          if (pendingLeadStr && role === 'client') {
-            try {
-              const pendingLead = JSON.parse(pendingLeadStr)
-              const payload = {
-                description: pendingLead.description,
-                size: pendingLead.size,
-                client_priority: pendingLead.priority || 'quality'
-              }
-              const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
-              const res = await fetch(`${apiUrl}/api/leads/client`, {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                  'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify(payload)
-              })
-              if (res.ok) {
-                localStorage.removeItem('pending_lead')
-                redirectUrl = '/dashboard?lead_created=true'
-              }
-            } catch (e) {
-              console.error('Failed to submit pending lead', e)
-            }
-          }
-
           window.location.href = redirectUrl
         } else {
           throw new Error('No session returned')

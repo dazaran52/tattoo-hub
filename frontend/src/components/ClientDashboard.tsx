@@ -12,6 +12,11 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
   const [isLoadingLeads, setIsLoadingLeads] = useState(true)
 
   useEffect(() => {
+    // Open form automatically if there's a pending lead
+    if (typeof window !== 'undefined' && localStorage.getItem('pending_lead')) {
+      setIsFormOpen(true)
+    }
+
     async function fetchLeads() {
       try {
         const { data: { session } } = await supabase.auth.getSession()
