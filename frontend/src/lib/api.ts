@@ -6,7 +6,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 export interface Profile {
   id: string
   email: string
-  credits: number
+  balance: number
   is_admin: boolean
   status: string
   created_at: string

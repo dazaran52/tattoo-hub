@@ -29,7 +29,7 @@ class LeadCreate(BaseModel):
     title: str
     description: str
     contacts: str
-    price_credits: int
+    base_unlock_price_eur: float
     image_urls: List[str] = []
     country_id: str | None = None
     city_id: str | None = None
@@ -38,7 +38,7 @@ class LeadUpdate(BaseModel):
     title: str | None = None
     description: str | None = None
     contacts: str | None = None
-    price_credits: int | None = None
+    base_unlock_price_eur: float | None = None
     image_urls: List[str] | None = None
     country_id: str | None = None
     city_id: str | None = None
@@ -283,7 +283,7 @@ async def create_lead(
         try:
             city_res = supabase.table("cities").select("name_ru").eq("id", new_lead.get("city_id")).execute()
             city_name = city_res.data[0]["name_ru"] if city_res.data else "новом городе"
-            price = new_lead.get("price_credits", 50)
+            price = new_lead.get("base_unlock_price_eur", 5.0)
             
             # Fetch all users who have a push subscription
             # For a real scalable app, you'd use a background worker (Celery/RQ)
@@ -425,7 +425,7 @@ async def get_all_disputes(
 ):
     try:
         res = supabase.table("disputes") \
-            .select("*, users(email), leads(title, price_credits)") \
+            .select("*, users(email), leads(title, base_unlock_price_eur)") \
             .eq("status", "pending") \
             .order("created_at", desc=True) \
             .execute()
@@ -448,17 +448,17 @@ async def resolve_dispute(
         dispute = dispute_res.data
         if dispute["status"] != "pending":
             raise HTTPException(status_code=400, detail="Dispute already resolved")
-
         user_id = dispute["user_id"]
         
         if resolution.action == "refund":
             # get lead price
-            lead_res = supabase.table("leads").select("price_credits").eq("id", dispute["lead_id"]).single().execute()
-            price = lead_res.data["price_credits"] if lead_res.data else 50
+            lead_res = supabase.table("leads").select("base_unlock_price_eur").eq("id", dispute["lead_id"]).single().execute()
+            price = lead_res.data["base_unlock_price_eur"] if lead_res.data else 5.0
                 
-            user_res = supabase.table("users").select("credits").eq("id", user_id).single().execute()
+            user_res = supabase.table("users").select("balance").eq("id", user_id).single().execute()
             if user_res.data:
-                supabase.table("users").update({"credits": user_res.data["credits"] + price}).eq("id", user_id).execute()
+                new_balance = float(user_res.data["balance"]) + float(price) # FIXME: Ideally we should refund the exact local amount that was deducted
+                supabase.table("users").update({"balance": new_balance}).eq("id", user_id).execute()
                 
             supabase.table("disputes").update({"status": "resolved"}).eq("id", dispute_id).execute()
             

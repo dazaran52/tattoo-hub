@@ -108,7 +108,7 @@ export function AdminDisputes() {
                 {dispute.users?.email}
               </h3>
               <p className="text-sm text-neutral-500 truncate">
-                Лид: {dispute.leads?.title} ({dispute.leads?.price_credits} кр.)
+                Лид: {dispute.leads?.title} ({dispute.leads?.base_unlock_price_eur} EUR)
               </p>
             </div>
             
@@ -199,7 +199,7 @@ export function AdminDisputes() {
                 className="flex-1 px-4 py-2.5 rounded-xl font-medium bg-green-500 hover:bg-green-600 text-white flex items-center justify-center gap-2 transition-colors disabled:opacity-50"
               >
                 {processingId === selectedDispute.id ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> : <CheckCircle className="w-4 h-4" />}
-                Вернуть {selectedDispute.leads?.price_credits} кр.
+                Вернуть {selectedDispute.leads?.base_unlock_price_eur} EUR
               </button>
             </div>
           </div>

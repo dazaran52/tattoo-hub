@@ -4,10 +4,11 @@ import Link from 'next/link'
 interface LowBalanceModalProps {
   isOpen: boolean
   onClose: () => void
-  requiredCredits: number
+  requiredAmount: number
+  currency: string
 }
 
-export function LowBalanceModal({ isOpen, onClose, requiredCredits }: LowBalanceModalProps) {
+export function LowBalanceModal({ isOpen, onClose, requiredAmount, currency }: LowBalanceModalProps) {
   if (!isOpen) return null
 
   return (
@@ -24,10 +25,10 @@ export function LowBalanceModal({ isOpen, onClose, requiredCredits }: LowBalance
             <Coins className="w-10 h-10" />
           </div>
           <h2 className="text-2xl font-bold text-neutral-900 dark:text-white mb-3">
-            Недостаточно кредитов
+            Недостаточно средств
           </h2>
           <p className="text-neutral-600 dark:text-neutral-400 mb-8">
-            Для открытия этих контактов нужно <b>{requiredCredits} кредитов</b>.<br/>
+            Для открытия этих контактов нужно <b>{requiredAmount} {currency}</b>.<br/>
             Пополните баланс, чтобы продолжить работу.
           </p>
           

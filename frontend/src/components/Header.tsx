@@ -124,7 +124,7 @@ export function Header({ profile, onLogout }: HeaderProps) {
                   className="flex items-center gap-2 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800/50 dark:hover:bg-neutral-800 transition-colors pl-4 pr-3 py-2 rounded-l-lg border border-neutral-200 dark:border-neutral-700 cursor-pointer"
                 >
                   <Gem className="w-4 h-4 text-cyan-500 dark:text-cyan-400" />
-                  <span className="font-bold text-neutral-900 dark:text-white">{profile.credits}</span>
+                  <span className="font-bold text-neutral-900 dark:text-white">{profile.balance}</span>
                   <span className="text-sm text-neutral-600 dark:text-neutral-300 pr-1">{t('credit_plural')}</span>
                   
                   {profile.discount_tokens > 0 && (
@@ -227,7 +227,7 @@ export function Header({ profile, onLogout }: HeaderProps) {
       <TransactionHistoryModal 
         isOpen={showHistory} 
         onClose={() => setShowHistory(false)} 
-        withdrawableCredits={profile.withdrawable_credits}
+        withdrawableBalance={profile.withdrawable_balance}
       />
     </header>
   )

@@ -13,7 +13,7 @@ async def main():
     
     conn = await asyncpg.connect(db_url)
     
-    with open("migrations/030_rollback_fiat_balance.sql", "r") as f:
+    with open("migrations/031_fiat_balance_final.sql", "r") as f:
         sql = f.read()
     
     print("Applying migration...")

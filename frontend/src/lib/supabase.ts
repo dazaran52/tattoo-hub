@@ -10,7 +10,7 @@ export const supabase = createBrowserClient(supabaseUrl, supabaseKey)
 export type Profile = {
   id: string
   email: string
-  credits: number
+  balance: number
   is_admin: boolean
   status: string
   created_at: string | null
@@ -25,7 +25,7 @@ export type Profile = {
   discount_tokens: number
   unlocked_leads_count?: number
   gamification_level?: string
-  withdrawable_credits?: number
+  withdrawable_balance?: number
   role?: string
   is_verified_master?: boolean
   certificate_url?: string | null

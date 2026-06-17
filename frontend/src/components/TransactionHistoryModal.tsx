@@ -21,7 +21,7 @@ interface Transaction {
 interface Props {
   isOpen: boolean
   onClose: () => void
-  withdrawableCredits?: number
+  withdrawableBalance?: number
 }
 
 export function TransactionHistoryModal({ isOpen, onClose, withdrawableCredits = 0 }: Props) {

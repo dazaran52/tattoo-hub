@@ -21,7 +21,7 @@ import {
 } from 'recharts'
 
 interface AnalyticsData {
-  total_spent_credits: number
+  total_spent_balance: number
   total_leads_bought: number
   activity_by_day: Array<{
     date: string

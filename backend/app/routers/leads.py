@@ -16,7 +16,6 @@ class LeadResponse(BaseModel):
     title: str
     description: str
     contacts: str
-    price_credits: int
     is_unlocked: bool
     image_urls: List[str] = []
     created_at: str | None = None
@@ -34,6 +33,8 @@ class LeadResponse(BaseModel):
     client_currency: str | None = None
     display_budget: str | None = None
     is_negotiable_budget: bool = False
+    unlock_price_local: float | None = None
+    master_currency: str | None = None
 
 class UnlockResponse(BaseModel):
     contacts: str
@@ -128,15 +129,18 @@ def get_leads(
                     except ValueError:
                         display_budget = f"{orig_budget} {orig_curr}"
             
-            # Calculate dynamic unlock price based on the master's currency is NOT NEEDED since it's in credits
-            local_unlock_price = lead.get("price_credits", 1)
+            # Calculate dynamic unlock price based on the master's currency
+            base_price_eur = float(lead.get("base_unlock_price_eur", 2.0))
+            try:
+                local_unlock_price = convert_currency(base_price_eur, "EUR", master_currency)
+            except ValueError:
+                local_unlock_price = base_price_eur
                 
             processed_leads.append(LeadResponse(
                 id=lead["id"],
                 title=lead["title"],
                 description=lead["description"],
                 contacts=contacts,
-                price_credits=int(local_unlock_price),
                 is_unlocked=is_unlocked,
                 image_urls=lead.get("image_urls") or [],
                 created_at=lead.get("created_at"),
@@ -153,7 +157,9 @@ def get_leads(
                 client_budget=lead.get("client_budget"),
                 client_currency=lead.get("client_currency"),
                 display_budget=display_budget,
-                is_negotiable_budget=lead.get("is_negotiable_budget", False)
+                is_negotiable_budget=lead.get("is_negotiable_budget", False),
+                unlock_price_local=float(local_unlock_price),
+                master_currency=master_currency
             ))
             
         return processed_leads
@@ -166,34 +172,44 @@ def get_leads(
 
 
 @router.post("/{lead_id}/unlock", response_model=UnlockResponse)
-def unlock_lead(
+async def unlock_lead(
     lead_id: str,
     current_user: AuthUser = Depends(get_current_user),
-    supabase: Client = Depends(get_supabase_client)
+    supabase: AsyncClient = Depends(get_async_supabase_client)
 ):
     """
     Unlock a lead by deducting credits.
     """
     try:
         # Check if already unlocked
-        unlock_check = supabase.table("lead_unlocks") \
+        unlock_check = await supabase.table("lead_unlocks") \
             .select("id") \
             .eq("user_id", current_user.user_id) \
             .eq("lead_id", lead_id) \
             .execute()
             
         # Get lead
-        lead_res = supabase.table("leads").select("*").eq("id", lead_id).single().execute()
+        lead_res = await supabase.table("leads").select("*").eq("id", lead_id).single().execute()
         if not lead_res.data:
             raise HTTPException(status_code=404, detail="Lead not found.")
         
         lead = lead_res.data
         
+        # Fetch current master's currency to calculate local unlock price
+        user_res = await supabase.table("users").select("currency").eq("id", current_user.user_id).execute()
+        master_currency = user_res.data[0].get("currency", "CZK") if user_res.data else "CZK"
+        
+        base_price_eur = float(lead.get("base_unlock_price_eur", 2.0))
+        try:
+            local_unlock_price = convert_currency(base_price_eur, "EUR", master_currency)
+        except ValueError:
+            local_unlock_price = base_price_eur
+        
         # Call the atomic RPC function
         try:
-            rpc_res = supabase.rpc(
+            rpc_res = await supabase.rpc(
                 "unlock_lead",
-                {"p_user_id": current_user.user_id, "p_lead_id": lead_id}
+                {"p_user_id": current_user.user_id, "p_lead_id": lead_id, "p_deduct_amount": float(local_unlock_price)}
             ).execute()
         except Exception as e:
             if "INSUFFICIENT_CREDITS" in str(e):
@@ -345,7 +361,7 @@ async def create_client_lead(
         contacts = f"Имя: {lead_data.name or 'Без имени'}, Контакт: {lead_data.contact}"
 
         # Calculate dynamic price based on base currency (EUR)
-        price_credits = calculate_unlock_price_base(
+        base_unlock_price_eur = calculate_unlock_price_base(
             client_budget=lead_data.budget_val if not lead_data.is_negotiable_budget else None,
             client_currency=lead_data.budget_currency
         )
@@ -356,7 +372,7 @@ async def create_client_lead(
             "title": title[:255],
             "description": full_description,
             "contacts": contacts,
-            "price_credits": price_credits,
+            "base_unlock_price_eur": base_unlock_price_eur,
             "client_priority": lead_data.client_priority or 'quality',
             "client_token": client_token,
             "trust_score": 100,

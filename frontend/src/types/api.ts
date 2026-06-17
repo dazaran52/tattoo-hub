@@ -3,7 +3,7 @@
 export interface Profile {
   id: string
   email: string
-  credits: number
+  balance: number
   is_admin: boolean
   status: string
   display_name?: string
@@ -17,7 +17,8 @@ export interface Lead {
   title: string
   description: string
   contacts: string
-  price_credits: number
+  unlock_price_local?: number
+  master_currency?: string
   is_unlocked: boolean
   trust_score: number
   unlock_status?: string
@@ -39,6 +40,6 @@ export interface ApiError {
 
 export interface UnlockLeadResponse {
   success: boolean
-  remaining_credits: number
+  remaining_balance: number
   lead: Lead
 }

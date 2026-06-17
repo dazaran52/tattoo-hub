@@ -20,7 +20,7 @@ interface AdminUserResponse {
   phone: string | null
   bio: string | null
   status: string
-  credits: number
+  balance: number
   created_at: string
   portfolio_url?: string
   own_referral_code?: string
@@ -38,8 +38,8 @@ export default function AdminPage() {
   const [activeTab, setActiveTab] = useState<'users' | 'chats' | 'ai-chats' | 'locations' | 'disputes' | 'withdrawals'>('users')
   const [searchQuery, setSearchQuery] = useState('')
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest' | 'balance_desc' | 'balance_asc'>('newest')
-  const [creditsModalUser, setCreditsModalUser] = useState<{ id: string, email: string, credits: number } | null>(null)
-  const [newCreditsValue, setNewCreditsValue] = useState<string>('')
+  const [balanceModalUser, setBalanceModalUser] = useState<{ id: string, email: string, balance: number } | null>(null)
+  const [newBalanceValue, setNewBalanceValue] = useState<string>('')
 
 
   const checkAdminAndFetchData = async () => {
@@ -151,23 +151,23 @@ export default function AdminPage() {
     }
   }
 
-  const handleUpdateCredits = (userId: string, currentCredits: number, userEmail: string) => {
-    setCreditsModalUser({ id: userId, email: userEmail, credits: currentCredits })
-    setNewCreditsValue(currentCredits.toString())
+  const handleUpdateCredits = (userId: string, currentBalance: number, userEmail: string) => {
+    setBalanceModalUser({ id: userId, email: userEmail, balance: currentBalance })
+    setNewBalanceValue(currentBalance.toString())
   }
 
   const submitUpdateCredits = async () => {
-    if (!creditsModalUser) return
-    const num = parseInt(newCreditsValue)
+    if (!balanceModalUser) return
+    const num = parseInt(newBalanceValue)
     if (isNaN(num) || num < 0) {
       toast.error('Неверная сумма')
       return
     }
 
     try {
-      const userId = creditsModalUser.id
+      const userId = balanceModalUser.id
       setActionLoadingId(userId)
-      setCreditsModalUser(null)
+      setBalanceModalUser(null)
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) return
 
@@ -208,8 +208,8 @@ export default function AdminPage() {
     .sort((a, b) => {
       if (sortOrder === 'newest') return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
       if (sortOrder === 'oldest') return new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-      if (sortOrder === 'balance_desc') return b.credits - a.credits
-      if (sortOrder === 'balance_asc') return a.credits - b.credits
+      if (sortOrder === 'balance_desc') return b.balance - a.balance
+      if (sortOrder === 'balance_asc') return a.balance - b.balance
       return 0
     })
 
@@ -373,7 +373,7 @@ export default function AdminPage() {
                       <td className="px-6 py-4 font-semibold text-neutral-900 dark:text-white">
                         <div className="flex items-center gap-1.5 text-cyan-600 dark:text-cyan-400">
                           <Coins className="w-4 h-4" />
-                          {user.credits}
+                          {user.balance}
                         </div>
                       </td>
                       <td className="px-6 py-4 text-neutral-500 dark:text-neutral-400">
@@ -404,7 +404,7 @@ export default function AdminPage() {
                         ) : (
                           <div className="flex justify-end gap-2">
                             <button
-                              onClick={() => handleUpdateCredits(user.id, user.credits, user.email)}
+                              onClick={() => handleUpdateCredits(user.id, user.balance, user.email)}
                               className="px-3.5 py-2 bg-neutral-200/50 hover:bg-neutral-300 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 rounded-xl text-xs font-bold transition-all shadow-sm"
                               title="Изменить баланс"
                             >
@@ -445,11 +445,11 @@ export default function AdminPage() {
         )}
       </main>
 
-      {creditsModalUser && (
+      {balanceModalUser && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-200">
           <div className="bg-white/85 dark:bg-neutral-900/85 backdrop-blur-xl w-full max-w-md rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 p-6 border border-neutral-200/50 dark:border-white/5">
             <h3 className="text-xl font-extrabold text-neutral-900 dark:text-white mb-1">Изменить баланс</h3>
-            <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-5 font-semibold">{creditsModalUser.email}</p>
+            <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-5 font-semibold">{balanceModalUser.email}</p>
             
             <div className="mb-6">
               <label className="block text-sm font-semibold text-neutral-600 dark:text-neutral-400 mb-2">Новый баланс (кредитов)</label>
@@ -457,14 +457,14 @@ export default function AdminPage() {
                 type="number"
                 min="0"
                 className="w-full bg-white/40 dark:bg-neutral-950/40 text-neutral-900 dark:text-white border border-neutral-200 dark:border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 transition-all shadow-inner"
-                value={newCreditsValue}
-                onChange={(e) => setNewCreditsValue(e.target.value)}
+                value={newBalanceValue}
+                onChange={(e) => setNewBalanceValue(e.target.value)}
               />
             </div>
 
             <div className="flex gap-3 justify-end">
               <button
-                onClick={() => setCreditsModalUser(null)}
+                onClick={() => setBalanceModalUser(null)}
                 className="px-5 py-3 bg-neutral-200/50 dark:bg-neutral-800 text-neutral-900 dark:text-white rounded-xl hover:bg-neutral-300 dark:hover:bg-neutral-700 font-semibold transition-all"
               >
                 Отмена

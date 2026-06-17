@@ -34,25 +34,17 @@ def convert_currency(amount: float, from_currency: str, to_currency: str) -> flo
     
     return round(converted_amount, 2)
 
-def calculate_unlock_price_base(client_budget: float, client_currency: str) -> int:
+def calculate_unlock_price_base(client_budget: float, client_currency: str) -> float:
     """
-    Calculates the unlock price in Credits (1 to 5).
+    Calculates the base unlock price in EUR (5% of the budget, min 2 EUR).
     """
     if not client_budget or client_budget <= 0:
-        return 1  # 1 credit for negotiable or no-budget leads
+        return 2.0  # 2 EUR for negotiable or no-budget leads
         
     try:
         budget_in_eur = convert_currency(client_budget, client_currency, "EUR")
     except ValueError:
-        return 1
+        return 2.0
         
-    if budget_in_eur < 100:
-        return 1
-    elif budget_in_eur < 300:
-        return 2
-    elif budget_in_eur < 600:
-        return 3
-    elif budget_in_eur < 1000:
-        return 4
-    else:
-        return 5
+    price = budget_in_eur * 0.05
+    return max(2.0, round(price, 2))

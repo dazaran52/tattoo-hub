@@ -22,7 +22,7 @@ interface Auction {
   leads: {
     title: string
     description: string
-    price_credits: number
+    price_balance: number
     image_url?: string
   }
 }

@@ -321,7 +321,7 @@ export default function ProfilePage() {
 
                 <div className="flex items-center justify-center md:justify-start gap-2 text-cyan-600 dark:text-cyan-400">
                   <Gem className="w-5 h-5 animate-pulse" />
-                  <span className="font-extrabold text-xl tracking-tight">{profile.credits}</span>
+                  <span className="font-extrabold text-xl tracking-tight">{profile.balance}</span>
                   <span className="text-sm text-neutral-500 dark:text-neutral-400 font-medium">{t('credits')}</span>
                 </div>
               </div>

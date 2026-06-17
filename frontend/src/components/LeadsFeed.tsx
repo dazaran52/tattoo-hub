@@ -23,7 +23,9 @@ export interface Lead {
   title: string
   description: string
   contacts: string
-  price_credits: number
+  unlock_price_local?: number
+  master_currency?: string
+  base_unlock_price_eur?: number
   is_unlocked: boolean
   image_urls?: string[]
   created_at?: string
@@ -42,7 +44,7 @@ export interface Lead {
 }
 
 interface LeadsFeedProps {
-  onUnlockSuccess: (newCredits: number) => void
+  onUnlockSuccess: (newBalance: number) => void
   isAdmin?: boolean
   showOnlyUnlocked?: boolean
   userCities?: string[]
@@ -72,13 +74,14 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, showOnlyUnlocked =
   // Modal & Admin State
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isLowBalanceModalOpen, setIsLowBalanceModalOpen] = useState(false)
-  const [lowBalanceRequiredCredits, setLowBalanceRequiredCredits] = useState(50)
+  const [lowBalanceRequiredAmount, setLowBalanceRequiredAmount] = useState(0)
+  const [lowBalanceCurrency, setLowBalanceCurrency] = useState('CZK')
   const [editingLead, setEditingLead] = useState<Lead | null>(null)
   const [formData, setFormData] = useState({
     title: '',
     description: '',
     contacts: '',
-    price_credits: 50,
+    base_unlock_price_eur: 5,
     image_urls: [] as string[],
     country_id: '',
     city_id: ''
@@ -267,8 +270,8 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, showOnlyUnlocked =
         )
       )
 
-      if (data.current_credits !== undefined) {
-        onUnlockSuccess(data.current_credits)
+      if (data.new_balance !== undefined) {
+        onUnlockSuccess(data.new_balance)
       }
 
       // Play success sound and haptic
@@ -281,7 +284,8 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, showOnlyUnlocked =
         triggerHaptic('error')
         const lead = leads.find(l => l.id === leadId)
         if (lead) {
-          setLowBalanceRequiredCredits(lead.price_credits)
+          setLowBalanceRequiredAmount(lead.unlock_price_local || 0)
+          setLowBalanceCurrency(lead.master_currency || 'CZK')
           setIsLowBalanceModalOpen(true)
         }
       } else {
@@ -316,14 +320,14 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, showOnlyUnlocked =
         title: lead.title,
         description: lead.description,
         contacts: lead.contacts,
-        price_credits: lead.price_credits,
+        base_unlock_price_eur: lead.base_unlock_price_eur || 5,
         image_urls: lead.image_urls || [],
         country_id: lead.country_id || '',
         city_id: lead.city_id || ''
       })
     } else {
       setEditingLead(null)
-      setFormData({ title: '', description: '', contacts: '', price_credits: 50, image_urls: [], country_id: '', city_id: '' })
+      setFormData({ title: '', description: '', contacts: '', base_unlock_price_eur: 5, image_urls: [], country_id: '', city_id: '' })
     }
     setIsModalOpen(true)
   }
@@ -506,7 +510,8 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, showOnlyUnlocked =
       <LowBalanceModal 
         isOpen={isLowBalanceModalOpen} 
         onClose={() => setIsLowBalanceModalOpen(false)} 
-        requiredCredits={lowBalanceRequiredCredits} 
+        requiredAmount={lowBalanceRequiredAmount}
+        currency={lowBalanceCurrency} 
       />
 
       {selectedDisputeLead && (
@@ -803,7 +808,7 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, showOnlyUnlocked =
                   <div className="flex items-center gap-2">
 
                     <span className="bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white text-xs px-3 py-1.5 rounded-full font-bold shadow-sm whitespace-nowrap border border-neutral-200 dark:border-neutral-700 flex items-center gap-1">
-                      💎 {lead.price_credits} {t('credits')}
+                      {lead.unlock_price_local} {lead.master_currency}
                     </span>
                     {lead.display_budget && (
                       <span className="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-400 text-xs px-3 py-1.5 rounded-full font-bold shadow-sm whitespace-nowrap border border-emerald-200 dark:border-emerald-800 flex items-center gap-1">
@@ -932,7 +937,7 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, showOnlyUnlocked =
                       <span>🔒 Лимит разблокировок исчерпан</span>
                     ) : (
                       <>
-                        🔓 {t('unlock')} — 💎 {lead.price_credits}
+                        🔓 {t('unlock')} — {lead.unlock_price_local} {lead.master_currency}
                       </>
                     )}
                   </button>
@@ -1047,8 +1052,8 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, showOnlyUnlocked =
                   required
                   type="number"
                   min="0"
-                  value={formData.price_credits}
-                  onChange={e => setFormData({...formData, price_credits: parseInt(e.target.value) || 0})}
+                  value={formData.base_unlock_price_eur}
+                  onChange={e => setFormData({...formData, base_unlock_price_eur: parseFloat(e.target.value) || 0})}
                   className="w-full bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-lg px-4 py-2.5 text-neutral-900 dark:text-white focus:ring-2 focus:ring-neutral-900 dark:focus:ring-white focus:border-transparent outline-none transition-all"
                 />
               </div>

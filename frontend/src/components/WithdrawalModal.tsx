@@ -6,7 +6,7 @@ import { supabase } from '@/lib/supabase'
 interface WithdrawalModalProps {
   isOpen: boolean
   onClose: () => void
-  withdrawableCredits: number
+  withdrawableBalance: number
   onSuccess: () => void
 }
 

@@ -18,8 +18,8 @@ export function AdminChat() {
   const [isSending, setIsSending] = useState(false)
   
   // Custom Modals State
-  const [creditsModalUser, setCreditsModalUser] = useState<{ id: string, email: string, credits: number } | null>(null)
-  const [newCreditsValue, setNewCreditsValue] = useState<string>('')
+  const [balanceModalUser, setBalanceModalUser] = useState<{ id: string, email: string, balance: number } | null>(null)
+  const [newBalanceValue, setNewBalanceValue] = useState<string>('')
   const [confirmModal, setConfirmModal] = useState<{
     isOpen: boolean
     title: string
@@ -174,14 +174,14 @@ export function AdminChat() {
   const handleUpdateBalance = (userId: string) => {
     const user = usersMap[userId]
     if (!user) return
-    setCreditsModalUser({ id: userId, email: user.email, credits: user.credits || 0 })
-    setNewCreditsValue((user.credits || 0).toString())
+    setBalanceModalUser({ id: userId, email: user.email, credits: user.balance || 0 })
+    setNewBalanceValue((user.balance || 0).toString())
   }
 
   const submitUpdateBalance = async () => {
-    if (!creditsModalUser || !session) return
-    const userId = creditsModalUser.id
-    const num = parseInt(newCreditsValue)
+    if (!balanceModalUser || !session) return
+    const userId = balanceModalUser.id
+    const num = parseInt(newBalanceValue)
     if (isNaN(num) || num < 0) {
       toast.error('Неверная сумма')
       return
@@ -199,7 +199,7 @@ export function AdminChat() {
       if (!res.ok) throw new Error('Failed to update credits')
       toast.success('Баланс обновлен')
       setUsersMap(prev => ({ ...prev, [userId]: { ...prev[userId], credits: num } }))
-      setCreditsModalUser(null)
+      setBalanceModalUser(null)
     } catch (err: any) {
       toast.error(err.message)
     }
@@ -331,7 +331,7 @@ export function AdminChat() {
                     {usersMap[selectedUserId]?.email || 'Загрузка...'}
                   </div>
                   <div className="text-xs text-neutral-500 flex items-center gap-2 mt-0.5">
-                    <span className="text-cyan-600 dark:text-cyan-400 font-medium">{usersMap[selectedUserId]?.credits || 0} кредитов</span>
+                    <span className="text-cyan-600 dark:text-cyan-400 font-medium">{usersMap[selectedUserId]?.balance || 0} кредитов</span>
                     •
                     <span className={usersMap[selectedUserId]?.status === 'approved' ? 'text-green-500' : 'text-amber-500'}>
                       {usersMap[selectedUserId]?.status}
@@ -426,19 +426,19 @@ export function AdminChat() {
         )}
       </div>
 
-      {creditsModalUser && (
+      {balanceModalUser && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-white dark:bg-neutral-900 w-full max-w-md rounded-2xl shadow-xl overflow-hidden animate-in zoom-in-95 duration-200 p-6 border border-neutral-200 dark:border-neutral-800">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-bold text-neutral-900 dark:text-white">Изменить баланс пользователя</h3>
               <button 
-                onClick={() => setCreditsModalUser(null)}
+                onClick={() => setBalanceModalUser(null)}
                 className="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-4">{creditsModalUser.email}</p>
+            <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-4">{balanceModalUser.email}</p>
             
             <div className="mb-6">
               <label className="block text-sm font-medium text-neutral-600 dark:text-neutral-400 mb-2">Новый баланс (кредитов)</label>
@@ -446,14 +446,14 @@ export function AdminChat() {
                 type="number"
                 min="0"
                 className="w-full bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white border border-neutral-200 dark:border-neutral-700 rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-500 outline-none"
-                value={newCreditsValue}
-                onChange={(e) => setNewCreditsValue(e.target.value)}
+                value={newBalanceValue}
+                onChange={(e) => setNewBalanceValue(e.target.value)}
               />
             </div>
 
             <div className="flex gap-3 justify-end">
               <button
-                onClick={() => setCreditsModalUser(null)}
+                onClick={() => setBalanceModalUser(null)}
                 className="px-4 py-2 bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
               >
                 Отмена
