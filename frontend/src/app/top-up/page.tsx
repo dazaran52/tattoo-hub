@@ -106,7 +106,7 @@ export default function TopUpPage() {
           'Authorization': `Bearer ${session.access_token}`
         },
         body: JSON.stringify({
-          amount_credits: amountCredits,
+          amount_balance: amountCredits,
           payment_method: checkoutMethod
         })
       })
@@ -117,7 +117,7 @@ export default function TopUpPage() {
 
       playSuccessSound()
       triggerHaptic('success')
-      toast.success(`Баланс успешно пополнен на ${amountCredits} кредитов! 🎉`, { duration: 4000 })
+      toast.success(`Баланс успешно пополнен на ${amountCredits} валюты! 🎉`, { duration: 4000 })
       router.push('/dashboard')
     } catch (err: any) {
       console.error(err)
@@ -135,7 +135,7 @@ export default function TopUpPage() {
       description: (
         <ul className="text-left space-y-1.5 text-sm">
           <li>• Быстрая оплата картой в гривнах (UAH)</li>
-          <li>• Автоматическое зачисление кредитов</li>
+          <li>• Автоматическое зачисление валюты</li>
           <li className="text-green-600 dark:text-green-400 font-bold mt-2">ВАЖНО: укажите ваш Email в комментарии.</li>
         </ul>
       ),
@@ -194,14 +194,14 @@ export default function TopUpPage() {
                 <Sparkles className="w-6 h-6 text-amber-500 animate-pulse" />
               </h1>
               <p className="text-lg text-neutral-500 dark:text-neutral-400 max-w-xl mx-auto font-medium">
-                {step === 1 ? 'Выберите необходимое количество кредитов' : 'Выберите удобный способ оплаты'}
+                {step === 1 ? 'Выберите необходимое количество валюты' : 'Выберите удобный способ оплаты'}
               </p>
             </div>
 
             {step === 1 && (
               <div className="max-w-md mx-auto mb-10 bg-white/60 dark:bg-neutral-950/60 backdrop-blur-md border border-neutral-200/50 dark:border-white/5 p-6 rounded-3xl shadow-lg">
                 <label className="block text-sm font-bold text-neutral-700 dark:text-neutral-300 mb-4 text-center">
-                  Количество кредитов для пополнения
+                  Количество валюты для пополнения
                 </label>
                 <div className="flex items-center justify-center gap-4">
                   <button 
@@ -252,7 +252,7 @@ export default function TopUpPage() {
                     <ArrowLeft className="w-4 h-4" /> Изменить сумму
                   </button>
                   <div className="text-sm font-bold text-cyan-600 dark:text-cyan-400 bg-cyan-500/10 px-4 py-2 rounded-full border border-cyan-500/20">
-                    Выбрано: {amountCredits} кредитов
+                    Выбрано: {amountCredits} валюты
                   </div>
                 </div>
 
@@ -446,7 +446,7 @@ export default function TopUpPage() {
                   {checkoutMethod === 'revolut' ? `${amountCredits / 10} EUR` : `${amountCredits * 4} UAH`}
                 </span>
                 <span className="text-[10px] text-violet-500 dark:text-violet-400 block font-bold mt-1">
-                  (Баланс +{amountCredits} кредитов)
+                  (Баланс +{amountCredits} валюты)
                 </span>
               </div>
 

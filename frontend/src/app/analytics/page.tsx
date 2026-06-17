@@ -116,7 +116,7 @@ export default function AnalyticsPage() {
               <div>
                 <p className="text-sm text-neutral-500 dark:text-neutral-400 font-medium">Потрачено кредитов</p>
                 <h3 className="text-3xl font-black text-neutral-900 dark:text-white mt-1">
-                  {analytics.total_spent_credits}
+                  {analytics.total_spent_balance}
                 </h3>
               </div>
             </div>
