@@ -35,7 +35,7 @@ class UnlockResponse(BaseModel):
     current_credits: int
 
 @router.get("", response_model=List[LeadResponse])
-async def get_leads(
+def get_leads(
     current_user: AuthUser = Depends(get_current_user),
     supabase: Client = Depends(get_supabase_client)
 ):
@@ -133,7 +133,7 @@ async def get_leads(
 
 
 @router.post("/{lead_id}/unlock", response_model=UnlockResponse)
-async def unlock_lead(
+def unlock_lead(
     lead_id: str,
     current_user: AuthUser = Depends(get_current_user),
     supabase: Client = Depends(get_supabase_client)
@@ -195,7 +195,7 @@ class LeadStatusUpdate(BaseModel):
     status: str
 
 @router.patch("/{lead_id}/status")
-async def update_lead_status(
+def update_lead_status(
     lead_id: str,
     payload: LeadStatusUpdate,
     current_user: AuthUser = Depends(get_current_user),
@@ -248,7 +248,7 @@ class MasterLeadCreate(BaseModel):
     price_credits: int = 50
 
 @router.post("/master")
-async def create_master_lead(
+def create_master_lead(
     lead_data: MasterLeadCreate,
     current_user: AuthUser = Depends(get_current_user),
     supabase: Client = Depends(get_supabase_client)
@@ -289,7 +289,7 @@ class ClientLeadCreate(BaseModel):
     contact: str
 
 @router.post("/client")
-async def create_client_lead(
+def create_client_lead(
     lead_data: ClientLeadCreate,
     supabase: Client = Depends(get_supabase_client)
 ):
@@ -347,7 +347,7 @@ class ProposalCreate(BaseModel):
     proposed_dates: str
 
 @router.post("/{lead_id}/proposals")
-async def create_proposal(
+def create_proposal(
     lead_id: str,
     proposal: ProposalCreate,
     current_user: AuthUser = Depends(get_current_user),
@@ -402,7 +402,7 @@ class ProposalStatusUpdate(BaseModel):
     status: str
 
 @router.put("/{lead_id}/proposals/status")
-async def update_proposal_status(
+def update_proposal_status(
     lead_id: str,
     payload: ProposalStatusUpdate,
     current_user: AuthUser = Depends(get_current_user),
