@@ -93,6 +93,12 @@ export default function DashboardPage() {
       }
 
       const profileData = await response.json()
+      
+      // Fallback to session metadata if backend doesn't return role
+      if (!profileData.role && session.user.user_metadata?.role) {
+        profileData.role = session.user.user_metadata.role
+      }
+      
       setProfile(profileData)
       
       setCurrentSession(session)
