@@ -354,12 +354,15 @@ export default function LoginPage() {
 
         <div className="w-full max-w-md space-y-8 animate-fade-in-up mt-12 md:mt-0">
           
-          {/* Premium Role Toggle - Always shown */}
-          <motion.div 
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="relative flex p-1.5 bg-neutral-200/50 dark:bg-neutral-900/80 backdrop-blur-xl rounded-full border border-neutral-300/50 dark:border-neutral-800/60 shadow-inner overflow-hidden"
-          >
+          {/* Premium Role Toggle - Only shown on Registration */}
+          <AnimatePresence>
+            {isSignUp && (
+              <motion.div 
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="relative flex p-1.5 bg-neutral-200/50 dark:bg-neutral-900/80 backdrop-blur-xl rounded-full border border-neutral-300/50 dark:border-neutral-800/60 shadow-inner overflow-hidden mb-8"
+              >
             <motion.div
               className={`absolute top-1.5 bottom-1.5 w-[calc(50%-6px)] rounded-full shadow-lg ${role === 'master' ? 'bg-gradient-to-r from-orange-600 to-amber-500' : 'bg-gradient-to-r from-indigo-600 to-purple-500'}`}
               animate={{
@@ -386,7 +389,9 @@ export default function LoginPage() {
             >
               ✨ Клиент
             </button>
-          </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* Glassmorphism Form Container */}
           <div className="bg-white/40 dark:bg-neutral-900/40 backdrop-blur-2xl border border-neutral-200/50 dark:border-white/5 shadow-2xl rounded-3xl overflow-hidden">
