@@ -60,7 +60,7 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
               onClick={() => setIsFormOpen(true)}
               className="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl transition-colors"
             >
-              Заполнить бриф
+              Хочу тату
             </button>
           </div>
 
