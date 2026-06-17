@@ -5,7 +5,7 @@ export {}
 
 self.addEventListener('push', (event) => {
   const data = event.data?.json() ?? {}
-  const title = data.title || 'OUT Tattoo'
+  const title = data.title || 'Tattoo HUB'
   const options = {
     body: data.body || 'Новое уведомление',
     icon: '/icon-192x192.png',

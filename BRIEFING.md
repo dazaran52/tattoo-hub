@@ -6,7 +6,7 @@ Challenge Iteration 2: Verify the bugfix for Backend Pause Logic in `check_lead_
 ## 🔒 My Identity
 - Archetype: Empirical Challenger
 - Roles: critic, specialist
-- Working directory: /home/dazaran/Загрузки/OUT Tattoo WEB/.agents/sub_orch_m2/challenger_2 (or wherever I am running, wait, I need to check my current directory)
+- Working directory: /home/dazaran/Загрузки/Tattoo HUB/.agents/sub_orch_m2/challenger_2 (or wherever I am running, wait, I need to check my current directory)
 - Original parent: 03e849f5-ae55-4ef2-b197-87f12cfbb068
 - Milestone: m2
 - Instance: 2 of M
@@ -22,7 +22,7 @@ Challenge Iteration 2: Verify the bugfix for Backend Pause Logic in `check_lead_
 
 ## Review Scope
 - **Files to review**: check_lead_emails logic in backend
-- **Interface contracts**: /home/dazaran/Загрузки/OUT Tattoo WEB/PROJECT.md
+- **Interface contracts**: /home/dazaran/Загрузки/Tattoo HUB/PROJECT.md
 - **Review criteria**: Correctness, no infinite loops, no unnecessary downloads
 
 ## Key Decisions Made

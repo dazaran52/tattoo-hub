@@ -25,7 +25,7 @@ Add the following to your `claude_desktop_config.json`:
     "tattoo-mcp": {
       "command": "node",
       "args": [
-        "/home/dazaran/Загрузки/OUT Tattoo WEB/tattoo-mcp/dist/index.js"
+        "/home/dazaran/Загрузки/Tattoo HUB/tattoo-mcp/dist/index.js"
       ],
       "env": {
         "DATABASE_URL": "postgresql://postgres.[ref]:[password]@[host]:6543/postgres"

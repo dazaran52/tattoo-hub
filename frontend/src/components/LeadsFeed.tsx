@@ -603,7 +603,7 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, showOnlyUnlocked =
               className="flex items-center gap-2 px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg text-sm font-bold shadow-md hover:shadow-lg transition-all whitespace-nowrap"
             >
               <Plus className="w-4 h-4" />
-              Слить лида
+              Разместить заявку
             </button>
           )}
           {!showOnlyUnlocked && userCities.length > 0 && (

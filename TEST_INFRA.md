@@ -1,4 +1,4 @@
-# E2E Test Infra: OUT Tattoo WEB - Email Parser Upgrade
+# E2E Test Infra: Tattoo HUB - Email Parser Upgrade
 
 ## Test Philosophy
 - Opaque-box, requirement-driven. No dependency on implementation design.

@@ -24,13 +24,13 @@ class Settings(BaseSettings):
     SMTP_PORT: int = 587
     SMTP_USERNAME: str | None = None
     SMTP_PASSWORD: str | None = None
-    SMTP_FROM_EMAIL: str = "noreply@outtattoo.com"
+    SMTP_FROM_EMAIL: str = "noreply@tattoo-hub.xyz"
     
     # App Configuration
     APP_HOST: str = "0.0.0.0"
     APP_PORT: int = 8000
     APP_ENV: str = "development"
-    DONATELLO_X_KEY: str = "OUT_TATTOO_SECRET_123"
+    DONATELLO_X_KEY: str = "TATTOO_HUB_SECRET_123"
     
     # Conversational AI
     GEMINI_API_KEY: str | None = None

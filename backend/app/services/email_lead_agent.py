@@ -217,7 +217,7 @@ def send_chat_notification_to_client(to_email: str, client_token: str, lead_titl
         
         <p style="font-size: 0.9em; color: #666; margin-top: 30px;">
           С уважением,<br>
-          Команда OUT Tattoo
+          Команда Tattoo HUB
         </p>
       </body>
     </html>
@@ -319,7 +319,7 @@ async def process_lead_email(sender_name: str | None, sender_email: str, subject
     
     # Build System Prompt and User Prompt for Gemini
     system_prompt = (
-        "You are an AI booking coordinator representing the OUT Tattoo Hub platform. "
+        "You are an AI booking coordinator representing the Tattoo HUB platform. "
         "Your role is to help matching clients with professional tattoo artists in their region.\n"
         "Your goal is to collect these requirements through email dialogue in a warm, welcoming tone:\n"
         "1. Tattoo Style (e.g., realism, sketch, old school, blackwork, watercolor, etc.)\n"
@@ -578,7 +578,7 @@ def check_lead_emails(loop: asyncio.AbstractEventLoop):
                     
                 if not msg_id:
                     unique_str = f"{sender_email}{subject_header}{date_header}"
-                    msg_id = f"<{hashlib.sha256(unique_str.encode('utf-8')).hexdigest()}@synthetic.outtattoo>"
+                    msg_id = f"<{hashlib.sha256(unique_str.encode('utf-8')).hexdigest()}@synthetic.tattoohub>"
                 else:
                     msg_id = str(msg_id).strip()
                     

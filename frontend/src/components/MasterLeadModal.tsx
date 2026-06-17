@@ -64,7 +64,7 @@ export function MasterLeadModal({ isOpen, onClose, onSuccess, language, cities, 
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
       <div className="bg-white dark:bg-neutral-900 w-full max-w-md rounded-2xl shadow-xl overflow-hidden animate-in zoom-in-95 duration-200">
         <div className="flex justify-between items-center p-4 border-b border-neutral-200 dark:border-neutral-800">
-          <h2 className="text-xl font-bold text-neutral-900 dark:text-white">Слить своего лида</h2>
+          <h2 className="text-xl font-bold text-neutral-900 dark:text-white">Разместить свой лид</h2>
           <button onClick={onClose} className="p-2 text-neutral-500 hover:text-neutral-900 dark:hover:text-white rounded-full transition-colors">
             <X className="w-5 h-5" />
           </button>

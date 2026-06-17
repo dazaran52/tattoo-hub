@@ -1,4 +1,4 @@
-# OUT Tattoo Leads - B2B SaaS
+# Tattoo HUB - B2B SaaS
 
 Автономный B2B Web-SaaS для тату-мастеров с системой лидогенерации.
 

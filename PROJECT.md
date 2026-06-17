@@ -1,4 +1,4 @@
-# Project: OUT Tattoo WEB - Email Parser Upgrade
+# Project: Tattoo HUB - Email Parser Upgrade
 
 ## Architecture
 - `backend/app/services/email_lead_agent.py`: Handles fetching emails, parsing with Gemini, calculating prices, and replying.
