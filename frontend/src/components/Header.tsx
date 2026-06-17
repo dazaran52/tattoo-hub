@@ -104,44 +104,48 @@ export function Header({ profile, onLogout }: HeaderProps) {
               )}
             </div>
 
-            {/* Help Button */}
-            <button 
-              onClick={() => setStartTour(true)} 
-              className="hidden sm:flex items-center gap-2 px-3 py-2 text-sm font-medium text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
-            >
-              <HelpCircle className="w-4 h-4" />
-              {t('howItWorks')}
-            </button>
-
-            {/* Credits Counter & Top-up */}
-            <div id="tour-balance" className="flex items-center gap-1">
+            {/* Help Button (Master only) */}
+            {profile.role === 'master' && (
               <button 
-                onClick={() => setShowHistory(true)}
-                title="История пополнений"
-                className="flex items-center gap-2 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800/50 dark:hover:bg-neutral-800 transition-colors pl-4 pr-3 py-2 rounded-l-lg border border-neutral-200 dark:border-neutral-700 cursor-pointer"
+                onClick={() => setStartTour(true)} 
+                className="hidden sm:flex items-center gap-2 px-3 py-2 text-sm font-medium text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
               >
-                <Gem className="w-4 h-4 text-cyan-500 dark:text-cyan-400" />
-                <span className="font-bold text-neutral-900 dark:text-white">{profile.credits}</span>
-                <span className="text-sm text-neutral-600 dark:text-neutral-300 pr-1">{t('credit_plural')}</span>
-                
-                {profile.discount_tokens > 0 && (
-                  <div className="flex items-center gap-1 ml-2 pl-2 border-l border-neutral-300 dark:border-neutral-600" title="Скидочные токены (50% скидка на лид)">
-                    <Ticket className="w-4 h-4 text-amber-500" />
-                    <span className="font-bold text-neutral-900 dark:text-white">{profile.discount_tokens}</span>
-                  </div>
-                )}
+                <HelpCircle className="w-4 h-4" />
+                {t('howItWorks')}
               </button>
-              <button
-                onClick={() => router.push('/top-up')}
-                className="flex items-center justify-center bg-cyan-500 hover:bg-cyan-600 dark:bg-cyan-600 dark:hover:bg-cyan-500 text-white px-2 py-2 rounded-r-lg transition-colors border border-cyan-500 dark:border-cyan-600"
-                title="Пополнить баланс"
-              >
-                <Plus className="w-4 h-4" />
-              </button>
-            </div>
+            )}
 
-            {/* Notifications Menu */}
-            <NotificationsMenu />
+            {/* Credits Counter & Top-up (Master only) */}
+            {profile.role === 'master' && (
+              <div id="tour-balance" className="flex items-center gap-1">
+                <button 
+                  onClick={() => setShowHistory(true)}
+                  title="История пополнений"
+                  className="flex items-center gap-2 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800/50 dark:hover:bg-neutral-800 transition-colors pl-4 pr-3 py-2 rounded-l-lg border border-neutral-200 dark:border-neutral-700 cursor-pointer"
+                >
+                  <Gem className="w-4 h-4 text-cyan-500 dark:text-cyan-400" />
+                  <span className="font-bold text-neutral-900 dark:text-white">{profile.credits}</span>
+                  <span className="text-sm text-neutral-600 dark:text-neutral-300 pr-1">{t('credit_plural')}</span>
+                  
+                  {profile.discount_tokens > 0 && (
+                    <div className="flex items-center gap-1 ml-2 pl-2 border-l border-neutral-300 dark:border-neutral-600" title="Скидочные токены (50% скидка на лид)">
+                      <Ticket className="w-4 h-4 text-amber-500" />
+                      <span className="font-bold text-neutral-900 dark:text-white">{profile.discount_tokens}</span>
+                    </div>
+                  )}
+                </button>
+                <button
+                  onClick={() => router.push('/top-up')}
+                  className="flex items-center justify-center bg-cyan-500 hover:bg-cyan-600 dark:bg-cyan-600 dark:hover:bg-cyan-500 text-white px-2 py-2 rounded-r-lg transition-colors border border-cyan-500 dark:border-cyan-600"
+                  title="Пополнить баланс"
+                >
+                  <Plus className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+
+            {/* Notifications Menu (Master only or standard depending on logic, let's keep it but only if master) */}
+            {profile.role === 'master' && <NotificationsMenu />}
 
             {/* Menu Button */}
             <div id="tour-profile" className="relative">
@@ -158,16 +162,14 @@ export function Header({ profile, onLogout }: HeaderProps) {
                     <LayoutDashboard className="w-4 h-4" />
                     {t('dashboard')}
                   </a>
-                  <a href="/analytics" className="flex items-center gap-3 px-4 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800">
-                    <BarChart2 className="w-4 h-4" />
-                    {t('analytics')}
-                  </a>
+                  {profile.role === 'master' && (
+                    <a href="/analytics" className="flex items-center gap-3 px-4 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800">
+                      <BarChart2 className="w-4 h-4" />
+                      {t('analytics')}
+                    </a>
+                  )}
                   <div className="border-t border-neutral-200 dark:border-neutral-800 my-1"></div>
                   
-                  <button onClick={handleSubscribe} disabled={isSubscribing} className="flex items-center gap-3 px-4 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 w-full text-left">
-                    <Bell className={`w-4 h-4 ${isSubscribing ? 'animate-pulse' : ''}`} />
-                    {t('enablePushNotifications')}
-                  </button>
                   <button onClick={toggleLanguage} className="flex items-center gap-3 px-4 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 w-full text-left">
                     <Globe className="w-4 h-4" />
                     {t('language')}: <span className="uppercase font-semibold">{language === 'cs' ? 'cz' : language}</span>
@@ -189,7 +191,7 @@ export function Header({ profile, onLogout }: HeaderProps) {
                       {t('adminPanel')}
                     </a>
                   )}
-                  {profile.own_referral_code && (
+                  {profile.role === 'master' && profile.own_referral_code && (
                     <>
                       <div className="border-t border-neutral-200 dark:border-neutral-800 my-1"></div>
                       <div className="px-4 py-2 flex items-center justify-between group cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-800"
@@ -198,12 +200,12 @@ export function Header({ profile, onLogout }: HeaderProps) {
                              import('react-hot-toast').then(mod => mod.default.success('Реферальный код скопирован!'));
                            }}
                            title="Скопировать реферальный код">
-                        <div className="flex flex-col">
-                          <span className="text-xs text-neutral-500">Реферальный код</span>
-                          <span className="text-sm font-mono font-bold text-neutral-900 dark:text-white">{profile.own_referral_code}</span>
-                        </div>
-                        <Copy className="w-4 h-4 text-neutral-400 group-hover:text-neutral-900 dark:group-hover:text-white" />
-                      </div>
+                         <div className="flex flex-col">
+                           <span className="text-xs text-neutral-500">Реферальный код</span>
+                           <span className="text-sm font-mono font-bold text-neutral-900 dark:text-white">{profile.own_referral_code}</span>
+                         </div>
+                         <Copy className="w-4 h-4 text-neutral-400 group-hover:text-neutral-900 dark:group-hover:text-white" />
+                       </div>
                     </>
                   )}
                   <div className="border-t border-neutral-200 dark:border-neutral-800 my-1"></div>

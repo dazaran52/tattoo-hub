@@ -168,6 +168,7 @@ export default function LoginPage() {
               const payload = {
                 description: pendingLead.description,
                 size: pendingLead.size,
+                client_priority: pendingLead.priority || 'quality'
               }
               const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
               const res = await fetch(`${apiUrl}/api/leads/client`, {
@@ -216,6 +217,7 @@ export default function LoginPage() {
               const payload = {
                 description: pendingLead.description,
                 size: pendingLead.size,
+                client_priority: pendingLead.priority || 'quality'
               }
               const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
               const res = await fetch(`${apiUrl}/api/leads/client`, {
@@ -252,7 +254,7 @@ export default function LoginPage() {
     <div className="min-h-[100dvh] flex flex-col md:flex-row overflow-hidden relative bg-neutral-50 dark:bg-[#050505] transition-colors duration-300">
       
       {/* LEFT SIDE: Visuals & Branding (Hidden on small mobile, stacked on tablet, split on desktop) */}
-      <div className="relative w-full md:w-1/2 min-h-[30vh] md:min-h-screen flex flex-col items-center justify-center p-8 lg:p-16 overflow-hidden border-b md:border-b-0 md:border-r border-neutral-200/50 dark:border-white/5 bg-[#0a0a0a] text-white z-0">
+      <div className="relative w-full md:w-1/2 min-h-[30vh] md:min-h-screen flex flex-col items-center justify-center p-8 lg:p-16 overflow-hidden border-b md:border-b-0 md:border-r border-neutral-200/50 dark:border-white/5 bg-neutral-100 dark:bg-[#0a0a0a] text-neutral-900 dark:text-white transition-colors duration-300 z-0">
         
         {/* Dynamic Abstract Background Orb */}
         <div className="absolute inset-0 z-0 pointer-events-none flex items-center justify-center">
@@ -267,7 +269,7 @@ export default function LoginPage() {
               x: { type: "spring", damping: 30, stiffness: 50 },
               y: { type: "spring", damping: 30, stiffness: 50 }
             }}
-            className="relative w-full h-full max-w-2xl max-h-2xl opacity-60 mix-blend-screen"
+            className="relative w-full h-full max-w-2xl max-h-2xl opacity-40 dark:opacity-60 mix-blend-multiply dark:mix-blend-screen"
           >
             <AnimatePresence mode="wait">
               {role === 'master' ? (
@@ -294,7 +296,7 @@ export default function LoginPage() {
         </div>
 
         {/* Premium Grid Overlay */}
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:64px_64px] z-0 pointer-events-none" />
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(0,0,0,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(0,0,0,0.03)_1px,transparent_1px)] dark:bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] z-0 pointer-events-none" />
 
         {/* Branding Content */}
         <div className="relative z-10 flex flex-col items-center md:items-start text-center md:text-left w-full max-w-lg">
@@ -316,10 +318,10 @@ export default function LoginPage() {
               transition={{ duration: 0.5 }}
               className="space-y-4"
             >
-              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tighter text-white drop-shadow-lg">
+              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tighter text-neutral-900 dark:text-white drop-shadow-lg">
                 {role === 'master' ? 'Управляйте своим бизнесом.' : 'Найдите идеального мастера.'}
               </h1>
-              <p className="text-lg md:text-xl text-neutral-300 font-light">
+              <p className="text-lg md:text-xl text-neutral-600 dark:text-neutral-300 font-light">
                 {role === 'master' 
                   ? 'Premium платформа для тату-мастеров. Получайте клиентов, ведите запись и масштабируйтесь.' 
                   : 'Сотни проверенных профессионалов, удобный поиск и безопасная запись на сеанс.'}
@@ -330,10 +332,10 @@ export default function LoginPage() {
       </div>
 
       {/* RIGHT SIDE: Interactive Form */}
-      <div className="relative w-full md:w-1/2 flex flex-col items-center justify-center p-4 sm:p-8 lg:p-16 z-10 pb-safe overflow-y-auto">
+      <div className="relative w-full md:w-1/2 flex flex-col items-center justify-center p-4 pt-20 pb-28 sm:pt-8 sm:pb-8 sm:p-8 lg:p-16 z-10 overflow-y-auto min-h-screen md:min-h-0">
         
         {/* Top bar with Language and Theme Switcher */}
-        <div className="absolute top-6 right-6 z-50 flex gap-2">
+        <div className="absolute top-4 right-4 md:top-6 md:right-6 z-50 flex gap-2">
           <button
             onClick={toggleTheme}
             className="flex items-center justify-center p-2.5 bg-neutral-900/5 dark:bg-neutral-900/50 backdrop-blur-md border border-neutral-200/50 dark:border-neutral-800 rounded-full text-neutral-600 dark:text-neutral-400 hover:text-neutral-950 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-all shadow-sm"
@@ -350,44 +352,41 @@ export default function LoginPage() {
           </button>
         </div>
 
-        <div className="w-full max-w-md space-y-8 animate-fade-in-up">
+        <div className="w-full max-w-md space-y-8 animate-fade-in-up mt-12 md:mt-0">
           
-          {/* Premium Role Toggle - Only shown during registration */}
-          {isSignUp && (
-            <motion.div 
-              initial={{ opacity: 0, height: 0, y: -20 }}
-              animate={{ opacity: 1, height: 'auto', y: 0 }}
-              exit={{ opacity: 0, height: 0, y: -20 }}
-              className="relative flex p-1.5 bg-neutral-200/50 dark:bg-neutral-900/80 backdrop-blur-xl rounded-full border border-neutral-300/50 dark:border-neutral-800/60 shadow-inner overflow-hidden"
+          {/* Premium Role Toggle - Always shown */}
+          <motion.div 
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="relative flex p-1.5 bg-neutral-200/50 dark:bg-neutral-900/80 backdrop-blur-xl rounded-full border border-neutral-300/50 dark:border-neutral-800/60 shadow-inner overflow-hidden"
+          >
+            <motion.div
+              className={`absolute top-1.5 bottom-1.5 w-[calc(50%-6px)] rounded-full shadow-lg ${role === 'master' ? 'bg-gradient-to-r from-orange-600 to-amber-500' : 'bg-gradient-to-r from-indigo-600 to-purple-500'}`}
+              animate={{
+                left: role === 'master' ? '6px' : 'calc(50%)',
+              }}
+              transition={{ type: "spring", stiffness: 400, damping: 30 }}
+            />
+            
+            <button
+              type="button"
+              onClick={() => {
+                setRole('master');
+              }}
+              className={`relative z-10 flex-1 py-3 text-sm font-bold tracking-wide transition-colors duration-300 flex items-center justify-center gap-2 ${role === 'master' ? 'text-white' : 'text-neutral-500 dark:text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-300'}`}
             >
-              <motion.div
-                className={`absolute top-1.5 bottom-1.5 w-[calc(50%-6px)] rounded-full shadow-lg ${role === 'master' ? 'bg-gradient-to-r from-orange-600 to-amber-500' : 'bg-gradient-to-r from-indigo-600 to-purple-500'}`}
-                animate={{
-                  left: role === 'master' ? '6px' : 'calc(50%)',
-                }}
-                transition={{ type: "spring", stiffness: 400, damping: 30 }}
-              />
-              
-              <button
-                onClick={() => {
-                  setRole('master');
-                  setIsSignUp(true); 
-                }}
-                className={`relative z-10 flex-1 py-3 text-sm font-bold tracking-wide transition-colors duration-300 flex items-center justify-center gap-2 ${role === 'master' ? 'text-white' : 'text-neutral-500 dark:text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-300'}`}
-              >
-                🔥 Мастер
-              </button>
-              <button
-                onClick={() => {
-                  setRole('client');
-                  setIsSignUp(true);
-                }}
-                className={`relative z-10 flex-1 py-3 text-sm font-bold tracking-wide transition-colors duration-300 flex items-center justify-center gap-2 ${role === 'client' ? 'text-white' : 'text-neutral-500 dark:text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-300'}`}
-              >
-                ✨ Клиент
-              </button>
-            </motion.div>
-          )}
+              🔥 Мастер
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setRole('client');
+              }}
+              className={`relative z-10 flex-1 py-3 text-sm font-bold tracking-wide transition-colors duration-300 flex items-center justify-center gap-2 ${role === 'client' ? 'text-white' : 'text-neutral-500 dark:text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-300'}`}
+            >
+              ✨ Клиент
+            </button>
+          </motion.div>
 
           {/* Glassmorphism Form Container */}
           <div className="bg-white/40 dark:bg-neutral-900/40 backdrop-blur-2xl border border-neutral-200/50 dark:border-white/5 shadow-2xl rounded-3xl overflow-hidden">

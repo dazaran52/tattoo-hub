@@ -2,10 +2,12 @@
 
 import { useState, useEffect } from 'react'
 import { Profile } from '@/lib/supabase'
-import { PlusCircle, Heart, Clock } from 'lucide-react'
+import { PlusCircle, Heart, Clock, X } from 'lucide-react'
+import { LeadForm } from '@/components/LeadForm'
 
 export function ClientDashboard({ profile }: { profile: Profile }) {
   const [activeTab, setActiveTab] = useState<'leads' | 'favorites'>('leads')
+  const [isFormOpen, setIsFormOpen] = useState(false)
 
   return (
     <div className="w-full">
@@ -54,7 +56,10 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
             <p className="text-neutral-500 dark:text-neutral-400 mb-6 max-w-sm">
               Опишите вашу идею, и мастера сами предложат вам эскизы и цены.
             </p>
-            <button className="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl transition-colors">
+            <button 
+              onClick={() => setIsFormOpen(true)}
+              className="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl transition-colors"
+            >
               Заполнить бриф
             </button>
           </div>
@@ -79,6 +84,22 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
           <Heart className="w-16 h-16 text-neutral-300 dark:text-neutral-700 mx-auto mb-4" />
           <h3 className="text-xl font-bold text-neutral-500 mb-2">Пока нет избранных мастеров</h3>
           <p className="text-neutral-400">Сохраняйте профили лучших мастеров, чтобы не потерять.</p>
+        </div>
+      )}
+
+      {isFormOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm overflow-y-auto">
+          <div className="relative w-full max-w-4xl max-h-[90vh] overflow-y-auto bg-neutral-50 dark:bg-neutral-950 rounded-3xl p-6 md:p-10 border border-neutral-200 dark:border-neutral-800 shadow-2xl">
+            <button 
+              onClick={() => setIsFormOpen(false)}
+              className="absolute top-6 right-6 z-50 p-2 text-neutral-400 hover:text-neutral-900 dark:hover:text-white rounded-full bg-neutral-200/50 dark:bg-white/5 hover:bg-neutral-200 dark:hover:bg-white/10 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <div className="mt-4">
+              <LeadForm />
+            </div>
+          </div>
         </div>
       )}
     </div>

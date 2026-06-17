@@ -143,11 +143,9 @@ def create_application() -> FastAPI:
     # CORS Configuration
     origins = settings.ALLOWED_ORIGINS.copy()
     
-    # Add Vercel deployment domains in production
+    # Add deployment domains in production
     if settings.APP_ENV == "production":
         origins.extend([
-            "https://out-tattoo-leads.vercel.app",
-            "https://out-tattoo-web.vercel.app",
             "https://tattoo-hub.xyz",
             "https://www.tattoo-hub.xyz"
         ])
@@ -179,7 +177,7 @@ def create_application() -> FastAPI:
     @app.get("/health")
     async def health_check():
         """Health check endpoint."""
-        return {"status": "ok", "service": "out-tattoo-leads-api"}
+        return {"status": "ok", "service": "tattoo-hub-api"}
     
     @app.get("/")
     async def root():

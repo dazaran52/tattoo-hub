@@ -45,49 +45,35 @@ def mock_gemini(mocker):
 @pytest.fixture
 def db_client(mocker):
     # Stateful mock of Supabase client since we can't spin up testcontainers easily
-    mock = mocker.patch('supabase.create_client')
+    mock = mocker.patch('app.services.email_lead_agent.get_supabase_client')
     instance = MagicMock()
     mock.return_value = instance
     
     # Simple state
-    db = {'email_lead_conversations': [], 'leads': []}
+    db = {'email_lead_conversations': [], 'leads': [], 'dummy': []}
     
-    def mock_table(table_name):
-        table_mock = MagicMock()
-        def mock_select(*args, **kwargs):
-            return table_mock
-        def mock_eq(key, value):
-            return table_mock
-        def mock_in_(key, value_list):
-            return table_mock
-        def mock_execute():
-            class Result:
-                data = db[table_name]
-            return Result()
-        def mock_insert(data):
-            class Exec:
-                def execute(self):
-                    db[table_name].append(data)
-                    class Result:
-                        data = [data]
-                    return Result()
-            return Exec()
-        def mock_update(data):
-            class Exec:
-                def execute(self):
-                    if db[table_name]:
-                        db[table_name][0].update(data)
-                    class Result:
-                        data = db[table_name]
-                    return Result()
-            return Exec()
-            
-        table_mock.select = mock_select
-        table_mock.eq = mock_eq
-        table_mock.in_ = mock_in_
-        table_mock.execute = mock_execute
-        table_mock.insert = mock_insert
-        table_mock.update = mock_update
+    table_mock = MagicMock()
+    table_mock.select = MagicMock(return_value=table_mock)
+    table_mock.eq = MagicMock(return_value=table_mock)
+    table_mock.in_ = MagicMock(return_value=table_mock)
+    
+    mock_execute = MagicMock()
+    class MockResult:
+        pass
+    res = MockResult()
+    res.data = []
+    mock_execute.return_value = res
+    table_mock.execute = mock_execute
+    
+    exec_mock = MagicMock()
+    exec_res = MockResult()
+    exec_res.data = []
+    exec_mock.execute.return_value = exec_res
+    
+    table_mock.insert = MagicMock(return_value=exec_mock)
+    table_mock.update = MagicMock(return_value=exec_mock)
+    
+    def mock_table(table_name="dummy"):
         return table_mock
         
     instance.table = mock_table

@@ -260,8 +260,17 @@ export default function ProfilePage() {
     <div className="min-h-screen bg-neutral-50 dark:bg-[#050505] text-neutral-900 dark:text-white transition-colors duration-300 relative overflow-hidden">
       {/* Premium ambient glows */}
       <div className="absolute top-0 left-0 w-full h-full pointer-events-none overflow-hidden z-0">
-        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-cyan-500/5 dark:bg-cyan-500/10 blur-[120px]" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-purple-500/5 dark:bg-purple-500/10 blur-[120px]" />
+        {profile.role === 'master' ? (
+          <>
+            <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-orange-500/5 dark:bg-orange-500/10 blur-[120px]" />
+            <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-amber-500/5 dark:bg-amber-500/10 blur-[120px]" />
+          </>
+        ) : (
+          <>
+            <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-indigo-500/5 dark:bg-indigo-500/10 blur-[120px]" />
+            <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-purple-500/5 dark:bg-purple-500/10 blur-[120px]" />
+          </>
+        )}
       </div>
 
       <Header profile={profile} onLogout={handleLogout} />
@@ -345,39 +354,41 @@ export default function ProfilePage() {
             </div>
 
             {/* Referral Card */}
-            <div className="mt-6 bg-gradient-to-r from-purple-500/10 to-indigo-500/10 border border-purple-200 dark:border-purple-500/20 rounded-2xl p-5 relative overflow-hidden">
-              <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
-                <Gift className="w-24 h-24 text-purple-500" />
-              </div>
-              <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                  <h3 className="text-lg font-bold text-neutral-900 dark:text-white flex items-center gap-2 mb-1">
-                    <Gift className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                    Пригласи друга - получи бонус!
-                  </h3>
-                  <p className="text-sm text-neutral-500 dark:text-neutral-400 max-w-md">
-                    Поделись своим кодом с другими мастерами. Когда их профиль одобрят, ты получишь 1 скидочный токен (скидка 50% на любую заявку).
-                  </p>
+            {profile.role === 'master' && (
+              <div className="mt-6 bg-gradient-to-r from-purple-500/10 to-indigo-500/10 border border-purple-200 dark:border-purple-500/20 rounded-2xl p-5 relative overflow-hidden">
+                <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
+                  <Gift className="w-24 h-24 text-purple-500" />
                 </div>
-                
-                {profile.own_referral_code && (
-                  <div className="flex flex-col items-center md:items-end">
-                    <div className="bg-white/60 dark:bg-neutral-900/60 backdrop-blur-md shadow-sm border border-purple-200 dark:border-purple-900/30 rounded-xl px-4 py-2 flex items-center gap-3">
-                      <span className="font-mono font-bold text-lg text-purple-700 dark:text-purple-400">
-                        {profile.own_referral_code}
-                      </span>
-                      <button 
-                        onClick={() => navigator.clipboard.writeText(profile.own_referral_code || '')}
-                        className="p-1.5 hover:bg-purple-100 dark:hover:bg-purple-900/30 text-purple-600 dark:text-purple-300 rounded transition-colors"
-                        title="Скопировать"
-                      >
-                        <Copy className="w-4 h-4" />
-                      </button>
-                    </div>
+                <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <div>
+                    <h3 className="text-lg font-bold text-neutral-900 dark:text-white flex items-center gap-2 mb-1">
+                      <Gift className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                      Пригласи друга - получи бонус!
+                    </h3>
+                    <p className="text-sm text-neutral-500 dark:text-neutral-400 max-w-md">
+                      Поделись своим кодом с другими мастерами. Когда их профиль одобрят, ты получишь 1 скидочный токен (скидка 50% на любую заявку).
+                    </p>
                   </div>
-                )}
+                  
+                  {profile.own_referral_code && (
+                    <div className="flex flex-col items-center md:items-end">
+                      <div className="bg-white/60 dark:bg-neutral-900/60 backdrop-blur-md shadow-sm border border-purple-200 dark:border-purple-900/30 rounded-xl px-4 py-2 flex items-center gap-3">
+                        <span className="font-mono font-bold text-lg text-purple-700 dark:text-purple-400">
+                          {profile.own_referral_code}
+                        </span>
+                        <button 
+                          onClick={() => navigator.clipboard.writeText(profile.own_referral_code || '')}
+                          className="p-1.5 hover:bg-purple-100 dark:hover:bg-purple-900/30 text-purple-600 dark:text-purple-300 rounded transition-colors"
+                          title="Скопировать"
+                        >
+                          <Copy className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
+            )}
 
             {!isEditing && (
               <button

@@ -54,6 +54,11 @@ type Translations = {
     // Navigation
     dashboard: string;
     logout: string;
+    allLeads: string;
+    myLeads: string;
+    auctions: string;
+    myCrm: string;
+    messages: string;
     
     // Welcome
     welcome: string;
@@ -198,6 +203,11 @@ const translations: Translations = {
     
     dashboard: 'Dashboard',
     logout: 'Odhlásit se',
+    allLeads: 'Všechny poptávky',
+    myLeads: 'Moje poptávky',
+    auctions: 'Aukce',
+    myCrm: 'Moje CRM',
+    messages: 'Zprávy',
     
     welcome: 'Vítejte',
     availableLeads: 'Dostupné poptávky k zakoupení',
@@ -334,6 +344,11 @@ const translations: Translations = {
     
     dashboard: 'Главная',
     logout: 'Выйти',
+    allLeads: 'Все лиды',
+    myLeads: 'Мои лиды',
+    auctions: 'Аукционы',
+    myCrm: 'Моя CRM',
+    messages: 'Сообщения',
     
     welcome: 'Добро пожаловать',
     availableLeads: 'Доступные тату-лиды для покупки',
@@ -470,6 +485,11 @@ const translations: Translations = {
     
     dashboard: 'Dashboard',
     logout: 'Logout',
+    allLeads: 'All Leads',
+    myLeads: 'My Leads',
+    auctions: 'Auctions',
+    myCrm: 'My CRM',
+    messages: 'Messages',
     
     welcome: 'Welcome',
     availableLeads: 'Available tattoo leads for purchase',

@@ -8,10 +8,11 @@ def setup_settings():
     with patch("app.services.email_lead_agent.get_settings") as mock_get_settings:
         settings = mock_get_settings.return_value
         settings.GEMINI_API_KEY = "test_key"
+        settings.LEAD_REPLY_SMTP_PORT = 465
         yield settings
 
 @pytest.mark.asyncio
-async def test_extract_all_8_fields_correctly(mock_gemini, db_client):
+async def test_extract_all_8_fields_correctly(mock_gemini, db_client, mock_smtp):
     """Verifies all 8 fields are parsed and saved."""
     db_client.table().select().eq().execute.return_value.data = []
     db_client.table().insert().execute.return_value.data = [{"id": "1", "collected_data": {"processed_message_ids": []}}]

@@ -55,26 +55,26 @@ export function InstallPrompt() {
 
   return (
     <div className="fixed bottom-4 left-4 right-4 z-50 animate-fade-in-up">
-      <div className="bg-neutral-900 border border-neutral-800 shadow-2xl shadow-black rounded-2xl p-4 flex items-center justify-between gap-4">
+      <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-2xl rounded-2xl p-4 flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 bg-indigo-900/30 rounded-xl flex items-center justify-center flex-shrink-0">
-            <Download className="w-6 h-6 text-indigo-400" />
+          <div className="w-12 h-12 bg-indigo-100 dark:bg-indigo-900/30 rounded-xl flex items-center justify-center flex-shrink-0">
+            <Download className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
           </div>
           <div>
-            <h3 className="text-sm font-bold text-white">Установить приложение</h3>
-            <p className="text-xs text-neutral-400">Для быстрого доступа и уведомлений</p>
+            <h3 className="text-sm font-bold text-neutral-900 dark:text-white">Установить приложение</h3>
+            <p className="text-xs text-neutral-500 dark:text-neutral-400">Для быстрого доступа и уведомлений</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={handleInstallClick}
-            className="px-4 py-2 bg-indigo-500 hover:bg-indigo-400 text-white text-sm font-bold rounded-lg transition-colors whitespace-nowrap"
+            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-bold rounded-lg transition-colors whitespace-nowrap"
           >
             Установить
           </button>
           <button
             onClick={() => setShowPrompt(false)}
-            className="p-2 text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800 rounded-lg transition-colors"
+            className="p-2 text-neutral-400 hover:text-neutral-600 dark:text-neutral-400 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
           >
             <X className="w-5 h-5" />
           </button>

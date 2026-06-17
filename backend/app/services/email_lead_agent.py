@@ -436,7 +436,7 @@ async def process_lead_email(sender_name: str | None, sender_email: str, subject
             logger.info("Successfully created a new lead in public.leads!")
             
             # Send SMTP confirmation email to client
-            portal_url = f"https://out-tattoo.com/c/{lead_id}?token={client_token}"
+            portal_url = f"https://tattoo-hub.xyz/c/{lead_id}?token={client_token}"
             confirm_subject = f"Re: {subject}"
             confirm_body = (
                 f"<p>Здравствуйте, {sender_name or ''}!</p>"

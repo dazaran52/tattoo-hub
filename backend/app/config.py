@@ -60,8 +60,6 @@ class Settings(BaseSettings):
     ALLOWED_ORIGINS: list[str] = [
         "http://localhost:3000",
         "https://localhost:3000",
-        "https://out-tattoo-web.vercel.app",
-        "https://out-tattoo-leads.vercel.app",
         "https://tattoo-hub.xyz",
         "https://www.tattoo-hub.xyz"
     ]

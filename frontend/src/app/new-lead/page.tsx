@@ -10,6 +10,7 @@ export default function NewLeadPage() {
   const [step, setStep] = useState(1)
   const [description, setDescription] = useState('')
   const [selectedSize, setSelectedSize] = useState('')
+  const [priority, setPriority] = useState<'cheap' | 'fast' | 'quality'>('quality')
 
   const canContinue = description.trim().length > 0 && selectedSize !== ''
 
@@ -72,10 +73,32 @@ export default function NewLeadPage() {
                     {['Мини', 'Средняя', 'Большая'].map(size => (
                       <button 
                         key={size}
+                        type="button"
                         onClick={() => setSelectedSize(size)}
                         className={`py-3 px-4 rounded-xl border transition-all text-sm font-medium text-center ${selectedSize === size ? 'border-indigo-500 bg-indigo-500/20 text-white shadow-[0_0_15px_rgba(99,102,241,0.3)]' : 'border-white/10 bg-white/5 hover:bg-white/10 text-neutral-400 hover:text-white'}`}
                       >
                         {size}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-neutral-400 mb-2">Что в приоритете?</label>
+                  <div className="grid grid-cols-3 gap-3">
+                    {[
+                      { id: 'cheap', name: 'Дешево', emoji: '💸' },
+                      { id: 'fast', name: 'Быстро', emoji: '⚡' },
+                      { id: 'quality', name: 'Качественно', emoji: '💎' }
+                    ].map(p => (
+                      <button 
+                        key={p.id}
+                        type="button"
+                        onClick={() => setPriority(p.id as any)}
+                        className={`py-3 px-2 rounded-xl border transition-all text-sm font-medium text-center flex flex-col items-center justify-center gap-1 ${priority === p.id ? 'border-indigo-500 bg-indigo-500/20 text-white shadow-[0_0_15px_rgba(99,102,241,0.3)]' : 'border-white/10 bg-white/5 hover:bg-white/10 text-neutral-400 hover:text-white'}`}
+                      >
+                        <span className="text-base">{p.emoji}</span>
+                        <span className="text-xs">{p.name}</span>
                       </button>
                     ))}
                   </div>
@@ -116,7 +139,7 @@ export default function NewLeadPage() {
                 <div className="space-y-4">
                   <button 
                     onClick={() => {
-                      localStorage.setItem('pending_lead', JSON.stringify({ description, size: selectedSize }))
+                      localStorage.setItem('pending_lead', JSON.stringify({ description, size: selectedSize, priority }))
                       router.push('/login?register=client')
                     }}
                     className="w-full py-4 rounded-full bg-white text-black font-bold text-lg hover:scale-105 transition-transform"
@@ -125,7 +148,7 @@ export default function NewLeadPage() {
                   </button>
                   <button 
                     onClick={() => {
-                      localStorage.setItem('pending_lead', JSON.stringify({ description, size: selectedSize }))
+                      localStorage.setItem('pending_lead', JSON.stringify({ description, size: selectedSize, priority }))
                       router.push('/login?role=client')
                     }}
                     className="w-full py-4 rounded-full bg-white/5 text-white font-bold text-lg hover:bg-white/10 transition-colors border border-white/10"

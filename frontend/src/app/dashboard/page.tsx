@@ -154,8 +154,17 @@ export default function DashboardPage() {
     <div className="min-h-screen bg-neutral-50 dark:bg-[#050505] text-neutral-900 dark:text-white transition-colors duration-300 relative overflow-hidden">
       {/* Premium ambient glows */}
       <div className="absolute top-0 left-0 w-full h-full pointer-events-none overflow-hidden z-0">
-        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-cyan-500/5 dark:bg-cyan-500/10 blur-[120px]" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-purple-500/5 dark:bg-purple-500/10 blur-[120px]" />
+        {profile.role === 'master' ? (
+          <>
+            <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-orange-500/5 dark:bg-orange-500/10 blur-[120px]" />
+            <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-amber-500/5 dark:bg-amber-500/10 blur-[120px]" />
+          </>
+        ) : (
+          <>
+            <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-indigo-500/5 dark:bg-indigo-500/10 blur-[120px]" />
+            <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-purple-500/5 dark:bg-purple-500/10 blur-[120px]" />
+          </>
+        )}
       </div>
 
       <Header profile={profile} onLogout={handleLogout} />
@@ -188,7 +197,7 @@ export default function DashboardPage() {
                         : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200 hover:bg-white/50 dark:hover:bg-neutral-800/50'
                     }`}
                   >
-                    Все лиды
+                    {t('allLeads')}
                   </button>
                   <button
                     onClick={() => setActiveTab('my-leads')}
@@ -198,7 +207,7 @@ export default function DashboardPage() {
                         : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200 hover:bg-white/50 dark:hover:bg-neutral-800/50'
                     }`}
                   >
-                    Мои лиды
+                    {t('myLeads')}
                   </button>
                   <button
                     onClick={() => setActiveTab('auctions')}
@@ -208,7 +217,7 @@ export default function DashboardPage() {
                         : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200 hover:bg-white/50 dark:hover:bg-neutral-800/50'
                     }`}
                   >
-                    Аукционы
+                    {t('auctions')}
                   </button>
                   <div className="w-px h-6 bg-neutral-200 dark:bg-white/10 self-center mx-1"></div>
                   <button
@@ -220,7 +229,7 @@ export default function DashboardPage() {
                     }`}
                   >
                     <LayoutDashboard className="w-4 h-4" />
-                    Моя CRM
+                    {t('myCrm')}
                   </button>
                   <button
                     onClick={() => setActiveTab('messages')}
@@ -231,7 +240,7 @@ export default function DashboardPage() {
                     }`}
                   >
                     <MessageCircle className="w-4 h-4" />
-                    Сообщения
+                    {t('messages')}
                   </button>
                 </div>
               )}

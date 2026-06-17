@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { SkeletonCard } from '@/components/SkeletonCard'
-import { RefreshCw, Search, Loader2, Plus, Edit2, Trash2, XCircle, ChevronLeft, ChevronRight, Image as ImageIcon, Clock } from 'lucide-react'
+import { RefreshCw, Search, Loader2, Plus, Edit2, Trash2, XCircle, ChevronLeft, ChevronRight, Image as ImageIcon, Clock, Bell, BellOff } from 'lucide-react'
 import { getTranslation, Language } from '@/lib/i18n'
 import { LowBalanceModal } from '@/components/LowBalanceModal'
 import { DisputeModal } from '@/components/DisputeModal'
@@ -620,13 +620,23 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, showOnlyUnlocked =
           )}
           <button
             onClick={togglePushNotifications}
-            className={`flex items-center gap-2 px-4 py-2 border rounded-lg text-sm transition-colors ${
+            className={`flex items-center gap-2.5 px-4 py-2 border rounded-full text-sm font-semibold transition-all duration-300 shadow-sm hover:scale-[1.02] ${
               pushEnabled 
-                ? 'bg-violet-500/10 border-violet-500/30 text-violet-700 dark:text-violet-400' 
-                : 'bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 text-neutral-700 dark:text-neutral-300 hover:border-neutral-400'
+                ? 'bg-emerald-500/10 dark:bg-emerald-500/20 border-emerald-500/30 dark:border-emerald-500/50 text-emerald-600 dark:text-emerald-400' 
+                : 'bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 text-neutral-500 hover:text-neutral-950 dark:hover:text-white'
             }`}
           >
-            {pushEnabled ? '🔔 Вкл' : '🔕 Уведомления'}
+            {pushEnabled ? (
+              <>
+                <Bell className="w-4 h-4 text-emerald-500 dark:text-emerald-400 animate-pulse" />
+                <span>Уведомления: Вкл</span>
+              </>
+            ) : (
+              <>
+                <BellOff className="w-4 h-4 text-neutral-400" />
+                <span>Уведомления: Выкл</span>
+              </>
+            )}
           </button>
           <button
             onClick={() => fetchLeads()}
