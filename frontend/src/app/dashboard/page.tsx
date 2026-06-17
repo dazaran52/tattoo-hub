@@ -47,8 +47,8 @@ export default function DashboardPage() {
             'postgres_changes',
             { event: 'UPDATE', schema: 'public', table: 'users', filter: `id=eq.${session.user.id}` },
             (payload) => {
-              if (payload.new && 'credits' in payload.new) {
-                setProfile(prev => prev ? { ...prev, credits: payload.new.credits } : null)
+              if (payload.new && 'balance' in payload.new) {
+                setProfile(prev => prev ? { ...prev, balance: payload.new.balance } : null)
                 toast('Баланс обновлен!', { icon: '💳' })
               }
             }
@@ -116,9 +116,9 @@ export default function DashboardPage() {
     window.location.href = '/login'
   }
 
-  const handleUnlockSuccess = (newCredits: number) => {
+  const handleUnlockSuccess = (newBalance: number) => {
     if (profile) {
-      setProfile({ ...profile, credits: newCredits })
+      setProfile({ ...profile, balance: newBalance })
     }
   }
 
