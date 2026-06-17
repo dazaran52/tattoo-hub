@@ -12,8 +12,8 @@ router = APIRouter(prefix="/api/admin", tags=["admin"])
 class UserStatusUpdate(BaseModel):
     status: str
 
-class UserCreditsUpdate(BaseModel):
-    credits: int
+class UserBalanceUpdate(BaseModel):
+    balance: float
 
 class AdminUserResponse(BaseModel):
     id: str
@@ -22,7 +22,7 @@ class AdminUserResponse(BaseModel):
     phone: str | None = None
     bio: str | None = None
     status: str
-    credits: int
+    balance: float
     created_at: str
 
 class LeadCreate(BaseModel):
@@ -94,7 +94,7 @@ async def get_users(
                 phone=u.get("phone"),
                 bio=u.get("bio"),
                 status=u.get("status", "pending"),
-                credits=u["credits"],
+                balance=u.get("balance", 0),
                 created_at=u["created_at"]
             )
             for u in response.data
@@ -192,20 +192,20 @@ async def update_user_status(
             detail=f"Error updating user status: {str(e)}"
         )
 
-@router.put("/users/{user_id}/credits")
-async def update_user_credits(
+@router.put("/users/{user_id}/balance")
+async def update_user_balance(
     user_id: str,
-    update_data: UserCreditsUpdate,
+    update_data: UserBalanceUpdate,
     admin_user: AuthUser = Depends(get_admin_user),
     supabase: Client = Depends(get_supabase_client)
 ):
     """Update a user's credit balance."""
-    if update_data.credits < 0:
+    if update_data.balance < 0:
         raise HTTPException(status_code=400, detail="Credits cannot be negative")
         
     try:
         response = supabase.table("users") \
-            .update({"credits": update_data.credits}) \
+            .update({"balance": update_data.balance}) \
             .eq("id", user_id) \
             .execute()
             
@@ -218,10 +218,10 @@ async def update_user_credits(
             send_transactional_email(
                 to_email=user_email,
                 subject="Ваш баланс Tattoo Hub пополнен!",
-                html_content=f"<h1>Ваш баланс обновлен</h1><p>Текущий баланс: <strong>{update_data.credits} кредитов</strong>.</p>"
+                html_content=f"<h1>Ваш баланс обновлен</h1><p>Текущий баланс: <strong>{update_data.balance} кредитов</strong>.</p>"
             )
             
-        return {"message": f"User credits updated to {update_data.credits}"}
+        return {"message": f"User credits updated to {update_data.balance}"}
     except HTTPException:
         raise
     except Exception as e:

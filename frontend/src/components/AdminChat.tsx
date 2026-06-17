@@ -173,8 +173,7 @@ export function AdminChat() {
 
   const handleUpdateBalance = (userId: string) => {
     const user = usersMap[userId]
-    if (!user) return
-    setBalanceModalUser({ id: userId, email: user.email, credits: user.balance || 0 })
+    setBalanceModalUser({ id: userId, email: user.email, balance: user.balance || 0 })
     setNewBalanceValue((user.balance || 0).toString())
   }
 
@@ -188,17 +187,17 @@ export function AdminChat() {
     }
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/admin/users/${userId}/credits`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/admin/users/${userId}/balance`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${session.access_token}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ credits: num })
+        body: JSON.stringify({ balance: num })
       })
       if (!res.ok) throw new Error('Failed to update credits')
       toast.success('Баланс обновлен')
-      setUsersMap(prev => ({ ...prev, [userId]: { ...prev[userId], credits: num } }))
+      setUsersMap(prev => ({ ...prev, [userId]: { ...prev[userId], balance: num } }))
       setBalanceModalUser(null)
     } catch (err: any) {
       toast.error(err.message)

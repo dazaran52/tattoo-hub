@@ -24,7 +24,7 @@ interface Props {
   withdrawableBalance?: number
 }
 
-export function TransactionHistoryModal({ isOpen, onClose, withdrawableCredits = 0 }: Props) {
+export function TransactionHistoryModal({ isOpen, onClose, withdrawableBalance = 0 }: Props) {
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [language, setLanguage] = useState<string>('cs')
@@ -111,11 +111,11 @@ export function TransactionHistoryModal({ isOpen, onClose, withdrawableCredits =
           </div>
         </div>
 
-        {withdrawableCredits > 0 && (
+        {withdrawableBalance > 0 && (
           <div className="mx-4 mb-4 bg-cyan-50 dark:bg-cyan-900/20 p-4 rounded-xl border border-cyan-100 dark:border-cyan-900/50 flex items-center justify-between">
             <div>
               <p className="text-xs font-bold text-cyan-600 dark:text-cyan-400">Доступно для вывода</p>
-              <p className="text-lg font-bold text-neutral-900 dark:text-white">{withdrawableCredits} кредитов</p>
+              <p className="text-lg font-bold text-neutral-900 dark:text-white">{withdrawableBalance} кредитов</p>
             </div>
             <button
               onClick={() => setShowWithdraw(true)}
@@ -197,7 +197,7 @@ export function TransactionHistoryModal({ isOpen, onClose, withdrawableCredits =
       <WithdrawalModal
         isOpen={showWithdraw}
         onClose={() => setShowWithdraw(false)}
-        withdrawableCredits={withdrawableCredits}
+        withdrawableBalance={withdrawableBalance}
         onSuccess={() => {
           setShowWithdraw(false)
           window.location.reload()

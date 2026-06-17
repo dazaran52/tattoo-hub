@@ -172,7 +172,7 @@ export default function AdminPage() {
       if (!session) return
 
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/admin/users/${userId}/credits`,
+        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/admin/users/${userId}/balance`,
         {
           method: 'PUT',
           headers: {
