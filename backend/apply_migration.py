@@ -13,7 +13,12 @@ async def main():
     
     conn = await asyncpg.connect(db_url)
     
-    with open("migrations/031_fiat_balance_final.sql", "r") as f:
+    import sys
+    if len(sys.argv) < 2:
+        print("Usage: python apply_migration.py <migration_file>")
+        return
+        
+    with open(sys.argv[1], "r") as f:
         sql = f.read()
     
     print("Applying migration...")
