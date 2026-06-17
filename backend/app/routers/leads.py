@@ -7,6 +7,7 @@ from supabase._async.client import AsyncClient
 from typing import List, Optional
 import datetime
 import uuid
+from app.utils.currency import convert_currency, calculate_unlock_price_base
 
 router = APIRouter(prefix="/api/leads", tags=["leads"])
 
@@ -29,6 +30,10 @@ class LeadResponse(BaseModel):
     lowest_bid: int | None = None
     proposal_status: str | None = None
     chat_id: str | None = None
+    client_budget: float | None = None
+    client_currency: str | None = None
+    display_budget: str | None = None
+    is_negotiable_budget: bool = False
 
 class UnlockResponse(BaseModel):
     contacts: str
@@ -45,6 +50,10 @@ def get_leads(
     Leads are limited to 3 unlocks maximum.
     """
     try:
+        # Fetch current master's currency
+        user_res = supabase.table("users").select("currency").eq("id", current_user.user_id).execute()
+        master_currency = user_res.data[0].get("currency", "CZK") if user_res.data else "CZK"
+
         # Fetch all leads
         leads_res = supabase.table("leads").select("*, cities(country_id)").order("created_at", desc=True).execute()
         leads = leads_res.data or []
@@ -103,16 +112,35 @@ def get_leads(
             else:
                 contacts = lead["contacts"] if is_unlocked else "******** [Skryto. Odemkněte za credits]"
                 
+            # Format display budget
+            display_budget = None
+            if lead.get("is_negotiable_budget"):
+                display_budget = "Договорная цена"
+            elif lead.get("client_budget") and lead.get("client_currency"):
+                orig_budget = lead["client_budget"]
+                orig_curr = lead["client_currency"]
+                if orig_curr.upper() == master_currency.upper():
+                    display_budget = f"{orig_budget} {orig_curr}"
+                else:
+                    try:
+                        converted = convert_currency(orig_budget, orig_curr, master_currency)
+                        display_budget = f"{orig_budget} {orig_curr} (~{converted} {master_currency})"
+                    except ValueError:
+                        display_budget = f"{orig_budget} {orig_curr}"
+            
+            # Calculate dynamic unlock price based on the master's currency is NOT NEEDED since it's in credits
+            local_unlock_price = lead.get("price_credits", 1)
+                
             processed_leads.append(LeadResponse(
                 id=lead["id"],
                 title=lead["title"],
                 description=lead["description"],
                 contacts=contacts,
-                price_credits=lead["price_credits"],
+                price_credits=int(local_unlock_price),
                 is_unlocked=is_unlocked,
                 image_urls=lead.get("image_urls") or [],
                 created_at=lead.get("created_at"),
-                country_id=lead.get("cities", {}).get("country_id") if lead.get("cities") else None,
+                country_id=lead.get("country_id") or (lead.get("cities", {}).get("country_id") if lead.get("cities") else None),
                 city_id=lead.get("city_id"),
                 trust_score=lead.get("trust_score", 100),
                 unlock_status=unlock_status,
@@ -121,7 +149,11 @@ def get_leads(
                 client_priority=lead.get("client_priority", "quality"),
                 lowest_bid=lowest_bids.get(lead["id"]) if lead.get("client_priority") == 'cheap' else None,
                 proposal_status=my_proposals.get(lead["id"]),
-                chat_id=my_chats.get(lead["id"])
+                chat_id=my_chats.get(lead["id"]),
+                client_budget=lead.get("client_budget"),
+                client_currency=lead.get("client_currency"),
+                display_budget=display_budget,
+                is_negotiable_budget=lead.get("is_negotiable_budget", False)
             ))
             
         return processed_leads
@@ -286,8 +318,10 @@ class ClientLeadCreate(BaseModel):
     budget_currency: str | None = None
     client_priority: str | None = None
     city: str | None = None
+    country_id: str | None = None
     name: str | None = None
     contact: str
+    is_negotiable_budget: bool = False
 
 @router.post("/client")
 async def create_client_lead(
@@ -310,17 +344,11 @@ async def create_client_lead(
             
         contacts = f"Имя: {lead_data.name or 'Без имени'}, Контакт: {lead_data.contact}"
 
-        # Calculate dynamic price based on 5% of normalized budget in base currency (CZK)
-        price_credits = 50 # Default baseline
-        if lead_data.budget_val and lead_data.budget_currency:
-            base_val = lead_data.budget_val
-            if lead_data.budget_currency == 'EUR':
-                base_val = base_val * 25
-            elif lead_data.budget_currency == 'PLN':
-                base_val = base_val * 5
-            
-            # 5% of the total budget, but at least 10 credits
-            price_credits = max(10, int(base_val * 0.05))
+        # Calculate dynamic price based on base currency (EUR)
+        price_credits = calculate_unlock_price_base(
+            client_budget=lead_data.budget_val if not lead_data.is_negotiable_budget else None,
+            client_currency=lead_data.budget_currency
+        )
 
         client_token = str(uuid.uuid4())
 
@@ -331,7 +359,12 @@ async def create_client_lead(
             "price_credits": price_credits,
             "client_priority": lead_data.client_priority or 'quality',
             "client_token": client_token,
-            "trust_score": 100
+            "trust_score": 100,
+            "client_budget": lead_data.budget_val if not lead_data.is_negotiable_budget else None,
+            "client_currency": lead_data.budget_currency,
+            "is_negotiable_budget": lead_data.is_negotiable_budget,
+            "country_id": lead_data.country_id,
+            "city_id": None # City UUID lookup logic needs implementation later if needed
         }
         
         if current_user:

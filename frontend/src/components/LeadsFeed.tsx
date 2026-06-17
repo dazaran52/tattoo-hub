@@ -37,6 +37,8 @@ export interface Lead {
   lowest_bid?: number
   proposal_status?: string
   chat_id?: string
+  display_budget?: string
+  is_negotiable_budget?: boolean
 }
 
 interface LeadsFeedProps {
@@ -803,6 +805,11 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, showOnlyUnlocked =
                     <span className="bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white text-xs px-3 py-1.5 rounded-full font-bold shadow-sm whitespace-nowrap border border-neutral-200 dark:border-neutral-700 flex items-center gap-1">
                       💎 {lead.price_credits} {t('credits')}
                     </span>
+                    {lead.display_budget && (
+                      <span className="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-400 text-xs px-3 py-1.5 rounded-full font-bold shadow-sm whitespace-nowrap border border-emerald-200 dark:border-emerald-800 flex items-center gap-1">
+                        💰 {lead.display_budget}
+                      </span>
+                    )}
                   </div>
                 </div>
                 <p className="text-neutral-600 dark:text-neutral-400 text-sm mb-4 leading-relaxed line-clamp-3 group-hover:line-clamp-none transition-all">{lead.description}</p>

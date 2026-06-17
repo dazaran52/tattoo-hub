@@ -15,6 +15,8 @@ class ProfileResponse(BaseModel):
     id: str
     email: str
     credits: int
+    balance: float = 0.0
+    currency: str = "CZK"
     created_at: str | None = None
     display_name: str | None = None
     phone: str | None = None
@@ -46,6 +48,7 @@ class ProfileUpdate(BaseModel):
     display_name: str | None = None
     phone: str | None = None
     bio: str | None = None
+    currency: str | None = None
 
 
 @router.get("/profile", response_model=ProfileResponse)
@@ -100,7 +103,9 @@ async def get_profile(
                 "role": role,
                 "status": status_val,
                 "is_verified_master": False,
-                "certificate_url": None
+                "certificate_url": None,
+                "currency": "CZK",
+                "balance": 0.0
             }
             
             response = await supabase.table("users").insert(new_profile).execute()
@@ -147,6 +152,8 @@ async def get_profile(
         id=data["id"],
         email=data["email"],
         credits=data["credits"],
+        balance=float(data.get("balance", 0.0)),
+        currency=data.get("currency", "CZK"),
         created_at=data.get("created_at"),
         display_name=data.get("display_name"),
         phone=data.get("phone"),
@@ -189,6 +196,8 @@ async def update_profile(
             update_dict["phone"] = update_data.phone
         if update_data.bio is not None:
             update_dict["bio"] = update_data.bio
+        if update_data.currency is not None:
+            update_dict["currency"] = update_data.currency
         
         print(f"DEBUG PUT: update_dict={update_dict}")
         
@@ -234,6 +243,8 @@ async def update_profile(
             id=data["id"],
             email=data["email"],
             credits=data["credits"],
+            balance=float(data.get("balance", 0.0)),
+            currency=data.get("currency", "CZK"),
             created_at=data.get("created_at"),
             display_name=data.get("display_name"),
             phone=data.get("phone"),

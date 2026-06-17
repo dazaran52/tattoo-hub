@@ -20,6 +20,7 @@ export function LeadForm() {
     name: '',
     contact: '', // email or phone
     priority: 'quality', // fast, cheap, quality
+    is_negotiable: false,
     images: [] as File[]
   })
 
@@ -116,10 +117,12 @@ export function LeadForm() {
         style: formData.style || null,
         location: formData.location || null,
         size: formData.size || null,
-        budget: formData.budget || null,
+        budget: formData.is_negotiable ? 'Договорная цена' : formData.budget || null,
         budget_val: budgetVal,
         budget_currency: currency,
+        is_negotiable_budget: formData.is_negotiable,
         client_priority: formData.priority,
+        country_id: selectedCountry || null,
         city: formData.city || null,
         name: formData.name || null,
         contact: formData.contact,
@@ -208,7 +211,7 @@ export function LeadForm() {
           onClick={() => { 
             setStep(1)
             setIsSuccess(false)
-            setFormData({description: '', style: '', location: '', size: '', budget: '5000 CZK', city: '', name: '', contact: '', priority: 'quality', images: []}) 
+            setFormData({description: '', style: '', location: '', size: '', budget: '5000 CZK', city: '', name: '', contact: '', priority: 'quality', is_negotiable: false, images: []}) 
             setCurrency('CZK')
             setBudgetVal(5000)
             setSelectedCountry('')
@@ -293,12 +296,18 @@ export function LeadForm() {
                   <label className={labelClasses}>Стиль (опционально)</label>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                     {[
-                      { id: '', name: 'Жду предложений', emoji: '✨' },
+                      { id: '', name: 'Пока не знаю', emoji: '✨' },
                       { id: 'realism', name: 'Реализм', emoji: '👁️' },
                       { id: 'traditional', name: 'Олдскул', emoji: '⚓' },
                       { id: 'minimalism', name: 'Минимализм', emoji: '🖋️' },
                       { id: 'japanese', name: 'Япония', emoji: '🐉' },
                       { id: 'blackwork', name: 'Блэкворк', emoji: '💀' },
+                      { id: 'linework', name: 'Лайнворк', emoji: '〰️' },
+                      { id: 'neotraditional', name: 'Неотрад', emoji: '🌹' },
+                      { id: 'lettering', name: 'Леттеринг', emoji: '📝' },
+                      { id: 'watercolor', name: 'Акварель', emoji: '🎨' },
+                      { id: 'anime', name: 'Аниме', emoji: '🎌' },
+                      { id: 'other', name: 'Другое', emoji: '🤔' },
                     ].map(style => (
                       <button
                         key={style.id}
@@ -388,45 +397,72 @@ export function LeadForm() {
                 </div>
 
                 <div>
-                  <label className={labelClasses}>Ваш бюджет: {budgetVal} {currency}</label>
-                  <div className="flex gap-2 mb-4 p-1.5 bg-white/20 dark:bg-neutral-900/20 backdrop-blur-md border border-neutral-200 dark:border-white/5 rounded-2xl w-fit">
-                    {['CZK', 'EUR', 'PLN'].map(curr => (
-                      <button
-                        key={curr}
-                        type="button"
-                        onClick={() => {
-                          setCurrency(curr)
-                          const defaults: Record<string, number> = { CZK: 5000, EUR: 200, PLN: 1000 }
-                          setBudgetVal(defaults[curr])
-                          setFormData({ ...formData, budget: `${defaults[curr]} ${curr}` })
+                  <div className="flex items-center justify-between mb-2 ml-1">
+                    <label className="text-sm font-semibold text-neutral-700 dark:text-neutral-300">
+                      Ваш бюджет
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer text-sm font-medium text-neutral-600 dark:text-neutral-400">
+                      <input 
+                        type="checkbox" 
+                        checked={formData.is_negotiable}
+                        onChange={e => setFormData({ ...formData, is_negotiable: e.target.checked })}
+                        className="w-4 h-4 rounded border-neutral-300 text-violet-600 focus:ring-violet-500 bg-white/50 dark:bg-neutral-800/50"
+                      />
+                      Договорная цена
+                    </label>
+                  </div>
+                  
+                  {!formData.is_negotiable && (
+                    <motion.div 
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      className="mt-4"
+                    >
+                      <div className="flex justify-between items-center mb-4">
+                        <span className="font-bold text-xl text-neutral-900 dark:text-white">
+                          {budgetVal} {currency}
+                        </span>
+                        <div className="flex gap-2 p-1.5 bg-white/20 dark:bg-neutral-900/20 backdrop-blur-md border border-neutral-200 dark:border-white/5 rounded-2xl w-fit">
+                          {['CZK', 'EUR', 'PLN'].map(curr => (
+                            <button
+                              key={curr}
+                              type="button"
+                              onClick={() => {
+                                setCurrency(curr)
+                                const defaults: Record<string, number> = { CZK: 5000, EUR: 200, PLN: 1000 }
+                                setBudgetVal(defaults[curr])
+                                setFormData({ ...formData, budget: `${defaults[curr]} ${curr}` })
+                              }}
+                              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+                                currency === curr
+                                  ? 'bg-violet-500 text-white shadow-md'
+                                  : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-white'
+                              }`}
+                            >
+                              {curr}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      <input
+                        type="range"
+                        min={currency === 'EUR' ? '50' : currency === 'PLN' ? '200' : '1000'}
+                        max={currency === 'EUR' ? '2000' : currency === 'PLN' ? '10000' : '50000'}
+                        step={currency === 'EUR' ? '50' : currency === 'PLN' ? '100' : '500'}
+                        value={budgetVal}
+                        onChange={e => {
+                          const val = parseInt(e.target.value)
+                          setBudgetVal(val)
+                          setFormData({ ...formData, budget: `${val} ${currency}` })
                         }}
-                        className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
-                          currency === curr
-                            ? 'bg-violet-500 text-white shadow-md'
-                            : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-white'
-                        }`}
-                      >
-                        {curr}
-                      </button>
-                    ))}
-                  </div>
-                  <input
-                    type="range"
-                    min={currency === 'EUR' ? '50' : currency === 'PLN' ? '200' : '1000'}
-                    max={currency === 'EUR' ? '2000' : currency === 'PLN' ? '10000' : '50000'}
-                    step={currency === 'EUR' ? '50' : currency === 'PLN' ? '100' : '500'}
-                    value={budgetVal}
-                    onChange={e => {
-                      const val = parseInt(e.target.value)
-                      setBudgetVal(val)
-                      setFormData({ ...formData, budget: `${val} {currency}` })
-                    }}
-                    className="w-full accent-violet-500 cursor-pointer h-2 bg-neutral-200 dark:bg-neutral-800 rounded-lg appearance-none"
-                  />
-                  <div className="flex justify-between text-xs text-neutral-400 mt-2 font-semibold">
-                    <span>{currency === 'EUR' ? '50' : currency === 'PLN' ? '200' : '1000'} {currency}</span>
-                    <span>{currency === 'EUR' ? '2000' : currency === 'PLN' ? '10000' : '50000'} {currency}</span>
-                  </div>
+                        className="w-full accent-violet-500 cursor-pointer h-2 bg-neutral-200 dark:bg-neutral-800 rounded-lg appearance-none"
+                      />
+                      <div className="flex justify-between text-xs text-neutral-400 mt-2 font-semibold">
+                        <span>{currency === 'EUR' ? '50' : currency === 'PLN' ? '200' : '1000'} {currency}</span>
+                        <span>{currency === 'EUR' ? '2000' : currency === 'PLN' ? '10000' : '50000'} {currency}</span>
+                      </div>
+                    </motion.div>
+                  )}
                 </div>
 
                 <div>
