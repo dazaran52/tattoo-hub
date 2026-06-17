@@ -143,7 +143,7 @@ export default function DashboardPage() {
         <div className="text-center bg-white dark:bg-neutral-900 p-8 rounded-2xl shadow-xl max-w-md w-full mx-4 border border-red-100 dark:border-red-900">
           <h2 className="text-2xl font-bold text-red-600 dark:text-red-400 mb-4">Ошибка загрузки профиля</h2>
           <p className="text-neutral-600 dark:text-neutral-400 mb-6">
-            Не удалось загрузить данные вашего профиля. Убедитесь, что сервер запущен (Render может просыпаться до 50 секунд) и переменная NEXT_PUBLIC_API_URL настроена на Vercel.
+            Не удалось загрузить данные вашего профиля. Пожалуйста, убедитесь, что соединение с интернетом активно, и попробуйте перезагрузить страницу.
           </p>
           <button 
             onClick={() => window.location.reload()} 

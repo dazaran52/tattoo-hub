@@ -1,8 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
-from app.middleware.auth import get_current_user, AuthUser
-from app.database import get_supabase_client
+from app.middleware.auth import get_current_user, AuthUser, get_optional_user
+from app.database import get_supabase_client, get_async_supabase_client
 from supabase import Client
+from supabase._async.client import AsyncClient
 from typing import List, Optional
 import datetime
 import uuid
@@ -290,16 +291,12 @@ class ClientLeadCreate(BaseModel):
 
 @router.post("/client")
 async def create_client_lead(
-    lead_data: ClientLeadCreate
+    lead_data: ClientLeadCreate,
+    current_user: Optional[AuthUser] = Depends(get_optional_user),
+    supabase: AsyncClient = Depends(get_async_supabase_client)
 ):
     """Public endpoint for clients submitting leads via the Landing Page."""
     try:
-        from app.config import get_settings
-        import httpx
-        import uuid
-        
-        settings = get_settings()
-
         # Format the lead for the DB
         title = f"{lead_data.style or 'Тату'} {lead_data.location or ''} {lead_data.size or ''}".strip()
         if not title:
@@ -336,26 +333,69 @@ async def create_client_lead(
             "client_token": client_token,
             "trust_score": 100
         }
+        
+        if current_user:
+            db_lead["client_id"] = current_user.user_id
 
-        async with httpx.AsyncClient() as client:
-            res = await client.post(
-                f"{settings.SUPABASE_URL}/rest/v1/leads",
-                headers={
-                    "apikey": settings.SUPABASE_KEY,
-                    "Authorization": f"Bearer {settings.SUPABASE_KEY}",
-                    "Content-Type": "application/json",
-                    "Prefer": "return=representation"
-                },
-                json=db_lead
-            )
+        res = await supabase.table("leads").insert(db_lead).execute()
+        if not res.data:
+            raise HTTPException(status_code=400, detail="Failed to create lead")
             
-            if res.status_code >= 400:
-                raise HTTPException(status_code=400, detail=res.text)
-                
-            return {"success": True, "lead": res.json()[0]}
+        return {"success": True, "lead": res.data[0]}
             
     except Exception as e:
+        if isinstance(e, HTTPException):
+            raise e
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/client")
+async def get_client_leads(
+    current_user: AuthUser = Depends(get_current_user),
+    supabase: AsyncClient = Depends(get_async_supabase_client)
+):
+    """Get leads created by the current client."""
+    try:
+        res = await supabase.table("leads") \
+            .select("*") \
+            .eq("client_id", current_user.user_id) \
+            .order("created_at", desc=True) \
+            .execute()
+        
+        # For each lead, fetch how many proposals/bids it has
+        leads = res.data or []
+        if not leads:
+            return []
+            
+        lead_ids = [l["id"] for l in leads]
+        
+        # Get count of proposals for each lead
+        props_res = await supabase.table("lead_proposals") \
+            .select("lead_id, status") \
+            .in_("lead_id", lead_ids) \
+            .execute()
+            
+        proposals = props_res.data or []
+        proposals_count = {}
+        for p in proposals:
+            lid = p["lead_id"]
+            proposals_count[lid] = proposals_count.get(lid, 0) + 1
+            
+        out = []
+        for lead in leads:
+            out.append({
+                "id": lead["id"],
+                "title": lead["title"],
+                "description": lead["description"],
+                "client_priority": lead.get("client_priority", "quality"),
+                "client_token": lead.get("client_token"),
+                "created_at": lead.get("created_at"),
+                "proposal_count": proposals_count.get(lead["id"], 0)
+            })
+        return out
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 class ProposalCreate(BaseModel):
     price_offer: int

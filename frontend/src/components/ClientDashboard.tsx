@@ -1,13 +1,44 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Profile } from '@/lib/supabase'
+import { Profile, supabase } from '@/lib/supabase'
 import { PlusCircle, Heart, Clock, X } from 'lucide-react'
 import { LeadForm } from '@/components/LeadForm'
 
 export function ClientDashboard({ profile }: { profile: Profile }) {
   const [activeTab, setActiveTab] = useState<'leads' | 'favorites'>('leads')
   const [isFormOpen, setIsFormOpen] = useState(false)
+  const [leads, setLeads] = useState<any[]>([])
+  const [isLoadingLeads, setIsLoadingLeads] = useState(true)
+
+  useEffect(() => {
+    async function fetchLeads() {
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        if (!session) return
+
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/leads/client`,
+          {
+            headers: {
+              'Authorization': `Bearer ${session.access_token}`,
+              'Content-Type': 'application/json',
+            },
+          }
+        )
+
+        if (!response.ok) throw new Error('Failed to fetch leads')
+
+        const data = await response.json()
+        setLeads(data)
+      } catch (err) {
+        console.error('Error fetching leads:', err)
+      } finally {
+        setIsLoadingLeads(false)
+      }
+    }
+    fetchLeads()
+  }, [])
 
   return (
     <div className="w-full">
@@ -64,20 +95,35 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
             </button>
           </div>
 
-          <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 shadow-sm">
-            <div className="flex justify-between items-start mb-4">
-              <span className="px-3 py-1 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-xs font-bold rounded-full">В поиске мастера</span>
-              <span className="text-xs text-neutral-400 flex items-center gap-1"><Clock className="w-3 h-3" /> Вчера</span>
+          {isLoadingLeads ? (
+            <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 shadow-sm flex items-center justify-center min-h-[150px]">
+              <p className="text-neutral-500 animate-pulse">Загрузка заявок...</p>
             </div>
-            <h4 className="font-bold text-lg mb-2">Рукав в стиле Япония (Дракон)</h4>
-            <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-4 line-clamp-2">
-              Хочу забить всю правую руку, от плеча до запястья. Главный элемент - японский дракон...
-            </p>
-            <div className="flex justify-between items-center text-sm border-t border-neutral-100 dark:border-neutral-800 pt-4">
-              <span className="text-neutral-500">Бюджет: <strong>до 20,000 CZK</strong></span>
-              <span className="text-indigo-500 font-medium">3 отклика</span>
+          ) : leads.map(lead => (
+            <div key={lead.id} className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 shadow-sm">
+              <div className="flex justify-between items-start mb-4">
+                <span className="px-3 py-1 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-xs font-bold rounded-full">
+                  {lead.status === 'open' ? 'В поиске мастера' : 
+                   lead.status === 'accepted' ? 'В работе' : 
+                   lead.status === 'completed' ? 'Завершена' : 
+                   lead.status === 'archived' ? 'Архив' : lead.status}
+                </span>
+                <span className="text-xs text-neutral-400 flex items-center gap-1"><Clock className="w-3 h-3" /> {new Date(lead.created_at).toLocaleDateString()}</span>
+              </div>
+              <h4 className="font-bold text-lg mb-2">{lead.style ? `Тату в стиле ${lead.style}` : 'Заявка на татуировку'}</h4>
+              <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-4 line-clamp-2">
+                {lead.description || 'Описание отсутствует'}
+              </p>
+              <div className="flex justify-between items-center text-sm border-t border-neutral-100 dark:border-neutral-800 pt-4">
+                <span className="text-neutral-500">
+                  Бюджет: <strong>{lead.client_budget ? `до ${lead.client_budget} CZK` : 'не указан'}</strong>
+                </span>
+                <span className="text-indigo-500 font-medium">
+                  {lead.unlocked_by ? lead.unlocked_by.length : 0} отклика
+                </span>
+              </div>
             </div>
-          </div>
+          ))}
         </div>
       ) : (
         <div className="text-center py-20">

@@ -2,8 +2,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 from app.middleware.auth import get_current_user, AuthUser
-from app.database import get_supabase_client
-from supabase import Client
+from app.database import get_async_supabase_client
+from supabase._async.client import AsyncClient
 import uuid
 
 
@@ -51,7 +51,7 @@ class ProfileUpdate(BaseModel):
 @router.get("/profile", response_model=ProfileResponse)
 async def get_profile(
     current_user: AuthUser = Depends(get_current_user),
-    supabase: Client = Depends(get_supabase_client)
+    supabase: AsyncClient = Depends(get_async_supabase_client)
 ) -> ProfileResponse:
     """
     Get current master profile.
@@ -61,7 +61,7 @@ async def get_profile(
     data = None
     try:
         # Try to fetch existing profile
-        response = supabase.table("users") \
+        response = await supabase.table("users") \
             .select("*") \
             .eq("id", current_user.user_id) \
             .single() \
@@ -84,7 +84,7 @@ async def get_profile(
             role = current_user.user_metadata.get("role", "master")
             
             # Clients are automatically approved
-            status = "approved" if role == "client" else "pending"
+            status_val = "approved" if role == "client" else "pending"
             
             new_profile = {
                 "id": current_user.user_id,
@@ -98,21 +98,21 @@ async def get_profile(
                 "discount_tokens": 0,
                 "withdrawable_credits": 0,
                 "role": role,
-                "status": status,
+                "status": status_val,
                 "is_verified_master": False,
                 "certificate_url": None
             }
             
-            response = supabase.table("users").insert(new_profile).execute()
+            response = await supabase.table("users").insert(new_profile).execute()
             if response.data and len(response.data) > 0:
                 data = response.data[0]
                 
                 # Notify admins about new pending master
                 if role == "master":
                     try:
-                        admin_res = supabase.table("users").select("id").eq("is_admin", True).execute()
+                        admin_res = await supabase.table("users").select("id").eq("is_admin", True).execute()
                         for admin in (admin_res.data or []):
-                            supabase.table("notifications").insert({
+                            await supabase.table("notifications").insert({
                                 "user_id": admin["id"],
                                 "title": "Новая регистрация мастера",
                                 "message": f"Новый мастер зарегистрировался ({current_user.email}) и ожидает проверки.",
@@ -134,7 +134,7 @@ async def get_profile(
             )
 
     # Calculate unlocks and gamification level
-    unlocks_res = supabase.table("lead_unlocks").select("id", count="exact").eq("user_id", current_user.user_id).execute()
+    unlocks_res = await supabase.table("lead_unlocks").select("id", count="exact").eq("user_id", current_user.user_id).execute()
     unlocked_count = unlocks_res.count if unlocks_res.count is not None else len(unlocks_res.data)
     
     level = "Newbie"
@@ -172,7 +172,7 @@ async def get_profile(
 async def update_profile(
     update_data: ProfileUpdate,
     current_user: AuthUser = Depends(get_current_user),
-    supabase: Client = Depends(get_supabase_client)
+    supabase: AsyncClient = Depends(get_async_supabase_client)
 ) -> ProfileResponse:
     """
     Update current user profile.
@@ -195,7 +195,7 @@ async def update_profile(
         if not update_dict:
             # No fields to update, return current profile
             print("DEBUG PUT: No fields to update, fetching current profile")
-            response = supabase.table("users") \
+            response = await supabase.table("users") \
                 .select("*") \
                 .eq("id", current_user.user_id) \
                 .single() \
@@ -205,7 +205,7 @@ async def update_profile(
         else:
             # Update profile
             print(f"DEBUG PUT: Executing update")
-            response = supabase.table("users") \
+            response = await supabase.table("users") \
                 .update(update_dict) \
                 .eq("id", current_user.user_id) \
                 .execute()
@@ -220,7 +220,7 @@ async def update_profile(
                 detail="Profile not found"
             )
         
-        unlocks_res = supabase.table("lead_unlocks").select("id", count="exact").eq("user_id", current_user.user_id).execute()
+        unlocks_res = await supabase.table("lead_unlocks").select("id", count="exact").eq("user_id", current_user.user_id).execute()
         unlocked_count = unlocks_res.count if unlocks_res.count is not None else len(unlocks_res.data)
         
         level = "Newbie"
@@ -269,11 +269,11 @@ async def update_profile(
 @router.get("/my-leads")
 async def get_my_leads(
     current_user: AuthUser = Depends(get_current_user),
-    supabase: Client = Depends(get_supabase_client)
+    supabase: AsyncClient = Depends(get_async_supabase_client)
 ):
     """Get leads unlocked by the current user."""
     try:
-        unlocks_res = supabase.table("lead_unlocks") \
+        unlocks_res = await supabase.table("lead_unlocks") \
             .select("lead_id") \
             .eq("user_id", current_user.user_id) \
             .execute()
@@ -283,7 +283,7 @@ async def get_my_leads(
         if not lead_ids:
             return []
             
-        leads_res = supabase.table("leads") \
+        leads_res = await supabase.table("leads") \
             .select("*") \
             .in_("id", lead_ids) \
             .order("created_at", desc=True) \
@@ -292,7 +292,7 @@ async def get_my_leads(
         leads = leads_res.data or []
         
         # Check active auctions to hide contacts
-        auctions_res = supabase.table("auctions") \
+        auctions_res = await supabase.table("auctions") \
             .select("lead_id") \
             .eq("status", "active") \
             .execute()
@@ -325,14 +325,15 @@ async def get_my_leads(
             detail=f"Error fetching my leads: {str(e)}"
         )
 
+
 @router.get("/proposals")
 async def get_my_proposals(
     current_user: AuthUser = Depends(get_current_user),
-    supabase: Client = Depends(get_supabase_client)
+    supabase: AsyncClient = Depends(get_async_supabase_client)
 ):
     """Get all proposals made by the current master for the CRM board."""
     try:
-        props_res = supabase.table("lead_proposals").select(
+        props_res = await supabase.table("lead_proposals").select(
             "lead_id, status, price_offer, proposed_dates, leads(title, description, image_urls, client_priority)"
         ).eq("user_id", current_user.user_id).execute()
         
@@ -343,33 +344,36 @@ async def get_my_proposals(
             detail=f"Error fetching proposals: {str(e)}"
         )
 
+
 @router.delete("/city/{city_id}")
 async def remove_city(
     city_id: str,
     current_user: AuthUser = Depends(get_current_user),
-    supabase: Client = Depends(get_supabase_client)
+    supabase: AsyncClient = Depends(get_async_supabase_client)
 ):
     """Remove a city from master's preferences."""
     try:
-        supabase.table("user_cities").delete().eq("user_id", current_user.user_id).eq("city_id", city_id).execute()
+        await supabase.table("user_cities").delete().eq("user_id", current_user.user_id).eq("city_id", city_id).execute()
         return {"status": "success"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
 
 class AnalyticsResponse(BaseModel):
     total_spent_credits: int
     total_leads_bought: int
     activity_by_day: list[dict]
 
+
 @router.get("/analytics", response_model=AnalyticsResponse)
 async def get_analytics(
     current_user: AuthUser = Depends(get_current_user),
-    supabase: Client = Depends(get_supabase_client)
+    supabase: AsyncClient = Depends(get_async_supabase_client)
 ):
     """Get user analytics for the dashboard."""
     try:
         # Fetch all unlocked leads for the user with their prices
-        unlocks_res = supabase.table("lead_unlocks").select("unlocked_at, leads(price)").eq("user_id", current_user.user_id).execute()
+        unlocks_res = await supabase.table("lead_unlocks").select("unlocked_at, leads(price)").eq("user_id", current_user.user_id).execute()
         
         total_spent = 0
         total_leads = len(unlocks_res.data)
@@ -419,21 +423,20 @@ async def get_analytics(
 @router.delete("/profile", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_profile(
     current_user: AuthUser = Depends(get_current_user),
-    supabase: Client = Depends(get_supabase_client)
+    supabase: AsyncClient = Depends(get_async_supabase_client)
 ):
     """
     Delete current user profile from DB and delete their auth account from Supabase Auth.
     """
     try:
         # 1. Delete public.users table record
-        supabase.table("users").delete().eq("id", current_user.user_id).execute()
+        await supabase.table("users").delete().eq("id", current_user.user_id).execute()
         
         # 2. Delete Supabase Auth account
-        supabase.auth.admin.delete_user(current_user.user_id)
+        await supabase.auth.admin.delete_user(current_user.user_id)
         
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error deleting profile: {str(e)}"
         )
-

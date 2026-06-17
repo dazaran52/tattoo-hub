@@ -62,3 +62,23 @@ def get_current_user(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail=f"Invalid token: {str(e)}"
         )
+
+
+def get_optional_user(
+    credentials: HTTPAuthorizationCredentials | None = Security(HTTPBearer(auto_error=False))
+) -> AuthUser | None:
+    """Optional authentication check helper."""
+    if not credentials:
+        return None
+    token = credentials.credentials
+    try:
+        payload = jwt.get_unverified_claims(token)
+        user_id = payload.get("sub")
+        email = payload.get("email")
+        if not user_id or not email:
+            return None
+        user_metadata = payload.get("user_metadata", {})
+        return AuthUser(user_id=user_id, email=email, user_metadata=user_metadata)
+    except Exception:
+        return None
+
