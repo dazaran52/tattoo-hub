@@ -275,7 +275,7 @@ export default function HomePage() {
 
                   <div className="flex gap-3">
                     <button 
-                      onClick={() => router.push('/login')}
+                      onClick={() => router.push(`/login?role=${role}`)}
                       className="flex-1 flex items-center justify-center gap-2 px-4 py-4 rounded-full bg-white/5 hover:bg-white/10 text-white font-medium transition-colors border border-white/10"
                     >
                       <LogIn className="w-5 h-5" /> {t('landing.btn_login')}

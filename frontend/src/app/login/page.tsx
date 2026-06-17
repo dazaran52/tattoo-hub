@@ -269,7 +269,7 @@ export default function LoginPage() {
               x: { type: "spring", damping: 30, stiffness: 50 },
               y: { type: "spring", damping: 30, stiffness: 50 }
             }}
-            className="relative w-full h-full max-w-2xl max-h-2xl opacity-40 dark:opacity-60 mix-blend-multiply dark:mix-blend-screen"
+            className="relative w-full h-full max-w-2xl max-h-2xl opacity-30 dark:opacity-60 mix-blend-normal"
           >
             <AnimatePresence mode="wait">
               {role === 'master' ? (
@@ -614,11 +614,11 @@ export default function LoginPage() {
           </p>
 
           <div className="flex flex-wrap justify-center gap-4 text-xs font-semibold text-neutral-600">
-            <a href="/terms" className="hover:text-white transition-colors uppercase tracking-wider">{t('termsOfService')}</a>
+            <a href="/terms" className="hover:text-neutral-950 dark:hover:text-white transition-colors uppercase tracking-wider">{t('termsOfService')}</a>
             <span>&middot;</span>
-            <a href="/privacy" className="hover:text-white transition-colors uppercase tracking-wider">{t('privacyPolicy')}</a>
+            <a href="/privacy" className="hover:text-neutral-950 dark:hover:text-white transition-colors uppercase tracking-wider">{t('privacyPolicy')}</a>
             <span>&middot;</span>
-            <a href="/refunds" className="hover:text-white transition-colors uppercase tracking-wider">{t('refundPolicy')}</a>
+            <a href="/refunds" className="hover:text-neutral-950 dark:hover:text-white transition-colors uppercase tracking-wider">{t('refundPolicy')}</a>
           </div>
         </div>
       </div>
