@@ -10,6 +10,7 @@ export function LanguageSelector() {
   const [isOpen, setIsOpen] = useState(false)
 
   const languages = [
+    { code: 'cs', label: 'CS', name: 'Čeština' },
     { code: 'ru', label: 'RU', name: 'Русский' },
     { code: 'en', label: 'EN', name: 'English' }
   ]
@@ -41,7 +42,7 @@ export function LanguageSelector() {
                 <button
                   key={l.code}
                   onClick={() => {
-                    setLang(l.code as 'ru' | 'en')
+                    setLang(l.code as 'ru' | 'en' | 'cs')
                     setIsOpen(false)
                   }}
                   className={`w-full text-left px-4 py-2 text-sm transition-colors ${

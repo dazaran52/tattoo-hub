@@ -141,6 +141,7 @@ export default function ProfilePage() {
   const handleLanguageChange = (newLang: string) => {
     setLanguage(newLang)
     saveSetting('language', newLang)
+    saveSetting('app_lang', newLang)
     // Force reload to apply language
     window.location.reload()
   }

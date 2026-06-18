@@ -115,7 +115,12 @@ export default function NewLeadPage() {
                 </div>
 
                 <button 
-                  onClick={() => canContinue && setStep(2)}
+                  type="button"
+                  onClick={() => {
+                    if (canContinue) {
+                      setStep(2);
+                    }
+                  }}
                   disabled={!canContinue}
                   className={`w-full py-4 rounded-full font-bold text-lg transition-all flex items-center justify-center gap-2 mt-8 ${canContinue ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white hover:from-indigo-400 hover:to-purple-400 shadow-lg shadow-indigo-500/25' : 'bg-white/5 text-neutral-500 cursor-not-allowed'}`}
                 >

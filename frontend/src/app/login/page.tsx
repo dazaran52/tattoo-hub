@@ -78,6 +78,7 @@ function LoginContent() {
     const newLang = langs[(currentIndex + 1) % langs.length] || 'cs'
     setLanguage(newLang)
     localStorage.setItem('language', newLang)
+    localStorage.setItem('app_lang', newLang)
   }
 
   const toggleTheme = () => {

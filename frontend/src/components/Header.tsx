@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { LogOut, Gem, Menu, X, LayoutDashboard, Settings, Plus, Moon, Sun, Globe, Ticket, Copy, Bell, BarChart2, HelpCircle, Shield } from 'lucide-react'
 import { Profile } from '@/lib/supabase'
 import { subscribeToPush } from '@/lib/push'
-import { getTranslation, Language } from '@/lib/i18n'
+import { useLanguage } from '@/i18n/LanguageContext'
 import { TransactionHistoryModal } from '@/components/TransactionHistoryModal'
 import { NotificationsMenu } from '@/components/NotificationsMenu'
 import { toast } from 'react-hot-toast'
@@ -20,7 +20,7 @@ interface HeaderProps {
 export function Header({ profile, onLogout }: HeaderProps) {
   const [menuOpen, setMenuOpen] = useState(false)
   const router = useRouter()
-  const [language, setLanguage] = useState<string>('cs')
+  const { lang: language, setLang, t } = useLanguage()
   const [showHistory, setShowHistory] = useState(false)
   const [isSubscribing, setIsSubscribing] = useState(false)
   const [startTour, setStartTour] = useState(false)
@@ -44,8 +44,6 @@ export function Header({ profile, onLogout }: HeaderProps) {
   
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const savedLang = localStorage.getItem('language') || 'cs'
-      setLanguage(savedLang)
       const savedTheme = localStorage.getItem('theme') || 'dark'
       setTheme(savedTheme as 'dark' | 'light')
     }
@@ -64,15 +62,11 @@ export function Header({ profile, onLogout }: HeaderProps) {
   }
 
   const toggleLanguage = () => {
-    const langs = ['cs', 'en', 'ru']
+    const langs: ('cs' | 'en' | 'ru')[] = ['cs', 'en', 'ru']
     const currentIndex = langs.indexOf(language)
     const newLang = langs[(currentIndex + 1) % langs.length] || 'cs'
-    setLanguage(newLang)
-    localStorage.setItem('language', newLang)
-    window.location.reload()
+    setLang(newLang)
   }
-  
-  const t = (key: Parameters<typeof getTranslation>[1]) => getTranslation(language as Language, key)
   
   return (
     <header className="bg-white dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800 sticky top-0 z-50 transition-colors duration-200">
