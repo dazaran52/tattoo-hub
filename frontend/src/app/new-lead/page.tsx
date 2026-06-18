@@ -4,8 +4,10 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { ArrowLeft, Sparkles, Upload, Image as ImageIcon } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { useLanguage } from '@/i18n/LanguageContext'
 
 export default function NewLeadPage() {
+  const { t } = useLanguage()
   const router = useRouter()
   const [step, setStep] = useState(1)
   const [description, setDescription] = useState('')
@@ -29,7 +31,7 @@ export default function NewLeadPage() {
           <ArrowLeft className="w-5 h-5" />
         </button>
         <div className="text-sm font-medium tracking-widest uppercase text-neutral-400">
-          Быстрая заявка
+          {t('fastLead')}
         </div>
         <div className="w-10" /> {/* Spacer */}
       </header>
@@ -42,9 +44,9 @@ export default function NewLeadPage() {
           className="max-w-xl w-full"
         >
           <div className="text-center mb-12">
-            <h1 className="text-4xl md:text-5xl font-extrabold mb-4">Опиши свою идею</h1>
+            <h1 className="text-4xl md:text-5xl font-extrabold mb-4">{t('describeYourIdeaTitle')}</h1>
             <p className="text-neutral-400 text-lg">
-              Заполни короткую форму, и лучшие мастера сами предложат тебе свои услуги.
+              {t('describeYourIdeaDesc')}
             </p>
           </div>
 
@@ -57,7 +59,7 @@ export default function NewLeadPage() {
                 className="space-y-6"
               >
                 <div>
-                  <label className="block text-sm font-medium text-neutral-400 mb-2">Что будем бить?</label>
+                  <label className="block text-sm font-medium text-neutral-400 mb-2">{t('whatToTattoo')}</label>
                   <textarea 
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
@@ -68,7 +70,7 @@ export default function NewLeadPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-neutral-400 mb-2">Примерный размер</label>
+                  <label className="block text-sm font-medium text-neutral-400 mb-2">{t('approxSize')}</label>
                   <div className="grid grid-cols-3 gap-3">
                     {['Мини', 'Средняя', 'Большая'].map(size => (
                       <button 
@@ -105,10 +107,10 @@ export default function NewLeadPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-neutral-400 mb-2">Референсы (по желанию)</label>
+                  <label className="block text-sm font-medium text-neutral-400 mb-2">{t('referencesOptional')}</label>
                   <button className="w-full py-8 border-2 border-dashed border-white/10 rounded-2xl flex flex-col items-center justify-center gap-2 hover:border-indigo-500/50 hover:bg-white/5 transition-all text-neutral-500 hover:text-indigo-400">
                     <ImageIcon className="w-8 h-8" />
-                    <span className="text-sm font-medium">Загрузить фото или скетч</span>
+                    <span className="text-sm font-medium">{t('uploadPhotoSketch')}</span>
                   </button>
                 </div>
 
@@ -117,7 +119,7 @@ export default function NewLeadPage() {
                   disabled={!canContinue}
                   className={`w-full py-4 rounded-full font-bold text-lg transition-all flex items-center justify-center gap-2 mt-8 ${canContinue ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white hover:from-indigo-400 hover:to-purple-400 shadow-lg shadow-indigo-500/25' : 'bg-white/5 text-neutral-500 cursor-not-allowed'}`}
                 >
-                  Продолжить <ArrowLeft className="w-5 h-5 rotate-180" />
+                  {t('continue')} <ArrowLeft className="w-5 h-5 rotate-180" />
                 </button>
               </motion.div>
             )}
@@ -131,9 +133,9 @@ export default function NewLeadPage() {
                 <div className="w-20 h-20 rounded-full bg-indigo-500/20 flex items-center justify-center mx-auto mb-6">
                   <Sparkles className="w-10 h-10 text-indigo-400" />
                 </div>
-                <h2 className="text-2xl font-bold mb-2">Отличная идея!</h2>
+                <h2 className="text-2xl font-bold mb-2">{t('greatIdea')}</h2>
                 <p className="text-neutral-400 mb-8">
-                  Чтобы опубликовать заявку и начать получать отклики от мастеров, необходимо войти в систему.
+                  {t('loginToPublish')}
                 </p>
 
                 <div className="space-y-4">
@@ -144,7 +146,7 @@ export default function NewLeadPage() {
                     }}
                     className="w-full py-4 rounded-full bg-white text-black font-bold text-lg hover:scale-105 transition-transform"
                   >
-                    Зарегистрироваться
+                    {t('register')}
                   </button>
                   <button 
                     onClick={() => {
@@ -153,7 +155,7 @@ export default function NewLeadPage() {
                     }}
                     className="w-full py-4 rounded-full bg-white/5 text-white font-bold text-lg hover:bg-white/10 transition-colors border border-white/10"
                   >
-                    Уже есть аккаунт
+                    {t('alreadyHaveAccount')}
                   </button>
                 </div>
               </motion.div>

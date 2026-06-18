@@ -49,6 +49,7 @@ class ProfileUpdate(BaseModel):
     phone: str | None = None
     bio: str | None = None
     currency: str | None = None
+    portfolio_url: str | None = None
 
 
 @router.get("/profile", response_model=ProfileResponse)
@@ -198,6 +199,8 @@ async def update_profile(
             update_dict["bio"] = update_data.bio
         if update_data.currency is not None:
             update_dict["currency"] = update_data.currency
+        if update_data.portfolio_url is not None:
+            update_dict["portfolio_url"] = update_data.portfolio_url
         
         print(f"DEBUG PUT: update_dict={update_dict}")
         

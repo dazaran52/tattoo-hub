@@ -43,6 +43,7 @@ export default function ProfilePage() {
   const [displayName, setDisplayName] = useState('')
   const [phone, setPhone] = useState('')
   const [bio, setBio] = useState('')
+  const [portfolioUrl, setPortfolioUrl] = useState('')
 
   // Settings state
   const [language, setLanguage] = useState('cs')
@@ -84,6 +85,7 @@ export default function ProfilePage() {
       setDisplayName(profileData.display_name || '')
       setPhone(profileData.phone || '')
       setBio(profileData.bio || '')
+      setPortfolioUrl(profileData.portfolio_url || '')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load profile')
     } finally {
@@ -151,7 +153,8 @@ export default function ProfilePage() {
       const updated = await api.updateProfile({
         display_name: displayName,
         phone: phone,
-        bio: bio
+        bio: bio,
+        portfolio_url: portfolioUrl
       })
       
       setProfile(updated)
@@ -168,6 +171,7 @@ export default function ProfilePage() {
       setDisplayName(profile.display_name || '')
       setPhone(profile.phone || '')
       setBio(profile.bio || '')
+      setPortfolioUrl(profile.portfolio_url || '')
     }
     setIsEditing(false)
     setError(null)
@@ -319,38 +323,42 @@ export default function ProfilePage() {
                 <p className="text-neutral-500 dark:text-neutral-400 text-sm mb-3">{profile.email}</p>
                 
 
-                <div className="flex items-center justify-center md:justify-start gap-2 text-cyan-600 dark:text-cyan-400">
-                  <Gem className="w-5 h-5 animate-pulse" />
-                  <span className="font-extrabold text-xl tracking-tight">{profile.balance}</span>
-                  <span className="text-sm text-neutral-500 dark:text-neutral-400 font-medium">{t('credits')}</span>
-                </div>
+                {profile.role === 'master' && (
+                  <div className="flex items-center justify-center md:justify-start gap-2 text-cyan-600 dark:text-cyan-400">
+                    <Gem className="w-5 h-5 animate-pulse" />
+                    <span className="font-extrabold text-xl tracking-tight">{profile.balance}</span>
+                    <span className="text-sm text-neutral-500 dark:text-neutral-400 font-medium">{t('credits')}</span>
+                  </div>
+                )}
               </div>
 
               {/* Stats */}
-              <div className="flex-1 grid grid-cols-2 sm:grid-cols-4 gap-4">
-                <div className="bg-white/50 dark:bg-neutral-800/40 border border-neutral-200/30 dark:border-white/5 backdrop-blur-md rounded-2xl p-4 text-center shadow-sm hover:scale-[1.02] transition-all duration-300">
-                  <Unlock className="w-5 h-5 text-neutral-500 dark:text-neutral-400 mx-auto mb-2" />
-                  <p className="text-neutral-900 dark:text-white font-bold text-lg">{profile.unlocked_leads_count || 0}</p>
-                  <p className="text-neutral-500 dark:text-neutral-400 text-xs font-medium">{t('unlocked')}</p>
+              {profile.role === 'master' && (
+                <div className="flex-1 grid grid-cols-2 sm:grid-cols-4 gap-4">
+                  <div className="bg-white/50 dark:bg-neutral-800/40 border border-neutral-200/30 dark:border-white/5 backdrop-blur-md rounded-2xl p-4 text-center shadow-sm hover:scale-[1.02] transition-all duration-300">
+                    <Unlock className="w-5 h-5 text-neutral-500 dark:text-neutral-400 mx-auto mb-2" />
+                    <p className="text-neutral-900 dark:text-white font-bold text-lg">{profile.unlocked_leads_count || 0}</p>
+                    <p className="text-neutral-500 dark:text-neutral-400 text-xs font-medium">{t('unlocked')}</p>
+                  </div>
+                  <div className="bg-white/50 dark:bg-neutral-800/40 border border-neutral-200/30 dark:border-white/5 backdrop-blur-md rounded-2xl p-4 text-center shadow-sm hover:scale-[1.02] transition-all duration-300">
+                    <CreditCard className="w-5 h-5 text-neutral-500 dark:text-neutral-400 mx-auto mb-2" />
+                    <p className="text-neutral-900 dark:text-white font-bold text-lg">{profile.total_spent || 0}</p>
+                    <p className="text-neutral-500 dark:text-neutral-400 text-xs font-medium">{t('spent')}</p>
+                  </div>
+                  <div className="bg-white/50 dark:bg-neutral-800/40 border border-neutral-200/30 dark:border-white/5 backdrop-blur-md rounded-2xl p-4 text-center shadow-sm hover:scale-[1.02] transition-all duration-300">
+                    <Tag className="w-5 h-5 text-neutral-500 dark:text-neutral-400 mx-auto mb-2" />
+                    <p className="text-neutral-900 dark:text-white font-bold text-lg">{profile.discount_tokens || 0}</p>
+                    <p className="text-neutral-500 dark:text-neutral-400 text-xs font-medium">Скидки</p>
+                  </div>
+                  <div className="bg-white/50 dark:bg-neutral-800/40 border border-neutral-200/30 dark:border-white/5 backdrop-blur-md rounded-2xl p-4 text-center shadow-sm hover:scale-[1.02] transition-all duration-300">
+                    <Calendar className="w-5 h-5 text-neutral-500 dark:text-neutral-400 mx-auto mb-2" />
+                    <p className="text-neutral-900 dark:text-white font-bold text-sm leading-6">
+                      {new Date(profile.created_at).toLocaleDateString('cs-CZ')}
+                    </p>
+                    <p className="text-neutral-500 dark:text-neutral-400 text-xs font-medium">{t('memberSince')}</p>
+                  </div>
                 </div>
-                <div className="bg-white/50 dark:bg-neutral-800/40 border border-neutral-200/30 dark:border-white/5 backdrop-blur-md rounded-2xl p-4 text-center shadow-sm hover:scale-[1.02] transition-all duration-300">
-                  <CreditCard className="w-5 h-5 text-neutral-500 dark:text-neutral-400 mx-auto mb-2" />
-                  <p className="text-neutral-900 dark:text-white font-bold text-lg">{profile.total_spent || 0}</p>
-                  <p className="text-neutral-500 dark:text-neutral-400 text-xs font-medium">{t('spent')}</p>
-                </div>
-                <div className="bg-white/50 dark:bg-neutral-800/40 border border-neutral-200/30 dark:border-white/5 backdrop-blur-md rounded-2xl p-4 text-center shadow-sm hover:scale-[1.02] transition-all duration-300">
-                  <Tag className="w-5 h-5 text-neutral-500 dark:text-neutral-400 mx-auto mb-2" />
-                  <p className="text-neutral-900 dark:text-white font-bold text-lg">{profile.discount_tokens || 0}</p>
-                  <p className="text-neutral-500 dark:text-neutral-400 text-xs font-medium">Скидки</p>
-                </div>
-                <div className="bg-white/50 dark:bg-neutral-800/40 border border-neutral-200/30 dark:border-white/5 backdrop-blur-md rounded-2xl p-4 text-center shadow-sm hover:scale-[1.02] transition-all duration-300">
-                  <Calendar className="w-5 h-5 text-neutral-500 dark:text-neutral-400 mx-auto mb-2" />
-                  <p className="text-neutral-900 dark:text-white font-bold text-sm leading-6">
-                    {new Date(profile.created_at).toLocaleDateString('cs-CZ')}
-                  </p>
-                  <p className="text-neutral-500 dark:text-neutral-400 text-xs font-medium">{t('memberSince')}</p>
-                </div>
-              </div>
+              )}
             </div>
 
             {/* Referral Card */}
@@ -454,6 +462,24 @@ export default function ProfilePage() {
                     />
                   </div>
                 </div>
+
+                {profile.role === 'master' && (
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-semibold text-neutral-600 dark:text-neutral-400 mb-2">
+                      {t('portfolioUrl')}
+                    </label>
+                    <div className="relative">
+                      <Globe className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500 dark:text-neutral-400" />
+                      <input
+                        type="url"
+                        value={portfolioUrl}
+                        onChange={(e) => setPortfolioUrl(e.target.value)}
+                        placeholder="https://instagram.com/..."
+                        className="w-full bg-white/40 dark:bg-neutral-950/40 border border-neutral-200 dark:border-white/10 rounded-xl pl-11 pr-4 py-3 text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 transition-all shadow-inner"
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="flex gap-3">

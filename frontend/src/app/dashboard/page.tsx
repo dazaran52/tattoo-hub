@@ -49,7 +49,7 @@ export default function DashboardPage() {
             (payload) => {
               if (payload.new && 'balance' in payload.new) {
                 setProfile(prev => prev ? { ...prev, balance: payload.new.balance } : null)
-                toast('Баланс обновлен!', { icon: '💳' })
+                toast(t('balanceUpdated'), { icon: '💳' })
               }
             }
           )
@@ -141,15 +141,15 @@ export default function DashboardPage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-neutral-50 dark:bg-neutral-950">
         <div className="text-center bg-white dark:bg-neutral-900 p-8 rounded-2xl shadow-xl max-w-md w-full mx-4 border border-red-100 dark:border-red-900">
-          <h2 className="text-2xl font-bold text-red-600 dark:text-red-400 mb-4">Ошибка загрузки профиля</h2>
+          <h2 className="text-2xl font-bold text-red-600 dark:text-red-400 mb-4">{t('profileLoadError')}</h2>
           <p className="text-neutral-600 dark:text-neutral-400 mb-6">
-            Не удалось загрузить данные вашего профиля. Пожалуйста, убедитесь, что соединение с интернетом активно, и попробуйте перезагрузить страницу.
+            {t('profileLoadErrorDesc')}
           </p>
           <button 
             onClick={() => window.location.reload()} 
             className="w-full bg-neutral-900 dark:bg-white text-white dark:text-neutral-950 py-3 rounded-xl font-bold"
           >
-            Попробовать снова
+            {t('tryAgain')}
           </button>
         </div>
       </div>
@@ -260,15 +260,15 @@ export default function DashboardPage() {
                   <div className="w-24 h-24 bg-indigo-100/50 dark:bg-indigo-950/50 rounded-full mx-auto mb-6 flex items-center justify-center border border-indigo-500/20 shadow-[0_0_30px_rgba(79,70,229,0.15)]">
                     <span className="text-4xl">🔒</span>
                   </div>
-                  <h3 className="text-3xl font-extrabold text-neutral-900 dark:text-white mb-4 tracking-tight">Кабинет заблокирован</h3>
+                  <h3 className="text-3xl font-extrabold text-neutral-900 dark:text-white mb-4 tracking-tight">{t('cabinetLocked')}</h3>
                   <p className="text-neutral-600 dark:text-neutral-400 max-w-lg mx-auto mb-10 text-lg leading-relaxed font-medium">
-                    Мы создаем премиальный продукт и заботимся о качестве. Пожалуйста, перейдите в настройки профиля, загрузите портфолио и сертификаты, чтобы получить статус верифицированного мастера и доступ к горячим заявкам.
+                    {t('cabinetLockedDesc')}
                   </p>
                   <button
                     onClick={() => router.push('/profile')}
                     className="px-10 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white rounded-full font-extrabold text-lg transition-all hover:scale-105 shadow-xl shadow-indigo-600/25"
                   >
-                    Заполнить профиль
+                    {t('fillProfile')}
                   </button>
                 </div>
               </div>

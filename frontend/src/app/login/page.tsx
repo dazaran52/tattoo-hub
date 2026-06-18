@@ -1,15 +1,16 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Mail, Lock, Loader2, ArrowRight, Link as LinkIcon, Tag, MapPin, Globe, X, Sun, Moon } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { getTranslation, Language } from '@/lib/i18n'
 import { Logo } from '@/components/Logo'
 
-export default function LoginPage() {
+function LoginContent() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [isLoading, setIsLoading] = useState(false)
   const [isSignUp, setIsSignUp] = useState(false)
   const [email, setEmail] = useState('')
@@ -39,25 +40,22 @@ export default function LoginPage() {
   }, [])
 
   useEffect(() => {
-    // Read from URL if available
-    if (typeof window !== 'undefined') {
-      const searchParams = new URLSearchParams(window.location.search)
-      const registerParam = searchParams.get('register')
-      const roleParam = searchParams.get('role')
+    // Read from URL params safely
+    const registerParam = searchParams.get('register')
+    const roleParam = searchParams.get('role')
 
-      if (roleParam === 'client' || roleParam === 'master') {
-        setRole(roleParam)
-      }
-
-      if (registerParam === 'client') {
-        setIsSignUp(true)
-        setRole('client')
-      } else if (registerParam === 'master') {
-        setIsSignUp(true)
-        setRole('master')
-      }
+    if (roleParam === 'client' || roleParam === 'master') {
+      setRole(roleParam)
     }
-  }, [])
+
+    if (registerParam === 'client') {
+      setIsSignUp(true)
+      setRole('client')
+    } else if (registerParam === 'master') {
+      setIsSignUp(true)
+      setRole('master')
+    }
+  }, [searchParams])
 
   useEffect(() => {
     const savedLang = localStorage.getItem('language')
@@ -263,12 +261,12 @@ export default function LoginPage() {
               className="space-y-4"
             >
               <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tighter text-neutral-900 dark:text-white drop-shadow-lg">
-                {role === 'master' ? 'Управляйте своим бизнесом.' : 'Найдите идеального мастера.'}
+                {role === 'master' ? t('loginMasterTitle') : t('loginClientTitle')}
               </h1>
               <p className="text-lg md:text-xl text-neutral-600 dark:text-neutral-300 font-light">
                 {role === 'master' 
-                  ? 'Premium платформа для тату-мастеров. Получайте клиентов, ведите запись и масштабируйтесь.' 
-                  : 'Сотни проверенных профессионалов, удобный поиск и безопасная запись на сеанс.'}
+                  ? t('loginMasterDesc')
+                  : t('loginClientDesc')}
               </p>
             </motion.div>
           </AnimatePresence>
@@ -572,5 +570,13 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-neutral-50 dark:bg-[#050505]" />}>
+      <LoginContent />
+    </Suspense>
   )
 }

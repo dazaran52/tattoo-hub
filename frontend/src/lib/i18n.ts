@@ -122,6 +122,10 @@ type Translations = {
     // Auth
     loginTab: string;
     registerTab: string;
+    loginMasterTitle: string;
+    loginClientTitle: string;
+    loginMasterDesc: string;
+    loginClientDesc: string;
     email: string;
     passwordAuth: string;
     portfolioUrl: string;
@@ -152,6 +156,55 @@ type Translations = {
     toPay: string;
     typeMessage: string;
     noMessages: string;
+    // Client Dashboard
+    clientDashboardTitle: string;
+    manageYourLeads: string;
+    favoriteMasters: string;
+    createNewLead: string;
+    describeYourIdea: string;
+    wantTattoo: string;
+    loadingLeads: string;
+    statusSearching: string;
+    statusAccepted: string;
+    statusCompleted: string;
+    statusArchived: string;
+    tattooStyle: string;
+    tattooLead: string;
+    noDescription: string;
+    budgetUpTo: string;
+    notSpecified: string;
+    responsesCount: string;
+    noFavorites: string;
+    saveMastersDesc: string;
+    // Dashboard general
+    balanceUpdated: string;
+    profileLoadError: string;
+    profileLoadErrorDesc: string;
+    cabinetLocked: string;
+    cabinetLockedDesc: string;
+    fillProfile: string;
+    // New Lead
+    fastLead: string;
+    describeYourIdeaTitle: string;
+    describeYourIdeaDesc: string;
+    whatToTattoo: string;
+    tattooDescPlaceholder: string;
+    approxSize: string;
+    priorityQuestion: string;
+    referencesOptional: string;
+    uploadPhotoSketch: string;
+    continue: string;
+    greatIdea: string;
+    loginToPublish: string;
+    register: string;
+    alreadyHaveAccount: string;
+    sizeMicro: string;
+    sizeSmall: string;
+    sizeMedium: string;
+    sizeLarge: string;
+    fastPriority: string;
+    qualityPriority: string;
+    cheapPriority: string;
   };
 };
 
@@ -266,6 +319,10 @@ const translations: Translations = {
     // Auth
     loginTab: 'Přihlásit se',
     registerTab: 'Registrace',
+    loginMasterTitle: 'Spravujte své podnikání.',
+    loginClientTitle: 'Najděte ideálního mistra.',
+    loginMasterDesc: 'Prémiová platforma pro tatéry. Získejte klienty, spravujte rezervace a rozšiřujte se.',
+    loginClientDesc: 'Stovky ověřených profesionálů, snadné vyhledávání a bezpečná rezervace termínu.',
     email: 'Email',
     passwordAuth: 'Heslo',
     portfolioUrl: 'Odkaz na portfolio (Instagram, web atd.)',
@@ -296,6 +353,55 @@ const translations: Translations = {
     toPay: 'K úhradě',
     typeMessage: 'Napište zprávu...',
     noMessages: 'Zatím nemáte žádné zprávy. Napište nám, pokud potřebujete pomoc!',
+    // Client Dashboard
+    clientDashboardTitle: 'Klientský portál',
+    manageYourLeads: 'Spravujte své poptávky na tetování',
+    favoriteMasters: 'Oblíbení tatéři',
+    createNewLead: 'Vytvořit novou poptávku',
+    describeYourIdea: 'Popište svůj nápad a tatéři vám sami nabídnou návrhy a ceny.',
+    wantTattoo: 'Chci tetování',
+    loadingLeads: 'Načítání poptávek...',
+    statusSearching: 'Hledá se tatér',
+    statusAccepted: 'Zpracovává se',
+    statusCompleted: 'Dokončeno',
+    statusArchived: 'Archiv',
+    tattooStyle: 'Tetování ve stylu',
+    tattooLead: 'Poptávka na tetování',
+    noDescription: 'Bez popisu',
+    budgetUpTo: 'do',
+    notSpecified: 'neuvedeno',
+    responsesCount: 'odpovědí',
+    noFavorites: 'Zatím žádní oblíbení tatéři',
+    saveMastersDesc: 'Uložte si profily nejlepších tatérů, abyste je neztratili.',
+    // Dashboard general
+    balanceUpdated: 'Zůstatek aktualizován!',
+    profileLoadError: 'Chyba při načítání profilu',
+    profileLoadErrorDesc: 'Nepodařilo se načíst data vašeho profilu. Zkontrolujte prosím připojení k internetu a zkuste stránku obnovit.',
+    cabinetLocked: 'Kabinet uzamčen',
+    cabinetLockedDesc: 'Vytváříme prémiový produkt a dbáme na kvalitu. Přejděte prosím do nastavení profilu, nahrajte své portfolio a certifikáty, abyste získali status ověřeného tatéra a přístup k poptávkám.',
+    fillProfile: 'Vyplnit profil',
+    // New Lead
+    fastLead: 'Rychlá poptávka',
+    describeYourIdeaTitle: 'Popiš svůj nápad',
+    describeYourIdeaDesc: 'Vyplň krátký formulář a nejlepší tatéři ti sami nabídnou své služby.',
+    whatToTattoo: 'Co budeme tetovat?',
+    tattooDescPlaceholder: 'Například: Chci černobílého draka omotaného kolem meče...',
+    approxSize: 'Přibližná velikost',
+    priorityQuestion: 'Co je pro tebe nejdůležitější?',
+    referencesOptional: 'Reference (volitelné)',
+    uploadPhotoSketch: 'Nahrát fotku nebo nákres',
+    continue: 'Pokračovat',
+    greatIdea: 'Skvělý nápad!',
+    loginToPublish: 'Pro zveřejnění poptávky a získávání nabídek od tatérů se musíš přihlásit.',
+    register: 'Zaregistrovat se',
+    alreadyHaveAccount: 'Už mám účet',
+    sizeMicro: 'Mikro (do 5 cm)',
+    sizeSmall: 'Malá (5-10 cm)',
+    sizeMedium: 'Střední (10-20 cm)',
+    sizeLarge: 'Velká (nad 20 cm)',
+    fastPriority: 'Co nejrychleji',
+    qualityPriority: 'Maximální kvalita',
+    cheapPriority: 'Vejít se do rozpočtu',
   },
   ru: {
     back: 'Назад',
@@ -407,6 +513,10 @@ const translations: Translations = {
     // Auth
     loginTab: 'Вход',
     registerTab: 'Регистрация',
+    loginMasterTitle: 'Управляйте своим бизнесом.',
+    loginClientTitle: 'Найдите идеального мастера.',
+    loginMasterDesc: 'Premium платформа для тату-мастеров. Получайте клиентов, ведите запись и масштабируйтесь.',
+    loginClientDesc: 'Сотни проверенных профессионалов, удобный поиск и безопасная запись на сеанс.',
     email: 'Email',
     passwordAuth: 'Пароль',
     portfolioUrl: 'Ссылка на портфолио (Instagram, сайт и т.д.)',
@@ -437,6 +547,55 @@ const translations: Translations = {
     toPay: 'К оплате',
     typeMessage: 'Написать сообщение...',
     noMessages: 'У вас пока нет сообщений. Напишите нам, если нужна помощь!',
+    // Client Dashboard
+    clientDashboardTitle: 'Кабинет клиента',
+    manageYourLeads: 'Управляйте вашими заявками на татуировку',
+    favoriteMasters: 'Избранные мастера',
+    createNewLead: 'Создать новую заявку',
+    describeYourIdea: 'Опишите вашу идею, и мастера сами предложат вам эскизы и цены.',
+    wantTattoo: 'Хочу тату',
+    loadingLeads: 'Загрузка заявок...',
+    statusSearching: 'В поиске мастера',
+    statusAccepted: 'В работе',
+    statusCompleted: 'Завершена',
+    statusArchived: 'Архив',
+    tattooStyle: 'Тату в стиле',
+    tattooLead: 'Заявка на татуировку',
+    noDescription: 'Описание отсутствует',
+    budgetUpTo: 'до',
+    notSpecified: 'не указан',
+    responsesCount: 'отклика',
+    noFavorites: 'Пока нет избранных мастеров',
+    saveMastersDesc: 'Сохраняйте профили лучших мастеров, чтобы не потерять.',
+    // Dashboard general
+    balanceUpdated: 'Баланс обновлен!',
+    profileLoadError: 'Ошибка загрузки профиля',
+    profileLoadErrorDesc: 'Не удалось загрузить данные вашего профиля. Пожалуйста, убедитесь, что соединение с интернетом активно, и попробуйте перезагрузить страницу.',
+    cabinetLocked: 'Кабинет заблокирован',
+    cabinetLockedDesc: 'Мы создаем премиальный продукт и заботимся о качестве. Пожалуйста, перейдите в настройки профиля, загрузите портфолио и сертификаты, чтобы получить статус верифицированного мастера и доступ к горячим заявкам.',
+    fillProfile: 'Заполнить профиль',
+    // New Lead
+    fastLead: 'Быстрая заявка',
+    describeYourIdeaTitle: 'Опиши свою идею',
+    describeYourIdeaDesc: 'Заполни короткую форму, и лучшие мастера сами предложат тебе свои услуги.',
+    whatToTattoo: 'Что будем бить?',
+    tattooDescPlaceholder: 'Например: Хочу черно-белого дракона, обвивающего меч...',
+    approxSize: 'Примерный размер',
+    priorityQuestion: 'Что для вас важнее всего?',
+    referencesOptional: 'Референсы (по желанию)',
+    uploadPhotoSketch: 'Загрузить фото или скетч',
+    continue: 'Продолжить',
+    greatIdea: 'Отличная идея!',
+    loginToPublish: 'Чтобы опубликовать заявку и начать получать отклики от мастеров, необходимо войти в систему.',
+    register: 'Зарегистрироваться',
+    alreadyHaveAccount: 'Уже есть аккаунт',
+    sizeMicro: 'Микро (до 5 см)',
+    sizeSmall: 'Маленькая (5-10 см)',
+    sizeMedium: 'Средняя (10-20 см)',
+    sizeLarge: 'Большая (от 20 см)',
+    fastPriority: 'В кратчайшие сроки',
+    qualityPriority: 'Максимальное качество',
+    cheapPriority: 'Уложиться в бюджет',
   },
   en: {
     back: 'Back',
@@ -548,6 +707,10 @@ const translations: Translations = {
     // Auth
     loginTab: 'Login',
     registerTab: 'Register',
+    loginMasterTitle: 'Manage your business.',
+    loginClientTitle: 'Find your perfect artist.',
+    loginMasterDesc: 'Premium platform for tattoo artists. Get clients, manage bookings, and scale.',
+    loginClientDesc: 'Hundreds of verified professionals, easy search and safe bookings.',
     email: 'Email',
     passwordAuth: 'Password',
     portfolioUrl: 'Portfolio URL (Instagram, website, etc.)',
@@ -578,6 +741,55 @@ const translations: Translations = {
     toPay: 'To Pay',
     typeMessage: 'Type a message...',
     noMessages: 'You have no messages yet. Write to us if you need help!',
+    // Client Dashboard
+    clientDashboardTitle: 'Client Dashboard',
+    manageYourLeads: 'Manage your tattoo leads',
+    favoriteMasters: 'Favorite Artists',
+    createNewLead: 'Create a new lead',
+    describeYourIdea: 'Describe your idea, and artists will offer you designs and prices.',
+    wantTattoo: 'I want a tattoo',
+    loadingLeads: 'Loading leads...',
+    statusSearching: 'Looking for artist',
+    statusAccepted: 'In progress',
+    statusCompleted: 'Completed',
+    statusArchived: 'Archived',
+    tattooStyle: 'Tattoo style',
+    tattooLead: 'Tattoo lead',
+    noDescription: 'No description',
+    budgetUpTo: 'up to',
+    notSpecified: 'not specified',
+    responsesCount: 'responses',
+    noFavorites: 'No favorite artists yet',
+    saveMastersDesc: 'Save the profiles of top artists so you don\'t lose them.',
+    // Dashboard general
+    balanceUpdated: 'Balance updated!',
+    profileLoadError: 'Profile load error',
+    profileLoadErrorDesc: 'Failed to load your profile data. Please make sure your internet connection is active and try refreshing the page.',
+    cabinetLocked: 'Cabinet locked',
+    cabinetLockedDesc: 'We build a premium product and care about quality. Please go to your profile settings, upload your portfolio and certificates to get verified artist status and access to hot leads.',
+    fillProfile: 'Fill profile',
+    // New Lead
+    fastLead: 'Fast Lead',
+    describeYourIdeaTitle: 'Describe your idea',
+    describeYourIdeaDesc: 'Fill out a short form, and top artists will offer you their services.',
+    whatToTattoo: 'What are we tattooing?',
+    tattooDescPlaceholder: 'For example: I want a black and white dragon wrapped around a sword...',
+    approxSize: 'Approximate size',
+    priorityQuestion: 'What is most important to you?',
+    referencesOptional: 'References (optional)',
+    uploadPhotoSketch: 'Upload photo or sketch',
+    continue: 'Continue',
+    greatIdea: 'Great idea!',
+    loginToPublish: 'To publish your request and start receiving offers from artists, you need to log in.',
+    register: 'Register',
+    alreadyHaveAccount: 'Already have an account',
+    sizeMicro: 'Micro (up to 5 cm)',
+    sizeSmall: 'Small (5-10 cm)',
+    sizeMedium: 'Medium (10-20 cm)',
+    sizeLarge: 'Large (20+ cm)',
+    fastPriority: 'As fast as possible',
+    qualityPriority: 'Maximum quality',
+    cheapPriority: 'Fit within budget',
   },
 };
 
