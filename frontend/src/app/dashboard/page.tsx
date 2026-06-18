@@ -9,29 +9,18 @@ import { LeadsFeed } from '@/components/LeadsFeed'
 import { AuctionsFeed } from '@/components/AuctionsFeed'
 import { CRMBoard } from '@/components/CRMBoard'
 import { MessagesList } from '@/components/MessagesList'
-import { getTranslation, Language } from '@/lib/i18n'
 import { toast } from 'react-hot-toast'
 import { ClientDashboard } from '@/components/ClientDashboard'
+import { useLanguage } from '@/i18n/LanguageContext'
 import { MessageCircle, LayoutDashboard } from 'lucide-react'
 
 export default function DashboardPage() {
   const router = useRouter()
   const [profile, setProfile] = useState<Profile | null>(null)
   const [isLoading, setIsLoading] = useState(true)
-  const [language, setLanguage] = useState<string>('cs')
+  const { t, lang: language } = useLanguage()
   const [currentSession, setCurrentSession] = useState<any>(null)
   const [activeTab, setActiveTab] = useState<'feed' | 'my-leads' | 'auctions' | 'crm' | 'messages'>('feed')
-
-  // Load language from localStorage
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const savedLang = localStorage.getItem('language') || 'cs'
-      setLanguage(savedLang)
-    }
-  }, [])
-
-  // Translation helper
-  const t = (key: Parameters<typeof getTranslation>[1]) => getTranslation(language as Language, key)
 
   useEffect(() => {
     fetchProfile()

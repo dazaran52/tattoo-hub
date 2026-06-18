@@ -3,33 +3,35 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowRight, CheckCircle2, ShieldCheck, Sparkles, X } from 'lucide-react'
-
-const slides = [
-  {
-    title: 'Tattoo HUB',
-    description: 'Премиальная платформа для поиска тату-мастеров и горячих заявок.',
-    icon: <Sparkles className="w-16 h-16 text-indigo-400" />
-  },
-  {
-    title: 'Для мастеров',
-    description: 'Более 500 мастеров уже находят здесь клиентов без затрат на рекламу.',
-    icon: <CheckCircle2 className="w-16 h-16 text-green-400" />
-  },
-  {
-    title: 'Для клиентов',
-    description: 'Опиши идею один раз — получай предложения. Выбирай лучшего мастера.',
-    icon: <ArrowRight className="w-16 h-16 text-pink-400" />
-  },
-  {
-    title: 'Знак качества',
-    description: 'Верифицированные мастера получают специальный значок доверия.',
-    icon: <ShieldCheck className="w-16 h-16 text-amber-400" />
-  }
-]
+import { useLanguage } from '@/i18n/LanguageContext'
 
 export function OnboardingCarousel({ onComplete, forceShow = false }: { onComplete: () => void, forceShow?: boolean }) {
+  const { t } = useLanguage()
   const [currentSlide, setCurrentSlide] = useState(0)
   const [isVisible, setIsVisible] = useState(false)
+
+  const slides = [
+    {
+      title: t('onboarding.onb_slide1_title'),
+      description: t('onboarding.onb_slide1_desc'),
+      icon: <Sparkles className="w-16 h-16 text-indigo-400" />
+    },
+    {
+      title: t('onboarding.onb_slide2_title'),
+      description: t('onboarding.onb_slide2_desc'),
+      icon: <CheckCircle2 className="w-16 h-16 text-green-400" />
+    },
+    {
+      title: t('onboarding.onb_slide3_title'),
+      description: t('onboarding.onb_slide3_desc'),
+      icon: <ArrowRight className="w-16 h-16 text-pink-400" />
+    },
+    {
+      title: t('onboarding.onb_slide4_title'),
+      description: t('onboarding.onb_slide4_desc'),
+      icon: <ShieldCheck className="w-16 h-16 text-amber-400" />
+    }
+  ]
 
   useEffect(() => {
     const hasSeen = localStorage.getItem('has_seen_onboarding')
@@ -70,7 +72,7 @@ export function OnboardingCarousel({ onComplete, forceShow = false }: { onComple
             onClick={handleComplete}
             className="absolute top-8 right-8 text-neutral-500 hover:text-white flex items-center gap-2 transition-colors"
           >
-            Пропустить <X className="w-5 h-5" />
+            {t('onboarding.onb_skip')} <X className="w-5 h-5" />
           </button>
 
           <div className="max-w-md w-full relative h-96 flex flex-col items-center text-center">
@@ -106,7 +108,7 @@ export function OnboardingCarousel({ onComplete, forceShow = false }: { onComple
               onClick={handleNext}
               className="w-full py-4 bg-white text-black rounded-full font-bold text-lg hover:scale-105 transition-transform"
             >
-              {currentSlide === slides.length - 1 ? 'Начать!' : 'Далее'}
+              {currentSlide === slides.length - 1 ? t('onboarding.onb_start') : t('onboarding.onb_next')}
             </button>
           </div>
         </motion.div>

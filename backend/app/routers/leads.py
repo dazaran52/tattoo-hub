@@ -386,11 +386,23 @@ async def create_client_lead(
         if current_user:
             db_lead["client_id"] = current_user.user_id
 
-        res = await supabase.table("leads").insert(db_lead).execute()
-        if not res.data:
-            raise HTTPException(status_code=400, detail="Failed to create lead")
-            
-        return {"success": True, "lead": res.data[0]}
+        import asyncio
+        max_retries = 3
+        for attempt in range(max_retries):
+            try:
+                res = await supabase.table("leads").insert(db_lead).execute()
+                if res.data:
+                    return {"success": True, "lead": res.data[0]}
+                if attempt == max_retries - 1:
+                    raise HTTPException(status_code=400, detail="Failed to create lead")
+            except Exception as e:
+                # PostgrestAPIError or similar might be raised
+                if "foreign_key_violation" in str(e) or "23503" in str(e):
+                    if attempt < max_retries - 1:
+                        await asyncio.sleep(0.5)
+                        continue
+                if attempt == max_retries - 1:
+                    raise e
             
     except Exception as e:
         if isinstance(e, HTTPException):
