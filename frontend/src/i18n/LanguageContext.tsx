@@ -6,7 +6,7 @@ import en from './dictionaries/en.json'
 import cs from './dictionaries/cs.json'
 
 type Language = 'ru' | 'en' | 'cs'
-type Dictionary = typeof ru
+type Dictionary = Record<string, any>
 
 interface LanguageContextType {
   lang: Language
