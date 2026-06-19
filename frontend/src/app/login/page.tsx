@@ -463,7 +463,7 @@ function LoginContent() {
                               initial={{ opacity: 0, height: 0 }}
                               animate={{ opacity: 1, height: 'auto' }}
                               exit={{ opacity: 0, height: 0 }}
-                              className="relative group overflow-hidden"
+                              className="relative group"
                             >
                               <div 
                                 className={`w-full flex items-center min-h-[56px] pl-12 pr-4 py-3 bg-white/40 dark:bg-neutral-950/40 border border-neutral-200 dark:border-white/10 rounded-2xl cursor-pointer backdrop-blur-md shadow-inner transition-colors ${role === 'master' ? 'hover:border-orange-500/50' : 'hover:border-indigo-500/50'}`}
