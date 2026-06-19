@@ -79,6 +79,7 @@ export function LeadForm() {
           size: pendingLead.size || prev.size,
           priority: pendingLead.priority || prev.priority
         }))
+        setStep(2) // Jump to step 2 so user can select country and city
       } catch (e) {
         console.error('Failed to parse pending lead', e)
       }
@@ -87,6 +88,21 @@ export function LeadForm() {
 
   useEffect(() => {
     if (selectedCountry) {
+      const country = countries.find(c => c.id === selectedCountry)
+      if (country) {
+        const cCode = country.code || 'CZ'
+        let newCurr = 'EUR'
+        if (cCode === 'CZ') newCurr = 'CZK'
+        if (cCode === 'PL') newCurr = 'PLN'
+        setCurrency(newCurr)
+        
+        const defaults: Record<string, number> = { CZK: 5000, EUR: 200, PLN: 1000 }
+        if (!formData.budget || !formData.budget.includes(newCurr)) {
+          setBudgetVal(defaults[newCurr])
+          setFormData(prev => ({ ...prev, budget: `${defaults[newCurr]} ${newCurr}` }))
+        }
+      }
+
       fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/locations/countries/${selectedCountry}/cities`)
         .then(res => res.json())
         .then(data => {
@@ -95,8 +111,7 @@ export function LeadForm() {
             const defaultCity = data[0].name_ru || data[0].name
             setFormData(prev => ({ 
               ...prev, 
-              city: defaultCity, 
-              location: countries.find(c => c.id === selectedCountry)?.name_ru || selectedCountry 
+              city: defaultCity
             }))
           }
         })
@@ -230,10 +245,10 @@ export function LeadForm() {
   ]
 
   const stepTitles = [
-    "Опиши свою идею",
-    "Детали татуировки",
-    "Бюджет и референсы",
-    "Твои контакты"
+    t('step1Title') || "Опиши свою идею",
+    t('step2Title') || "Детали татуировки",
+    t('step3Title') || "Бюджет и референсы",
+    t('step4Title') || "Твои контакты"
   ]
 
   const inputClasses = "w-full bg-white/40 dark:bg-neutral-900/40 backdrop-blur-xl border border-neutral-200 dark:border-white/10 rounded-2xl p-4 text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-violet-500/30 focus:border-violet-500/50 transition-all duration-300 shadow-sm"
@@ -260,12 +275,12 @@ export function LeadForm() {
         <motion.h3 
           className="text-3xl md:text-4xl font-extrabold text-neutral-900 dark:text-white mb-4"
         >
-          Заявка отправлена!
+          {t('leadSentTitle') || 'Заявка отправлена!'}
         </motion.h3>
         <motion.p 
           className="text-neutral-600 dark:text-neutral-300 text-lg max-w-md mx-auto mb-10 leading-relaxed font-medium"
         >
-          Лучшие мастера твоего города скоро увидят твою идею и свяжутся с тобой, чтобы обсудить детали и предложить свои эскизы.
+          {t('leadSentDesc') || 'Лучшие мастера твоего города скоро увидят твою идею и свяжутся с тобой, чтобы обсудить детали и предложить свои эскизы.'}
         </motion.p>
         <motion.button 
           onClick={() => { 
@@ -278,7 +293,7 @@ export function LeadForm() {
           }}
           className="group relative inline-flex items-center justify-center bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 px-8 py-4 rounded-2xl font-bold transition-all duration-300 hover:scale-105 shadow-md"
         >
-          <span className="relative z-10">Новая заявка</span>
+          <span className="relative z-10">{t('newLeadBtn') || 'Новая заявка'}</span>
         </motion.button>
       </motion.div>
     )
@@ -343,20 +358,20 @@ export function LeadForm() {
                 className="space-y-6"
               >
                 <div>
-                  <label className={labelClasses}>Что будем бить?</label>
+                  <label className={labelClasses}>{t('describeIdeaTitle') || 'Расскажи, что хочешь набить'}</label>
                   <textarea 
                     value={formData.description}
                     onChange={e => setFormData({...formData, description: e.target.value})}
-                    placeholder="Например: Хочу черно-белого дракона, обвивающего меч..."
+                    placeholder={t('describeIdeaPlaceholder') || "Например: Хочу черно-белого дракона, обвивающего меч..."}
                     className={`${inputClasses} min-h-[140px] resize-none`}
                     required
                   />
                 </div>
                 <div>
-                  <label className={labelClasses}>Стиль (опционально)</label>
+                  <label className={labelClasses}>{t('styleOptional') || 'Стиль (опционально)'}</label>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                     {[
-                      { id: '', name: 'Пока не знаю', emoji: '✨' },
+                      { id: 'notSure', name: 'Пока не знаю', emoji: '✨' },
                       { id: 'realism', name: 'Реализм', emoji: '👁️' },
                       { id: 'traditional', name: 'Олдскул', emoji: '⚓' },
                       { id: 'minimalism', name: 'Минимализм', emoji: '🖋️' },
@@ -367,7 +382,7 @@ export function LeadForm() {
                       { id: 'lettering', name: 'Леттеринг', emoji: '📝' },
                       { id: 'watercolor', name: 'Акварель', emoji: '🎨' },
                       { id: 'anime', name: 'Аниме', emoji: '🎌' },
-                      { id: 'other', name: 'Другое', emoji: '🤔' },
+                      { id: 'otherStyle', name: 'Другое', emoji: '🤔' },
                     ].map(style => (
                       <button
                         key={style.id}
@@ -380,7 +395,7 @@ export function LeadForm() {
                         }`}
                       >
                         <span className="text-2xl">{style.emoji}</span>
-                        <span className="text-sm">{style.name}</span>
+                        <span className="text-sm text-center">{t(`style_${style.id}`) || style.name}</span>
                       </button>
                     ))}
                   </div>
@@ -429,23 +444,23 @@ export function LeadForm() {
                   </div>
                 </div>
                 <div>
-                  <label className={labelClasses}>Место нанесения</label>
+                  <label className={labelClasses}>{t('tattooPlacement') || 'Место нанесения'}</label>
                   <input 
                     type="text"
                     value={formData.location}
                     onChange={e => setFormData({...formData, location: e.target.value})}
-                    placeholder="Например: Предплечье, спина, бедро..."
+                    placeholder={t('placementPlaceholder') || "Например: Предплечье, спина, бедро..."}
                     className={inputClasses}
                     required
                   />
                 </div>
                 <div>
-                  <label className={labelClasses}>Примерный размер</label>
+                  <label className={labelClasses}>{t('approximateSize') || 'Примерный размер'}</label>
                   <input 
                     type="text"
                     value={formData.size}
                     onChange={e => setFormData({...formData, size: e.target.value})}
-                    placeholder="Например: 15х10 см, или просто 'большая'"
+                    placeholder={t('sizePlaceholder') || "Например: 15х10 см, или просто 'большая'"}
                     className={inputClasses}
                     required
                   />
@@ -463,12 +478,12 @@ export function LeadForm() {
                 className="space-y-6"
               >
                 <div className="mb-8">
-                  <label className={labelClasses}>Что для вас важнее всего?</label>
+                  <label className={labelClasses}>{t('masterPriority') || 'Что для вас важнее всего?'}</label>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     {[
-                      { id: 'fast', icon: '⚡', label: 'В кратчайшие сроки', desc: 'Хочу сделать как можно быстрее' },
-                      { id: 'quality', icon: '💎', label: 'Максимальное качество', desc: 'Готов(а) подождать ради лучшего результата' },
-                      { id: 'cheap', icon: '💸', label: 'Уложиться в бюджет', desc: 'Ищу самое выгодное предложение' }
+                      { id: 'fast', icon: '⚡', label: t('fasterPriority') || 'В кратчайшие сроки', desc: '' },
+                      { id: 'quality', icon: '💎', label: t('qualityPriority') || 'Максимальное качество', desc: '' },
+                      { id: 'cheap', icon: '💸', label: t('cheaperPriority') || 'Уложиться в бюджет', desc: '' }
                     ].map(p => (
                       <div 
                         key={p.id}
@@ -490,7 +505,7 @@ export function LeadForm() {
                 <div>
                   <div className="flex items-center justify-between mb-2 ml-1">
                     <label className="text-sm font-semibold text-neutral-700 dark:text-neutral-300">
-                      Ваш бюджет
+                      {t('budgetLabel') || 'Ваш бюджет'}
                     </label>
                     <label className="flex items-center gap-2 cursor-pointer text-sm font-medium text-neutral-600 dark:text-neutral-400">
                       <input 
@@ -499,7 +514,7 @@ export function LeadForm() {
                         onChange={e => setFormData({ ...formData, is_negotiable: e.target.checked })}
                         className="w-4 h-4 rounded border-neutral-300 text-violet-600 focus:ring-violet-500 bg-white/50 dark:bg-neutral-800/50"
                       />
-                      Договорная цена
+                      {t('negotiableBudget') || 'Договорная цена'}
                     </label>
                   </div>
                   
@@ -514,25 +529,9 @@ export function LeadForm() {
                           {budgetVal} {currency}
                         </span>
                         <div className="flex gap-2 p-1.5 bg-white/20 dark:bg-neutral-900/20 backdrop-blur-md border border-neutral-200 dark:border-white/5 rounded-2xl w-fit">
-                          {['CZK', 'EUR', 'PLN'].map(curr => (
-                            <button
-                              key={curr}
-                              type="button"
-                              onClick={() => {
-                                setCurrency(curr)
-                                const defaults: Record<string, number> = { CZK: 5000, EUR: 200, PLN: 1000 }
-                                setBudgetVal(defaults[curr])
-                                setFormData({ ...formData, budget: `${defaults[curr]} ${curr}` })
-                              }}
-                              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
-                                currency === curr
-                                  ? 'bg-violet-500 text-white shadow-md'
-                                  : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-white'
-                              }`}
-                            >
-                              {curr}
-                            </button>
-                          ))}
+                           <span className="px-4 py-2 rounded-xl text-xs font-bold transition-all bg-violet-500 text-white shadow-md">
+                             {currency}
+                           </span>
                         </div>
                       </div>
                       <input
@@ -557,7 +556,7 @@ export function LeadForm() {
                 </div>
 
                 <div>
-                  <label className={labelClasses}>Примеры и референсы</label>
+                  <label className={labelClasses}>{t('referencesTitle') || 'Примеры и референсы'}</label>
                   <div 
                     onDragEnter={handleDrag}
                     onDragOver={handleDrag}
@@ -579,8 +578,8 @@ export function LeadForm() {
                     <div className="w-16 h-16 bg-white/50 dark:bg-neutral-800/50 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300 shadow-sm">
                       <Upload className="w-8 h-8 text-violet-500" />
                     </div>
-                    <p className="text-neutral-700 dark:text-neutral-300 font-bold">Нажмите или перетащите фото сюда</p>
-                    <p className="text-neutral-400 text-sm mt-1">PNG, JPG до 5MB</p>
+                    <p className="text-neutral-700 dark:text-neutral-300 font-bold">{t('uploadPhoto') || 'Нажмите или перетащите фото сюда'}</p>
+                    <p className="text-neutral-400 text-sm mt-1">{t('referencesOptionalText') || 'Необязательно, но очень поможет мастерам понять идею'}</p>
 
                     {uploadProgress !== null && (
                       <div className="mt-4 w-full max-w-xs mx-auto">
@@ -629,23 +628,23 @@ export function LeadForm() {
               >
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className={labelClasses}>Как к вам обращаться?</label>
+                    <label className={labelClasses}>{t('howToAddressYou') || 'Как к вам обращаться?'}</label>
                     <input 
                       type="text"
                       value={formData.name}
                       onChange={e => setFormData({...formData, name: e.target.value})}
-                      placeholder="Имя"
+                      placeholder={t('yourName') || "Имя"}
                       className={inputClasses}
                       required
                     />
                   </div>
                   <div>
-                    <label className={labelClasses}>Email или Телефон</label>
+                    <label className={labelClasses}>{t('contactForCommunication') || 'Email или Телефон'}</label>
                     <input 
                       type="text"
                       value={formData.contact}
                       onChange={e => setFormData({...formData, contact: e.target.value})}
-                      placeholder="+420... или email@..."
+                      placeholder={t('contactPlaceholder') || "+420... или email@..."}
                       className={inputClasses}
                       required
                     />
@@ -661,7 +660,7 @@ export function LeadForm() {
                     <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400" />
                   </div>
                   <p className="text-sm text-neutral-700 dark:text-neutral-300 leading-relaxed">
-                    Твои контакты будут скрыты и станут доступны <span className="font-semibold">только доверенным мастерам</span>, которые захотят взять твою идею в работу.
+                    {t('contactPrivacyNotice') || 'Твои контакты будут скрыты и станут доступны только доверенным мастерам, которые захотят взять твою идею в работу.'}
                   </p>
                 </motion.div>
               </motion.div>
@@ -679,7 +678,7 @@ export function LeadForm() {
                 className="flex items-center gap-2 text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white transition-colors font-medium px-4 py-2 rounded-xl hover:bg-neutral-100/50 dark:hover:bg-neutral-800/50"
               >
                 <ChevronLeft className="w-5 h-5" />
-                Назад
+                {t('backBtn') || 'Назад'}
               </motion.button>
             ) : (
               <div></div>
@@ -694,7 +693,7 @@ export function LeadForm() {
                 className="bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 px-8 py-3.5 rounded-2xl font-bold flex items-center gap-2 transition-all shadow-xl shadow-neutral-900/20 dark:shadow-white/10 group overflow-hidden relative"
               >
                 <div className="absolute inset-0 bg-white/20 dark:bg-black/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out" />
-                <span className="relative z-10">Далее</span>
+                <span className="relative z-10">{t('nextBtn') || 'Далее'}</span>
                 <ChevronRight className="w-5 h-5 relative z-10 group-hover:translate-x-1 transition-transform" />
               </motion.button>
             ) : (
@@ -706,7 +705,7 @@ export function LeadForm() {
                 className="relative bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 text-white px-8 py-3.5 rounded-2xl font-bold flex items-center gap-2 transition-all shadow-xl shadow-violet-500/30 disabled:opacity-70 disabled:hover:scale-100 overflow-hidden group"
               >
                 <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out" />
-                <span className="relative z-10">{isSubmitting ? 'Отправляем...' : 'Оставить заявку'}</span>
+                <span className="relative z-10">{isSubmitting ? t('loading') || 'Отправляем...' : t('publishLeadBtn') || 'Оставить заявку'}</span>
                 {!isSubmitting && <Check className="w-5 h-5 relative z-10 group-hover:scale-110 transition-transform" />}
               </motion.button>
             )}

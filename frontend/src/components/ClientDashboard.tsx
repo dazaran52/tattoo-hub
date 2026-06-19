@@ -65,54 +65,7 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
     if (typeof window !== 'undefined' && localStorage.getItem('pending_lead')) {
       const pendingLeadStr = localStorage.getItem('pending_lead')
       if (pendingLeadStr) {
-        try {
-          const pendingLead = JSON.parse(pendingLeadStr)
-          
-          // Auto submit the pending lead
-          const autoSubmit = async () => {
-            const { data: { session } } = await supabase.auth.getSession()
-            if (!session) return
-
-            const payload = {
-              description: pendingLead.description,
-              size: pendingLead.size,
-              client_priority: pendingLead.priority,
-              budget: 'Договорная цена',
-              budget_val: 5000,
-              budget_currency: 'CZK',
-              is_negotiable_budget: true,
-              contact: session.user.email,
-              name: session.user.email?.split('@')[0] || 'Клиент'
-            }
-
-            try {
-              const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/leads/client`, {
-                method: 'POST',
-                headers: {
-                  'Authorization': `Bearer ${session.access_token}`,
-                  'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(payload)
-              })
-
-              if (res.ok) {
-                localStorage.removeItem('pending_lead')
-                // Refresh leads
-                fetchLeads()
-                import('react-hot-toast').then(mod => mod.default.success('Твоя быстрая заявка успешно опубликована!'))
-              } else {
-                // If it fails, open the form so they can fix it
-                setIsFormOpen(true)
-              }
-            } catch (e) {
-              console.error('Auto submit failed', e)
-              setIsFormOpen(true)
-            }
-          }
-          autoSubmit()
-        } catch (e) {
-          setIsFormOpen(true)
-        }
+        setIsFormOpen(true)
       }
     }
 
@@ -240,16 +193,25 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
                   </div>
                 </div>
               </div>
-              <h4 className="font-bold text-lg mb-2">{lead.style ? `\${t('tattooStyle')} ${lead.style}` : t('tattooLead')}</h4>
-              <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-4 line-clamp-2">
+              <h4 className="font-bold text-lg mb-2">{lead.title || t('tattooLead')}</h4>
+              
+              {lead.image_urls && lead.image_urls.length > 0 && (
+                <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
+                  {lead.image_urls.map((url: string, i: number) => (
+                    <img key={i} src={url} alt="Reference" className="w-20 h-20 object-cover rounded-xl border border-neutral-200 dark:border-neutral-800 flex-shrink-0" />
+                  ))}
+                </div>
+              )}
+              
+              <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-4 line-clamp-3">
                 {lead.description || t('noDescription')}
               </p>
               <div className="flex justify-between items-center text-sm border-t border-neutral-100 dark:border-neutral-800 pt-4">
                 <span className="text-neutral-500">
-                  Бюджет: <strong>{lead.client_budget ? `${t('budgetUpTo')} ${lead.client_budget} CZK` : t('notSpecified')}</strong>
+                  {t('budgetLabel') || 'Бюджет:'} <strong>{lead.display_budget || lead.client_budget ? `${lead.client_budget} ${lead.client_currency || 'CZK'}` : t('negotiableBudget')}</strong>
                 </span>
                 <span className="text-indigo-500 font-medium">
-                  {lead.unlocked_by ? lead.unlocked_by.length : 0} {t('responsesCount')}
+                  {lead.unlock_count || 0} {t('responsesCount') || 'откликов'}
                 </span>
               </div>
             </div>
