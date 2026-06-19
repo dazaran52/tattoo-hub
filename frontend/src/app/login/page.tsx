@@ -450,7 +450,9 @@ function LoginContent() {
                             onChange={(e) => setSelectedCountry(e.target.value)}
                             className={`block w-full pl-12 pr-4 py-4 bg-white/40 dark:bg-neutral-950/40 border border-neutral-200 dark:border-white/10 rounded-2xl text-neutral-900 dark:text-white focus:outline-none focus:ring-2 transition-all backdrop-blur-md appearance-none shadow-inner cursor-pointer ${role === 'master' ? 'focus:border-orange-500 focus:ring-orange-500/20 focus:bg-orange-950/10' : 'focus:border-indigo-500 focus:ring-indigo-500/20 focus:bg-indigo-950/10'}`}
                           >
-                            <option value="" disabled className="bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white">{t('selectCountry')}</option>
+                            <option value="" disabled className="bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white">
+                              {countries.length === 0 ? 'Загрузка стран...' : t('selectCountry')}
+                            </option>
                             {countries.map(c => (
                               <option key={c.id} value={c.id} className="bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white">{c.name_ru}</option>
                             ))}
