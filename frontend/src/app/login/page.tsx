@@ -411,7 +411,7 @@ function LoginContent() {
                         animate={{ opacity: 1, height: 'auto', y: 0 }}
                         exit={{ opacity: 0, height: 0, y: -20 }}
                         transition={{ duration: 0.3 }}
-                        className="space-y-5 overflow-hidden"
+                        className="space-y-5"
                       >
                         {role === 'master' && (
                           <>
