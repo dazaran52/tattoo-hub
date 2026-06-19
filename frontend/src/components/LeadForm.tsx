@@ -4,8 +4,12 @@ import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Upload, ChevronRight, ChevronLeft, Check, AlertCircle, Sparkles, Image as ImageIcon, MapPin, Send, X, Loader2 } from 'lucide-react'
 import toast from 'react-hot-toast'
+import { useLanguage } from '@/i18n/LanguageContext'
+import { api } from '@/lib/api'
+import { supabase } from '@/lib/supabase'
 
 export function LeadForm() {
+  const { t, lang } = useLanguage()
   const [step, setStep] = useState(1)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
@@ -41,6 +45,29 @@ export function LeadForm() {
       .then(data => setCountries(data))
       .catch(err => console.error(err))
       
+    // Load from profile if logged in
+    const getCookie = (name: string) => {
+      if (typeof document === 'undefined') return null;
+      const value = `; ${document.cookie}`;
+      const parts = value.split(`; ${name}=`);
+      if (parts.length === 2) return parts.pop()?.split(';').shift();
+      return null;
+    }
+    const token = getCookie('sb-access-token')
+    if (token) {
+      api.getProfile().then(p => {
+        if (p.country_ids && p.country_ids.length > 0) {
+          setSelectedCountry(p.country_ids[0])
+        }
+        if (p.display_name) {
+          setFormData(prev => ({ ...prev, name: p.display_name! }))
+        }
+        if (p.phone || p.email) {
+          setFormData(prev => ({ ...prev, contact: (p.phone || p.email)! }))
+        }
+      }).catch(err => console.error(err))
+    }
+
     // Load pending lead if exists
     const pendingLeadStr = localStorage.getItem('pending_lead')
     if (pendingLeadStr) {
@@ -128,6 +155,19 @@ export function LeadForm() {
     setIsSubmitting(true)
     
     try {
+      const imageUrls: string[] = []
+      if (formData.images.length > 0) {
+        for (const file of formData.images) {
+          const fileExt = file.name.split('.').pop()
+          const fileName = `${Math.random()}.${fileExt}`
+          const filePath = `client_leads/${fileName}`
+          const { error: uploadError } = await supabase.storage.from('lead_images').upload(filePath, file)
+          if (uploadError) throw uploadError
+          const { data } = supabase.storage.from('lead_images').getPublicUrl(filePath)
+          imageUrls.push(data.publicUrl)
+        }
+      }
+
       const payload = {
         description: formData.description,
         style: formData.style || null,
@@ -142,6 +182,7 @@ export function LeadForm() {
         city: formData.city || null,
         name: formData.name || null,
         contact: formData.contact,
+        image_urls: imageUrls,
       }
 
       const getCookie = (name: string) => {
@@ -356,6 +397,37 @@ export function LeadForm() {
                 transition={{ duration: 0.3 }}
                 className="space-y-6"
               >
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className={labelClasses}>{t('country') || 'Страна'}</label>
+                    <select
+                      value={selectedCountry}
+                      onChange={e => setSelectedCountry(e.target.value)}
+                      className="w-full bg-white/40 dark:bg-neutral-900/40 backdrop-blur-xl border border-neutral-200 dark:border-white/10 rounded-2xl p-4 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500/30 focus:border-violet-500/50 appearance-none font-semibold cursor-pointer"
+                      required
+                    >
+                      <option value="" disabled className="bg-white dark:bg-neutral-900">{t('selectCountry') || 'Выбери страну'}</option>
+                      {countries.map(c => (
+                        <option key={c.id} value={c.id} className="bg-white dark:bg-neutral-900">{lang === 'ru' ? c.name_ru : c.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className={labelClasses}>{t('city') || 'Город'}</label>
+                    <select
+                      value={formData.city}
+                      onChange={e => setFormData({ ...formData, city: e.target.value })}
+                      className="w-full bg-white/40 dark:bg-neutral-900/40 backdrop-blur-xl border border-neutral-200 dark:border-white/10 rounded-2xl p-4 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500/30 focus:border-violet-500/50 appearance-none font-semibold cursor-pointer"
+                      disabled={!selectedCountry}
+                      required
+                    >
+                      <option value="" disabled className="bg-white dark:bg-neutral-900">{t('selectCity') || 'Выбери город'}</option>
+                      {cities.map(c => (
+                        <option key={c.id} value={lang === 'ru' ? c.name_ru : c.name} className="bg-white dark:bg-neutral-900">{lang === 'ru' ? c.name_ru : c.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
                 <div>
                   <label className={labelClasses}>Место нанесения</label>
                   <input 
@@ -555,38 +627,6 @@ export function LeadForm() {
                 transition={{ duration: 0.3 }}
                 className="space-y-6"
               >
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className={labelClasses}>Страна</label>
-                    <select
-                      value={selectedCountry}
-                      onChange={e => setSelectedCountry(e.target.value)}
-                      className="w-full bg-white/40 dark:bg-neutral-900/40 backdrop-blur-xl border border-neutral-200 dark:border-white/10 rounded-2xl p-4 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500/30 focus:border-violet-500/50 appearance-none font-semibold cursor-pointer"
-                      required
-                    >
-                      <option value="" disabled className="bg-white dark:bg-neutral-900">Выбери страну</option>
-                      {countries.map(c => (
-                        <option key={c.id} value={c.id} className="bg-white dark:bg-neutral-900">{c.name_ru || c.name}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className={labelClasses}>Город</label>
-                    <select
-                      value={formData.city}
-                      onChange={e => setFormData({ ...formData, city: e.target.value })}
-                      className="w-full bg-white/40 dark:bg-neutral-900/40 backdrop-blur-xl border border-neutral-200 dark:border-white/10 rounded-2xl p-4 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500/30 focus:border-violet-500/50 appearance-none font-semibold cursor-pointer"
-                      disabled={!selectedCountry}
-                      required
-                    >
-                      <option value="" disabled className="bg-white dark:bg-neutral-900">Выбери город</option>
-                      {cities.map(c => (
-                        <option key={c.id} value={c.name_ru || c.name} className="bg-white dark:bg-neutral-900">{c.name_ru || c.name}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label className={labelClasses}>Как к вам обращаться?</label>

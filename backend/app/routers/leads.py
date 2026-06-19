@@ -338,6 +338,7 @@ class ClientLeadCreate(BaseModel):
     name: str | None = None
     contact: str
     is_negotiable_budget: bool = False
+    image_urls: list[str] | None = None
 
 @router.post("/client")
 async def create_client_lead(
@@ -380,7 +381,8 @@ async def create_client_lead(
             "client_currency": lead_data.budget_currency,
             "is_negotiable_budget": lead_data.is_negotiable_budget,
             "country_id": lead_data.country_id,
-            "city_id": None # City UUID lookup logic needs implementation later if needed
+            "city_id": None, # City UUID lookup logic needs implementation later if needed
+            "image_urls": lead_data.image_urls or []
         }
         
         if current_user:
@@ -455,6 +457,58 @@ async def get_client_leads(
             })
         return out
     except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+class ClientLeadUpdate(BaseModel):
+    description: str | None = None
+    style: str | None = None
+    location: str | None = None
+    size: str | None = None
+    budget: str | None = None
+    budget_val: int | None = None
+    budget_currency: str | None = None
+    client_priority: str | None = None
+    city: str | None = None
+    country_id: str | None = None
+    name: str | None = None
+    contact: str | None = None
+    is_negotiable_budget: bool | None = None
+    image_urls: list[str] | None = None
+    status: str | None = None
+
+@router.patch("/client/{lead_id}")
+async def update_client_lead(
+    lead_id: str,
+    update_data: ClientLeadUpdate,
+    current_user: AuthUser = Depends(get_current_user),
+    supabase: AsyncClient = Depends(get_async_supabase_client)
+):
+    try:
+        data = update_data.model_dump(exclude_unset=True)
+        if not data:
+            return {"success": True}
+        res = await supabase.table("leads").update(data).eq("id", lead_id).eq("client_id", current_user.user_id).execute()
+        if not res.data:
+            raise HTTPException(status_code=404, detail="Lead not found or no permission")
+        return {"success": True, "lead": res.data[0]}
+    except Exception as e:
+        if isinstance(e, HTTPException): raise e
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.delete("/client/{lead_id}")
+async def delete_client_lead(
+    lead_id: str,
+    current_user: AuthUser = Depends(get_current_user),
+    supabase: AsyncClient = Depends(get_async_supabase_client)
+):
+    try:
+        res = await supabase.table("leads").delete().eq("id", lead_id).eq("client_id", current_user.user_id).execute()
+        if not res.data:
+            raise HTTPException(status_code=404, detail="Lead not found or no permission")
+        return {"success": True}
+    except Exception as e:
+        if isinstance(e, HTTPException): raise e
         raise HTTPException(status_code=500, detail=str(e))
 
 

@@ -214,5 +214,11 @@
     "onb_skip": "Skip",
     "onb_next": "Next",
     "onb_start": "Start!"
-  }
+  },
+  "topupHistory": "Top-up history",
+  "discountTokens": "Discount tokens (50% off lead)",
+  "topupBalance": "Top up balance",
+  "referralCopied": "Referral code copied!",
+  "copyReferralCode": "Copy referral code",
+  "referralCode": "Referral code"
 }

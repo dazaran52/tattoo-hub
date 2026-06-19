@@ -405,7 +405,7 @@ function LoginContent() {
                   </motion.div>
                   
                   <AnimatePresence mode="popLayout">
-                    {isSignUp && role === 'master' && (
+                    {isSignUp && (
                       <motion.div
                         initial={{ opacity: 0, height: 0, y: -20 }}
                         animate={{ opacity: 1, height: 'auto', y: 0 }}
@@ -413,38 +413,42 @@ function LoginContent() {
                         transition={{ duration: 0.3 }}
                         className="space-y-5 overflow-hidden"
                       >
-                        <div className="relative group pt-1">
-                          <LinkIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500 transition-colors group-focus-within:text-orange-400" />
-                          <input
-                            id="portfolioUrl"
-                            type="url"
-                            required={isSignUp && role === 'master'}
-                            value={portfolioUrl}
-                            onChange={(e) => setPortfolioUrl(e.target.value)}
-                            className="block w-full pl-12 pr-4 py-4 bg-white/40 dark:bg-neutral-950/40 border border-neutral-200 dark:border-white/10 rounded-2xl text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:border-orange-500 focus:ring-orange-500/20 focus:bg-orange-950/10 transition-all backdrop-blur-md shadow-inner"
-                            placeholder="Instagram / Portfolio URL"
-                          />
-                        </div>
+                        {role === 'master' && (
+                          <>
+                            <div className="relative group pt-1">
+                              <LinkIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500 transition-colors group-focus-within:text-orange-400" />
+                              <input
+                                id="portfolioUrl"
+                                type="url"
+                                required={isSignUp && role === 'master'}
+                                value={portfolioUrl}
+                                onChange={(e) => setPortfolioUrl(e.target.value)}
+                                className="block w-full pl-12 pr-4 py-4 bg-white/40 dark:bg-neutral-950/40 border border-neutral-200 dark:border-white/10 rounded-2xl text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:border-orange-500 focus:ring-orange-500/20 focus:bg-orange-950/10 transition-all backdrop-blur-md shadow-inner"
+                                placeholder="Instagram / Portfolio URL"
+                              />
+                            </div>
+
+                            <div className="relative group">
+                              <Tag className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500 transition-colors group-focus-within:text-orange-400" />
+                              <input
+                                id="referralCode"
+                                type="text"
+                                value={referralCode}
+                                onChange={(e) => setReferralCode(e.target.value)}
+                                className="block w-full pl-12 pr-4 py-4 bg-white/40 dark:bg-neutral-950/40 border border-neutral-200 dark:border-white/10 rounded-2xl text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:border-orange-500 focus:ring-orange-500/20 focus:bg-orange-950/10 transition-all backdrop-blur-md shadow-inner"
+                                placeholder="Referral Code (Optional)"
+                              />
+                            </div>
+                          </>
+                        )}
 
                         <div className="relative group">
-                          <Tag className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500 transition-colors group-focus-within:text-orange-400" />
-                          <input
-                            id="referralCode"
-                            type="text"
-                            value={referralCode}
-                            onChange={(e) => setReferralCode(e.target.value)}
-                            className="block w-full pl-12 pr-4 py-4 bg-white/40 dark:bg-neutral-950/40 border border-neutral-200 dark:border-white/10 rounded-2xl text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:border-orange-500 focus:ring-orange-500/20 focus:bg-orange-950/10 transition-all backdrop-blur-md shadow-inner"
-                            placeholder="Referral Code (Optional)"
-                          />
-                        </div>
-
-                        <div className="relative group">
-                          <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500 transition-colors group-focus-within:text-orange-400 z-10 pointer-events-none" />
+                          <MapPin className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500 transition-colors z-10 pointer-events-none ${role === 'master' ? 'group-focus-within:text-orange-400' : 'group-focus-within:text-indigo-400'}`} />
                           <select
                             required={isSignUp}
                             value={selectedCountry}
                             onChange={(e) => setSelectedCountry(e.target.value)}
-                            className="block w-full pl-12 pr-4 py-4 bg-white/40 dark:bg-neutral-950/40 border border-neutral-200 dark:border-white/10 rounded-2xl text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:border-orange-500 focus:ring-orange-500/20 focus:bg-orange-950/10 transition-all backdrop-blur-md appearance-none shadow-inner cursor-pointer"
+                            className={`block w-full pl-12 pr-4 py-4 bg-white/40 dark:bg-neutral-950/40 border border-neutral-200 dark:border-white/10 rounded-2xl text-neutral-900 dark:text-white focus:outline-none focus:ring-2 transition-all backdrop-blur-md appearance-none shadow-inner cursor-pointer ${role === 'master' ? 'focus:border-orange-500 focus:ring-orange-500/20 focus:bg-orange-950/10' : 'focus:border-indigo-500 focus:ring-indigo-500/20 focus:bg-indigo-950/10'}`}
                           >
                             <option value="" disabled className="bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white">{t('selectCountry')}</option>
                             {countries.map(c => (
@@ -462,10 +466,10 @@ function LoginContent() {
                               className="relative group overflow-hidden"
                             >
                               <div 
-                                className="w-full flex items-center min-h-[56px] pl-12 pr-4 py-3 bg-white/40 dark:bg-neutral-950/40 border border-neutral-200 dark:border-white/10 rounded-2xl cursor-pointer backdrop-blur-md shadow-inner hover:border-orange-500/50 transition-colors"
+                                className={`w-full flex items-center min-h-[56px] pl-12 pr-4 py-3 bg-white/40 dark:bg-neutral-950/40 border border-neutral-200 dark:border-white/10 rounded-2xl cursor-pointer backdrop-blur-md shadow-inner transition-colors ${role === 'master' ? 'hover:border-orange-500/50' : 'hover:border-indigo-500/50'}`}
                                 onClick={() => setIsCityDropdownOpen(!isCityDropdownOpen)}
                               >
-                                <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500 transition-colors group-focus-within:text-orange-400" />
+                                <MapPin className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500 transition-colors ${role === 'master' ? 'group-focus-within:text-orange-400' : 'group-focus-within:text-indigo-400'}`} />
                                 <div className="flex-1 flex flex-wrap gap-2">
                                   {selectedCities.length === 0 ? (
                                     <span className="text-neutral-500">{t('selectCity')}</span>
@@ -473,11 +477,11 @@ function LoginContent() {
                                     selectedCities.map(cityId => {
                                       const city = cities.find(c => c.id === cityId)
                                       return city ? (
-                                        <span key={city.id} className="text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-2 bg-orange-500/20 text-orange-600 dark:text-orange-300 border border-orange-500/30">
+                                      <span key={city.id} className={`text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-2 border ${role === 'master' ? 'bg-orange-500/20 text-orange-600 dark:text-orange-300 border-orange-500/30' : 'bg-indigo-500/20 text-indigo-600 dark:text-indigo-300 border-indigo-500/30'}`}>
                                           {city.name_ru}
                                           <button 
                                             type="button" 
-                                            className="hover:text-neutral-950 dark:hover:text-white rounded-full transition-colors hover:bg-orange-500/50 p-0.5"
+                                            className={`hover:text-neutral-950 dark:hover:text-white rounded-full transition-colors p-0.5 ${role === 'master' ? 'hover:bg-orange-500/50' : 'hover:bg-indigo-500/50'}`}
                                             onClick={(e) => {
                                               e.stopPropagation()
                                               setSelectedCities(prev => prev.filter(id => id !== city.id))
@@ -505,7 +509,7 @@ function LoginContent() {
                                         <div className="relative flex items-center justify-center w-5 h-5">
                                           <input 
                                             type="checkbox" 
-                                            className="peer appearance-none w-5 h-5 border-2 border-neutral-300 dark:border-neutral-700 rounded-md checked:bg-orange-500 checked:border-orange-500 focus:ring-0 focus:ring-offset-0 bg-white dark:bg-neutral-950 transition-all cursor-pointer"
+                                            className={`peer appearance-none w-5 h-5 border-2 border-neutral-300 dark:border-neutral-700 rounded-md focus:ring-0 focus:ring-offset-0 bg-white dark:bg-neutral-950 transition-all cursor-pointer ${role === 'master' ? 'checked:bg-orange-500 checked:border-orange-500' : 'checked:bg-indigo-500 checked:border-indigo-500'}`}
                                             checked={selectedCities.includes(c.id)}
                                             onChange={(e) => {
                                               if (e.target.checked) {

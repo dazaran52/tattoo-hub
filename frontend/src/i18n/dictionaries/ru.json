@@ -214,5 +214,11 @@
     "onb_skip": "Пропустить",
     "onb_next": "Далее",
     "onb_start": "Начать!"
-  }
+  },
+  "topupHistory": "История пополнений",
+  "discountTokens": "Скидочные токены (50% скидка на лид)",
+  "topupBalance": "Пополнить баланс",
+  "referralCopied": "Реферальный код скопирован!",
+  "copyReferralCode": "Скопировать реферальный код",
+  "referralCode": "Реферальный код"
 }

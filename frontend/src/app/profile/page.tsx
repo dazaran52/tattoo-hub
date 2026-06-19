@@ -5,11 +5,11 @@ import { useRouter } from 'next/navigation'
 import { Header } from '@/components/Header'
 import { supabase } from '@/lib/supabase'
 import { api, Profile } from '@/lib/api'
-import { getTranslation, Language } from '@/lib/i18n'
+import { useLanguage } from '@/i18n/LanguageContext'
 import { 
   User, Mail, Coins, Calendar, Phone, FileText, Save, X, Edit2, 
   Unlock, CreditCard, Settings, Bell, Lock, Globe, Moon, Sun,
-  Trash2, AlertTriangle, Eye, EyeOff, Check, ArrowLeft, Gem, Tag, Copy, Gift
+  Trash2, AlertTriangle, Eye, EyeOff, Check, ArrowLeft, Gem, Tag, Copy, Gift, MapPin
 } from 'lucide-react'
 
 // Toggle Switch Component
@@ -44,9 +44,12 @@ export default function ProfilePage() {
   const [phone, setPhone] = useState('')
   const [bio, setBio] = useState('')
   const [portfolioUrl, setPortfolioUrl] = useState('')
+  const [countries, setCountries] = useState<any[]>([])
+  const [cities, setCities] = useState<any[]>([])
+  const [selectedCountry, setSelectedCountry] = useState('')
+  const [selectedCity, setSelectedCity] = useState('')
 
   // Settings state
-  const [language, setLanguage] = useState('cs')
   const [theme, setTheme] = useState('dark')
   const [emailNotifications, setEmailNotifications] = useState(true)
   const [newLeadAlerts, setNewLeadAlerts] = useState(true)
@@ -86,6 +89,12 @@ export default function ProfilePage() {
       setPhone(profileData.phone || '')
       setBio(profileData.bio || '')
       setPortfolioUrl(profileData.portfolio_url || '')
+      if (profileData.country_ids && profileData.country_ids.length > 0) {
+        setSelectedCountry(profileData.country_ids[0])
+      }
+      if (profileData.city_ids && profileData.city_ids.length > 0) {
+        setSelectedCity(profileData.city_ids[0])
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load profile')
     } finally {
@@ -95,9 +104,7 @@ export default function ProfilePage() {
 
   const loadSettings = () => {
     if (typeof window !== 'undefined') {
-      const savedLang = localStorage.getItem('language') || 'cs'
       const savedTheme = localStorage.getItem('theme') || 'dark'
-      setLanguage(savedLang)
       setTheme(savedTheme)
       setEmailNotifications(localStorage.getItem('emailNotifications') !== 'false')
       setNewLeadAlerts(localStorage.getItem('newLeadAlerts') !== 'false')
@@ -107,6 +114,30 @@ export default function ProfilePage() {
       applyTheme(savedTheme)
     }
   }
+
+  useEffect(() => {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/locations/countries`)
+      .then(res => res.json())
+      .then(data => setCountries(data))
+      .catch(err => console.error(err))
+  }, [])
+
+  useEffect(() => {
+    if (selectedCountry) {
+      fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/locations/countries/${selectedCountry}/cities`)
+        .then(res => res.json())
+        .then(data => {
+            setCities(data)
+            if (!data.find((c: any) => c.id === selectedCity)) {
+                setSelectedCity(data.length > 0 ? data[0].id : '')
+            }
+        })
+        .catch(err => console.error(err))
+    } else {
+      setCities([])
+      setSelectedCity('')
+    }
+  }, [selectedCountry])
 
   const applyTheme = (themeValue: string) => {
     if (typeof window !== 'undefined') {
@@ -123,8 +154,7 @@ export default function ProfilePage() {
     }
   }
 
-  // Translation helper
-  const t = (key: Parameters<typeof getTranslation>[1]) => getTranslation(language as Language, key)
+  const { t, lang: language, setLang } = useLanguage()
 
   const saveSetting = (key: string, value: string | boolean) => {
     if (typeof window !== 'undefined') {
@@ -138,12 +168,8 @@ export default function ProfilePage() {
     applyTheme(newTheme)
   }
 
-  const handleLanguageChange = (newLang: string) => {
-    setLanguage(newLang)
-    saveSetting('language', newLang)
-    saveSetting('app_lang', newLang)
-    // Force reload to apply language
-    window.location.reload()
+  const handleLanguageChange = (newLang: 'cs' | 'en' | 'ru') => {
+    setLang(newLang)
   }
 
   const handleSave = async () => {
@@ -155,7 +181,9 @@ export default function ProfilePage() {
         display_name: displayName,
         phone: phone,
         bio: bio,
-        portfolio_url: portfolioUrl
+        portfolio_url: portfolioUrl,
+        country_ids: selectedCountry ? [selectedCountry] : [],
+        city_ids: selectedCity ? [selectedCity] : []
       })
       
       setProfile(updated)
@@ -173,6 +201,8 @@ export default function ProfilePage() {
       setPhone(profile.phone || '')
       setBio(profile.bio || '')
       setPortfolioUrl(profile.portfolio_url || '')
+      setSelectedCountry(profile.country_ids?.[0] || '')
+      setSelectedCity(profile.city_ids?.[0] || '')
     }
     setIsEditing(false)
     setError(null)
@@ -349,7 +379,7 @@ export default function ProfilePage() {
                   <div className="bg-white/50 dark:bg-neutral-800/40 border border-neutral-200/30 dark:border-white/5 backdrop-blur-md rounded-2xl p-4 text-center shadow-sm hover:scale-[1.02] transition-all duration-300">
                     <Tag className="w-5 h-5 text-neutral-500 dark:text-neutral-400 mx-auto mb-2" />
                     <p className="text-neutral-900 dark:text-white font-bold text-lg">{profile.discount_tokens || 0}</p>
-                    <p className="text-neutral-500 dark:text-neutral-400 text-xs font-medium">Скидки</p>
+                    <p className="text-neutral-500 dark:text-neutral-400 text-xs font-medium">{language === 'ru' ? 'Скидки' : language === 'cs' ? 'Slevy' : 'Discounts'}</p>
                   </div>
                   <div className="bg-white/50 dark:bg-neutral-800/40 border border-neutral-200/30 dark:border-white/5 backdrop-blur-md rounded-2xl p-4 text-center shadow-sm hover:scale-[1.02] transition-all duration-300">
                     <Calendar className="w-5 h-5 text-neutral-500 dark:text-neutral-400 mx-auto mb-2" />
@@ -372,10 +402,14 @@ export default function ProfilePage() {
                   <div>
                     <h3 className="text-lg font-bold text-neutral-900 dark:text-white flex items-center gap-2 mb-1">
                       <Gift className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                      Пригласи друга - получи бонус!
+                      {language === 'ru' ? 'Пригласи друга - получи бонус!' : language === 'cs' ? 'Pozvi přítele a získej bonus!' : 'Invite a friend and get a bonus!'}
                     </h3>
                     <p className="text-sm text-neutral-500 dark:text-neutral-400 max-w-md">
-                      Поделись своим кодом с другими мастерами. Когда их профиль одобрят, ты получишь 1 скидочный токен (скидка 50% на любую заявку).
+                      {language === 'ru' 
+                        ? 'Поделись своим кодом с другими мастерами. Когда их профиль одобрят, ты получишь 1 скидочный токен (скидка 50% на любую заявку).'
+                        : language === 'cs'
+                        ? 'Sdílej svůj kód s dalšími tatéry. Když bude jejich profil schválen, získáš 1 slevový token (sleva 50 % na jakoukoli poptávku).'
+                        : 'Share your code with other artists. When their profile is approved, you will get 1 discount token (50% discount on any lead).'}
                     </p>
                   </div>
                   
@@ -442,27 +476,68 @@ export default function ProfilePage() {
                       type="tel"
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
-                      placeholder="+420 123 456 789"
+                      placeholder={language === 'cs' ? '+420 123 456 789' : language === 'ru' ? '+7 999 123-45-67' : '+1 123 456 7890'}
                       className="w-full bg-white/40 dark:bg-neutral-950/40 border border-neutral-200 dark:border-white/10 rounded-xl pl-11 pr-4 py-3 text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 transition-all shadow-inner"
                     />
                   </div>
                 </div>
 
-                <div className="md:col-span-2">
+                <div>
                   <label className="block text-sm font-semibold text-neutral-600 dark:text-neutral-400 mb-2">
-                    {t('bio')}
+                    {t('country')}
                   </label>
                   <div className="relative">
-                    <FileText className="absolute left-3.5 top-3.5 w-5 h-5 text-neutral-500 dark:text-neutral-400" />
-                    <textarea
-                      value={bio}
-                      onChange={(e) => setBio(e.target.value)}
-                      placeholder={t('aboutMe')}
-                      rows={3}
-                      className="w-full bg-white/40 dark:bg-neutral-950/40 border border-neutral-200 dark:border-white/10 rounded-xl pl-11 pr-4 py-3.5 text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 transition-all resize-none shadow-inner"
-                    />
+                    <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500 dark:text-neutral-400" />
+                    <select
+                      value={selectedCountry}
+                      onChange={(e) => setSelectedCountry(e.target.value)}
+                      className="w-full bg-white/40 dark:bg-neutral-950/40 border border-neutral-200 dark:border-white/10 rounded-xl pl-11 pr-4 py-3 text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 transition-all shadow-inner appearance-none"
+                    >
+                      <option value="" disabled>{t('selectCountry')}</option>
+                      {countries.map(c => (
+                        <option key={c.id} value={c.id}>{c.name}</option>
+                      ))}
+                    </select>
                   </div>
                 </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-neutral-600 dark:text-neutral-400 mb-2">
+                    {t('city')}
+                  </label>
+                  <div className="relative">
+                    <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500 dark:text-neutral-400" />
+                    <select
+                      value={selectedCity}
+                      onChange={(e) => setSelectedCity(e.target.value)}
+                      disabled={!selectedCountry || cities.length === 0}
+                      className="w-full bg-white/40 dark:bg-neutral-950/40 border border-neutral-200 dark:border-white/10 rounded-xl pl-11 pr-4 py-3 text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 transition-all shadow-inner appearance-none disabled:opacity-50"
+                    >
+                      <option value="" disabled>{t('selectCity')}</option>
+                      {cities.map(c => (
+                        <option key={c.id} value={c.id}>{c.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {profile.role === 'master' && (
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-semibold text-neutral-600 dark:text-neutral-400 mb-2">
+                      {t('bio')}
+                    </label>
+                    <div className="relative">
+                      <FileText className="absolute left-3.5 top-3.5 w-5 h-5 text-neutral-500 dark:text-neutral-400" />
+                      <textarea
+                        value={bio}
+                        onChange={(e) => setBio(e.target.value)}
+                        placeholder={t('aboutMe')}
+                        rows={3}
+                        className="w-full bg-white/40 dark:bg-neutral-950/40 border border-neutral-200 dark:border-white/10 rounded-xl pl-11 pr-4 py-3.5 text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 transition-all resize-none shadow-inner"
+                      />
+                    </div>
+                  </div>
+                )}
 
                 {profile.role === 'master' && (
                   <div className="md:col-span-2">
@@ -525,7 +600,7 @@ export default function ProfilePage() {
                 </div>
                 <select
                   value={language}
-                  onChange={(e) => handleLanguageChange(e.target.value)}
+                  onChange={(e) => setLang(e.target.value as 'ru' | 'en' | 'cs')}
                   className="bg-white/60 dark:bg-neutral-800/80 border border-neutral-200 dark:border-neutral-700 rounded-xl px-4 py-2 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/20 font-semibold cursor-pointer transition-all shadow-sm"
                 >
                   <option value="cs">Čeština</option>
@@ -583,30 +658,34 @@ export default function ProfilePage() {
                     }} 
                   />
                 </div>
-                <div className="flex items-center justify-between">
-                  <p className="text-neutral-700 dark:text-neutral-300 font-medium">{t('newLeadAlerts')}</p>
-                  <Toggle 
-                    checked={newLeadAlerts} 
-                    onChange={() => {
-                      const newVal = !newLeadAlerts
-                      setNewLeadAlerts(newVal)
-                      saveSetting('newLeadAlerts', newVal)
-                    }}
-                    disabled={!emailNotifications}
-                  />
-                </div>
-                <div className="flex items-center justify-between">
-                  <p className="text-neutral-700 dark:text-neutral-300 font-medium">{t('lowCreditAlerts')}</p>
-                  <Toggle 
-                    checked={lowCreditAlerts} 
-                    onChange={() => {
-                      const newVal = !lowCreditAlerts
-                      setLowCreditAlerts(newVal)
-                      saveSetting('lowCreditAlerts', newVal)
-                    }}
-                    disabled={!emailNotifications}
-                  />
-                </div>
+                {profile.role === 'master' && (
+                  <>
+                    <div className="flex items-center justify-between">
+                      <p className="text-neutral-700 dark:text-neutral-300 font-medium">{t('newLeadAlerts')}</p>
+                      <Toggle 
+                        checked={newLeadAlerts} 
+                        onChange={() => {
+                          const newVal = !newLeadAlerts
+                          setNewLeadAlerts(newVal)
+                          saveSetting('newLeadAlerts', newVal)
+                        }}
+                        disabled={!emailNotifications}
+                      />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <p className="text-neutral-700 dark:text-neutral-300 font-medium">{t('lowCreditAlerts')}</p>
+                      <Toggle 
+                        checked={lowCreditAlerts} 
+                        onChange={() => {
+                          const newVal = !lowCreditAlerts
+                          setLowCreditAlerts(newVal)
+                          saveSetting('lowCreditAlerts', newVal)
+                        }}
+                        disabled={!emailNotifications}
+                      />
+                    </div>
+                  </>
+                )}
               </div>
             </div>
 

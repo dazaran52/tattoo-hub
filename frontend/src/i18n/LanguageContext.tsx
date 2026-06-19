@@ -20,7 +20,7 @@ const LanguageContext = createContext<LanguageContextType>({
   t: (key) => key,
 })
 
-const dictionaries: Record<Language, Dictionary> = {
+const dictionaries: Record<Language, any> = {
   ru,
   en,
   cs,

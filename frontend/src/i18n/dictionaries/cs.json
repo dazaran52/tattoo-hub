@@ -185,5 +185,11 @@
     "onb_skip": "Přeskočit",
     "onb_next": "Další",
     "onb_start": "Začít!"
-  }
+  },
+  "topupHistory": "Historie dobíjení",
+  "discountTokens": "Slevové tokeny (50% sleva na lead)",
+  "topupBalance": "Dobít zůstatek",
+  "referralCopied": "Referenční kód byl zkopírován!",
+  "copyReferralCode": "Zkopírovat referenční kód",
+  "referralCode": "Referenční kód"
 }

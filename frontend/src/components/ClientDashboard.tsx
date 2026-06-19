@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { Profile, supabase } from '@/lib/supabase'
-import { PlusCircle, Heart, Clock, X } from 'lucide-react'
+import { PlusCircle, Heart, Clock, X, MoreVertical, Edit2, Pause, Play, Trash2 } from 'lucide-react'
 import { LeadForm } from '@/components/LeadForm'
 import { useLanguage } from '@/i18n/LanguageContext'
 
@@ -12,6 +12,54 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [leads, setLeads] = useState<any[]>([])
   const [isLoadingLeads, setIsLoadingLeads] = useState(true)
+  const [editingLead, setEditingLead] = useState<any>(null)
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null)
+
+  const handlePauseResume = async (leadId: string, currentStatus: string) => {
+    try {
+      const newStatus = currentStatus === 'open' ? 'archived' : 'open'
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) return
+
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/leads/client/${leadId}`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ status: newStatus })
+      })
+
+      if (res.ok) {
+        setLeads(leads.map(l => l.id === leadId ? { ...l, status: newStatus } : l))
+        import('react-hot-toast').then(mod => mod.default.success(t('success') || 'Success'))
+      }
+    } catch (e) {
+      console.error(e)
+    }
+  }
+
+  const handleDelete = async (leadId: string) => {
+    if (!confirm(t('confirmDeleteLead') || 'Are you sure?')) return
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) return
+
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/leads/client/${leadId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`
+        }
+      })
+
+      if (res.ok) {
+        setLeads(leads.filter(l => l.id !== leadId))
+        import('react-hot-toast').then(mod => mod.default.success(t('leadDeleted') || 'Deleted'))
+      }
+    } catch (e) {
+      console.error(e)
+    }
+  }
 
   useEffect(() => {
     if (typeof window !== 'undefined' && localStorage.getItem('pending_lead')) {
@@ -159,12 +207,38 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
             <div key={lead.id} className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 shadow-sm">
               <div className="flex justify-between items-start mb-4">
                 <span className="px-3 py-1 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-xs font-bold rounded-full">
-                  {lead.status === 'open' ? t('statusSearching') : 
-                   lead.status === 'accepted' ? t('statusAccepted') : 
-                   lead.status === 'completed' ? t('statusCompleted') : 
-                   lead.status === 'archived' ? t('statusArchived') : lead.status}
+                  {lead.status === 'open' ? t('statusSearching') || 'Searching' : 
+                   lead.status === 'accepted' ? t('statusAccepted') || 'Accepted' : 
+                   lead.status === 'completed' ? t('statusCompleted') || 'Completed' : 
+                   lead.status === 'archived' ? t('statusArchived') || 'Archived' : lead.status}
                 </span>
-                <span className="text-xs text-neutral-400 flex items-center gap-1"><Clock className="w-3 h-3" /> {new Date(lead.created_at).toLocaleDateString()}</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-neutral-400 flex items-center gap-1"><Clock className="w-3 h-3" /> {new Date(lead.created_at).toLocaleDateString()}</span>
+                  <div className="relative">
+                    <button 
+                      onClick={() => setOpenMenuId(openMenuId === lead.id ? null : lead.id)}
+                      className="p-1 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-500"
+                    >
+                      <MoreVertical className="w-4 h-4" />
+                    </button>
+                    {openMenuId === lead.id && (
+                      <div className="absolute right-0 mt-1 w-40 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl shadow-lg overflow-hidden z-10">
+                        <button 
+                          onClick={() => { setOpenMenuId(null); handlePauseResume(lead.id, lead.status) }}
+                          className="w-full text-left px-4 py-2 text-sm flex items-center gap-2 hover:bg-neutral-50 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300"
+                        >
+                          {lead.status === 'open' ? <><Pause className="w-4 h-4" /> {t('pause') || 'Pause'}</> : <><Play className="w-4 h-4" /> {t('resume') || 'Resume'}</>}
+                        </button>
+                        <button 
+                          onClick={() => { setOpenMenuId(null); handleDelete(lead.id) }}
+                          className="w-full text-left px-4 py-2 text-sm flex items-center gap-2 hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400"
+                        >
+                          <Trash2 className="w-4 h-4" /> {t('delete') || 'Delete'}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
               <h4 className="font-bold text-lg mb-2">{lead.style ? `\${t('tattooStyle')} ${lead.style}` : t('tattooLead')}</h4>
               <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-4 line-clamp-2">
