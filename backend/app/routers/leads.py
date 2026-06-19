@@ -328,6 +328,7 @@ class ClientLeadCreate(BaseModel):
     description: str
     style: str | None = None
     location: str | None = None
+    body_place: str | None = None
     size: str | None = None
     budget: str | None = None
     budget_val: int | None = None
@@ -349,9 +350,11 @@ async def create_client_lead(
     """Public endpoint for clients submitting leads via the Landing Page."""
     try:
         # Format the lead for the DB
-        title = f"{lead_data.style or 'Тату'} {lead_data.location or ''} {lead_data.size or ''}".strip()
-        if not title:
-            title = "Новая заявка на тату"
+        style_display = lead_data.style if lead_data.style and lead_data.style != 'Не определился' else ''
+        body_display = lead_data.body_place if lead_data.body_place and lead_data.body_place != 'Не определился' else ''
+        title = f"Татуировка {body_display}".strip() if body_display else "Новая заявка на татуировку"
+        if style_display:
+            title += f" ({style_display})"
             
         full_description = f"{lead_data.description}\n\n"
         if lead_data.budget:
@@ -382,7 +385,10 @@ async def create_client_lead(
             "is_negotiable_budget": lead_data.is_negotiable_budget,
             "country_id": lead_data.country_id,
             "city_id": None, # City UUID lookup logic needs implementation later if needed
-            "image_urls": lead_data.image_urls or []
+            "image_urls": lead_data.image_urls or [],
+            "style": lead_data.style,
+            "size": lead_data.size,
+            "body_place": lead_data.body_place
         }
         
         if current_user:
@@ -595,6 +601,65 @@ def update_proposal_status(
             raise HTTPException(status_code=404, detail="Proposal not found")
 
         return {"success": True, "proposal": res.data[0]}
+    except Exception as e:
+        if isinstance(e, HTTPException):
+            raise e
+        raise HTTPException(status_code=500, detail=str(e))
+
+class LeadStatusUpdate(BaseModel):
+    status: str
+
+@router.patch("/{lead_id}/status")
+def update_lead_status(
+    lead_id: str,
+    payload: LeadStatusUpdate,
+    current_user: AuthUser = Depends(get_current_user),
+    supabase: Client = Depends(get_supabase_client)
+):
+    """
+    Update the status of a lead (e.g. active, paused).
+    Must be the owner of the lead.
+    """
+    valid_statuses = ['new', 'active', 'paused', 'closed']
+    if payload.status not in valid_statuses:
+        raise HTTPException(status_code=400, detail="Invalid status")
+
+    try:
+        # Verify ownership
+        lead_res = supabase.table("leads").select("client_id").eq("id", lead_id).execute()
+        if not lead_res.data or lead_res.data[0].get("client_id") != current_user.user_id:
+            raise HTTPException(status_code=403, detail="Not authorized to update this lead")
+
+        res = supabase.table("leads").update({
+            "status": payload.status
+        }).eq("id", lead_id).execute()
+
+        if not res.data:
+            raise HTTPException(status_code=404, detail="Lead not found")
+
+        return {"success": True, "lead": res.data[0]}
+    except Exception as e:
+        if isinstance(e, HTTPException):
+            raise e
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.delete("/{lead_id}")
+def delete_lead(
+    lead_id: str,
+    current_user: AuthUser = Depends(get_current_user),
+    supabase: Client = Depends(get_supabase_client)
+):
+    """
+    Delete a lead. Must be the owner of the lead.
+    """
+    try:
+        # Verify ownership
+        lead_res = supabase.table("leads").select("client_id").eq("id", lead_id).execute()
+        if not lead_res.data or lead_res.data[0].get("client_id") != current_user.user_id:
+            raise HTTPException(status_code=403, detail="Not authorized to delete this lead")
+
+        res = supabase.table("leads").delete().eq("id", lead_id).execute()
+        return {"success": True}
     except Exception as e:
         if isinstance(e, HTTPException):
             raise e

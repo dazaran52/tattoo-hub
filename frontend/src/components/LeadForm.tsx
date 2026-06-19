@@ -17,12 +17,13 @@ export function LeadForm() {
   const [formData, setFormData] = useState({
     description: '',
     style: '',
-    location: '', // country
+    body_place: '',
     size: '',
     budget: '5000 CZK',
     city: '',
     name: '',
     contact: '', // email or phone
+    contact_method: 'on_site', // 'on_site' or 'off_site'
     priority: 'quality', // fast, cheap, quality
     is_negotiable: false,
     images: [] as File[]
@@ -38,6 +39,8 @@ export function LeadForm() {
   const [countries, setCountries] = useState<any[]>([])
   const [cities, setCities] = useState<any[]>([])
   const [selectedCountry, setSelectedCountry] = useState('')
+  const [locationPrefilled, setLocationPrefilled] = useState(false)
+  const [showLocationSelect, setShowLocationSelect] = useState(true)
 
   useEffect(() => {
     fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/locations/countries`)
@@ -58,6 +61,8 @@ export function LeadForm() {
       api.getProfile().then(p => {
         if (p.country_ids && p.country_ids.length > 0) {
           setSelectedCountry(p.country_ids[0])
+          setLocationPrefilled(true)
+          setShowLocationSelect(false)
         }
         if (p.display_name) {
           setFormData(prev => ({ ...prev, name: p.display_name! }))
@@ -79,7 +84,7 @@ export function LeadForm() {
           size: pendingLead.size || prev.size,
           priority: pendingLead.priority || prev.priority
         }))
-        setStep(2) // Jump to step 2 so user can select country and city
+        setStep(2)
       } catch (e) {
         console.error('Failed to parse pending lead', e)
       }
@@ -107,7 +112,7 @@ export function LeadForm() {
         .then(res => res.json())
         .then(data => {
           setCities(data)
-          if (data.length > 0) {
+          if (data.length > 0 && !formData.city) {
             const defaultCity = data[0].name_ru || data[0].name
             setFormData(prev => ({ 
               ...prev, 
@@ -121,7 +126,32 @@ export function LeadForm() {
     }
   }, [selectedCountry, countries])
 
-  const nextStep = () => setStep(s => Math.min(s + 1, 4))
+  const nextStep = () => {
+    if (step === 1) {
+      if (formData.description.length < 10) {
+        toast.error(t('errorDescShort') || 'Описание должно быть не менее 10 символов')
+        return
+      }
+      if (!formData.style) {
+        toast.error(t('errorStyleReq') || 'Выберите стиль татуировки')
+        return
+      }
+    } else if (step === 2) {
+      if (!formData.body_place) {
+        toast.error(t('errorBodyReq') || 'Укажите место нанесения')
+        return
+      }
+      if (!formData.size) {
+        toast.error(t('errorSizeReq') || 'Укажите примерный размер')
+        return
+      }
+      if (!selectedCountry || !formData.city) {
+        toast.error(t('errorCityReq') || 'Выберите страну и город')
+        return
+      }
+    }
+    setStep(s => Math.min(s + 1, 4))
+  }
   const prevStep = () => setStep(s => Math.max(s - 1, 1))
 
   const handleDrag = (e: React.DragEvent) => {
@@ -186,7 +216,7 @@ export function LeadForm() {
       const payload = {
         description: formData.description,
         style: formData.style || null,
-        location: formData.location || null,
+        body_place: formData.body_place || null,
         size: formData.size || null,
         budget: formData.is_negotiable ? 'Договорная цена' : formData.budget || null,
         budget_val: budgetVal,
@@ -196,7 +226,7 @@ export function LeadForm() {
         country_id: selectedCountry || null,
         city: formData.city || null,
         name: formData.name || null,
-        contact: formData.contact,
+        contact: formData.contact_method === 'on_site' ? 'На сайте' : formData.contact,
         image_urls: imageUrls,
       }
 
@@ -231,7 +261,7 @@ export function LeadForm() {
       setIsSuccess(true)
     } catch (error) {
       console.error(error)
-      toast.error('Произошла ошибка при отправке. Пожалуйста, попробуйте еще раз.')
+      toast.error(t('errorSubmitLead') || 'Произошла ошибка при отправке. Пожалуйста, попробуйте еще раз.')
     } finally {
       setIsSubmitting(false)
     }
@@ -286,7 +316,20 @@ export function LeadForm() {
           onClick={() => { 
             setStep(1)
             setIsSuccess(false)
-            setFormData({description: '', style: '', location: '', size: '', budget: '5000 CZK', city: '', name: '', contact: '', priority: 'quality', is_negotiable: false, images: []}) 
+            setFormData({
+              description: '', 
+              style: '', 
+              body_place: '', 
+              size: '', 
+              budget: '5000 CZK', 
+              city: '', 
+              name: '', 
+              contact: '', 
+              contact_method: 'on_site',
+              priority: 'quality', 
+              is_negotiable: false, 
+              images: []
+            }) 
             setCurrency('CZK')
             setBudgetVal(5000)
             setSelectedCountry('')
@@ -368,21 +411,21 @@ export function LeadForm() {
                   />
                 </div>
                 <div>
-                  <label className={labelClasses}>{t('styleOptional') || 'Стиль (опционально)'}</label>
+                  <label className={labelClasses}>{t('styleOptional') || 'Стиль'}</label>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                     {[
-                      { id: 'notSure', name: 'Пока не знаю', emoji: '✨' },
-                      { id: 'realism', name: 'Реализм', emoji: '👁️' },
-                      { id: 'traditional', name: 'Олдскул', emoji: '⚓' },
-                      { id: 'minimalism', name: 'Минимализм', emoji: '🖋️' },
-                      { id: 'japanese', name: 'Япония', emoji: '🐉' },
-                      { id: 'blackwork', name: 'Блэкворк', emoji: '💀' },
-                      { id: 'linework', name: 'Лайнворк', emoji: '〰️' },
-                      { id: 'neotraditional', name: 'Неотрад', emoji: '🌹' },
-                      { id: 'lettering', name: 'Леттеринг', emoji: '📝' },
-                      { id: 'watercolor', name: 'Акварель', emoji: '🎨' },
-                      { id: 'anime', name: 'Аниме', emoji: '🎌' },
-                      { id: 'otherStyle', name: 'Другое', emoji: '🤔' },
+                      { id: 'Не определился', name: 'Пока не знаю', emoji: '✨' },
+                      { id: 'Реализм', name: 'Реализм', emoji: '👁️' },
+                      { id: 'Олдскул', name: 'Олдскул', emoji: '⚓' },
+                      { id: 'Минимализм', name: 'Минимализм', emoji: '🖋️' },
+                      { id: 'Япония', name: 'Япония', emoji: '🐉' },
+                      { id: 'Блэкворк', name: 'Блэкворк', emoji: '💀' },
+                      { id: 'Лайнворк', name: 'Лайнворк', emoji: '〰️' },
+                      { id: 'Неотрад', name: 'Неотрад', emoji: '🌹' },
+                      { id: 'Леттеринг', name: 'Леттеринг', emoji: '📝' },
+                      { id: 'Акварель', name: 'Акварель', emoji: '🎨' },
+                      { id: 'Аниме', name: 'Аниме', emoji: '🎌' },
+                      { id: 'Другое', name: 'Другое', emoji: '🤔' },
                     ].map(style => (
                       <button
                         key={style.id}
@@ -395,7 +438,7 @@ export function LeadForm() {
                         }`}
                       >
                         <span className="text-2xl">{style.emoji}</span>
-                        <span className="text-sm text-center">{t(`style_${style.id}`) || style.name}</span>
+                        <span className="text-sm text-center">{style.name}</span>
                       </button>
                     ))}
                   </div>
@@ -412,59 +455,113 @@ export function LeadForm() {
                 transition={{ duration: 0.3 }}
                 className="space-y-6"
               >
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className={labelClasses}>{t('country') || 'Страна'}</label>
-                    <select
-                      value={selectedCountry}
-                      onChange={e => setSelectedCountry(e.target.value)}
-                      className="w-full bg-white/40 dark:bg-neutral-900/40 backdrop-blur-xl border border-neutral-200 dark:border-white/10 rounded-2xl p-4 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500/30 focus:border-violet-500/50 appearance-none font-semibold cursor-pointer"
-                      required
-                    >
-                      <option value="" disabled className="bg-white dark:bg-neutral-900">{t('selectCountry') || 'Выбери страну'}</option>
-                      {countries.map(c => (
-                        <option key={c.id} value={c.id} className="bg-white dark:bg-neutral-900">{lang === 'ru' ? c.name_ru : c.name}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className={labelClasses}>{t('city') || 'Город'}</label>
-                    <select
-                      value={formData.city}
-                      onChange={e => setFormData({ ...formData, city: e.target.value })}
-                      className="w-full bg-white/40 dark:bg-neutral-900/40 backdrop-blur-xl border border-neutral-200 dark:border-white/10 rounded-2xl p-4 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500/30 focus:border-violet-500/50 appearance-none font-semibold cursor-pointer"
-                      disabled={!selectedCountry}
-                      required
-                    >
-                      <option value="" disabled className="bg-white dark:bg-neutral-900">{t('selectCity') || 'Выбери город'}</option>
-                      {cities.map(c => (
-                        <option key={c.id} value={lang === 'ru' ? c.name_ru : c.name} className="bg-white dark:bg-neutral-900">{lang === 'ru' ? c.name_ru : c.name}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
                 <div>
                   <label className={labelClasses}>{t('tattooPlacement') || 'Место нанесения'}</label>
-                  <input 
-                    type="text"
-                    value={formData.location}
-                    onChange={e => setFormData({...formData, location: e.target.value})}
-                    placeholder={t('placementPlaceholder') || "Например: Предплечье, спина, бедро..."}
-                    className={inputClasses}
-                    required
-                  />
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+                    {[
+                      { id: 'Не определился', name: 'Пока не знаю' },
+                      { id: 'Рука', name: 'Рука' },
+                      { id: 'Предплечье', name: 'Предплечье' },
+                      { id: 'Плечо', name: 'Плечо' },
+                      { id: 'Нога', name: 'Нога' },
+                      { id: 'Бедро', name: 'Бедро' },
+                      { id: 'Голень', name: 'Голень' },
+                      { id: 'Спина', name: 'Спина' },
+                      { id: 'Грудь', name: 'Грудь' },
+                      { id: 'Живот', name: 'Живот' },
+                      { id: 'Шея', name: 'Шея' },
+                      { id: 'Кисть', name: 'Кисть' }
+                    ].map(part => (
+                      <button
+                        key={part.id}
+                        type="button"
+                        onClick={() => setFormData({...formData, body_place: part.id})}
+                        className={`p-3 rounded-2xl border transition-all text-sm font-semibold ${
+                          formData.body_place === part.id
+                            ? 'bg-violet-500/20 border-violet-500 text-violet-700 dark:text-violet-300 shadow-sm'
+                            : 'bg-white/20 dark:bg-neutral-900/20 border-neutral-200 dark:border-white/5 text-neutral-700 dark:text-neutral-300 hover:bg-white/40 dark:hover:bg-neutral-800/40'
+                        }`}
+                      >
+                        {part.name}
+                      </button>
+                    ))}
+                  </div>
                 </div>
                 <div>
                   <label className={labelClasses}>{t('approximateSize') || 'Примерный размер'}</label>
-                  <input 
-                    type="text"
-                    value={formData.size}
-                    onChange={e => setFormData({...formData, size: e.target.value})}
-                    placeholder={t('sizePlaceholder') || "Например: 15х10 см, или просто 'большая'"}
-                    className={inputClasses}
-                    required
-                  />
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+                    {[
+                      { id: 'Мини (до 5 см)', name: 'Мини (до 5 см)' },
+                      { id: 'Средняя (до 15 см)', name: 'Средняя (15 см)' },
+                      { id: 'Крупная (от 20 см)', name: 'Крупная (от 20 см)' },
+                      { id: 'Рукав / Масштабная', name: 'Масштабная' }
+                    ].map(sz => (
+                      <button
+                        key={sz.id}
+                        type="button"
+                        onClick={() => setFormData({...formData, size: sz.id})}
+                        className={`p-3 rounded-2xl border transition-all text-sm font-semibold ${
+                          formData.size === sz.id
+                            ? 'bg-violet-500/20 border-violet-500 text-violet-700 dark:text-violet-300 shadow-sm'
+                            : 'bg-white/20 dark:bg-neutral-900/20 border-neutral-200 dark:border-white/5 text-neutral-700 dark:text-neutral-300 hover:bg-white/40 dark:hover:bg-neutral-800/40'
+                        }`}
+                      >
+                        {sz.name}
+                      </button>
+                    ))}
+                  </div>
                 </div>
+                
+                {locationPrefilled && !showLocationSelect ? (
+                  <div className="flex items-center justify-between p-4 bg-white/40 dark:bg-neutral-900/40 border border-neutral-200 dark:border-white/10 rounded-2xl">
+                    <div className="flex items-center gap-3 text-neutral-700 dark:text-neutral-300">
+                      <MapPin className="w-5 h-5 text-violet-500" />
+                      <div>
+                        <p className="font-semibold text-sm">Ваш город из профиля</p>
+                        <p className="text-xs text-neutral-500">{formData.city}</p>
+                      </div>
+                    </div>
+                    <button 
+                      type="button" 
+                      onClick={() => setShowLocationSelect(true)}
+                      className="text-sm font-bold text-violet-500 hover:text-violet-600 transition-colors"
+                    >
+                      Изменить
+                    </button>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className={labelClasses}>{t('country') || 'Страна'}</label>
+                      <select
+                        value={selectedCountry}
+                        onChange={e => setSelectedCountry(e.target.value)}
+                        className="w-full bg-white/40 dark:bg-neutral-900/40 backdrop-blur-xl border border-neutral-200 dark:border-white/10 rounded-2xl p-4 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500/30 focus:border-violet-500/50 appearance-none font-semibold cursor-pointer"
+                        required
+                      >
+                        <option value="" disabled className="bg-white dark:bg-neutral-900">{t('selectCountry') || 'Выбери страну'}</option>
+                        {countries.map(c => (
+                          <option key={c.id} value={c.id} className="bg-white dark:bg-neutral-900">{lang === 'ru' ? c.name_ru : c.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className={labelClasses}>{t('city') || 'Город'}</label>
+                      <select
+                        value={formData.city}
+                        onChange={e => setFormData({ ...formData, city: e.target.value })}
+                        className="w-full bg-white/40 dark:bg-neutral-900/40 backdrop-blur-xl border border-neutral-200 dark:border-white/10 rounded-2xl p-4 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500/30 focus:border-violet-500/50 appearance-none font-semibold cursor-pointer"
+                        disabled={!selectedCountry}
+                        required
+                      >
+                        <option value="" disabled className="bg-white dark:bg-neutral-900">{countries.length === 0 ? 'Загрузка...' : (t('selectCity') || 'Выбери город')}</option>
+                        {cities.map(c => (
+                          <option key={c.id} value={lang === 'ru' ? c.name_ru : c.name} className="bg-white dark:bg-neutral-900">{lang === 'ru' ? c.name_ru : c.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                )}
               </motion.div>
             )}
 
@@ -626,30 +723,64 @@ export function LeadForm() {
                 transition={{ duration: 0.3 }}
                 className="space-y-6"
               >
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className={labelClasses}>{t('howToAddressYou') || 'Как к вам обращаться?'}</label>
-                    <input 
-                      type="text"
-                      value={formData.name}
-                      onChange={e => setFormData({...formData, name: e.target.value})}
-                      placeholder={t('yourName') || "Имя"}
-                      className={inputClasses}
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className={labelClasses}>{t('contactForCommunication') || 'Email или Телефон'}</label>
-                    <input 
-                      type="text"
-                      value={formData.contact}
-                      onChange={e => setFormData({...formData, contact: e.target.value})}
-                      placeholder={t('contactPlaceholder') || "+420... или email@..."}
-                      className={inputClasses}
-                      required
-                    />
+                <div>
+                  <label className={labelClasses}>Где мастерам отвечать на вашу заявку?</label>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    {[
+                      { id: 'on_site', name: 'Здесь на сайте (Встроенный чат)', icon: '💬' },
+                      { id: 'off_site', name: 'Вне сайта (Мессенджеры / Телефон)', icon: '📱' }
+                    ].map(m => (
+                      <button
+                        key={m.id}
+                        type="button"
+                        onClick={() => setFormData({...formData, contact_method: m.id})}
+                        className={`p-4 rounded-2xl border flex items-center gap-3 transition-all font-semibold text-left ${
+                          formData.contact_method === m.id
+                            ? 'bg-violet-500/20 border-violet-500 text-violet-700 dark:text-violet-300 shadow-sm'
+                            : 'bg-white/20 dark:bg-neutral-900/20 border-neutral-200 dark:border-white/5 text-neutral-700 dark:text-neutral-300 hover:bg-white/40 dark:hover:bg-neutral-800/40'
+                        }`}
+                      >
+                        <span className="text-2xl">{m.icon}</span>
+                        <span>{m.name}</span>
+                      </button>
+                    ))}
                   </div>
                 </div>
+
+                <AnimatePresence>
+                  {formData.contact_method === 'off_site' && (
+                    <motion.div 
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="grid grid-cols-1 md:grid-cols-2 gap-6 overflow-hidden"
+                    >
+                      <div>
+                        <label className={labelClasses}>{t('howToAddressYou') || 'Как к вам обращаться?'}</label>
+                        <input 
+                          type="text"
+                          value={formData.name}
+                          onChange={e => setFormData({...formData, name: e.target.value})}
+                          placeholder={t('yourName') || "Имя"}
+                          className={inputClasses}
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className={labelClasses}>Куда писать? (Telegram, WhatsApp, Email)</label>
+                        <input 
+                          type="text"
+                          value={formData.contact}
+                          onChange={e => setFormData({...formData, contact: e.target.value})}
+                          placeholder={t('contactPlaceholder') || "@telegram, +420... или email@..."}
+                          className={inputClasses}
+                          required
+                        />
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
                 <motion.div 
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -660,7 +791,9 @@ export function LeadForm() {
                     <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400" />
                   </div>
                   <p className="text-sm text-neutral-700 dark:text-neutral-300 leading-relaxed">
-                    {t('contactPrivacyNotice') || 'Твои контакты будут скрыты и станут доступны только доверенным мастерам, которые захотят взять твою идею в работу.'}
+                    {formData.contact_method === 'on_site' 
+                      ? 'Уведомления о новых откликах придут вам в личный кабинет. Вы сможете общаться с мастерами во встроенном чате абсолютно безопасно.'
+                      : (t('contactPrivacyNotice') || 'Твои контакты будут скрыты и станут доступны только доверенным мастерам, которые захотят взять твою идею в работу.')}
                   </p>
                 </motion.div>
               </motion.div>

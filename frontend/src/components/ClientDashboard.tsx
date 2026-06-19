@@ -193,24 +193,50 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
                   </div>
                 </div>
               </div>
-              <h4 className="font-bold text-lg mb-2">{lead.title || t('tattooLead')}</h4>
+              <h4 className="font-bold text-lg mb-3">{lead.title || t('tattooLead')}</h4>
               
-              {lead.image_urls && lead.image_urls.length > 0 && (
-                <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
-                  {lead.image_urls.map((url: string, i: number) => (
-                    <img key={i} src={url} alt="Reference" className="w-20 h-20 object-cover rounded-xl border border-neutral-200 dark:border-neutral-800 flex-shrink-0" />
-                  ))}
+              <div className="flex flex-wrap gap-2 mb-4">
+                {lead.style && lead.style !== 'Не определился' && (
+                  <span className="px-2 py-1 bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 text-xs font-semibold rounded-md">
+                    {lead.style}
+                  </span>
+                )}
+                {lead.body_place && lead.body_place !== 'Не определился' && (
+                  <span className="px-2 py-1 bg-fuchsia-100 dark:bg-fuchsia-900/30 text-fuchsia-700 dark:text-fuchsia-300 text-xs font-semibold rounded-md">
+                    {lead.body_place}
+                  </span>
+                )}
+                {lead.size && (
+                  <span className="px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-xs font-semibold rounded-md">
+                    {lead.size}
+                  </span>
+                )}
+              </div>
+              
+              {lead.image_urls && Array.isArray(lead.image_urls) && lead.image_urls.length > 0 && (
+                <div className="flex gap-2 mb-4 overflow-x-auto pb-2 snap-x scrollbar-thin scrollbar-thumb-neutral-300 dark:scrollbar-thumb-neutral-700">
+                  {lead.image_urls.map((url: any, i: number) => {
+                    const imgSrc = typeof url === 'string' ? url : (url?.url || '');
+                    if (!imgSrc) return null;
+                    return (
+                      <div key={i} className="snap-center shrink-0 w-24 h-24 relative rounded-xl overflow-hidden border border-neutral-200 dark:border-neutral-800 shadow-sm group">
+                        <img src={imgSrc} alt="Reference" className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110" />
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
+                      </div>
+                    )
+                  })}
                 </div>
               )}
               
-              <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-4 line-clamp-3">
+              <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-5 line-clamp-3 leading-relaxed bg-neutral-50 dark:bg-neutral-950/50 p-3 rounded-xl border border-neutral-100 dark:border-neutral-800/50">
                 {lead.description || t('noDescription')}
               </p>
-              <div className="flex justify-between items-center text-sm border-t border-neutral-100 dark:border-neutral-800 pt-4">
-                <span className="text-neutral-500">
-                  {t('budgetLabel') || 'Бюджет:'} <strong>{lead.display_budget || lead.client_budget ? `${lead.client_budget} ${lead.client_currency || 'CZK'}` : t('negotiableBudget')}</strong>
+              
+              <div className="flex justify-between items-center text-sm border-t border-neutral-100 dark:border-neutral-800 pt-4 mt-auto">
+                <span className="text-neutral-500 font-medium bg-neutral-100 dark:bg-neutral-800 px-3 py-1.5 rounded-lg">
+                  {t('budgetLabel') || 'Бюджет:'} <strong className="text-neutral-900 dark:text-white ml-1">{lead.display_budget || lead.client_budget ? `${lead.client_budget} ${lead.client_currency || 'CZK'}` : t('negotiableBudget')}</strong>
                 </span>
-                <span className="text-indigo-500 font-medium">
+                <span className="text-indigo-600 dark:text-indigo-400 font-bold bg-indigo-50 dark:bg-indigo-900/20 px-3 py-1.5 rounded-lg">
                   {lead.unlock_count || 0} {t('responsesCount') || 'откликов'}
                 </span>
               </div>
