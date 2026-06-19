@@ -197,6 +197,11 @@ export function LeadForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (step !== 4) {
+      nextStep()
+      return
+    }
+    
     setIsSubmitting(true)
     
     try {
@@ -604,18 +609,25 @@ export function LeadForm() {
                     <label className="text-sm font-semibold text-neutral-700 dark:text-neutral-300">
                       {t('budgetLabel') || 'Ваш бюджет'}
                     </label>
-                    <label className="flex items-center gap-2 cursor-pointer text-sm font-medium text-neutral-600 dark:text-neutral-400">
-                      <input 
-                        type="checkbox" 
-                        checked={formData.is_negotiable}
-                        onChange={e => setFormData({ ...formData, is_negotiable: e.target.checked })}
-                        className="w-4 h-4 rounded border-neutral-300 text-violet-600 focus:ring-violet-500 bg-white/50 dark:bg-neutral-800/50"
-                      />
-                      {t('negotiableBudget') || 'Договорная цена'}
-                    </label>
+                    <div className="flex items-center gap-3">
+                      <span className="text-sm font-medium text-neutral-600 dark:text-neutral-400">
+                        {t('negotiableBudget') || 'Договорная цена'}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setFormData({ ...formData, is_negotiable: !formData.is_negotiable })}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2 dark:focus:ring-offset-neutral-900 ${
+                          formData.is_negotiable ? 'bg-violet-600' : 'bg-neutral-300 dark:bg-neutral-700'
+                        }`}
+                      >
+                        <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          formData.is_negotiable ? 'translate-x-6' : 'translate-x-1'
+                        }`} />
+                      </button>
+                    </div>
                   </div>
                   
-                  {!formData.is_negotiable && (
+                  {!formData.is_negotiable && formData.priority !== 'cheap' && (
                     <motion.div 
                       initial={{ opacity: 0, height: 0 }}
                       animate={{ opacity: 1, height: 'auto' }}
@@ -648,6 +660,19 @@ export function LeadForm() {
                         <span>{currency === 'EUR' ? '50' : currency === 'PLN' ? '200' : '1000'} {currency}</span>
                         <span>{currency === 'EUR' ? '2000' : currency === 'PLN' ? '10000' : '50000'} {currency}</span>
                       </div>
+                    </motion.div>
+                  )}
+                  
+                  {formData.priority === 'cheap' && !formData.is_negotiable && (
+                    <motion.div 
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="mt-4 p-4 rounded-xl bg-violet-50 dark:bg-violet-900/20 border border-violet-100 dark:border-violet-500/20"
+                    >
+                      <p className="text-sm text-violet-800 dark:text-violet-300 flex items-start gap-2">
+                        <span className="text-xl leading-none">💡</span>
+                        Мастера будут пытаться предложить как можно более дешевую цену. Точный бюджет не указывается.
+                      </p>
                     </motion.div>
                   )}
                 </div>

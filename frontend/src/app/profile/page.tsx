@@ -52,6 +52,7 @@ export default function ProfilePage() {
   // Settings state
   const [theme, setTheme] = useState('dark')
   const [emailNotifications, setEmailNotifications] = useState(true)
+  const [pushNotifications, setPushNotifications] = useState(false)
   const [newLeadAlerts, setNewLeadAlerts] = useState(true)
   const [lowCreditAlerts, setLowCreditAlerts] = useState(true)
 
@@ -109,6 +110,7 @@ export default function ProfilePage() {
       setEmailNotifications(localStorage.getItem('emailNotifications') !== 'false')
       setNewLeadAlerts(localStorage.getItem('newLeadAlerts') !== 'false')
       setLowCreditAlerts(localStorage.getItem('lowCreditAlerts') !== 'false')
+      setPushNotifications(localStorage.getItem('pushNotifications') === 'true')
       
       // Apply theme immediately
       applyTheme(savedTheme)
@@ -476,7 +478,7 @@ export default function ProfilePage() {
                       type="tel"
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
-                      placeholder={language === 'cs' ? '+420 123 456 789' : language === 'ru' ? '+7 999 123-45-67' : '+1 123 456 7890'}
+                      placeholder="+X 000 000 000"
                       className="w-full bg-white/40 dark:bg-neutral-950/40 border border-neutral-200 dark:border-white/10 rounded-xl pl-11 pr-4 py-3 text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 transition-all shadow-inner"
                     />
                   </div>
@@ -493,9 +495,9 @@ export default function ProfilePage() {
                       onChange={(e) => setSelectedCountry(e.target.value)}
                       className="w-full bg-white/40 dark:bg-neutral-950/40 border border-neutral-200 dark:border-white/10 rounded-xl pl-11 pr-4 py-3 text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 transition-all shadow-inner appearance-none"
                     >
-                      <option value="" disabled>{t('selectCountry')}</option>
+                      <option value="" disabled className="text-neutral-900 dark:text-white bg-white dark:bg-neutral-900">{t('selectCountry')}</option>
                       {countries.map(c => (
-                        <option key={c.id} value={c.id}>{c.name}</option>
+                        <option key={c.id} value={c.id} className="text-neutral-900 dark:text-white bg-white dark:bg-neutral-900">{c.name}</option>
                       ))}
                     </select>
                   </div>
@@ -513,9 +515,9 @@ export default function ProfilePage() {
                       disabled={!selectedCountry || cities.length === 0}
                       className="w-full bg-white/40 dark:bg-neutral-950/40 border border-neutral-200 dark:border-white/10 rounded-xl pl-11 pr-4 py-3 text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 transition-all shadow-inner appearance-none disabled:opacity-50"
                     >
-                      <option value="" disabled>{t('selectCity')}</option>
+                      <option value="" disabled className="text-neutral-900 dark:text-white bg-white dark:bg-neutral-900">{t('selectCity')}</option>
                       {cities.map(c => (
-                        <option key={c.id} value={c.id}>{c.name}</option>
+                        <option key={c.id} value={c.id} className="text-neutral-900 dark:text-white bg-white dark:bg-neutral-900">{c.name}</option>
                       ))}
                     </select>
                   </div>
@@ -655,6 +657,28 @@ export default function ProfilePage() {
                       const newVal = !emailNotifications
                       setEmailNotifications(newVal)
                       saveSetting('emailNotifications', newVal)
+                    }} 
+                  />
+                </div>
+                <div className="flex items-center justify-between">
+                  <p className="text-neutral-700 dark:text-neutral-300 font-medium">{t('pushNotifications') || 'Push-уведомления'}</p>
+                  <Toggle 
+                    checked={pushNotifications} 
+                    onChange={async () => {
+                      const newVal = !pushNotifications
+                      setPushNotifications(newVal)
+                      saveSetting('pushNotifications', newVal)
+                      if (newVal) {
+                        try {
+                          const { subscribeToPush } = await import('@/lib/push');
+                          await subscribeToPush();
+                          import('react-hot-toast').then(mod => mod.default.success(t('pushEnabled') || 'Уведомления включены'));
+                        } catch (e) {
+                          setPushNotifications(false);
+                          saveSetting('pushNotifications', false);
+                          import('react-hot-toast').then(mod => mod.default.error(t('pushFailed') || 'Не удалось включить уведомления'));
+                        }
+                      }
                     }} 
                   />
                 </div>

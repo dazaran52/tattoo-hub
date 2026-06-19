@@ -21,7 +21,7 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) return
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/leads/client/${leadId}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/leads/${leadId}/status`, {
         method: 'PATCH',
         headers: {
           'Authorization': `Bearer ${session.access_token}`,
@@ -45,7 +45,7 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) return
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/leads/client/${leadId}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/leads/${leadId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${session.access_token}`
@@ -60,6 +60,17 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
       console.error(e)
     }
   }
+
+  useEffect(() => {
+    if (isFormOpen || editingLead) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = 'auto'
+    }
+    return () => {
+      document.body.style.overflow = 'auto'
+    }
+  }, [isFormOpen, editingLead])
 
   useEffect(() => {
     if (typeof window !== 'undefined' && localStorage.getItem('pending_lead')) {
@@ -175,7 +186,9 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
                       <MoreVertical className="w-4 h-4" />
                     </button>
                     {openMenuId === lead.id && (
-                      <div className="absolute right-0 mt-1 w-40 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl shadow-lg overflow-hidden z-10">
+                      <>
+                        <div className="fixed inset-0 z-[5]" onClick={(e) => { e.stopPropagation(); setOpenMenuId(null); }} />
+                        <div className="absolute right-0 mt-1 w-40 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl shadow-lg overflow-hidden z-10">
                         <button 
                           onClick={() => { setOpenMenuId(null); handlePauseResume(lead.id, lead.status) }}
                           className="w-full text-left px-4 py-2 text-sm flex items-center gap-2 hover:bg-neutral-50 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300"
@@ -189,6 +202,7 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
                           <Trash2 className="w-4 h-4" /> {t('delete') || 'Delete'}
                         </button>
                       </div>
+                      </>
                     )}
                   </div>
                 </div>
@@ -237,7 +251,11 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
                   {t('budgetLabel') || 'Бюджет:'} <strong className="text-neutral-900 dark:text-white ml-1">{lead.display_budget || lead.client_budget ? `${lead.client_budget} ${lead.client_currency || 'CZK'}` : t('negotiableBudget')}</strong>
                 </span>
                 <span className="text-indigo-600 dark:text-indigo-400 font-bold bg-indigo-50 dark:bg-indigo-900/20 px-3 py-1.5 rounded-lg">
-                  {lead.unlock_count || 0} {t('responsesCount') || 'откликов'}
+                  {lead.unlock_count || 0} {
+                    (lead.unlock_count || 0) === 1 ? (t('response_one') || 'отклик') :
+                    (lead.unlock_count || 0) >= 2 && (lead.unlock_count || 0) <= 4 ? (t('response_few') || 'отклика') :
+                    (t('response_many') || 'откликов')
+                  }
                 </span>
               </div>
             </div>

@@ -169,6 +169,7 @@
   "statusArchived": "Архив",
   "tattooStyle": "Тату в стиле",
   "tattooLead": "Заявка на татуировку",
+  "errorDescShort": "Описание должно быть не менее 10 символов",
   "noDescription": "Описание отсутствует",
   "budgetUpTo": "до",
   "notSpecified": "не указан",
