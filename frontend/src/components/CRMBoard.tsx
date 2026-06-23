@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { toast } from 'react-hot-toast'
-import { Clock, CheckCircle, Calendar, Flag, MessageCircle } from 'lucide-react'
+import { Clock, CheckCircle, Calendar, Flag, MessageCircle, UserPlus, LayoutGrid, CalendarDays } from 'lucide-react'
 import { ChatModal } from '@/components/ChatModal'
 import { supabase } from '@/lib/supabase'
+import { ManualClientModal } from '@/components/ManualClientModal'
+import { CalendarView } from '@/components/CalendarView'
 
 interface CRMLead {
   lead_id: string
@@ -24,6 +26,8 @@ export function CRMBoard() {
   const [selectedChatId, setSelectedChatId] = useState<string | null>(null)
   const [selectedChatTitle, setSelectedChatTitle] = useState<string>('')
   const [chatsMap, setChatsMap] = useState<Record<string, string>>({})
+  const [isManualModalOpen, setIsManualModalOpen] = useState(false)
+  const [viewMode, setViewMode] = useState<'kanban' | 'calendar'>('kanban')
 
   useEffect(() => {
     fetchData()
@@ -40,15 +44,46 @@ export function CRMBoard() {
         headers: { 'Authorization': `Bearer ${token}` }
       })
       
+      // Get personal leads
+      const personalRes = await fetch(`${apiUrl}/api/leads/personal`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      
       // Get chats to show chat button
       const chatsRes = await fetch(`${apiUrl}/api/chat/my`, {
         headers: { 'Authorization': `Bearer ${token}` }
       })
 
+      let allItems: CRMLead[] = []
+
       if (res.ok) {
-        const data = await res.json()
-        setItems(data)
+        allItems = [...allItems, ...(await res.json())]
       }
+      
+      if (personalRes.ok) {
+        const personalLeads = await personalRes.json()
+        const mappedPersonal = personalLeads.map((l: any) => ({
+          lead_id: l.id,
+          status: l.my_proposal_status || 'new',
+          price_offer: l.price_credits || 0,
+          proposed_dates: l.session_date ? new Date(l.session_date).toISOString() : '',
+          leads: {
+            title: l.client_contact ? `[Свой] ${l.title}` : l.title,
+            description: l.description,
+            image_urls: l.image_urls || [],
+            client_priority: 'personal'
+          }
+        }))
+        // Ensure no duplicates if backend somehow mixed them
+        const existingIds = new Set(allItems.map(i => i.lead_id))
+        for (const item of mappedPersonal) {
+          if (!existingIds.has(item.lead_id)) {
+            allItems.push(item)
+          }
+        }
+      }
+      
+      setItems(allItems)
       
       if (chatsRes.ok) {
         const chats = await chatsRes.json()
@@ -90,6 +125,7 @@ export function CRMBoard() {
   }
 
   const columns = [
+    { id: 'new', title: 'Новые (Мои)', icon: <UserPlus className="w-4 h-4" />, color: 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border-emerald-200' },
     { id: 'pending', title: 'Ожидание (Отправлено)', icon: <Clock className="w-4 h-4" />, color: 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border-amber-200' },
     { id: 'accepted', title: 'В обсуждении (Победа)', icon: <MessageCircle className="w-4 h-4" />, color: 'bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-400 border-violet-200' },
     { id: 'booked', title: 'Забронировано', icon: <Calendar className="w-4 h-4" />, color: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border-blue-200' },
@@ -124,9 +160,38 @@ export function CRMBoard() {
   }
 
   return (
-    <div className="w-full overflow-x-auto pb-4">
-      <div className="flex gap-4 min-w-[1200px]">
-        {columns.map(col => {
+    <div className="w-full pb-4">
+      <div className="flex justify-between items-center mb-6">
+        <div className="flex gap-2 p-1 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-white/5 rounded-xl shadow-sm">
+          <button
+            onClick={() => setViewMode('kanban')}
+            className={`px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition-all ${viewMode === 'kanban' ? 'bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-400 shadow-sm' : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'}`}
+          >
+            <LayoutGrid className="w-4 h-4" />
+            Канбан
+          </button>
+          <button
+            onClick={() => setViewMode('calendar')}
+            className={`px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition-all ${viewMode === 'calendar' ? 'bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-400 shadow-sm' : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'}`}
+          >
+            <CalendarDays className="w-4 h-4" />
+            Календарь
+          </button>
+        </div>
+        
+        <button
+          onClick={() => setIsManualModalOpen(true)}
+          className="flex items-center gap-2 px-5 py-2.5 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rounded-xl font-bold shadow-md hover:shadow-lg transition-all hover:-translate-y-0.5"
+        >
+          <UserPlus className="w-4 h-4" />
+          Добавить клиента
+        </button>
+      </div>
+
+      {viewMode === 'kanban' ? (
+        <div className="overflow-x-auto">
+          <div className="flex gap-4 min-w-[1200px]">
+            {columns.map(col => {
           const colItems = items.filter(i => i.status === col.id)
           
           return (
@@ -196,13 +261,23 @@ export function CRMBoard() {
             </div>
           )
         })}
-      </div>
+          </div>
+        </div>
+      ) : (
+        <CalendarView items={items} />
+      )}
 
       <ChatModal
         isOpen={!!selectedChatId}
         onClose={() => setSelectedChatId(null)}
         chatId={selectedChatId}
         leadTitle={selectedChatTitle}
+      />
+      
+      <ManualClientModal 
+        isOpen={isManualModalOpen}
+        onClose={() => setIsManualModalOpen(false)}
+        onSuccess={() => fetchData()}
       />
     </div>
   )

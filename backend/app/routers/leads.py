@@ -41,6 +41,39 @@ class UnlockResponse(BaseModel):
     is_unlocked: bool
     current_credits: int
 
+@router.get("/personal", response_model=List[LeadResponse])
+def get_personal_leads(
+    current_user: AuthUser = Depends(get_current_user),
+    supabase: Client = Depends(get_supabase_client)
+):
+    """Get personal CRM leads for the current master."""
+    try:
+        leads_res = supabase.table("leads") \
+            .select("*, cities(country_id)") \
+            .eq("assigned_master_id", current_user.user_id) \
+            .order("created_at", desc=True) \
+            .execute()
+        
+        leads = leads_res.data or []
+        
+        processed_leads = []
+        for lead in leads:
+            # Format according to LeadResponse
+            processed_leads.append({
+                **lead,
+                "city_id": lead.get("city_id"),
+                "country_id": lead.get("cities", {}).get("country_id") if lead.get("cities") else lead.get("country_id"),
+                "is_unlocked": True, # Personal leads are always unlocked
+                "price_credits": 0,
+                "lowest_bid": None,
+                "my_proposal_status": lead.get("status", "new"),
+                "my_chat_id": None
+            })
+            
+        return processed_leads
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @router.get("", response_model=List[LeadResponse])
 def get_leads(
     current_user: AuthUser = Depends(get_current_user),
@@ -55,8 +88,8 @@ def get_leads(
         user_res = supabase.table("users").select("currency").eq("id", current_user.user_id).execute()
         master_currency = user_res.data[0].get("currency", "CZK") if user_res.data else "CZK"
 
-        # Fetch all leads
-        leads_res = supabase.table("leads").select("*, cities(country_id)").order("created_at", desc=True).execute()
+        # Fetch all public leads (exclude personal CRM leads)
+        leads_res = supabase.table("leads").select("*, cities(country_id)").is_("assigned_master_id", "null").order("created_at", desc=True).execute()
         leads = leads_res.data or []
 
         # Fetch ALL unlocks
@@ -340,6 +373,10 @@ class ClientLeadCreate(BaseModel):
     contact: str
     is_negotiable_budget: bool = False
     image_urls: list[str] | None = None
+    assigned_master_id: str | None = None
+    session_date: datetime.datetime | None = None
+    client_name: str | None = None
+    is_personal: bool = False
 
 @router.post("/client")
 async def create_client_lead(
@@ -388,7 +425,11 @@ async def create_client_lead(
             "image_urls": lead_data.image_urls or [],
             "style": lead_data.style,
             "size": lead_data.size,
-            "body_place": lead_data.body_place
+            "body_place": lead_data.body_place,
+            "assigned_master_id": lead_data.assigned_master_id,
+            "session_date": lead_data.session_date.isoformat() if lead_data.session_date else None,
+            "client_name": lead_data.client_name or lead_data.name,
+            "is_personal": lead_data.is_personal
         }
         
         if current_user:
@@ -598,7 +639,14 @@ def update_proposal_status(
         }).eq("lead_id", lead_id).eq("user_id", current_user.user_id).execute()
 
         if not res.data:
-            raise HTTPException(status_code=404, detail="Proposal not found")
+            # Fallback for personal leads: update the lead status directly
+            lead_res = supabase.table("leads").update({
+                "status": payload.status
+            }).eq("id", lead_id).eq("assigned_master_id", current_user.user_id).execute()
+            
+            if not lead_res.data:
+                raise HTTPException(status_code=404, detail="Proposal or Personal Lead not found")
+            return {"success": True, "lead": lead_res.data[0]}
 
         return {"success": True, "proposal": res.data[0]}
     except Exception as e:
