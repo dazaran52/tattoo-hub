@@ -467,7 +467,7 @@ function LoginContent() {
                             className={`block w-full pl-12 pr-4 py-4 bg-white/40 dark:bg-neutral-950/40 border border-neutral-200 dark:border-white/10 rounded-2xl text-neutral-900 dark:text-white focus:outline-none focus:ring-2 transition-all backdrop-blur-md appearance-none shadow-inner cursor-pointer ${role === 'master' ? 'focus:border-orange-500 focus:ring-orange-500/20 focus:bg-orange-950/10' : 'focus:border-indigo-500 focus:ring-indigo-500/20 focus:bg-indigo-950/10'}`}
                           >
                             <option value="" disabled className="bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white">
-                              {countriesError ? (t('loadingError') || 'Ошибка загрузки') : (countries.length === 0 ? 'Загрузка стран...' : t('selectCountry'))}
+                              {countriesError ? 'Ошибка загрузки' : (countries.length === 0 ? 'Загрузка стран...' : t('selectCountry'))}
                             </option>
                             {countries.map(c => (
                               <option key={c.id} value={c.id} className="bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white">{c.name_ru}</option>
@@ -490,7 +490,7 @@ function LoginContent() {
                                 <MapPin className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500 transition-colors ${role === 'master' ? 'group-focus-within:text-orange-400' : 'group-focus-within:text-indigo-400'}`} />
                                 <div className="flex-1 flex flex-wrap gap-2">
                                     {citiesError ? (
-                                      <span className="text-red-500">{t('loadingError') || 'Ошибка загрузки'}</span>
+                                      <span className="text-red-500">Ошибка загрузки</span>
                                     ) : selectedCities.length === 0 ? (
                                       <span className="text-neutral-500">{t('selectCity')}</span>
                                     ) : (
