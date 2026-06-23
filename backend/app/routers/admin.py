@@ -121,8 +121,14 @@ async def update_user_status(
         )
         
     try:
+        update_payload = {"status": update_data.status}
+        if update_data.status == "approved":
+            update_payload["is_verified_master"] = True
+        elif update_data.status == "rejected":
+            update_payload["is_verified_master"] = False
+            
         response = supabase.table("users") \
-            .update({"status": update_data.status}) \
+            .update(update_payload) \
             .eq("id", user_id) \
             .execute()
             
