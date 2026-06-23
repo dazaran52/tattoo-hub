@@ -147,6 +147,11 @@ function LoginContent() {
 
 
     try {
+      let finalPortfolioUrl = portfolioUrl;
+      if (finalPortfolioUrl && !finalPortfolioUrl.startsWith('http://') && !finalPortfolioUrl.startsWith('https://')) {
+        finalPortfolioUrl = `https://${finalPortfolioUrl}`;
+      }
+
       if (isSignUp) {
         // Sign up
 
@@ -155,7 +160,7 @@ function LoginContent() {
           password,
           options: {
             data: {
-              portfolio_url: portfolioUrl,
+              portfolio_url: finalPortfolioUrl,
               referred_by: referralCode,
               country_ids: selectedCountry ? [selectedCountry] : [],
               city_ids: selectedCities,
@@ -435,7 +440,7 @@ function LoginContent() {
                               <LinkIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500 transition-colors group-focus-within:text-orange-400" />
                               <input
                                 id="portfolioUrl"
-                                type="url"
+                                type="text"
                                 required={isSignUp && role === 'master'}
                                 value={portfolioUrl}
                                 onChange={(e) => setPortfolioUrl(e.target.value)}

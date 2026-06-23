@@ -179,11 +179,16 @@ export default function ProfilePage() {
       setIsSaving(true)
       setError(null)
       
+      let finalPortfolioUrl = portfolioUrl;
+      if (finalPortfolioUrl && !finalPortfolioUrl.startsWith('http://') && !finalPortfolioUrl.startsWith('https://')) {
+        finalPortfolioUrl = `https://${finalPortfolioUrl}`;
+      }
+
       const updated = await api.updateProfile({
         display_name: displayName,
         phone: phone,
         bio: bio,
-        portfolio_url: portfolioUrl,
+        portfolio_url: finalPortfolioUrl,
         country_ids: selectedCountry ? [selectedCountry] : [],
         city_ids: selectedCity ? [selectedCity] : []
       })
@@ -549,7 +554,7 @@ export default function ProfilePage() {
                     <div className="relative">
                       <Globe className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500 dark:text-neutral-400" />
                       <input
-                        type="url"
+                        type="text"
                         value={portfolioUrl}
                         onChange={(e) => setPortfolioUrl(e.target.value)}
                         placeholder="https://instagram.com/..."
