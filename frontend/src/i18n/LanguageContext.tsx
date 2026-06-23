@@ -4,8 +4,9 @@ import React, { createContext, useContext, useState, useEffect } from 'react'
 import ru from './dictionaries/ru.json'
 import en from './dictionaries/en.json'
 import cs from './dictionaries/cs.json'
+import uk from './dictionaries/uk.json'
 
-type Language = 'ru' | 'en' | 'cs'
+type Language = 'ru' | 'en' | 'cs' | 'uk'
 type Dictionary = Record<string, any>
 
 interface LanguageContextType {
@@ -24,6 +25,7 @@ const dictionaries: Record<Language, any> = {
   ru,
   en,
   cs,
+  uk,
 }
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
@@ -33,12 +35,14 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     // Detect system language or load from localStorage
     const savedLang = localStorage.getItem('app_lang') as Language
-    if (savedLang && (savedLang === 'ru' || savedLang === 'en' || savedLang === 'cs')) {
+    if (savedLang && (savedLang === 'ru' || savedLang === 'en' || savedLang === 'cs' || savedLang === 'uk')) {
       setLangState(savedLang)
     } else {
       const browserLang = navigator.language.slice(0, 2)
       if (browserLang === 'ru') {
         setLangState('ru')
+      } else if (browserLang === 'uk') {
+        setLangState('uk')
       } else if (browserLang === 'cs') {
         setLangState('cs')
       } else {

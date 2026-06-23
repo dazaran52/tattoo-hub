@@ -147,10 +147,10 @@ export default function TopUpPage() {
     },
     {
       id: 'revolut',
-      name: 'Revolut Pay (Card / EUR)',
+      name: 'Revolut Pay (Card / CZK)',
       description: (
         <ul className="text-left space-y-1.5 text-sm">
-          <li>• Оплата картой в евро (EUR)</li>
+          <li>• Оплата картой в кронах (CZK)</li>
           <li>• Без комиссии с карт Revolut и банков ЕС</li>
           <li className="text-green-600 dark:text-green-400 font-bold mt-2">ВАЖНО: укажите ваш Email в Note платежа.</li>
         </ul>
@@ -223,8 +223,8 @@ export default function TopUpPage() {
                 
                 <div className="mt-6 flex flex-col gap-2 p-4 bg-neutral-50/50 dark:bg-neutral-900/30 rounded-2xl border border-neutral-200/30 dark:border-white/5">
                   <div className="flex justify-between items-center text-sm font-semibold">
-                    <span className="text-neutral-500">Эквивалент в EUR:</span>
-                    <span className="text-neutral-900 dark:text-white">{amountCredits / 10} EUR</span>
+                    <span className="text-neutral-500">Эквивалент в CZK:</span>
+                    <span className="text-neutral-900 dark:text-white">{amountCredits * 2.5} CZK</span>
                   </div>
                   <div className="flex justify-between items-center text-sm font-semibold">
                     <span className="text-neutral-500">Эквивалент в UAH:</span>
@@ -329,7 +329,7 @@ export default function TopUpPage() {
                 Тестовое пополнение
               </h4>
               <p className="text-sm text-cyan-800 dark:text-cyan-300 mb-4 leading-relaxed font-medium">
-                Сумма к оплате: <strong>{amountCredits / 10} EUR</strong>.<br />
+                Сумма к оплате: <strong>{amountCredits * 2.5} CZK</strong>.<br />
                 Вы будете перенаправлены на защищенный тестовый шлюз Stripe Checkout Sandbox.
               </p>
               
@@ -443,7 +443,7 @@ export default function TopUpPage() {
               <div className="text-center py-2 bg-neutral-50 dark:bg-neutral-950 border border-neutral-200/50 dark:border-white/5 rounded-2xl">
                 <span className="text-xs text-neutral-400 uppercase font-bold block mb-0.5">К оплате</span>
                 <span className="text-2xl font-black text-neutral-900 dark:text-white">
-                  {checkoutMethod === 'revolut' ? `${amountCredits / 10} EUR` : `${amountCredits * 4} UAH`}
+                  {checkoutMethod === 'revolut' ? `${amountCredits * 2.5} CZK` : `${amountCredits * 4} UAH`}
                 </span>
                 <span className="text-[10px] text-violet-500 dark:text-violet-400 block font-bold mt-1">
                   (Баланс +{amountCredits} валюты)

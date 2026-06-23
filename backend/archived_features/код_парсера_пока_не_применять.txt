@@ -1,0 +1,14 @@
+# Этот код был извлечен из backend/main.py, чтобы гарантированно избежать случайного запуска парсера писем и агента ИИ.
+# Когда парсер снова понадобится, верните этот блок в функцию `lifespan(app: FastAPI)` перед `yield`.
+# А также раскомментируйте или добавьте `parser_task.cancel()` и `lead_agent_task.cancel()` при завершении (Shutdown).
+
+    # Start email parser background task
+    import asyncio
+    from app.services.email_parser import start_email_parser
+    from app.services.email_lead_agent import start_email_lead_agent
+    parser_task = asyncio.create_task(start_email_parser())
+    lead_agent_task = asyncio.create_task(start_email_lead_agent())
+
+# Shutdown логика:
+    # if 'parser_task' in locals(): parser_task.cancel()
+    # if 'lead_agent_task' in locals(): lead_agent_task.cancel()

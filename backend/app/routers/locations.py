@@ -25,7 +25,7 @@ class CityResponse(BaseModel):
 async def get_countries(supabase: Client = Depends(get_supabase_client)):
     """Get all available countries."""
     try:
-        response = supabase.table("countries").select("*").order("name_ru").execute()
+        response = supabase.table("countries").select("*").eq("code", "CZ").order("name_ru").execute()
         return response.data or []
     except Exception as e:
         logger.error(f"Error fetching countries: {e}")

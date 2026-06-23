@@ -241,8 +241,8 @@ async def checkout_confirm(
     # Save transaction record
     supabase.table("transactions").insert({
         "user_id": current_user.user_id,
-        "amount": req.amount_credits / 10 if req.payment_method == 'revolut' else req.amount_credits * 4,
-        "currency": "EUR" if req.payment_method == 'revolut' else "UAH",
+        "amount": req.amount_credits * 2.5 if req.payment_method == 'revolut' else req.amount_credits * 4,
+        "currency": "CZK" if req.payment_method == 'revolut' else "UAH",
         "credits_added": req.amount_credits,
         "provider": req.payment_method,
         "provider_tx_id": tx_id
