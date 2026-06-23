@@ -6,6 +6,7 @@ import { ChatModal } from '@/components/ChatModal'
 import { supabase } from '@/lib/supabase'
 import { ManualClientModal } from '@/components/ManualClientModal'
 import { CalendarView } from '@/components/CalendarView'
+import { DayOffModal } from '@/components/DayOffModal'
 
 interface CRMLead {
   lead_id: string
@@ -27,6 +28,7 @@ export function CRMBoard() {
   const [selectedChatTitle, setSelectedChatTitle] = useState<string>('')
   const [chatsMap, setChatsMap] = useState<Record<string, string>>({})
   const [isManualModalOpen, setIsManualModalOpen] = useState(false)
+  const [isDayOffModalOpen, setIsDayOffModalOpen] = useState(false)
   const [viewMode, setViewMode] = useState<'kanban' | 'calendar'>('kanban')
 
   useEffect(() => {
@@ -179,13 +181,23 @@ export function CRMBoard() {
           </button>
         </div>
         
-        <button
-          onClick={() => setIsManualModalOpen(true)}
-          className="flex items-center gap-2 px-5 py-2.5 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rounded-xl font-bold shadow-md hover:shadow-lg transition-all hover:-translate-y-0.5"
-        >
-          <UserPlus className="w-4 h-4" />
-          Добавить клиента
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setIsDayOffModalOpen(true)}
+            className="flex items-center gap-2 px-5 py-2.5 bg-red-50 dark:bg-red-900/10 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900/30 rounded-xl font-bold shadow-sm hover:bg-red-100 dark:hover:bg-red-900/30 transition-all hover:-translate-y-0.5"
+          >
+            <Calendar className="w-4 h-4" />
+            Выходной
+          </button>
+          
+          <button
+            onClick={() => setIsManualModalOpen(true)}
+            className="flex items-center gap-2 px-5 py-2.5 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rounded-xl font-bold shadow-md hover:shadow-lg transition-all hover:-translate-y-0.5"
+          >
+            <UserPlus className="w-4 h-4" />
+            Добавить клиента
+          </button>
+        </div>
       </div>
 
       {viewMode === 'kanban' ? (
@@ -277,7 +289,13 @@ export function CRMBoard() {
       <ManualClientModal 
         isOpen={isManualModalOpen}
         onClose={() => setIsManualModalOpen(false)}
-        onSuccess={() => fetchData()}
+        onSuccess={fetchData}
+      />
+
+      <DayOffModal 
+        isOpen={isDayOffModalOpen}
+        onClose={() => setIsDayOffModalOpen(false)}
+        onSuccess={fetchData}
       />
     </div>
   )

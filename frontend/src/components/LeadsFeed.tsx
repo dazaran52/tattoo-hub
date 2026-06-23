@@ -505,25 +505,7 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, showOnlyUnlocked =
     filteredLeads = filteredLeads.filter(l => l.is_unlocked)
   }
 
-  // Placeholder for marketplace
-  if (!isAdmin && !showOnlyUnlocked) {
-    return (
-      <div className="text-center p-12 bg-white/60 dark:bg-neutral-900/60 backdrop-blur-xl rounded-3xl border border-indigo-200 dark:border-indigo-900/30 shadow-xl max-w-2xl mx-auto mt-8 relative overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(79,70,229,0.05)_0%,transparent_70%)] pointer-events-none" />
-        <div className="relative z-10">
-          <div className="w-20 h-20 bg-indigo-100/50 dark:bg-indigo-900/30 rounded-full mx-auto mb-6 flex items-center justify-center border border-indigo-500/20 shadow-[0_0_30px_rgba(79,70,229,0.1)]">
-            <span className="text-3xl text-indigo-600 dark:text-indigo-400">🚀</span>
-          </div>
-          <h3 className="text-2xl font-bold text-neutral-900 dark:text-white mb-4 tracking-tight">
-            Маркетплейс заявок на стадии тестирования
-          </h3>
-          <p className="text-neutral-600 dark:text-neutral-400 font-medium leading-relaxed mb-6">
-            Скоро вы сможете получать здесь новых клиентов! А пока используйте нашу мощную CRM для ведения своих текущих записей и работы с клиентами.
-          </p>
-        </div>
-      </div>
-    )
-  }
+
 
   return (
     <div className="space-y-6">

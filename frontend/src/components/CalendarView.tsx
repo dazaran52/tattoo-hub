@@ -78,12 +78,22 @@ export function CalendarView({ items }: { items: any[] }) {
             <div key={day} className={`min-h-[100px] p-2 rounded-xl border ${isToday ? 'border-violet-500 bg-violet-50/10' : 'border-neutral-100 dark:border-white/5 bg-white dark:bg-neutral-900'}`}>
               <div className={`font-bold mb-2 ${isToday ? 'text-violet-600' : 'text-neutral-500'}`}>{day}</div>
               <div className="space-y-1">
-                {dayItems.map(item => (
-                  <div key={item.lead_id} className="text-[10px] bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 p-1.5 rounded flex items-center gap-1">
-                    <Clock className="w-3 h-3 flex-shrink-0" />
-                    <span className="truncate">{item.leads.title}</span>
-                  </div>
-                ))}
+                {dayItems.map(item => {
+                  const isDayOff = item.leads.title === 'Выходной'
+                  return (
+                    <div 
+                      key={item.lead_id} 
+                      className={`text-[10px] p-1.5 rounded flex items-center gap-1 ${
+                        isDayOff 
+                          ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300' 
+                          : 'bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300'
+                      }`}
+                    >
+                      <Clock className="w-3 h-3 flex-shrink-0" />
+                      <span className="truncate">{item.leads.title}</span>
+                    </div>
+                  )
+                })}
               </div>
             </div>
           )
