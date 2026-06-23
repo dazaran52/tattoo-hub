@@ -101,22 +101,38 @@ function LoginContent() {
   const [selectedCities, setSelectedCities] = useState<string[]>([])
   const [isCityDropdownOpen, setIsCityDropdownOpen] = useState(false)
 
+  const [countriesError, setCountriesError] = useState(false)
+  const [citiesError, setCitiesError] = useState(false)
+
   useEffect(() => {
     fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/locations/countries`)
       .then(res => res.json())
-      .then(data => setCountries(data))
-      .catch(err => console.error(err))
+      .then(data => {
+        setCountries(data)
+        setCountriesError(false)
+      })
+      .catch(err => {
+        console.error(err)
+        setCountriesError(true)
+      })
   }, [])
 
   useEffect(() => {
     if (selectedCountry) {
+      setCities([])
+      setSelectedCities([])
+      setCitiesError(false)
       fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/locations/countries/${selectedCountry}/cities`)
         .then(res => res.json())
         .then(data => {
-            setCities(data)
-            if (data.length > 0) setSelectedCities([data[0].id])
+          setCities(data)
+          if (data.length > 0) setSelectedCities([data[0].id])
+          setCitiesError(false)
         })
-        .catch(err => console.error(err))
+        .catch(err => {
+          console.error(err)
+          setCitiesError(true)
+        })
     } else {
       setCities([])
       setSelectedCities([])
@@ -451,7 +467,7 @@ function LoginContent() {
                             className={`block w-full pl-12 pr-4 py-4 bg-white/40 dark:bg-neutral-950/40 border border-neutral-200 dark:border-white/10 rounded-2xl text-neutral-900 dark:text-white focus:outline-none focus:ring-2 transition-all backdrop-blur-md appearance-none shadow-inner cursor-pointer ${role === 'master' ? 'focus:border-orange-500 focus:ring-orange-500/20 focus:bg-orange-950/10' : 'focus:border-indigo-500 focus:ring-indigo-500/20 focus:bg-indigo-950/10'}`}
                           >
                             <option value="" disabled className="bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white">
-                              {countries.length === 0 ? 'Загрузка стран...' : t('selectCountry')}
+                              {countriesError ? (t('loadingError') || 'Ошибка загрузки') : (countries.length === 0 ? 'Загрузка стран...' : t('selectCountry'))}
                             </option>
                             {countries.map(c => (
                               <option key={c.id} value={c.id} className="bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white">{c.name_ru}</option>
@@ -473,9 +489,11 @@ function LoginContent() {
                               >
                                 <MapPin className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500 transition-colors ${role === 'master' ? 'group-focus-within:text-orange-400' : 'group-focus-within:text-indigo-400'}`} />
                                 <div className="flex-1 flex flex-wrap gap-2">
-                                  {selectedCities.length === 0 ? (
-                                    <span className="text-neutral-500">{t('selectCity')}</span>
-                                  ) : (
+                                    {citiesError ? (
+                                      <span className="text-red-500">{t('loadingError') || 'Ошибка загрузки'}</span>
+                                    ) : selectedCities.length === 0 ? (
+                                      <span className="text-neutral-500">{t('selectCity')}</span>
+                                    ) : (
                                     selectedCities.map(cityId => {
                                       const city = cities.find(c => c.id === cityId)
                                       return city ? (
