@@ -78,10 +78,10 @@ export function Header({ profile, onLogout }: HeaderProps) {
   }
 
   const toggleLanguage = () => {
-    const langs: ('cs' | 'en' | 'ru')[] = ['cs', 'en', 'ru']
+    const langs = ['cs', 'en', 'ru', 'uk']
     const currentIndex = langs.indexOf(language)
     const newLang = langs[(currentIndex + 1) % langs.length] || 'cs'
-    setLang(newLang)
+    setLang(newLang as any)
   }
   
   return (
