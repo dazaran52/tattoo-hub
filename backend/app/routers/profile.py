@@ -13,6 +13,7 @@ router = APIRouter(prefix="/api", tags=["profile"])
 class ProfileResponse(BaseModel):
     """Profile data response model."""
     id: str
+    username: str | None = None
     email: str
     credits: int
     balance: float = 0.0
@@ -35,6 +36,8 @@ class ProfileResponse(BaseModel):
     role: str | None = None
     is_verified_master: bool = False
     certificate_url: str | None = None
+    avatar_url: str | None = None
+    portfolio_image_urls: list[str] | None = None
 
 
 class ProfileCreate(BaseModel):
@@ -45,11 +48,16 @@ class ProfileCreate(BaseModel):
 
 class ProfileUpdate(BaseModel):
     """Profile update data."""
+    username: str | None = None
     display_name: str | None = None
     phone: str | None = None
     bio: str | None = None
     currency: str | None = None
     portfolio_url: str | None = None
+    avatar_url: str | None = None
+    portfolio_image_urls: list[str] | None = None
+    country_ids: list[str] | None = None
+    city_ids: list[str] | None = None
 
 
 @router.get("/profile", response_model=ProfileResponse)
@@ -87,11 +95,12 @@ async def get_profile(
             city_ids = current_user.user_metadata.get("city_ids", [])
             role = current_user.user_metadata.get("role", "master")
             
-            # Clients are automatically approved
-            status_val = "approved" if role == "client" else "pending"
+            # Auto-approve all users so they can access the dashboard immediately
+            status_val = "approved"
             
             new_profile = {
                 "id": current_user.user_id,
+                "username": None,
                 "email": current_user.email,
                 "credits": 0,
                 "own_referral_code": str(uuid.uuid4())[:8].upper(),
@@ -151,6 +160,7 @@ async def get_profile(
         
     return ProfileResponse(
         id=data["id"],
+        username=data.get("username"),
         email=data["email"],
         credits=data["credits"],
         balance=float(data.get("balance", 0.0)),
@@ -172,7 +182,9 @@ async def get_profile(
         withdrawable_credits=data.get("withdrawable_credits", 0),
         role=data.get("role"),
         is_verified_master=data.get("is_verified_master", False),
-        certificate_url=data.get("certificate_url")
+        certificate_url=data.get("certificate_url"),
+        avatar_url=data.get("avatar_url"),
+        portfolio_image_urls=data.get("portfolio_image_urls", [])
     )
 
 
@@ -191,6 +203,14 @@ async def update_profile(
         
         # Build update dict with only provided fields
         update_dict = {}
+        if update_data.username is not None:
+            # Check for username uniqueness
+            if update_data.username.strip():
+                existing = await supabase.table("users").select("id").eq("username", update_data.username).neq("id", current_user.user_id).execute()
+                if existing.data and len(existing.data) > 0:
+                    raise HTTPException(status_code=400, detail="Этот юзернейм уже занят")
+            update_dict["username"] = update_data.username.strip() if update_data.username.strip() else None
+
         if update_data.display_name is not None:
             update_dict["display_name"] = update_data.display_name
         if update_data.phone is not None:
@@ -201,7 +221,14 @@ async def update_profile(
             update_dict["currency"] = update_data.currency
         if update_data.portfolio_url is not None:
             update_dict["portfolio_url"] = update_data.portfolio_url
-        
+        if update_data.avatar_url is not None:
+            update_dict["avatar_url"] = update_data.avatar_url
+        if update_data.portfolio_image_urls is not None:
+            update_dict["portfolio_image_urls"] = update_data.portfolio_image_urls
+        if update_data.country_ids is not None:
+            update_dict["country_ids"] = update_data.country_ids
+        if update_data.city_ids is not None:
+            update_dict["city_ids"] = update_data.city_ids
         print(f"DEBUG PUT: update_dict={update_dict}")
         
         if not update_dict:
@@ -265,7 +292,9 @@ async def update_profile(
             withdrawable_credits=data.get("withdrawable_credits", 0),
             role=data.get("role"),
             is_verified_master=data.get("is_verified_master", False),
-            certificate_url=data.get("certificate_url")
+            certificate_url=data.get("certificate_url"),
+            avatar_url=data.get("avatar_url"),
+            portfolio_image_urls=data.get("portfolio_image_urls", [])
         )
         
     except HTTPException:

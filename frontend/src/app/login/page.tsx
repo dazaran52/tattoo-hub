@@ -15,8 +15,6 @@ function LoginContent() {
   const [isSignUp, setIsSignUp] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [portfolioUrl, setPortfolioUrl] = useState('')
-  const [referralCode, setReferralCode] = useState('')
   const [role, setRole] = useState<'master' | 'client'>('master')
   const [error, setError] = useState('')
   const [language, setLanguage] = useState<string>('cs')
@@ -95,63 +93,13 @@ function LoginContent() {
 
   const t = (key: Parameters<typeof getTranslation>[1]) => getTranslation(language as Language, key)
 
-  const [countries, setCountries] = useState<any[]>([])
-  const [cities, setCities] = useState<any[]>([])
-  const [selectedCountry, setSelectedCountry] = useState('')
-  const [selectedCities, setSelectedCities] = useState<string[]>([])
-  const [isCityDropdownOpen, setIsCityDropdownOpen] = useState(false)
-
-  const [countriesError, setCountriesError] = useState(false)
-  const [citiesError, setCitiesError] = useState(false)
-
-  useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/locations/countries`)
-      .then(res => res.json())
-      .then(data => {
-        setCountries(data)
-        setCountriesError(false)
-      })
-      .catch(err => {
-        console.error(err)
-        setCountriesError(true)
-      })
-  }, [])
-
-  useEffect(() => {
-    if (selectedCountry) {
-      setCities([])
-      setSelectedCities([])
-      setCitiesError(false)
-      fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/locations/countries/${selectedCountry}/cities`)
-        .then(res => res.json())
-        .then(data => {
-          setCities(data)
-          if (data.length > 0) setSelectedCities([data[0].id])
-          setCitiesError(false)
-        })
-        .catch(err => {
-          console.error(err)
-          setCitiesError(true)
-        })
-    } else {
-      setCities([])
-      setSelectedCities([])
-    }
-  }, [selectedCountry])
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
     setError('')
     
 
-
     try {
-      let finalPortfolioUrl = portfolioUrl;
-      if (finalPortfolioUrl && !finalPortfolioUrl.startsWith('http://') && !finalPortfolioUrl.startsWith('https://')) {
-        finalPortfolioUrl = `https://${finalPortfolioUrl}`;
-      }
-
       if (isSignUp) {
         // Sign up
 
@@ -160,10 +108,6 @@ function LoginContent() {
           password,
           options: {
             data: {
-              portfolio_url: finalPortfolioUrl,
-              referred_by: referralCode,
-              country_ids: selectedCountry ? [selectedCountry] : [],
-              city_ids: selectedCities,
               role: role,
             }
           }
@@ -184,9 +128,16 @@ function LoginContent() {
         }
       } else {
         // Sign in
+        let loginEmail = email
+        let isSpecialAdmin = false
+        
+        if (email.toLowerCase() === 'admin') {
+          loginEmail = 'admin@tattoohub.cz'
+          isSpecialAdmin = true
+        }
 
         const { data, error: signInError } = await supabase.auth.signInWithPassword({
-          email,
+          email: loginEmail,
           password,
         })
 
@@ -200,7 +151,7 @@ function LoginContent() {
           const maxAge = 60 * 60 * 24 * 7 // 7 days
           document.cookie = `sb-access-token=${token};path=/;max-age=${maxAge};SameSite=Lax${window.location.protocol === 'https:' ? ';Secure' : ''}`
 
-          let redirectUrl = '/dashboard'
+          let redirectUrl = isSpecialAdmin ? '/admin' : '/dashboard'
           window.location.href = redirectUrl
         } else {
           throw new Error('No session returned')
@@ -400,12 +351,12 @@ function LoginContent() {
                       <Mail className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500 transition-all duration-300 ${role === 'master' ? 'group-focus-within:text-orange-400' : 'group-focus-within:text-indigo-400'}`} />
                       <input
                         id="email"
-                        type="email"
+                        type="text"
                         required
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         className={`block w-full pl-12 pr-4 py-4 bg-white/40 dark:bg-neutral-950/40 border border-neutral-200 dark:border-white/10 rounded-2xl text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-offset-0 transition-all backdrop-blur-md shadow-inner ${role === 'master' ? 'focus:border-orange-500 focus:ring-orange-500/20 focus:bg-orange-950/10' : 'focus:border-indigo-500 focus:ring-indigo-500/20 focus:bg-indigo-950/10'}`}
-                        placeholder="E-mail"
+                        placeholder="E-mail / Username"
                       />
                     </div>
                   </motion.div>
@@ -425,141 +376,7 @@ function LoginContent() {
                     </div>
                   </motion.div>
                   
-                  <AnimatePresence mode="popLayout">
-                    {isSignUp && (
-                      <motion.div
-                        initial={{ opacity: 0, height: 0, y: -20 }}
-                        animate={{ opacity: 1, height: 'auto', y: 0 }}
-                        exit={{ opacity: 0, height: 0, y: -20 }}
-                        transition={{ duration: 0.3 }}
-                        className="space-y-5"
-                      >
-                        {role === 'master' && (
-                          <>
-                            <div className="relative group pt-1">
-                              <LinkIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500 transition-colors group-focus-within:text-orange-400" />
-                              <input
-                                id="portfolioUrl"
-                                type="text"
-                                required={isSignUp && role === 'master'}
-                                value={portfolioUrl}
-                                onChange={(e) => setPortfolioUrl(e.target.value)}
-                                className="block w-full pl-12 pr-4 py-4 bg-white/40 dark:bg-neutral-950/40 border border-neutral-200 dark:border-white/10 rounded-2xl text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:border-orange-500 focus:ring-orange-500/20 focus:bg-orange-950/10 transition-all backdrop-blur-md shadow-inner"
-                                placeholder="Instagram / Portfolio URL"
-                              />
-                            </div>
 
-                            <div className="relative group">
-                              <Tag className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500 transition-colors group-focus-within:text-orange-400" />
-                              <input
-                                id="referralCode"
-                                type="text"
-                                value={referralCode}
-                                onChange={(e) => setReferralCode(e.target.value)}
-                                className="block w-full pl-12 pr-4 py-4 bg-white/40 dark:bg-neutral-950/40 border border-neutral-200 dark:border-white/10 rounded-2xl text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:border-orange-500 focus:ring-orange-500/20 focus:bg-orange-950/10 transition-all backdrop-blur-md shadow-inner"
-                                placeholder="Referral Code (Optional)"
-                              />
-                            </div>
-                          </>
-                        )}
-
-                        <div className="relative group">
-                          <MapPin className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500 transition-colors z-10 pointer-events-none ${role === 'master' ? 'group-focus-within:text-orange-400' : 'group-focus-within:text-indigo-400'}`} />
-                          <select
-                            required={isSignUp}
-                            value={selectedCountry}
-                            onChange={(e) => setSelectedCountry(e.target.value)}
-                            className={`block w-full pl-12 pr-4 py-4 bg-white/40 dark:bg-neutral-950/40 border border-neutral-200 dark:border-white/10 rounded-2xl text-neutral-900 dark:text-white focus:outline-none focus:ring-2 transition-all backdrop-blur-md appearance-none shadow-inner cursor-pointer ${role === 'master' ? 'focus:border-orange-500 focus:ring-orange-500/20 focus:bg-orange-950/10' : 'focus:border-indigo-500 focus:ring-indigo-500/20 focus:bg-indigo-950/10'}`}
-                          >
-                            <option value="" disabled className="bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white">
-                              {countriesError ? 'Ошибка загрузки' : (countries.length === 0 ? 'Загрузка стран...' : t('selectCountry'))}
-                            </option>
-                            {countries.map(c => (
-                              <option key={c.id} value={c.id} className="bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white">{c.name_ru}</option>
-                            ))}
-                          </select>
-                        </div>
-
-                        <AnimatePresence>
-                          {cities.length > 0 && (
-                            <motion.div 
-                              initial={{ opacity: 0, height: 0 }}
-                              animate={{ opacity: 1, height: 'auto' }}
-                              exit={{ opacity: 0, height: 0 }}
-                              className="relative group"
-                            >
-                              <div 
-                                className={`w-full flex items-center min-h-[56px] pl-12 pr-4 py-3 bg-white/40 dark:bg-neutral-950/40 border border-neutral-200 dark:border-white/10 rounded-2xl cursor-pointer backdrop-blur-md shadow-inner transition-colors ${role === 'master' ? 'hover:border-orange-500/50' : 'hover:border-indigo-500/50'}`}
-                                onClick={() => setIsCityDropdownOpen(!isCityDropdownOpen)}
-                              >
-                                <MapPin className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500 transition-colors ${role === 'master' ? 'group-focus-within:text-orange-400' : 'group-focus-within:text-indigo-400'}`} />
-                                <div className="flex-1 flex flex-wrap gap-2">
-                                    {citiesError ? (
-                                      <span className="text-red-500">Ошибка загрузки</span>
-                                    ) : selectedCities.length === 0 ? (
-                                      <span className="text-neutral-500">{t('selectCity')}</span>
-                                    ) : (
-                                    selectedCities.map(cityId => {
-                                      const city = cities.find(c => c.id === cityId)
-                                      return city ? (
-                                      <span key={city.id} className={`text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-2 border ${role === 'master' ? 'bg-orange-500/20 text-orange-600 dark:text-orange-300 border-orange-500/30' : 'bg-indigo-500/20 text-indigo-600 dark:text-indigo-300 border-indigo-500/30'}`}>
-                                          {city.name_ru}
-                                          <button 
-                                            type="button" 
-                                            className={`hover:text-neutral-950 dark:hover:text-white rounded-full transition-colors p-0.5 ${role === 'master' ? 'hover:bg-orange-500/50' : 'hover:bg-indigo-500/50'}`}
-                                            onClick={(e) => {
-                                              e.stopPropagation()
-                                              setSelectedCities(prev => prev.filter(id => id !== city.id))
-                                            }}
-                                          >
-                                            <X className="w-3 h-3" />
-                                          </button>
-                                        </span>
-                                      ) : null
-                                    })
-                                  )}
-                                </div>
-                              </div>
-
-                              <AnimatePresence>
-                                {isCityDropdownOpen && (
-                                  <motion.div 
-                                    initial={{ opacity: 0, y: -10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, y: -10 }}
-                                    className="absolute z-50 w-full mt-2 max-h-60 overflow-y-auto bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl shadow-2xl p-2"
-                                  >
-                                    {cities.map(c => (
-                                      <label key={c.id} className="flex items-center gap-3 px-3 py-3 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-xl cursor-pointer transition-colors">
-                                        <div className="relative flex items-center justify-center w-5 h-5">
-                                          <input 
-                                            type="checkbox" 
-                                            className={`peer appearance-none w-5 h-5 border-2 border-neutral-300 dark:border-neutral-700 rounded-md focus:ring-0 focus:ring-offset-0 bg-white dark:bg-neutral-950 transition-all cursor-pointer ${role === 'master' ? 'checked:bg-orange-500 checked:border-orange-500' : 'checked:bg-indigo-500 checked:border-indigo-500'}`}
-                                            checked={selectedCities.includes(c.id)}
-                                            onChange={(e) => {
-                                              if (e.target.checked) {
-                                                setSelectedCities(prev => [...prev, c.id])
-                                              } else {
-                                                setSelectedCities(prev => prev.filter(id => id !== c.id))
-                                              }
-                                            }}
-                                          />
-                                          <svg className="absolute w-3 h-3 text-white pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity" viewBox="0 0 14 10" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                            <path d="M1 5L5 9L13 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                                          </svg>
-                                        </div>
-                                        <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">{c.name_ru}</span>
-                                      </label>
-                                    ))}
-                                  </motion.div>
-                                )}
-                              </AnimatePresence>
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
                 </div>
 
                 <motion.button

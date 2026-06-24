@@ -46,11 +46,12 @@ export interface Lead {
 interface LeadsFeedProps {
   onUnlockSuccess: (newBalance: number) => void
   isAdmin?: boolean
+  isMarketplace?: boolean
   showOnlyUnlocked?: boolean
   userCities?: string[]
 }
 
-export function LeadsFeed({ onUnlockSuccess, isAdmin = false, showOnlyUnlocked = false, userCities = [] }: LeadsFeedProps) {
+export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = false, showOnlyUnlocked = false, userCities = [] }: LeadsFeedProps) {
   const [leads, setLeads] = useState<Lead[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -212,9 +213,12 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, showOnlyUnlocked =
         return
       }
 
-      const endpoint = isAdmin 
-        ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/admin/leads`
-        : `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/leads`
+      let endpoint = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/leads`
+      if (isAdmin && !isMarketplace) {
+        endpoint = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/admin/leads`
+      } else if (isMarketplace) {
+        endpoint = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/leads/marketplace`
+      }
 
       const response = await fetch(endpoint, {
         headers: {
@@ -450,6 +454,42 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, showOnlyUnlocked =
 
           setLeads(leads.filter(l => l.id !== leadId))
           toast.success('Lead deleted')
+        } catch (err: any) {
+          toast.error(err.message)
+        } finally {
+          setActionLoadingId(null)
+        }
+      }
+    })
+  }
+
+  const dumpLead = (leadId: string) => {
+    const lead = leads.find(l => l.id === leadId)
+    setConfirmModal({
+      isOpen: true,
+      title: 'Слить лида',
+      message: `Вы уверены, что хотите отказаться от лида "${lead?.title || ''}"? Он будет отправлен в аукцион.`,
+      confirmText: 'Отказаться',
+      cancelText: 'Отмена',
+      type: 'danger',
+      onConfirm: async () => {
+        setConfirmModal(null)
+        try {
+          setActionLoadingId(leadId)
+          const { data: { session } } = await supabase.auth.getSession()
+          if (!session) return
+
+          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/leads/${leadId}/dump`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${session.access_token}`,
+            }
+          })
+
+          if (!res.ok) throw new Error('Failed to dump lead')
+
+          setLeads(leads.filter(l => l.id !== leadId))
+          toast.success('Лид перенесен в аукцион')
         } catch (err: any) {
           toast.error(err.message)
         } finally {

@@ -41,6 +41,91 @@ class UnlockResponse(BaseModel):
     is_unlocked: bool
     current_credits: int
 
+@router.get("/marketplace", response_model=List[LeadResponse])
+async def get_marketplace_leads(
+    current_user: AuthUser = Depends(get_current_user),
+    supabase: AsyncClient = Depends(get_async_supabase_client)
+):
+    """Get all public leads (marketplace) that are not assigned to a master."""
+    try:
+        leads_res = await supabase.table("leads") \
+            .select("*, cities(country_id)") \
+            .is_("assigned_master_id", "null") \
+            .neq("status", "closed") \
+            .order("created_at", desc=True) \
+            .execute()
+            
+        leads = leads_res.data or []
+        
+        # Check unlocks
+        unlocks_res = await supabase.table("lead_unlocks") \
+            .select("lead_id") \
+            .eq("user_id", current_user.user_id) \
+            .execute()
+        unlocked_lead_ids = {u["lead_id"] for u in unlocks_res.data or []}
+        
+        # Get user currency
+        user_res = await supabase.table("users").select("currency").eq("id", current_user.user_id).execute()
+        master_currency = user_res.data[0].get("currency", "CZK") if user_res.data else "CZK"
+
+        processed_leads = []
+        for lead in leads:
+            is_unlocked = lead["id"] in unlocked_lead_ids
+            
+            base_price = float(lead.get("base_unlock_price_eur", 5.0))
+            try:
+                local_price = convert_currency(base_price, "EUR", master_currency)
+            except ValueError:
+                local_price = base_price
+                
+            lead_dict = dict(lead)
+            lead_dict["is_unlocked"] = is_unlocked
+            lead_dict["unlock_price_local"] = local_price
+            lead_dict["master_currency"] = master_currency
+            
+            # Format budget
+            b_val = lead.get("client_budget")
+            b_cur = lead.get("client_currency", "CZK")
+            lead_dict["display_budget"] = f"{b_val} {b_cur}" if b_val else "По договоренности"
+            
+            if not is_unlocked:
+                lead_dict["contacts"] = "Контакт скрыт"
+                
+            if lead_dict.get("cities"):
+                lead_dict["country_id"] = lead_dict["cities"].get("country_id")
+                
+            processed_leads.append(lead_dict)
+            
+        return processed_leads
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/{lead_id}/dump")
+async def dump_lead(
+    lead_id: str,
+    current_user: AuthUser = Depends(get_current_user),
+    supabase: AsyncClient = Depends(get_async_supabase_client)
+):
+    """Dump a lead into the marketplace (auction)."""
+    try:
+        # Check ownership
+        lead_res = await supabase.table("leads").select("assigned_master_id").eq("id", lead_id).single().execute()
+        if not lead_res.data or lead_res.data.get("assigned_master_id") != current_user.user_id:
+            raise HTTPException(status_code=403, detail="Not authorized to dump this lead")
+            
+        # Update lead
+        await supabase.table("leads").update({
+            "assigned_master_id": None,
+            "status": "auction"
+        }).eq("id", lead_id).execute()
+        
+        return {"status": "success"}
+    except Exception as e:
+        if isinstance(e, HTTPException):
+            raise e
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @router.get("/personal", response_model=List[LeadResponse])
 def get_personal_leads(
     current_user: AuthUser = Depends(get_current_user),
@@ -441,7 +526,24 @@ async def create_client_lead(
             try:
                 res = await supabase.table("leads").insert(db_lead).execute()
                 if res.data:
-                    return {"success": True, "lead": res.data[0]}
+                    new_lead = res.data[0]
+                    
+                    if lead_data.is_personal and lead_data.assigned_master_id:
+                        # Create an accepted proposal to bypass chat filters
+                        await supabase.table("lead_proposals").insert({
+                            "lead_id": new_lead["id"],
+                            "user_id": lead_data.assigned_master_id,
+                            "status": "accepted"
+                        }).execute()
+                        
+                        # Create the chat
+                        await supabase.table("lead_chats").insert({
+                            "lead_id": new_lead["id"],
+                            "master_id": lead_data.assigned_master_id,
+                            "client_session_id": client_token
+                        }).execute()
+                        
+                    return {"success": True, "lead": new_lead}
                 if attempt == max_retries - 1:
                     raise HTTPException(status_code=400, detail="Failed to create lead")
             except Exception as e:
@@ -713,3 +815,80 @@ def delete_lead(
             raise e
         raise HTTPException(status_code=500, detail=str(e))
 
+class DayOffRequest(BaseModel):
+    date: datetime.date
+
+@router.post("/unavailable-dates", status_code=status.HTTP_201_CREATED)
+async def add_day_off(
+    request: DayOffRequest,
+    current_user: AuthUser = Depends(get_current_user),
+    supabase: AsyncClient = Depends(get_async_supabase_client)
+):
+    """Add a day off for the master."""
+    try:
+        await supabase.table("master_days_off").insert({
+            "master_id": current_user.user_id,
+            "date": request.date.isoformat()
+        }).execute()
+        return {"status": "success"}
+    except Exception as e:
+        if "duplicate key" in str(e).lower() or "23505" in str(e):
+            return {"status": "already_exists"}
+        raise HTTPException(status_code=400, detail=str(e))
+
+@router.delete("/unavailable-dates/{date_str}")
+async def remove_day_off(
+    date_str: str,
+    current_user: AuthUser = Depends(get_current_user),
+    supabase: AsyncClient = Depends(get_async_supabase_client)
+):
+    """Remove a day off for the master."""
+    try:
+        await supabase.table("master_days_off").delete().match({
+            "master_id": current_user.user_id,
+            "date": date_str
+        }).execute()
+        return {"status": "success"}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@router.get("/days-off", response_model=List[str])
+async def get_my_days_off(
+    current_user: AuthUser = Depends(get_current_user),
+    supabase: AsyncClient = Depends(get_async_supabase_client)
+):
+    """Get explicit days off for the logged-in master."""
+    try:
+        res = await supabase.table("master_days_off").select("date").eq("master_id", current_user.user_id).execute()
+        return [d["date"] for d in res.data or []]
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@router.get("/public/master/{username}/unavailable-dates", response_model=List[str])
+async def get_master_unavailable_dates(
+    username: str,
+    supabase: AsyncClient = Depends(get_async_supabase_client)
+):
+    """Get all unavailable dates for a master (days off + booked sessions)."""
+    try:
+        # First resolve username to master_id
+        master_res = await supabase.table("users").select("id").eq("username", username).single().execute()
+        if not master_res.data:
+            raise HTTPException(status_code=404, detail="Master not found")
+            
+        master_id = master_res.data["id"]
+        
+        # Get explicit days off
+        days_off_res = await supabase.table("master_days_off").select("date").eq("master_id", master_id).execute()
+        unavailable_dates = set([d["date"] for d in days_off_res.data or []])
+        
+        # Get booked sessions (leads with session_date)
+        leads_res = await supabase.table("leads").select("session_date").eq("assigned_master_id", master_id).not_.is_("session_date", "null").execute()
+        for lead in leads_res.data or []:
+            if lead["session_date"]:
+                date_part = lead["session_date"].split("T")[0]
+                unavailable_dates.add(date_part)
+                
+        return list(unavailable_dates)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))

@@ -5,6 +5,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
 export interface Profile {
   id: string
+  username?: string
   email: string
   balance: number
   is_admin: boolean
@@ -25,6 +26,8 @@ export interface Profile {
   role?: string
   is_verified_master?: boolean
   certificate_url?: string
+  avatar_url?: string
+  portfolio_image_urls?: string[]
 }
 
 async function getAuthHeaders() {

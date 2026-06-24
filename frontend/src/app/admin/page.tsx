@@ -8,6 +8,8 @@ import { AdminAiChats } from '@/components/AdminAiChats'
 import { AdminLocations } from '@/components/AdminLocations'
 import { AdminDisputes } from '@/components/AdminDisputes'
 import { AdminWithdrawals } from '@/components/AdminWithdrawals'
+import { LeadsFeed } from '@/components/LeadsFeed'
+import { ClientSimulatorForm } from '@/components/ClientSimulatorForm'
 import { supabase, Profile } from '@/lib/supabase'
 import { CheckCircle, XCircle, Clock, Loader2, Plus, Edit2, Trash2, Link as LinkIcon, Search, Coins, Ban } from 'lucide-react'
 import { getTranslation, Language } from '@/lib/i18n'
@@ -35,7 +37,7 @@ export default function AdminPage() {
   
   const [profile, setProfile] = useState<Profile | null>(null)
   const [users, setUsers] = useState<AdminUserResponse[]>([])
-  const [activeTab, setActiveTab] = useState<'users' | 'chats' | 'ai-chats' | 'locations' | 'disputes' | 'withdrawals'>('users')
+  const [activeTab, setActiveTab] = useState<'users' | 'chats' | 'ai-chats' | 'locations' | 'disputes' | 'withdrawals' | 'simulator-marketplace' | 'simulator-client'>('users')
   const [searchQuery, setSearchQuery] = useState('')
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest' | 'balance_desc' | 'balance_asc'>('newest')
   const [balanceModalUser, setBalanceModalUser] = useState<{ id: string, email: string, balance: number } | null>(null)
@@ -305,6 +307,23 @@ export default function AdminPage() {
           >
             Выводы
           </button>
+          <div className="w-px h-8 bg-neutral-200 dark:bg-neutral-800 mx-2 self-center"></div>
+          <button
+            onClick={() => setActiveTab('simulator-marketplace')}
+            className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all flex items-center gap-2 ${
+              activeTab === 'simulator-marketplace' ? 'bg-cyan-600 text-white shadow-md scale-[1.02]' : 'text-cyan-600 hover:bg-cyan-50 dark:hover:bg-cyan-900/20'
+            }`}
+          >
+            Phase 2: Marketplace
+          </button>
+          <button
+            onClick={() => setActiveTab('simulator-client')}
+            className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all flex items-center gap-2 ${
+              activeTab === 'simulator-client' ? 'bg-emerald-600 text-white shadow-md scale-[1.02]' : 'text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20'
+            }`}
+          >
+            Phase 2: Client Gen
+          </button>
         </div>
 
         {activeTab === 'locations' && <AdminLocations />}
@@ -312,6 +331,23 @@ export default function AdminPage() {
         {activeTab === 'ai-chats' && <AdminAiChats />}
         {activeTab === 'disputes' && <AdminDisputes />}
         {activeTab === 'withdrawals' && <AdminWithdrawals />}
+        
+        {activeTab === 'simulator-marketplace' && (
+          <div className="bg-white/40 dark:bg-neutral-900/40 backdrop-blur-md border border-neutral-200/50 dark:border-white/5 rounded-3xl p-6 shadow-xl">
+            <h3 className="text-xl font-bold mb-4 text-cyan-600">Симуляция Маркетплейса (Фаза 2)</h3>
+            <p className="text-sm text-neutral-500 mb-6">Здесь отображаются все публичные лиды. Вы можете тестировать их покупку (разблокировку за кредиты) и аукционы (слив лида).</p>
+            <LeadsFeed onUnlockSuccess={(b) => setProfile(p => p ? {...p, balance: b} : null)} isMarketplace={true} isAdmin={true} />
+          </div>
+        )}
+
+        {activeTab === 'simulator-client' && (
+          <div className="bg-white/40 dark:bg-neutral-900/40 backdrop-blur-md border border-neutral-200/50 dark:border-white/5 rounded-3xl p-6 shadow-xl">
+            <h3 className="text-xl font-bold mb-4 text-emerald-600">Симуляция Клиента (Фаза 2)</h3>
+            <p className="text-sm text-neutral-500 mb-6">Создайте публичную заявку от лица обычного клиента. Она сразу попадет в Marketplace.</p>
+            {/* We will inject a ClientSimulatorForm here later */}
+            <ClientSimulatorForm onSuccess={() => setActiveTab('simulator-marketplace')} />
+          </div>
+        )}
         
         {activeTab === 'users' && (
           <div className="bg-white/40 dark:bg-neutral-900/40 backdrop-blur-md border border-neutral-200/50 dark:border-white/5 rounded-3xl overflow-hidden shadow-xl animate-fade-in-up">

@@ -9,8 +9,9 @@ import { useLanguage } from '@/i18n/LanguageContext'
 import { 
   User, Mail, Coins, Calendar, Phone, FileText, Save, X, Edit2, 
   Unlock, CreditCard, Settings, Bell, Lock, Globe, Moon, Sun,
-  Trash2, AlertTriangle, Eye, EyeOff, Check, ArrowLeft, Gem, Tag, Copy, Gift, MapPin
+  Trash2, AlertTriangle, Eye, EyeOff, Check, ArrowLeft, Gem, Tag, Copy, Gift, MapPin, Camera, UploadCloud, ImagePlus, Link as LinkIcon
 } from 'lucide-react'
+import { toast } from 'react-hot-toast'
 
 // Toggle Switch Component
 function Toggle({ checked, onChange, disabled = false }: { checked: boolean; onChange: () => void; disabled?: boolean }) {
@@ -40,6 +41,7 @@ export default function ProfilePage() {
   const [error, setError] = useState<string | null>(null)
   
   // Form state
+  const [username, setUsername] = useState('')
   const [displayName, setDisplayName] = useState('')
   const [phone, setPhone] = useState('')
   const [bio, setBio] = useState('')
@@ -48,6 +50,7 @@ export default function ProfilePage() {
   const [cities, setCities] = useState<any[]>([])
   const [selectedCountry, setSelectedCountry] = useState('')
   const [selectedCity, setSelectedCity] = useState('')
+  const [isUploading, setIsUploading] = useState(false)
 
   // Settings state
   const [theme, setTheme] = useState('dark')
@@ -86,6 +89,7 @@ export default function ProfilePage() {
       const profileData = await api.getProfile()
       setProfile(profileData)
       
+      setUsername(profileData.username || '')
       setDisplayName(profileData.display_name || '')
       setPhone(profileData.phone || '')
       setBio(profileData.bio || '')
@@ -185,6 +189,7 @@ export default function ProfilePage() {
       }
 
       const updated = await api.updateProfile({
+        username: username,
         display_name: displayName,
         phone: phone,
         bio: bio,
@@ -204,6 +209,7 @@ export default function ProfilePage() {
 
   const handleCancel = () => {
     if (profile) {
+      setUsername(profile.username || '')
       setDisplayName(profile.display_name || '')
       setPhone(profile.phone || '')
       setBio(profile.bio || '')
@@ -243,6 +249,82 @@ export default function ProfilePage() {
       setPasswordError(err instanceof Error ? err.message : 'Nepodařilo se změnit heslo')
     } finally {
       setIsChangingPassword(false)
+    }
+  }
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    try {
+      if (!e.target.files || e.target.files.length === 0) return
+      const file = e.target.files[0]
+      setIsUploading(true)
+      
+      const fileExt = file.name.split('.').pop()
+      const fileName = `${profile?.id}-${Math.random()}.${fileExt}`
+      const filePath = `avatars/${fileName}`
+
+      const { error: uploadError } = await supabase.storage.from('avatars').upload(filePath, file)
+      if (uploadError) throw uploadError
+
+      const { data } = supabase.storage.from('avatars').getPublicUrl(filePath)
+      
+      const updated = await api.updateProfile({ avatar_url: data.publicUrl })
+      setProfile(updated)
+      toast.success(language === 'ru' ? 'Аватар обновлен' : language === 'cs' ? 'Avatar aktualizován' : 'Avatar updated')
+    } catch (error: any) {
+      toast.error(language === 'ru' ? 'Ошибка загрузки аватара' : 'Upload error')
+      console.error(error)
+    } finally {
+      setIsUploading(false)
+    }
+  }
+
+  const handlePortfolioUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    try {
+      if (!e.target.files || e.target.files.length === 0) return
+      setIsUploading(true)
+      
+      const newUrls: string[] = []
+      
+      // Upload each file
+      for (let i = 0; i < e.target.files.length; i++) {
+        const file = e.target.files[i]
+        const fileExt = file.name.split('.').pop()
+        const fileName = `${profile?.id}-${Math.random()}-${i}.${fileExt}`
+        const filePath = `portfolio/${fileName}`
+
+        const { error: uploadError } = await supabase.storage.from('portfolio').upload(filePath, file)
+        if (uploadError) throw uploadError
+
+        const { data } = supabase.storage.from('portfolio').getPublicUrl(filePath)
+        newUrls.push(data.publicUrl)
+      }
+      
+      const currentUrls = profile?.portfolio_image_urls || []
+      const updatedUrls = [...currentUrls, ...newUrls]
+      
+      const updated = await api.updateProfile({ portfolio_image_urls: updatedUrls })
+      setProfile(updated)
+      toast.success(language === 'ru' ? 'Портфолио обновлено' : 'Portfolio updated')
+    } catch (error: any) {
+      toast.error(language === 'ru' ? 'Ошибка загрузки фото' : 'Upload error')
+      console.error(error)
+    } finally {
+      setIsUploading(false)
+    }
+  }
+
+  const removePortfolioImage = async (urlToRemove: string) => {
+    if (!profile?.portfolio_image_urls) return
+    try {
+      setIsSaving(true)
+      const updatedUrls = profile.portfolio_image_urls.filter(url => url !== urlToRemove)
+      const updated = await api.updateProfile({ portfolio_image_urls: updatedUrls })
+      setProfile(updated)
+      toast.success(language === 'ru' ? 'Фото удалено' : 'Photo removed')
+    } catch (error: any) {
+      toast.error(language === 'ru' ? 'Ошибка' : 'Error')
+    } finally {
+      setIsSaving(false)
     }
   }
 
@@ -341,8 +423,19 @@ export default function ProfilePage() {
             <div className="flex flex-col md:flex-row gap-6">
               {/* Avatar and main info */}
               <div className="flex-shrink-0 text-center md:text-left">
-                <div className="w-24 h-24 bg-gradient-to-br from-neutral-200 dark:from-neutral-800 to-neutral-300 dark:to-neutral-700 rounded-full mx-auto md:mx-0 mb-4 flex items-center justify-center border border-neutral-200/50 dark:border-white/5 shadow-inner">
-                  <User className="w-12 h-12 text-neutral-600 dark:text-neutral-400" />
+                <div className="relative w-24 h-24 mx-auto md:mx-0 mb-4 group">
+                  <div className="w-full h-full bg-gradient-to-br from-neutral-200 dark:from-neutral-800 to-neutral-300 dark:to-neutral-700 rounded-full flex items-center justify-center border border-neutral-200/50 dark:border-white/5 shadow-inner overflow-hidden">
+                    {profile.avatar_url ? (
+                      <img src={profile.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
+                    ) : (
+                      <User className="w-12 h-12 text-neutral-600 dark:text-neutral-400" />
+                    )}
+                  </div>
+                  <label className="absolute inset-0 flex flex-col items-center justify-center bg-black/50 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+                    <Camera className="w-6 h-6 mb-1" />
+                    <span className="text-[10px] font-bold">Upload</span>
+                    <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} disabled={isUploading} />
+                  </label>
                 </div>
                 <div className="flex items-center justify-center md:justify-start gap-2 mb-1">
                   <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">
@@ -440,6 +533,77 @@ export default function ProfilePage() {
               </div>
             )}
 
+            {/* Public Link Card */}
+            {profile.role === 'master' && profile.username && (
+              <div className="mt-6 bg-gradient-to-r from-orange-500/10 to-amber-500/10 border border-orange-200 dark:border-orange-500/20 rounded-2xl p-5 flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-bold text-neutral-900 dark:text-white flex items-center gap-2 mb-1">
+                    <LinkIcon className="w-5 h-5 text-orange-600 dark:text-orange-400" />
+                    {language === 'ru' ? 'Ваша публичная ссылка' : language === 'cs' ? 'Váš veřejný odkaz' : 'Your public link'}
+                  </h3>
+                  <p className="text-sm text-neutral-500 dark:text-neutral-400 max-w-md">
+                    {language === 'ru' 
+                      ? 'Отправьте эту ссылку клиентам, чтобы они могли посмотреть ваше портфолио и записаться к вам.'
+                      : 'Send this link to clients so they can view your portfolio and book an appointment.'}
+                  </p>
+                </div>
+                <div className="flex flex-col items-center md:items-end">
+                  <div className="bg-white/60 dark:bg-neutral-900/60 backdrop-blur-md shadow-sm border border-orange-200 dark:border-orange-900/30 rounded-xl px-4 py-2 flex items-center gap-3">
+                    <span className="font-mono font-medium text-sm text-orange-700 dark:text-orange-400">
+                      tattoohub.cz/book/{profile.username}
+                    </span>
+                    <button 
+                      onClick={() => {
+                        navigator.clipboard.writeText(`https://tattoohub.cz/book/${profile.username}`)
+                        toast.success(language === 'ru' ? 'Ссылка скопирована' : 'Link copied')
+                      }}
+                      className="p-1.5 hover:bg-orange-100 dark:hover:bg-orange-900/30 text-orange-600 dark:text-orange-300 rounded transition-colors"
+                      title="Скопировать"
+                    >
+                      <Copy className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Portfolio Grid */}
+            {profile.role === 'master' && (
+              <div className="mt-6 bg-white/40 dark:bg-neutral-900/40 backdrop-blur-md border border-neutral-200/50 dark:border-white/5 shadow-xl rounded-3xl p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-xl font-bold text-neutral-900 dark:text-white flex items-center gap-2">
+                    <ImagePlus className="w-6 h-6 text-indigo-500" />
+                    {language === 'ru' ? 'Мое портфолио' : 'My Portfolio'}
+                  </h3>
+                  <label className="cursor-pointer bg-neutral-900 dark:bg-neutral-800 hover:bg-neutral-800 dark:hover:bg-neutral-700 text-white px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 transition-colors">
+                    <UploadCloud className="w-4 h-4" />
+                    {language === 'ru' ? 'Загрузить фото' : 'Upload photo'}
+                    <input type="file" multiple accept="image/*" className="hidden" onChange={handlePortfolioUpload} disabled={isUploading} />
+                  </label>
+                </div>
+                
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {profile.portfolio_image_urls && profile.portfolio_image_urls.length > 0 ? (
+                    profile.portfolio_image_urls.map((url, idx) => (
+                      <div key={idx} className="relative aspect-square rounded-2xl overflow-hidden group border border-neutral-200 dark:border-neutral-800">
+                        <img src={url} alt="Portfolio" className="w-full h-full object-cover transition-transform group-hover:scale-110 duration-500" />
+                        <button 
+                          onClick={() => removePortfolioImage(url)}
+                          className="absolute top-2 right-2 p-1.5 bg-black/50 hover:bg-red-500 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-all"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="col-span-full py-12 text-center text-neutral-500 dark:text-neutral-400 border-2 border-dashed border-neutral-200 dark:border-neutral-800 rounded-2xl">
+                      {language === 'ru' ? 'В вашем портфолио пока нет фотографий' : 'No photos in your portfolio yet'}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
             {!isEditing && (
               <button
                 onClick={() => setIsEditing(true)}
@@ -457,6 +621,23 @@ export default function ProfilePage() {
               <h3 className="text-lg font-bold text-neutral-900 dark:text-white mb-6">{t('editProfile')}</h3>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div>
+                  <label className="block text-sm font-semibold text-neutral-600 dark:text-neutral-400 mb-2">
+                    {language === 'ru' ? 'Ссылка на профиль (Username)' : language === 'cs' ? 'Odkaz na profil (Username)' : 'Profile Link (Username)'}
+                  </label>
+                  <div className="relative flex items-center">
+                    <span className="absolute left-4 text-neutral-500 dark:text-neutral-400 select-none pointer-events-none">tattoohub.cz/book/</span>
+                    <input
+                      type="text"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
+                      placeholder="alex_ink"
+                      className="w-full bg-white/40 dark:bg-neutral-950/40 border border-neutral-200 dark:border-white/10 rounded-xl pl-[140px] pr-4 py-3 text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 transition-all shadow-inner font-mono"
+                    />
+                  </div>
+                  <p className="text-xs text-neutral-500 mt-1 ml-1">Только латинские буквы, цифры и _</p>
+                </div>
+
                 <div>
                   <label className="block text-sm font-semibold text-neutral-600 dark:text-neutral-400 mb-2">
                     {t('displayName')}

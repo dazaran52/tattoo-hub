@@ -21,6 +21,7 @@ from app.routers.analytics import router as analytics_router
 from app.routers.subscriptions import router as subscriptions_router
 from app.routers.chat import router as chat_router
 from app.routers.client_portal import router as client_portal_router
+from app.routers.public import router as public_router
 
 
 def run_migrations():
@@ -167,6 +168,7 @@ def create_application() -> FastAPI:
     app.include_router(subscriptions_router)
     app.include_router(chat_router)
     app.include_router(client_portal_router)
+    app.include_router(public_router)
     
     @app.get("/health")
     async def health_check():
