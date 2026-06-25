@@ -3,6 +3,7 @@ import { Search, Loader2, Edit3, Trash2, UserPlus } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { toast } from 'react-hot-toast'
 import { ClientDetailsModal } from './ClientDetailsModal'
+import { AddClientModal } from './AddClientModal'
 
 export interface CRMClient {
   id: string
@@ -38,6 +39,7 @@ export function ClientsDatabase() {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedClient, setSelectedClient] = useState<CRMClient | null>(null)
   const [chatsMap, setChatsMap] = useState<Record<string, string>>({})
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false)
 
   useEffect(() => {
     fetchClients()
@@ -130,6 +132,13 @@ export function ClientsDatabase() {
             className="w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl pl-10 pr-4 py-3 focus:ring-2 focus:ring-violet-500/20 outline-none"
           />
         </div>
+        <button
+          onClick={() => setIsAddModalOpen(true)}
+          className="flex items-center gap-2 px-5 py-3 bg-violet-600 hover:bg-violet-700 text-white rounded-xl font-bold shadow-md hover:shadow-lg transition-all hover:-translate-y-0.5 whitespace-nowrap"
+        >
+          <UserPlus className="w-5 h-5" />
+          Добавить клиента
+        </button>
       </div>
 
       <div className="bg-white dark:bg-neutral-900 rounded-2xl shadow-xl border border-neutral-200 dark:border-neutral-800 overflow-hidden">
@@ -237,6 +246,12 @@ export function ClientsDatabase() {
           chatId={selectedClient.lead_id ? chatsMap[selectedClient.lead_id] : null}
         />
       )}
+
+      <AddClientModal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        onSuccess={fetchClients}
+      />
     </div>
   )
 }
