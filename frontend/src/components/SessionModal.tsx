@@ -225,7 +225,7 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
             </div>
 
             {isNewClient ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-4">
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
                   <input
@@ -243,9 +243,11 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
                     value={formData.phone}
                     onChange={(e) => setFormData(p => ({ ...p, phone: e.target.value }))}
                     placeholder="Телефон"
-                    className="w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 transition-all outline-none mb-4"
+                    className="w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 transition-all outline-none"
                   />
-                  <div className="grid grid-cols-2 gap-4">
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="relative">
                     <input
                       type="text"
                       value={formData.telegram}
@@ -253,6 +255,8 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
                       placeholder="Telegram"
                       className="w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 transition-all outline-none"
                     />
+                  </div>
+                  <div className="relative">
                     <input
                       type="text"
                       value={formData.instagram}
