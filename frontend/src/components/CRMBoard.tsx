@@ -65,15 +65,39 @@ export function CRMBoard() {
       const { data: { session } } = await supabase.auth.getSession()
       const token = session?.access_token
       
-      const res = await fetch(`${apiUrl}/api/crm/sessions`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      })
-      
+      let sessionsData = null;
+      try {
+        const res = await fetch(`${apiUrl}/api/crm/sessions`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        })
+        if (res.ok) sessionsData = await res.json()
+      } catch (err) {
+        console.warn("API GET /sessions failed, falling back to Supabase", err)
+      }
+
+      if (!sessionsData) {
+        const { data: { user } } = await supabase.auth.getUser()
+        if (user) {
+          const { data } = await supabase.from('master_sessions')
+            .select('*, master_clients(*, leads(title, description, image_urls, client_priority))')
+            .eq('master_id', user.id)
+            .eq('is_deleted', false)
+            .order('created_at', { ascending: false })
+          
+          if (data) {
+             sessionsData = data.filter(s => s.master_clients && !s.master_clients.is_deleted)
+          } else {
+             sessionsData = []
+          }
+        } else {
+          sessionsData = []
+        }
+      }
+      setSessions(sessionsData)
+
       const clientsRes = await fetch(`${apiUrl}/api/crm/clients`, {
         headers: { 'Authorization': `Bearer ${token}` }
       })
-      
-      if (res.ok) setSessions(await res.json())
       if (clientsRes.ok) setClientsForModal(await clientsRes.json())
         
     } catch (err) {
@@ -88,15 +112,27 @@ export function CRMBoard() {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
       const { data: { session } } = await supabase.auth.getSession()
       const token = session?.access_token
-      const res = await fetch(`${apiUrl}/api/crm/sessions/${sessionId}`, {
-        method: 'PUT',
-        headers: { 
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ status: newStatus })
-      })
-      if (!res.ok) throw new Error('Failed to update status')
+      let success = false
+      try {
+        const res = await fetch(`${apiUrl}/api/crm/sessions/${sessionId}`, {
+          method: 'PUT',
+          headers: { 
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ status: newStatus })
+        })
+        if (res.ok) success = true
+      } catch (err) {
+        console.warn("API PUT /sessions failed, falling back to Supabase", err)
+      }
+
+      if (!success) {
+        const { error } = await supabase.from('master_sessions')
+          .update({ status: newStatus })
+          .eq('id', sessionId)
+        if (error) throw error
+      }
       
       setSessions(prev => prev.map(item => 
         item.id === sessionId ? { ...item, status: newStatus } : item

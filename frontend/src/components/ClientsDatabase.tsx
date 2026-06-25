@@ -78,25 +78,51 @@ export function ClientsDatabase() {
     }
   }
 
-  const handleDelete = async (e: React.MouseEvent, clientId: string) => {
+  const handleDelete = async (e: React.MouseEvent, id: string) => {
     e.stopPropagation()
-    if (!confirm('Вы уверены, что хотите удалить этого клиента? Его будущие сеансы также будут отменены.')) return
+    if (!confirm('Вы уверены, что хотите удалить этого клиента?')) return
 
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
-      const { data: { session } } = await supabase.auth.getSession()
-      const token = session?.access_token
-      
-      const res = await fetch(`${apiUrl}/api/crm/clients/${clientId}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` }
-      })
-      
-      if (!res.ok) throw new Error('Failed to delete client')
-      
+      const { data: session } = await supabase.auth.getSession()
+      const token = session.session?.access_token
+      if (!token) throw new Error('Not authenticated')
+
+      // 1. Try to delete via API first
+      let success = false;
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/crm/clients/${id}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        })
+        if (res.ok) {
+          success = true;
+        }
+      } catch (err) {
+        console.warn("API delete failed, falling back to direct Supabase update", err);
+      }
+
+      // 2. Fallback to direct Supabase update if backend is outdated
+      if (!success) {
+        // Soft delete the client
+        const { error: clientErr } = await supabase
+          .from('master_clients')
+          .update({ is_deleted: true })
+          .eq('id', id)
+        if (clientErr) throw clientErr
+
+        // Soft delete all associated sessions
+        await supabase
+          .from('master_sessions')
+          .update({ is_deleted: true })
+          .eq('client_id', id)
+      }
+
       toast.success('Клиент удален')
       fetchClients()
-    } catch (err) {
+    } catch (error) {
+      console.error(error)
       toast.error('Ошибка удаления клиента')
     }
   }
