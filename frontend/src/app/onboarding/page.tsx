@@ -16,7 +16,7 @@ export default function OnboardingPage() {
 
   // Form State
   const [displayName, setDisplayName] = useState('')
-  const [selectedCountry, setSelectedCountry] = useState('')
+  const [selectedCountry, setSelectedCountry] = useState('2a71599c-91f2-4461-b77b-86a150db3aab')
   const [selectedCities, setSelectedCities] = useState<string[]>([])
   
   // Locations Data
@@ -134,6 +134,7 @@ export default function OnboardingPage() {
             </div>
           </div>
 
+          {/* 
           <div className="space-y-2">
             <label className="text-sm font-medium ml-1">Страна</label>
             <div className="relative">
@@ -151,6 +152,7 @@ export default function OnboardingPage() {
               </select>
             </div>
           </div>
+          */}
 
           <AnimatePresence>
             {cities.length > 0 && (

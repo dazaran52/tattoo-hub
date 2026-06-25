@@ -95,7 +95,7 @@ export default function ProfilePage() {
       setBio(profileData.bio || '')
       setPortfolioUrl(profileData.portfolio_url || '')
       if (profileData.country_ids && profileData.country_ids.length > 0) {
-        setSelectedCountry(profileData.country_ids[0])
+        setSelectedCountry(profileData.country_ids?.[0] || '2a71599c-91f2-4461-b77b-86a150db3aab')
       }
       if (profileData.city_ids && profileData.city_ids.length > 0) {
         setSelectedCity(profileData.city_ids[0])
@@ -214,7 +214,7 @@ export default function ProfilePage() {
       setPhone(profile.phone || '')
       setBio(profile.bio || '')
       setPortfolioUrl(profile.portfolio_url || '')
-      setSelectedCountry(profile.country_ids?.[0] || '')
+      setSelectedCountry(profile.country_ids?.[0] || '2a71599c-91f2-4461-b77b-86a150db3aab')
       setSelectedCity(profile.city_ids?.[0] || '')
     }
     setIsEditing(false)
@@ -678,6 +678,7 @@ export default function ProfilePage() {
                   </div>
                 </div>
 
+                {/*
                 <div>
                   <label className="block text-sm font-semibold text-neutral-600 dark:text-neutral-400 mb-2">
                     {t('country')}
@@ -698,6 +699,7 @@ export default function ProfilePage() {
                     </select>
                   </div>
                 </div>
+                */}
 
                 <div>
                   <label className="block text-sm font-semibold text-neutral-600 dark:text-neutral-400 mb-2">
