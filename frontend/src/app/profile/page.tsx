@@ -625,14 +625,22 @@ export default function ProfilePage() {
                   <label className="block text-sm font-semibold text-neutral-600 dark:text-neutral-400 mb-2">
                     {language === 'ru' ? 'Ссылка на профиль (Username)' : language === 'cs' ? 'Odkaz na profil (Username)' : 'Profile Link (Username)'}
                   </label>
-                  <div className="relative flex items-center">
-                    <span className="absolute left-4 text-neutral-500 dark:text-neutral-400 select-none pointer-events-none">tattoohub.cz/book/</span>
+                  <div className="flex items-stretch rounded-xl shadow-inner border border-neutral-200 dark:border-white/10 bg-white/40 dark:bg-neutral-950/40 overflow-hidden focus-within:ring-2 focus-within:ring-cyan-500/20 focus-within:border-cyan-500 transition-all">
+                    <div className="flex items-center px-4 bg-neutral-100 dark:bg-neutral-900 border-r border-neutral-200 dark:border-white/10 text-neutral-500 dark:text-neutral-400 select-none">
+                      tattoohub.cz/book/
+                    </div>
                     <input
                       type="text"
                       value={username}
-                      onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
+                      onChange={(e) => {
+                        let val = e.target.value;
+                        if (val.includes('tattoohub.cz/book/')) {
+                          val = val.split('tattoohub.cz/book/').pop() || '';
+                        }
+                        setUsername(val.toLowerCase().replace(/[^a-z0-9_]/g, ''));
+                      }}
                       placeholder="alex_ink"
-                      className="w-full bg-white/40 dark:bg-neutral-950/40 border border-neutral-200 dark:border-white/10 rounded-xl pl-[140px] pr-4 py-3 text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 transition-all shadow-inner font-mono"
+                      className="w-full bg-transparent pl-3 pr-4 py-3 text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none font-mono"
                     />
                   </div>
                   <p className="text-xs text-neutral-500 mt-1 ml-1">Только латинские буквы, цифры и _</p>
@@ -683,7 +691,9 @@ export default function ProfilePage() {
                     >
                       <option value="" disabled className="text-neutral-900 dark:text-white bg-white dark:bg-neutral-900">{t('selectCountry')}</option>
                       {countries.map(c => (
-                        <option key={c.id} value={c.id} className="text-neutral-900 dark:text-white bg-white dark:bg-neutral-900">{c.name}</option>
+                        <option key={c.id} value={c.id} className="text-neutral-900 dark:text-white bg-white dark:bg-neutral-900">
+                          {language === 'ru' ? c.name_ru : language === 'cs' ? (c.name_cs || c.name_en) : c.name_en}
+                        </option>
                       ))}
                     </select>
                   </div>
@@ -703,7 +713,9 @@ export default function ProfilePage() {
                     >
                       <option value="" disabled className="text-neutral-900 dark:text-white bg-white dark:bg-neutral-900">{t('selectCity')}</option>
                       {cities.map(c => (
-                        <option key={c.id} value={c.id} className="text-neutral-900 dark:text-white bg-white dark:bg-neutral-900">{c.name}</option>
+                        <option key={c.id} value={c.id} className="text-neutral-900 dark:text-white bg-white dark:bg-neutral-900">
+                          {language === 'ru' ? c.name_ru : language === 'cs' ? (c.name_cs || c.name_en) : c.name_en}
+                        </option>
                       ))}
                     </select>
                   </div>
@@ -847,7 +859,7 @@ export default function ProfilePage() {
                   />
                 </div>
                 <div className="flex items-center justify-between">
-                  <p className="text-neutral-700 dark:text-neutral-300 font-medium">{t('pushNotifications') || 'Push-уведомления'}</p>
+                  <p className="text-neutral-700 dark:text-neutral-300 font-medium">{t('enablePushNotifications')}</p>
                   <Toggle 
                     checked={pushNotifications} 
                     onChange={async () => {
