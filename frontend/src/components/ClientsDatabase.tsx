@@ -194,8 +194,11 @@ export function ClientsDatabase() {
                           <div className="font-semibold">{new Date(latestSession.session_date).toLocaleDateString('ru-RU')}</div>
                           <div className="text-xs text-neutral-500">
                             {latestSession.status === 'completed' ? 'Завершен' : 
-                             latestSession.status === 'booked' ? 'Запланирован' :
-                             latestSession.status === 'in_progress' ? 'В процессе' : 'Отменен'}
+                             (latestSession.status === 'booked' || latestSession.status === 'scheduled') ? 'Запланирован' :
+                             latestSession.status === 'in_progress' ? 'В процессе' : 
+                             latestSession.status === 'new' ? 'Новый' :
+                             latestSession.status === 'discussing' ? 'В диалоге' :
+                             latestSession.status === 'cancelled' ? 'Отменен' : 'Запланирован'}
                           </div>
                         </div>
                       ) : (
