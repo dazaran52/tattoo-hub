@@ -13,7 +13,7 @@ interface DayOff {
   end_time: string | null
 }
 
-export function CalendarView({ items, onDateClick }: { items: CRMClient[], onDateClick: (date: string) => void }) {
+export function CalendarView({ items }: { items: CRMClient[] }) {
   const [currentDate, setCurrentDate] = useState(new Date())
   const [daysOff, setDaysOff] = useState<DayOff[]>([])
   const [isLoading, setIsLoading] = useState(true)
