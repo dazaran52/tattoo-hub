@@ -365,10 +365,6 @@ export function CRMBoard() {
         })}
           </div>
         </div>
-      ) : (
-        <CalendarView items={items} onDateClick={(date) => {
-          // Pass date to modal
-        }} />
       )}
 
       {selectedClient && (
