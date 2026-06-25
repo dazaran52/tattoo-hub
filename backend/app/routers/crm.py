@@ -2,8 +2,8 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 from typing import List, Optional, Any
 from datetime import date, time, datetime
-from app.core.security import get_current_user, AuthUser
-from app.core.supabase import get_async_supabase_client
+from app.middleware.auth import get_current_user, AuthUser
+from app.database import get_async_supabase_client
 from supabase._async.client import AsyncClient
 
 router = APIRouter()
