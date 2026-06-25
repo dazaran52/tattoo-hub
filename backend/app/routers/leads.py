@@ -879,15 +879,8 @@ async def get_master_unavailable_dates(
         master_id = master_res.data["id"]
         
         # Get explicit days off
-        days_off_res = await supabase.table("master_days_off").select("date").eq("master_id", master_id).execute()
+        days_off_res = await supabase.table("master_days_off").select("date").eq("master_id", master_id).eq("is_full_day", True).execute()
         unavailable_dates = set([d["date"] for d in days_off_res.data or []])
-        
-        # Get booked sessions (leads with session_date)
-        leads_res = await supabase.table("leads").select("session_date").eq("assigned_master_id", master_id).not_.is_("session_date", "null").execute()
-        for lead in leads_res.data or []:
-            if lead["session_date"]:
-                date_part = lead["session_date"].split("T")[0]
-                unavailable_dates.add(date_part)
                 
         return list(unavailable_dates)
     except Exception as e:

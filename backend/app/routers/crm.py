@@ -23,6 +23,15 @@ class ManualClientCreate(BaseModel):
     notes: Optional[str] = None
     session_date: Optional[str] = None
 
+class SessionCreate(BaseModel):
+    client_id: str
+    session_date: str
+    start_time: Optional[str] = None
+    end_time: Optional[str] = None
+    price: Optional[float] = None
+    style: Optional[str] = None
+    reference_images: Optional[List[str]] = []
+
 @router.get("/clients")
 async def get_clients(
     current_user: AuthUser = Depends(get_current_user),
@@ -90,6 +99,40 @@ async def create_manual_client(
             }).execute()
             
         return client
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/sessions")
+async def create_session(
+    data: SessionCreate,
+    current_user: AuthUser = Depends(get_current_user),
+    supabase: AsyncClient = Depends(get_async_supabase_client)
+):
+    try:
+        # Verify client belongs to master
+        client_res = await supabase.table("master_clients").select("id").eq("id", data.client_id).eq("master_id", current_user.user_id).execute()
+        if not client_res.data:
+            raise HTTPException(status_code=404, detail="Client not found or not owned by master")
+
+        session_data = {
+            "master_id": current_user.user_id,
+            "client_id": data.client_id,
+            "session_date": data.session_date,
+            "start_time": data.start_time,
+            "end_time": data.end_time,
+            "price": data.price,
+            "style": data.style,
+            "reference_images": data.reference_images,
+            "status": "scheduled"
+        }
+        res = await supabase.table("master_sessions").insert(session_data).execute()
+        if not res.data:
+            raise HTTPException(status_code=400, detail="Failed to create session")
+        
+        # If the client is currently "new", move them to "booked" since they now have a session
+        await supabase.table("master_clients").update({"kanban_status": "booked"}).eq("id", data.client_id).execute()
+
+        return res.data[0]
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
