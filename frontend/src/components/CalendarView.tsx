@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { ChevronLeft, ChevronRight, Clock, Coffee, Loader2, Edit3, CalendarPlus, X } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Clock, Coffee, Loader2, Edit3, CalendarPlus, X, Plus } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { CRMClient } from './CRMBoard'
 import { supabase } from '@/lib/supabase'
@@ -230,30 +230,35 @@ export function CalendarView({ items, onDateClick }: { items: CRMClient[], onDat
                     : 'border-neutral-100 dark:border-white/5 bg-white dark:bg-neutral-900 hover:border-neutral-300 dark:hover:border-neutral-700'
               }`}
             >
-              <div className="flex items-center justify-between mb-2">
-                <span className={`font-bold ${isOff ? 'text-red-500' : isToday ? 'text-violet-600' : 'text-neutral-500'}`}>
-                  {day}
-                </span>
+              <div className="flex flex-col mb-3">
+                <div className="flex items-center justify-between">
+                  <span className={`font-bold ${isOff ? 'text-red-500' : isToday ? 'text-violet-600' : 'text-neutral-500'}`}>
+                    {day}
+                  </span>
+                  
+                  {isOff && (
+                    <div className="flex items-center gap-1">
+                      <button 
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setEditingDayOff(offRecord)
+                          setEditStartTime(offRecord.start_time || '')
+                          setEditEndTime(offRecord.end_time || '')
+                        }}
+                        className="p-1 hover:bg-red-200 dark:hover:bg-red-800/50 rounded transition-colors"
+                      >
+                        <Edit3 className="w-4 h-4 text-red-500" />
+                      </button>
+                      <Coffee className="w-4 h-4 text-red-500" />
+                    </div>
+                  )}
+                </div>
                 
-                {isOff && (
-                  <div className="flex items-center gap-1">
-                    {!offRecord.is_full_day && (
-                      <span className="text-[10px] font-bold text-red-500 bg-red-100 dark:bg-red-900/40 px-1.5 py-0.5 rounded">
-                        {offRecord.start_time?.slice(0,5)} - {offRecord.end_time?.slice(0,5)}
-                      </span>
-                    )}
-                    <button 
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        setEditingDayOff(offRecord)
-                        setEditStartTime(offRecord.start_time || '')
-                        setEditEndTime(offRecord.end_time || '')
-                      }}
-                      className="p-1 hover:bg-red-200 dark:hover:bg-red-800/50 rounded transition-colors"
-                    >
-                      <Edit3 className="w-4 h-4 text-red-500" />
-                    </button>
-                    <Coffee className="w-4 h-4 text-red-500" />
+                {isOff && !offRecord.is_full_day && (
+                  <div className="mt-1">
+                    <span className="text-[10px] font-bold text-red-500 bg-red-100 dark:bg-red-900/40 px-1.5 py-0.5 rounded">
+                      {offRecord.start_time?.slice(0,5)} - {offRecord.end_time?.slice(0,5)}
+                    </span>
                   </div>
                 )}
               </div>
