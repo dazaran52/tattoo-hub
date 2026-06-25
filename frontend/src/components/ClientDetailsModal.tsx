@@ -94,7 +94,7 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId }
                     rows={4}
                     onBlur={async (e) => {
                        // Silently save
-                       await supabase.table('master_clients').update({notes: e.target.value}).eq('id', client.id)
+                       await supabase.from('master_clients').update({notes: e.target.value}).eq('id', client.id)
                        onUpdate()
                     }}
                   />
