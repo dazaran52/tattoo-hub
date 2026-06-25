@@ -8,7 +8,7 @@ from supabase._async.client import AsyncClient
 
 router = APIRouter()
 
-class ClientStatusUpdate(BaseModel):
+class SessionStatusUpdate(BaseModel):
     status: str
 
 class DayOffUpdate(BaseModel):
@@ -32,39 +32,67 @@ class SessionCreate(BaseModel):
     style: Optional[str] = None
     reference_images: Optional[List[str]] = []
 
+class SessionUpdate(BaseModel):
+    session_date: Optional[str] = None
+    start_time: Optional[str] = None
+    end_time: Optional[str] = None
+    price: Optional[float] = None
+    style: Optional[str] = None
+    status: Optional[str] = None
+    reference_images: Optional[List[str]] = None
+
+class CompleteSessionData(BaseModel):
+    result_image_urls: List[str]
+    publish_to_portfolio: bool = False
+
 @router.get("/clients")
 async def get_clients(
     current_user: AuthUser = Depends(get_current_user),
     supabase: AsyncClient = Depends(get_async_supabase_client)
 ):
     try:
-        # Fetch clients linked to this master, including lead info if available
+        # Fetch non-deleted clients linked to this master
         res = await supabase.table("master_clients") \
             .select("*, leads(title, description, image_urls, client_priority), master_sessions(*)") \
             .eq("master_id", current_user.user_id) \
+            .eq("is_deleted", False) \
             .order("created_at", desc=True) \
             .execute()
         
-        return res.data or []
+        # Filter out deleted sessions in the client's nested array just in case
+        clients = res.data or []
+        for client in clients:
+            if client.get("master_sessions"):
+                client["master_sessions"] = [s for s in client["master_sessions"] if not s.get("is_deleted")]
+        
+        return clients
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.put("/clients/{client_id}/status")
-async def update_client_status(
+@router.delete("/clients/{client_id}")
+async def delete_client(
     client_id: str,
-    data: ClientStatusUpdate,
     current_user: AuthUser = Depends(get_current_user),
     supabase: AsyncClient = Depends(get_async_supabase_client)
 ):
     try:
-        res = await supabase.table("master_clients") \
-            .update({"kanban_status": data.status}) \
+        # Soft delete client
+        await supabase.table("master_clients") \
+            .update({"is_deleted": True}) \
             .eq("id", client_id) \
             .eq("master_id", current_user.user_id) \
             .execute()
-        if not res.data:
-            raise HTTPException(status_code=404, detail="Client not found")
-        return res.data[0]
+        
+        # Also soft delete their future sessions
+        now_date = datetime.utcnow().date().isoformat()
+        await supabase.table("master_sessions") \
+            .update({"is_deleted": True}) \
+            .eq("client_id", client_id) \
+            .eq("master_id", current_user.user_id) \
+            .gte("session_date", now_date) \
+            .execute()
+            
+        return {"status": "success"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -82,7 +110,7 @@ async def create_manual_client(
             "contact_info": data.contact_info,
             "notes": data.notes,
             "source": "manual",
-            "kanban_status": "new"
+            "kanban_status": "new" # kept for backward compatibility if any old code relies on it
         }
         res = await supabase.table("master_clients").insert(client_data).execute()
         if not res.data:
@@ -90,15 +118,36 @@ async def create_manual_client(
             
         client = res.data[0]
         
-        # 2. Add session if date provided
-        if data.session_date:
-            await supabase.table("master_sessions").insert({
-                "master_id": current_user.user_id,
-                "client_id": client["id"],
-                "session_date": data.session_date
-            }).execute()
+        # 2. Add session automatically (so it appears on kanban board)
+        session_data = {
+            "master_id": current_user.user_id,
+            "client_id": client["id"],
+            "session_date": data.session_date or datetime.utcnow().date().isoformat(),
+            "status": "new"
+        }
+        await supabase.table("master_sessions").insert(session_data).execute()
             
         return client
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/sessions")
+async def get_sessions(
+    current_user: AuthUser = Depends(get_current_user),
+    supabase: AsyncClient = Depends(get_async_supabase_client)
+):
+    """Get all non-deleted sessions for the master's kanban board."""
+    try:
+        res = await supabase.table("master_sessions") \
+            .select("*, master_clients(*, leads(title, description, image_urls, client_priority))") \
+            .eq("master_id", current_user.user_id) \
+            .eq("is_deleted", False) \
+            .order("created_at", desc=True) \
+            .execute()
+        
+        # Filter out sessions where the linked client was soft deleted
+        sessions = [s for s in (res.data or []) if s.get("master_clients") and not s["master_clients"].get("is_deleted")]
+        return sessions
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -123,15 +172,108 @@ async def create_session(
             "price": data.price,
             "style": data.style,
             "reference_images": data.reference_images,
-            "status": "scheduled"
+            "status": "booked"
         }
         res = await supabase.table("master_sessions").insert(session_data).execute()
         if not res.data:
             raise HTTPException(status_code=400, detail="Failed to create session")
         
-        # If the client is currently "new", move them to "booked" since they now have a session
-        await supabase.table("master_clients").update({"kanban_status": "booked"}).eq("id", data.client_id).execute()
+        return res.data[0]
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
+@router.put("/sessions/{session_id}")
+async def update_session(
+    session_id: str,
+    data: SessionUpdate,
+    current_user: AuthUser = Depends(get_current_user),
+    supabase: AsyncClient = Depends(get_async_supabase_client)
+):
+    try:
+        update_data = {k: v for k, v in data.model_dump().items() if v is not None}
+        if not update_data:
+            return {"status": "no changes"}
+            
+        res = await supabase.table("master_sessions") \
+            .update(update_data) \
+            .eq("id", session_id) \
+            .eq("master_id", current_user.user_id) \
+            .execute()
+            
+        if not res.data:
+            raise HTTPException(status_code=404, detail="Session not found")
+        return res.data[0]
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.delete("/sessions/{session_id}")
+async def delete_session(
+    session_id: str,
+    current_user: AuthUser = Depends(get_current_user),
+    supabase: AsyncClient = Depends(get_async_supabase_client)
+):
+    try:
+        await supabase.table("master_sessions") \
+            .update({"is_deleted": True}) \
+            .eq("id", session_id) \
+            .eq("master_id", current_user.user_id) \
+            .execute()
+        return {"status": "success"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/sessions/{session_id}/waiver")
+async def sign_waiver(
+    session_id: str,
+    current_user: AuthUser = Depends(get_current_user),
+    supabase: AsyncClient = Depends(get_async_supabase_client)
+):
+    try:
+        res = await supabase.table("master_sessions") \
+            .update({
+                "waiver_signed": True,
+                "waiver_signed_at": datetime.utcnow().isoformat(),
+                "status": "in_progress"
+            }) \
+            .eq("id", session_id) \
+            .eq("master_id", current_user.user_id) \
+            .execute()
+            
+        if not res.data:
+            raise HTTPException(status_code=404, detail="Session not found")
+        return res.data[0]
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/sessions/{session_id}/complete")
+async def complete_session(
+    session_id: str,
+    data: CompleteSessionData,
+    current_user: AuthUser = Depends(get_current_user),
+    supabase: AsyncClient = Depends(get_async_supabase_client)
+):
+    try:
+        res = await supabase.table("master_sessions") \
+            .update({
+                "status": "completed",
+                "result_image_urls": data.result_image_urls
+            }) \
+            .eq("id", session_id) \
+            .eq("master_id", current_user.user_id) \
+            .execute()
+            
+        if not res.data:
+            raise HTTPException(status_code=404, detail="Session not found")
+            
+        # Add to portfolio if requested
+        if data.publish_to_portfolio and data.result_image_urls:
+            user_res = await supabase.table("users").select("portfolio_image_urls").eq("id", current_user.user_id).execute()
+            if user_res.data:
+                existing = user_res.data[0].get("portfolio_image_urls") or []
+                # append new urls
+                existing.extend(data.result_image_urls)
+                await supabase.table("users").update({"portfolio_image_urls": existing}).eq("id", current_user.user_id).execute()
+                
         return res.data[0]
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -165,8 +307,6 @@ async def toggle_day_off(
             .execute()
             
         if check.data:
-            # If exists and full_day payload, we delete it (toggle off)
-            # UNLESS they are updating specific hours (is_full_day = false)
             if data.is_full_day and check.data[0].get("is_full_day", True):
                 await supabase.table("master_days_off") \
                     .delete() \
@@ -174,7 +314,6 @@ async def toggle_day_off(
                     .execute()
                 return {"status": "deleted"}
             else:
-                # Update specific hours
                 upd = {
                     "is_full_day": data.is_full_day,
                     "start_time": data.start_time,
@@ -186,7 +325,6 @@ async def toggle_day_off(
                     .execute()
                 return {"status": "updated", "data": res.data[0]}
         else:
-            # Insert new
             ins = {
                 "master_id": current_user.user_id,
                 "date": data.date,
@@ -199,4 +337,3 @@ async def toggle_day_off(
             
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-

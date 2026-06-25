@@ -1,9 +1,13 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, Calendar, Phone, Mail, FileText, Plus, MessageCircle } from 'lucide-react'
-import { CRMClient } from './CRMBoard'
+import { X, Calendar, Phone, Mail, FileText, Plus, MessageCircle, PlayCircle, Trash2, Edit3, CheckCircle } from 'lucide-react'
+import { CRMClient } from './ClientsDatabase'
 import { ChatModal } from './ChatModal'
 import { supabase } from '@/lib/supabase'
+import { toast } from 'react-hot-toast'
+import { SessionModal } from './SessionModal'
+import { CompleteSessionModal } from './CompleteSessionModal'
+import { LiabilityWaiverModal } from './LiabilityWaiverModal'
 
 interface ClientDetailsModalProps {
   isOpen: boolean
@@ -16,8 +20,48 @@ interface ClientDetailsModalProps {
 export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId }: ClientDetailsModalProps) {
   const [activeTab, setActiveTab] = useState<'info'|'sessions'|'chat'>('info')
   const [isChatOpen, setIsChatOpen] = useState(false)
+  const [isSessionModalOpen, setIsSessionModalOpen] = useState(false)
   
+  const [sessionToComplete, setSessionToComplete] = useState<string | null>(null)
+  const [sessionToStart, setSessionToStart] = useState<string | null>(null)
+  const [sessionToEdit, setSessionToEdit] = useState<any | null>(null)
+
   if (!isOpen) return null
+
+  const handleDeleteClient = async () => {
+    if (!confirm('Вы уверены, что хотите удалить этого клиента?')) return
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const token = session?.access_token
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/crm/clients/${client.id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      if (!res.ok) throw new Error()
+      toast.success('Клиент удален')
+      onUpdate()
+      onClose()
+    } catch {
+      toast.error('Ошибка удаления')
+    }
+  }
+
+  const handleDeleteSession = async (sessionId: string) => {
+    if (!confirm('Вы уверены, что хотите удалить этот сеанс?')) return
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const token = session?.access_token
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/crm/sessions/${sessionId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      if (!res.ok) throw new Error()
+      toast.success('Сеанс удален')
+      onUpdate()
+    } catch {
+      toast.error('Ошибка удаления сеанса')
+    }
+  }
 
   return (
     <>
@@ -27,7 +71,7 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId }
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.95 }}
-          className="bg-white dark:bg-neutral-900 rounded-3xl w-full max-w-2xl overflow-hidden shadow-2xl"
+          className="bg-white dark:bg-neutral-900 rounded-3xl w-full max-w-2xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]"
         >
           {/* Header */}
           <div className="px-6 py-4 border-b border-neutral-100 dark:border-neutral-800 flex justify-between items-center bg-neutral-50 dark:bg-neutral-900/50">
@@ -37,7 +81,7 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId }
             </button>
           </div>
 
-          <div className="flex border-b border-neutral-100 dark:border-neutral-800">
+          <div className="flex border-b border-neutral-100 dark:border-neutral-800 shrink-0">
             <button 
               onClick={() => setActiveTab('info')}
               className={`flex-1 py-3 text-sm font-bold border-b-2 transition-colors ${activeTab === 'info' ? 'border-violet-500 text-violet-600 dark:text-violet-400' : 'border-transparent text-neutral-500 hover:bg-neutral-50 dark:hover:bg-neutral-800'}`}
@@ -58,12 +102,20 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId }
             </button>
           </div>
 
-          <div className="p-6 h-[50vh] overflow-y-auto">
+          <div className="p-6 overflow-y-auto flex-1">
             {activeTab === 'info' && (
               <div className="space-y-6">
-                <div>
-                  <label className="text-xs font-bold text-neutral-400 uppercase tracking-wider">Имя клиента</label>
-                  <div className="mt-1 text-lg font-bold text-neutral-900 dark:text-white">{client.name}</div>
+                <div className="flex justify-between items-start">
+                  <div>
+                    <label className="text-xs font-bold text-neutral-400 uppercase tracking-wider">Имя клиента</label>
+                    <div className="mt-1 text-lg font-bold text-neutral-900 dark:text-white">{client.name}</div>
+                  </div>
+                  <button 
+                    onClick={handleDeleteClient}
+                    className="flex items-center gap-1 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 px-3 py-1.5 rounded-lg text-sm font-bold transition-colors"
+                  >
+                    <Trash2 className="w-4 h-4" /> Удалить
+                  </button>
                 </div>
                 
                 <div>
@@ -93,7 +145,6 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId }
                     className="mt-2 w-full p-4 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl focus:ring-2 focus:ring-violet-500 outline-none text-neutral-900 dark:text-white"
                     rows={4}
                     onBlur={async (e) => {
-                       // Silently save
                        await supabase.from('master_clients').update({notes: e.target.value}).eq('id', client.id)
                        onUpdate()
                     }}
@@ -106,26 +157,53 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId }
               <div className="space-y-4">
                 <div className="flex justify-between items-center mb-4">
                   <h3 className="font-bold text-neutral-900 dark:text-white">Сеансы клиента</h3>
-                  <button className="flex items-center gap-1 text-sm font-bold text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-900/20 px-3 py-1.5 rounded-lg hover:bg-violet-100 transition-colors">
+                  <button 
+                    onClick={() => setIsSessionModalOpen(true)}
+                    className="flex items-center gap-1 text-sm font-bold text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-900/20 px-3 py-1.5 rounded-lg hover:bg-violet-100 transition-colors"
+                  >
                     <Plus className="w-4 h-4"/> Добавить
                   </button>
                 </div>
                 
                 {client.master_sessions && client.master_sessions.length > 0 ? (
                   client.master_sessions.map(s => (
-                    <div key={s.id} className="p-4 border border-neutral-200 dark:border-neutral-800 rounded-2xl flex items-center justify-between">
+                    <div key={s.id} className="p-4 border border-neutral-200 dark:border-neutral-800 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-xl flex items-center justify-center">
+                        <div className="w-10 h-10 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-xl flex items-center justify-center shrink-0">
                           <Calendar className="w-5 h-5" />
                         </div>
                         <div>
                           <div className="font-bold text-neutral-900 dark:text-white">{new Date(s.session_date).toLocaleDateString()}</div>
                           <div className="text-sm text-neutral-500">{s.start_time || 'Время не указано'} - {s.end_time || ''}</div>
+                          <div className="text-xs font-bold text-neutral-400 uppercase mt-1">{s.status === 'in_progress' ? 'В процессе' : s.status === 'completed' ? 'Завершен' : s.status === 'booked' ? 'Записан' : s.status}</div>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <div className="font-bold text-neutral-900 dark:text-white">{s.price ? `€${s.price}` : '—'}</div>
-                        <div className="text-xs text-neutral-500 uppercase">{s.status}</div>
+                      <div className="flex flex-col sm:items-end gap-2">
+                        <div className="font-bold text-neutral-900 dark:text-white text-lg">{s.price ? `${s.price} Kč` : '—'}</div>
+                        <div className="flex items-center gap-2">
+                          {s.status === 'booked' && (
+                            <button 
+                              onClick={() => setSessionToStart(s.id)}
+                              className="px-3 py-1.5 bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400 font-bold text-xs rounded-lg flex items-center gap-1"
+                            >
+                              <PlayCircle className="w-3 h-3" /> Начать
+                            </button>
+                          )}
+                          {s.status === 'in_progress' && (
+                            <button 
+                              onClick={() => setSessionToComplete(s.id)}
+                              className="px-3 py-1.5 bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 font-bold text-xs rounded-lg flex items-center gap-1"
+                            >
+                              <CheckCircle className="w-3 h-3" /> Завершить
+                            </button>
+                          )}
+                          <button onClick={() => setSessionToEdit({ ...s, master_clients: { id: client.id, name: client.name } })} className="p-1.5 text-neutral-400 hover:text-violet-500 rounded-md">
+                            <Edit3 className="w-4 h-4" />
+                          </button>
+                          <button onClick={() => handleDeleteSession(s.id)} className="p-1.5 text-neutral-400 hover:text-red-500 rounded-md">
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
                       </div>
                     </div>
                   ))
@@ -169,6 +247,57 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId }
         onClose={() => setIsChatOpen(false)}
         chatId={chatId}
         leadTitle={client.name}
+      />
+    )}
+
+    {isSessionModalOpen && (
+      <SessionModal
+        isOpen={isSessionModalOpen}
+        onClose={() => setIsSessionModalOpen(false)}
+        onSuccess={() => {
+          setIsSessionModalOpen(false)
+          onUpdate()
+        }}
+        initialClientId={client.id}
+        existingClients={[client]} // just pass this client
+      />
+    )}
+
+    {sessionToEdit && (
+      <SessionModal
+        isOpen={!!sessionToEdit}
+        onClose={() => setSessionToEdit(null)}
+        onSuccess={() => {
+          setSessionToEdit(null)
+          onUpdate()
+        }}
+        editSession={sessionToEdit}
+        existingClients={[client]}
+      />
+    )}
+
+    {sessionToStart && (
+      <LiabilityWaiverModal
+        isOpen={!!sessionToStart}
+        onClose={() => setSessionToStart(null)}
+        sessionId={sessionToStart}
+        clientName={client.name}
+        onSuccess={() => {
+          setSessionToStart(null)
+          onUpdate()
+        }}
+      />
+    )}
+
+    {sessionToComplete && (
+      <CompleteSessionModal
+        isOpen={!!sessionToComplete}
+        onClose={() => setSessionToComplete(null)}
+        sessionId={sessionToComplete}
+        onSuccess={() => {
+          setSessionToComplete(null)
+          onUpdate()
+        }}
       />
     )}
     </>
