@@ -165,7 +165,7 @@ export function CalendarView({ items, onDateClick }: { items: CRMClient[], onDat
               className={`px-4 py-2 text-sm font-bold rounded-lg transition-all flex items-center gap-2 ${calendarMode === 'normal' ? 'bg-white dark:bg-neutral-900 shadow-sm text-neutral-900 dark:text-white' : 'text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'}`}
             >
               <CalendarPlus className="w-4 h-4"/>
-              Обычный
+              Запись клиента
             </button>
             <button 
               onClick={() => setCalendarMode('day_off')}
@@ -292,7 +292,7 @@ export function CalendarView({ items, onDateClick }: { items: CRMClient[], onDat
         {calendarMode === 'day_off' ? (
           <><Coffee className="w-4 h-4" /> В режиме "Выходные" кликните на день, чтобы отметить его нерабочим. Используйте карандаш для указания часов.</>
         ) : (
-          <><CalendarPlus className="w-4 h-4" /> В "Обычном" режиме кликните на любой день, чтобы добавить сеанс.</>
+          <><CalendarPlus className="w-4 h-4" /> В режиме "Запись клиента" кликните на любой день, чтобы добавить сеанс.</>
         )}
       </div>
 
