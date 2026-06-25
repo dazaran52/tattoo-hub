@@ -18,11 +18,15 @@ interface SessionModalProps {
 export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialClientId, existingClients, editSession }: SessionModalProps) {
   const [loading, setLoading] = useState(false)
   const [isNewClient, setIsNewClient] = useState(false)
+  const [clientSearchText, setClientSearchText] = useState('')
+  const [isClientDropdownOpen, setIsClientDropdownOpen] = useState(false)
   
   const [formData, setFormData] = useState({
     client_id: '',
     client_name: '',
-    contact_info: '',
+    phone: '',
+    telegram: '',
+    instagram: '',
     session_date: '',
     start_time: '',
     end_time: '',
@@ -39,8 +43,10 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
       if (editSession) {
         setFormData({
           client_id: editSession.master_clients?.id || '',
-          client_name: '',
-          contact_info: '',
+          client_name: editSession.master_clients?.name || '',
+          phone: '',
+          telegram: '',
+          instagram: '',
           session_date: editSession.session_date || '',
           start_time: editSession.start_time || '',
           end_time: editSession.end_time || '',
@@ -56,7 +62,9 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
         setFormData({
           client_id: initialClientId || '',
           client_name: '',
-          contact_info: '',
+          phone: '',
+          telegram: '',
+          instagram: '',
           session_date: initialDate || '',
           start_time: '',
           end_time: '',
@@ -99,7 +107,9 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
             },
             body: JSON.stringify({
               name: formData.client_name,
-              contact_info: formData.contact_info,
+              phone: formData.phone,
+              telegram: formData.telegram,
+              instagram: formData.instagram,
               notes: formData.notes
             })
           })
@@ -229,30 +239,81 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
                 </div>
                 <div className="relative">
                   <input
-                    type="text"
-                    value={formData.contact_info}
-                    onChange={(e) => setFormData(p => ({ ...p, contact_info: e.target.value }))}
-                    placeholder="Контакты (Тел/TG)"
-                    className="w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 transition-all outline-none"
+                    type="tel"
+                    value={formData.phone}
+                    onChange={(e) => setFormData(p => ({ ...p, phone: e.target.value }))}
+                    placeholder="Телефон"
+                    className="w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 transition-all outline-none mb-4"
                   />
+                  <div className="grid grid-cols-2 gap-4">
+                    <input
+                      type="text"
+                      value={formData.telegram}
+                      onChange={(e) => setFormData(p => ({ ...p, telegram: e.target.value }))}
+                      placeholder="Telegram"
+                      className="w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 transition-all outline-none"
+                    />
+                    <input
+                      type="text"
+                      value={formData.instagram}
+                      onChange={(e) => setFormData(p => ({ ...p, instagram: e.target.value }))}
+                      placeholder="Instagram"
+                      className="w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 transition-all outline-none"
+                    />
+                  </div>
                 </div>
               </div>
             ) : (
-              <select
-                required={!isNewClient}
-                value={formData.client_id}
-                onChange={(e) => setFormData(p => ({ ...p, client_id: e.target.value }))}
-                disabled={isClientLocked}
-                className="w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 outline-none disabled:opacity-70 disabled:bg-neutral-100 dark:disabled:bg-neutral-800"
-              >
-                <option value="">Выберите клиента...</option>
-                {existingClients.map(c => (
-                  <option key={c.id} value={c.id}>{c.name} {c.contact_info ? `(${c.contact_info})` : ''}</option>
-                ))}
-                {editSession && !existingClients.find(c => c.id === editSession.master_clients?.id) && (
-                  <option value={editSession.master_clients?.id}>{editSession.master_clients?.name}</option>
+              <div className="relative">
+                {isClientLocked ? (
+                  <input 
+                    type="text" 
+                    value={existingClients.find(c => c.id === formData.client_id)?.name || editSession?.master_clients?.name || ''} 
+                    disabled 
+                    className="w-full bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl px-4 py-2.5 text-sm outline-none opacity-70"
+                  />
+                ) : (
+                  <>
+                    <input
+                      type="text"
+                      required={!isNewClient && !formData.client_id}
+                      value={formData.client_id ? existingClients.find(c => c.id === formData.client_id)?.name : clientSearchText}
+                      onChange={(e) => {
+                        setFormData(p => ({ ...p, client_id: '' }))
+                        setClientSearchText(e.target.value)
+                        setIsClientDropdownOpen(true)
+                      }}
+                      onFocus={() => setIsClientDropdownOpen(true)}
+                      onBlur={() => setTimeout(() => setIsClientDropdownOpen(false), 200)}
+                      placeholder="Поиск по имени или телефону..."
+                      className="w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 outline-none"
+                    />
+                    {isClientDropdownOpen && (
+                      <div className="absolute z-10 w-full mt-1 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl shadow-xl max-h-60 overflow-y-auto">
+                        {existingClients.filter(c => {
+                          const search = clientSearchText.toLowerCase()
+                          return c.name.toLowerCase().includes(search) || 
+                                 (c.phone || '').toLowerCase().includes(search) || 
+                                 (c.contact_info || '').toLowerCase().includes(search)
+                        }).map(c => (
+                          <div 
+                            key={c.id}
+                            className="px-4 py-2 hover:bg-neutral-50 dark:hover:bg-neutral-800 cursor-pointer text-sm"
+                            onClick={() => {
+                              setFormData(p => ({ ...p, client_id: c.id }))
+                              setClientSearchText('')
+                              setIsClientDropdownOpen(false)
+                            }}
+                          >
+                            <div className="font-medium text-neutral-900 dark:text-white">{c.name}</div>
+                            <div className="text-xs text-neutral-500">{c.phone || c.contact_info || 'Нет контактов'}</div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </>
                 )}
-              </select>
+              </div>
             )}
           </div>
 

@@ -20,6 +20,9 @@ class DayOffUpdate(BaseModel):
 class ManualClientCreate(BaseModel):
     name: str
     contact_info: Optional[str] = None
+    phone: Optional[str] = None
+    telegram: Optional[str] = None
+    instagram: Optional[str] = None
     notes: Optional[str] = None
     session_date: Optional[str] = None
 
@@ -76,6 +79,7 @@ async def delete_client(
     supabase: AsyncClient = Depends(get_async_supabase_client)
 ):
     try:
+        print(f"Deleting client {client_id} for master {current_user.user_id}")
         # Soft delete client
         await supabase.table("master_clients") \
             .update({"is_deleted": True}) \
@@ -85,16 +89,21 @@ async def delete_client(
         
         # Also soft delete their future sessions
         now_date = datetime.utcnow().date().isoformat()
-        await supabase.table("master_sessions") \
-            .update({"is_deleted": True}) \
-            .eq("client_id", client_id) \
-            .eq("master_id", current_user.user_id) \
-            .gte("session_date", now_date) \
-            .execute()
+        try:
+            await supabase.table("master_sessions") \
+                .update({"is_deleted": True}) \
+                .eq("client_id", client_id) \
+                .eq("master_id", current_user.user_id) \
+                .gte("session_date", now_date) \
+                .execute()
+        except Exception as session_err:
+            print(f"Warning: Failed to delete sessions for client {client_id}: {session_err}")
             
         return {"status": "success"}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Delete failed: {str(e)}")
 
 @router.post("/clients")
 async def create_manual_client(
@@ -108,9 +117,12 @@ async def create_manual_client(
             "master_id": current_user.user_id,
             "name": data.name,
             "contact_info": data.contact_info,
+            "phone": data.phone,
+            "telegram": data.telegram,
+            "instagram": data.instagram,
             "notes": data.notes,
             "source": "manual",
-            "kanban_status": "new" # kept for backward compatibility if any old code relies on it
+            "kanban_status": "new"
         }
         res = await supabase.table("master_clients").insert(client_data).execute()
         if not res.data:
@@ -128,6 +140,34 @@ async def create_manual_client(
         await supabase.table("master_sessions").insert(session_data).execute()
             
         return client
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.put("/clients/{client_id}")
+async def update_client(
+    client_id: str,
+    update_data: dict,
+    current_user: AuthUser = Depends(get_current_user),
+    supabase: AsyncClient = Depends(get_async_supabase_client)
+):
+    try:
+        # Validate that we only update allowed fields
+        allowed_fields = {"name", "contact_info", "phone", "telegram", "instagram", "notes", "kanban_status"}
+        filtered_data = {k: v for k, v in update_data.items() if k in allowed_fields}
+        
+        if not filtered_data:
+            return {"status": "success"}
+
+        res = await supabase.table("master_clients") \
+            .update(filtered_data) \
+            .eq("id", client_id) \
+            .eq("master_id", current_user.user_id) \
+            .execute()
+        
+        if not res.data:
+            raise HTTPException(status_code=404, detail="Client not found")
+            
+        return res.data[0]
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -213,6 +253,7 @@ async def delete_session(
     supabase: AsyncClient = Depends(get_async_supabase_client)
 ):
     try:
+        print(f"Deleting session {session_id} for master {current_user.user_id}")
         await supabase.table("master_sessions") \
             .update({"is_deleted": True}) \
             .eq("id", session_id) \
@@ -220,7 +261,9 @@ async def delete_session(
             .execute()
         return {"status": "success"}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Delete session failed: {str(e)}")
 
 @router.post("/sessions/{session_id}/waiver")
 async def sign_waiver(

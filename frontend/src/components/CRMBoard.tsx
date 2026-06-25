@@ -7,6 +7,7 @@ import { SessionModal } from '@/components/SessionModal'
 import { CalendarView } from '@/components/CalendarView'
 import { ClientsDatabase } from '@/components/ClientsDatabase'
 import { CompleteSessionModal } from '@/components/CompleteSessionModal'
+import { SessionsList } from '@/components/SessionsList'
 
 export interface CRMSession {
   id: string
@@ -39,7 +40,9 @@ const COLUMNS = [
 export function CRMBoard() {
   const [sessions, setSessions] = useState<CRMSession[]>([])
   const [loading, setLoading] = useState(true)
-  const [viewMode, setViewMode] = useState<'kanban' | 'calendar' | 'database'>('kanban')
+  
+  const [mainTab, setMainTab] = useState<'sessions' | 'clients'>('sessions')
+  const [sessionView, setSessionView] = useState<'kanban' | 'list' | 'calendar'>('kanban')
   
   // Modals
   const [isSessionModalOpen, setIsSessionModalOpen] = useState(false)
@@ -142,47 +145,67 @@ export function CRMBoard() {
 
   return (
     <div className="w-full pb-4 relative">
+      {/* Main Navigation Tabs */}
+      <div className="flex gap-4 mb-6 border-b border-neutral-200 dark:border-neutral-800 pb-2">
+        <button
+          onClick={() => setMainTab('sessions')}
+          className={`text-lg font-bold pb-2 border-b-2 transition-all ${mainTab === 'sessions' ? 'border-violet-500 text-violet-600 dark:text-violet-400' : 'border-transparent text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'}`}
+        >
+          Сеансы
+        </button>
+        <button
+          onClick={() => setMainTab('clients')}
+          className={`text-lg font-bold pb-2 border-b-2 transition-all ${mainTab === 'clients' ? 'border-violet-500 text-violet-600 dark:text-violet-400' : 'border-transparent text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'}`}
+        >
+          База клиентов
+        </button>
+      </div>
+
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="bg-neutral-200/50 dark:bg-neutral-800/50 p-1 rounded-xl flex items-center">
-            <button
-              onClick={() => setViewMode('kanban')}
-              className={`px-4 py-2 text-sm font-bold rounded-lg transition-all flex items-center gap-2 ${viewMode === 'kanban' ? 'bg-white dark:bg-neutral-900 shadow-sm text-neutral-900 dark:text-white' : 'text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'}`}
-            >
-              <LayoutGrid className="w-4 h-4"/>
-              Канбан
-            </button>
-            <button 
-              onClick={() => setViewMode('calendar')}
-              className={`px-4 py-2 text-sm font-bold rounded-lg transition-all flex items-center gap-2 ${viewMode === 'calendar' ? 'bg-white dark:bg-neutral-900 shadow-sm text-neutral-900 dark:text-white' : 'text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'}`}
-            >
-              <CalendarDays className="w-4 h-4"/>
-              Календарь
-            </button>
-            <button 
-              onClick={() => setViewMode('database')}
-              className={`px-4 py-2 text-sm font-bold rounded-lg transition-all flex items-center gap-2 ${viewMode === 'database' ? 'bg-white dark:bg-neutral-900 shadow-sm text-neutral-900 dark:text-white' : 'text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'}`}
-            >
-              <Users className="w-4 h-4"/>
-              База клиентов
-            </button>
-          </div>
-          
-          {viewMode === 'kanban' && (
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
-              <input 
-                type="text" 
-                placeholder="Поиск сеансов..." 
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl pl-9 pr-4 py-2 text-sm focus:ring-2 focus:ring-violet-500/20 outline-none w-64 transition-all"
-              />
-            </div>
+        <div className="flex flex-wrap items-center gap-4">
+          {mainTab === 'sessions' && (
+            <>
+              <div className="bg-neutral-200/50 dark:bg-neutral-800/50 p-1 rounded-xl flex items-center">
+                <button
+                  onClick={() => setSessionView('kanban')}
+                  className={`px-4 py-2 text-sm font-bold rounded-lg transition-all flex items-center gap-2 ${sessionView === 'kanban' ? 'bg-white dark:bg-neutral-900 shadow-sm text-neutral-900 dark:text-white' : 'text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'}`}
+                >
+                  <LayoutGrid className="w-4 h-4"/>
+                  Канбан
+                </button>
+                <button 
+                  onClick={() => setSessionView('list')}
+                  className={`px-4 py-2 text-sm font-bold rounded-lg transition-all flex items-center gap-2 ${sessionView === 'list' ? 'bg-white dark:bg-neutral-900 shadow-sm text-neutral-900 dark:text-white' : 'text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'}`}
+                >
+                  <Users className="w-4 h-4"/>
+                  Список
+                </button>
+                <button 
+                  onClick={() => setSessionView('calendar')}
+                  className={`px-4 py-2 text-sm font-bold rounded-lg transition-all flex items-center gap-2 ${sessionView === 'calendar' ? 'bg-white dark:bg-neutral-900 shadow-sm text-neutral-900 dark:text-white' : 'text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'}`}
+                >
+                  <CalendarDays className="w-4 h-4"/>
+                  Календарь
+                </button>
+              </div>
+              
+              {(sessionView === 'kanban' || sessionView === 'list') && (
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
+                  <input 
+                    type="text" 
+                    placeholder="Поиск сеансов..." 
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl pl-9 pr-4 py-2 text-sm focus:ring-2 focus:ring-violet-500/20 outline-none w-64 transition-all"
+                  />
+                </div>
+              )}
+            </>
           )}
         </div>
         
-        {viewMode !== 'calendar' && (
+        {mainTab === 'sessions' && sessionView !== 'calendar' && (
           <div className="flex items-center gap-3">
             <button
               onClick={() => setIsSessionModalOpen(true)}
@@ -195,10 +218,17 @@ export function CRMBoard() {
         )}
       </div>
 
-      {viewMode === 'calendar' ? (
-        <CalendarView sessions={sessions} onUpdate={fetchData} />
-      ) : viewMode === 'database' ? (
+      {mainTab === 'clients' ? (
         <ClientsDatabase />
+      ) : sessionView === 'calendar' ? (
+        <CalendarView sessions={sessions} onUpdate={fetchData} />
+      ) : sessionView === 'list' ? (
+        <SessionsList 
+          sessions={sessions} 
+          searchQuery={searchQuery} 
+          setSearchQuery={setSearchQuery} 
+          onStatusChange={updateSessionStatus} 
+        />
       ) : (
         <div className="relative">
           {/* Scroll zones for dragging */}

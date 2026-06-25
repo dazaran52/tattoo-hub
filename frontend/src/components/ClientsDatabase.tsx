@@ -8,6 +8,9 @@ export interface CRMClient {
   id: string
   name: string
   contact_info: string
+  phone?: string
+  telegram?: string
+  instagram?: string
   source: string
   notes: string
   lead_id?: string
@@ -108,7 +111,10 @@ export function ClientsDatabase() {
     const search = searchQuery.toLowerCase().replace(/\s/g, '')
     const name = c.name.toLowerCase().replace(/\s/g, '')
     const contact = (c.contact_info || '').toLowerCase().replace(/\s/g, '')
-    return name.includes(search) || contact.includes(search)
+    const phone = (c.phone || '').toLowerCase().replace(/\s/g, '')
+    const telegram = (c.telegram || '').toLowerCase().replace(/\s/g, '')
+    const instagram = (c.instagram || '').toLowerCase().replace(/\s/g, '')
+    return name.includes(search) || contact.includes(search) || phone.includes(search) || telegram.includes(search) || instagram.includes(search)
   })
 
   return (
@@ -162,7 +168,9 @@ export function ClientsDatabase() {
                             {client.name}
                             {isMarketplace && <span className="bg-cyan-100 dark:bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wider font-bold">Заявка</span>}
                           </div>
-                          <div className="text-sm text-neutral-500">{client.contact_info || 'Нет контактов'}</div>
+                          <div className="text-sm text-neutral-500">
+                            {client.phone || client.telegram || client.instagram || client.contact_info || 'Нет контактов'}
+                          </div>
                         </div>
                       </div>
                     </td>
