@@ -40,10 +40,23 @@ export function CRMBoard() {
   const [selectedClient, setSelectedClient] = useState<CRMClient | null>(null)
   const [chatsMap, setChatsMap] = useState<Record<string, string>>({})
   const [isManualModalOpen, setIsManualModalOpen] = useState(false)
+  const [manualModalDate, setManualModalDate] = useState<string | null>(null)
   const [viewMode, setViewMode] = useState<'kanban' | 'calendar'>('kanban')
 
   useEffect(() => {
     fetchData()
+    
+    const handleOpenManualModal = (e: any) => {
+      if (e.detail?.date) {
+        setManualModalDate(e.detail.date)
+      } else {
+        setManualModalDate(null)
+      }
+      setIsManualModalOpen(true)
+    }
+    
+    window.addEventListener('openManualClientModal', handleOpenManualModal)
+    return () => window.removeEventListener('openManualClientModal', handleOpenManualModal)
   }, [])
 
   const fetchData = async () => {
@@ -158,7 +171,10 @@ export function CRMBoard() {
         
         <div className="flex items-center gap-3">
           <button
-            onClick={() => setIsManualModalOpen(true)}
+            onClick={() => {
+              setManualModalDate(null)
+              setIsManualModalOpen(true)
+            }}
             className="flex items-center gap-2 px-5 py-2.5 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rounded-xl font-bold shadow-md hover:shadow-lg transition-all hover:-translate-y-0.5"
           >
             <UserPlus className="w-4 h-4" />
@@ -256,8 +272,12 @@ export function CRMBoard() {
       
       <ManualClientModal 
         isOpen={isManualModalOpen}
-        onClose={() => setIsManualModalOpen(false)}
+        onClose={() => {
+          setIsManualModalOpen(false)
+          setManualModalDate(null)
+        }}
         onSuccess={fetchData}
+        initialDate={manualModalDate}
       />
     </div>
   )

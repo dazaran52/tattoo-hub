@@ -7,9 +7,10 @@ interface ManualClientModalProps {
   isOpen: boolean
   onClose: () => void
   onSuccess: () => void
+  initialDate?: string | null
 }
 
-export function ManualClientModal({ isOpen, onClose, onSuccess }: ManualClientModalProps) {
+export function ManualClientModal({ isOpen, onClose, onSuccess, initialDate }: ManualClientModalProps) {
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
     client_name: '',
@@ -19,18 +20,14 @@ export function ManualClientModal({ isOpen, onClose, onSuccess }: ManualClientMo
   })
 
   useEffect(() => {
-    const handleOpen = (e: any) => {
-      if (e.detail?.date) {
-        setFormData(p => ({ ...p, session_date: e.detail.date }))
-        // Wait, modal needs to be open. We'll handle this in CRMBoard by setting state,
-        // or just let the caller open the modal and pass the date as prop?
-        // Since CRMBoard opens it, we don't need the event listener here, we just use props.
-        // But CRMBoard doesn't pass initialDate. Let's keep it simple: event listener opens it.
+    if (isOpen) {
+      if (initialDate) {
+        setFormData(p => ({ ...p, session_date: initialDate }))
+      } else {
+        setFormData({ client_name: '', contact: '', notes: '', session_date: '' })
       }
     }
-    window.addEventListener('openManualClientModal', handleOpen)
-    return () => window.removeEventListener('openManualClientModal', handleOpen)
-  }, [])
+  }, [isOpen, initialDate])
 
   if (!isOpen) return null
 
