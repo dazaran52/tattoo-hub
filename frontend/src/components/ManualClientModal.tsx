@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { X, User, Phone, Calendar as CalendarIcon, Type } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { X, User, Phone, Calendar as CalendarIcon, FileText } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import toast from 'react-hot-toast'
 
@@ -14,10 +14,23 @@ export function ManualClientModal({ isOpen, onClose, onSuccess }: ManualClientMo
   const [formData, setFormData] = useState({
     client_name: '',
     contact: '',
-    description: '',
-    session_date: '',
-    price_offer: ''
+    notes: '',
+    session_date: ''
   })
+
+  useEffect(() => {
+    const handleOpen = (e: any) => {
+      if (e.detail?.date) {
+        setFormData(p => ({ ...p, session_date: e.detail.date }))
+        // Wait, modal needs to be open. We'll handle this in CRMBoard by setting state,
+        // or just let the caller open the modal and pass the date as prop?
+        // Since CRMBoard opens it, we don't need the event listener here, we just use props.
+        // But CRMBoard doesn't pass initialDate. Let's keep it simple: event listener opens it.
+      }
+    }
+    window.addEventListener('openManualClientModal', handleOpen)
+    return () => window.removeEventListener('openManualClientModal', handleOpen)
+  }, [])
 
   if (!isOpen) return null
 
@@ -32,14 +45,12 @@ export function ManualClientModal({ isOpen, onClose, onSuccess }: ManualClientMo
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
       const payload = {
         name: formData.client_name,
-        contact: formData.contact,
-        description: formData.description,
-        session_date: formData.session_date ? new Date(formData.session_date).toISOString() : null,
-        assigned_master_id: session.user.id,
-        is_personal: true
+        contact_info: formData.contact,
+        notes: formData.notes,
+        session_date: formData.session_date || null
       }
 
-      const res = await fetch(`${apiUrl}/api/leads/client`, {
+      const res = await fetch(`${apiUrl}/api/crm/clients`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${session.access_token}`,
@@ -48,16 +59,12 @@ export function ManualClientModal({ isOpen, onClose, onSuccess }: ManualClientMo
         body: JSON.stringify(payload)
       })
 
-      if (!res.ok) throw new Error('Failed to create personal client')
-      
-      // Update the status to 'pending' or 'accepted' directly in the DB if needed
-      // By default the lead is created with status "new".
-      // We will rely on CRM board dropping to update status.
+      if (!res.ok) throw new Error('Failed to create client')
 
       toast.success('Клиент успешно добавлен!')
       onSuccess()
       onClose()
-      setFormData({ client_name: '', contact: '', description: '', session_date: '', price_offer: '' })
+      setFormData({ client_name: '', contact: '', notes: '', session_date: '' })
     } catch (err: any) {
       toast.error(err.message || 'Ошибка при добавлении клиента')
     } finally {
@@ -96,7 +103,6 @@ export function ManualClientModal({ isOpen, onClose, onSuccess }: ManualClientMo
             <div className="relative">
               <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
               <input
-                required
                 type="text"
                 value={formData.contact}
                 onChange={e => setFormData(p => ({ ...p, contact: e.target.value }))}
@@ -107,23 +113,25 @@ export function ManualClientModal({ isOpen, onClose, onSuccess }: ManualClientMo
           </div>
           
           <div>
-            <label className="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-1">Идея татуировки</label>
-            <textarea
-              required
-              rows={3}
-              value={formData.description}
-              onChange={e => setFormData(p => ({ ...p, description: e.target.value }))}
-              className="w-full bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-xl px-4 py-3 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500"
-              placeholder="Что будем бить?"
-            />
+            <label className="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-1">Заметки / Идея</label>
+            <div className="relative">
+              <FileText className="absolute left-3 top-4 w-5 h-5 text-neutral-400" />
+              <textarea
+                rows={3}
+                value={formData.notes}
+                onChange={e => setFormData(p => ({ ...p, notes: e.target.value }))}
+                className="w-full bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-xl pl-10 px-4 py-3 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500"
+                placeholder="Что будем бить?"
+              />
+            </div>
           </div>
           
           <div>
-            <label className="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-1">Дата и время сеанса (необязательно)</label>
+            <label className="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-1">Дата сеанса (необязательно)</label>
             <div className="relative">
               <CalendarIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
               <input
-                type="datetime-local"
+                type="date"
                 value={formData.session_date}
                 onChange={e => setFormData(p => ({ ...p, session_date: e.target.value }))}
                 className="w-full bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-xl pl-10 pr-4 py-3 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500"

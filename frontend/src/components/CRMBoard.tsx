@@ -1,34 +1,45 @@
 import { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { toast } from 'react-hot-toast'
 import { Clock, CheckCircle, Calendar, Flag, MessageCircle, UserPlus, LayoutGrid, CalendarDays } from 'lucide-react'
-import { ChatModal } from '@/components/ChatModal'
 import { supabase } from '@/lib/supabase'
 import { ManualClientModal } from '@/components/ManualClientModal'
 import { CalendarView } from '@/components/CalendarView'
-import { DayOffModal } from '@/components/DayOffModal'
+import { ClientDetailsModal } from '@/components/ClientDetailsModal'
 
-interface CRMLead {
-  lead_id: string
+export interface CRMSession {
+  id: string
+  session_date: string
+  start_time?: string
+  end_time?: string
+  price?: number
   status: string
-  price_offer: number
-  proposed_dates: string
-  leads: {
+}
+
+export interface CRMClient {
+  id: string
+  name: string
+  contact_info: string
+  source: string
+  kanban_status: string
+  notes: string
+  lead_id?: string
+  created_at: string
+  leads?: {
     title: string
     description: string
     image_urls: string[]
     client_priority: string
   }
+  master_sessions?: CRMSession[]
 }
 
 export function CRMBoard() {
-  const [items, setItems] = useState<CRMLead[]>([])
+  const [items, setItems] = useState<CRMClient[]>([])
   const [loading, setLoading] = useState(true)
-  const [selectedChatId, setSelectedChatId] = useState<string | null>(null)
-  const [selectedChatTitle, setSelectedChatTitle] = useState<string>('')
+  const [selectedClient, setSelectedClient] = useState<CRMClient | null>(null)
   const [chatsMap, setChatsMap] = useState<Record<string, string>>({})
   const [isManualModalOpen, setIsManualModalOpen] = useState(false)
-  const [isDayOffModalOpen, setIsDayOffModalOpen] = useState(false)
   const [viewMode, setViewMode] = useState<'kanban' | 'calendar'>('kanban')
 
   useEffect(() => {
@@ -41,51 +52,17 @@ export function CRMBoard() {
       const { data: { session } } = await supabase.auth.getSession()
       const token = session?.access_token
       
-      // Get proposals
-      const res = await fetch(`${apiUrl}/api/profile/proposals`, {
+      const res = await fetch(`${apiUrl}/api/crm/clients`, {
         headers: { 'Authorization': `Bearer ${token}` }
       })
       
-      // Get personal leads
-      const personalRes = await fetch(`${apiUrl}/api/leads/personal`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      })
-      
-      // Get chats to show chat button
       const chatsRes = await fetch(`${apiUrl}/api/chat/my`, {
         headers: { 'Authorization': `Bearer ${token}` }
       })
-
-      let allItems: CRMLead[] = []
-
+      
       if (res.ok) {
-        allItems = [...allItems, ...(await res.json())]
+        setItems(await res.json())
       }
-      
-      if (personalRes.ok) {
-        const personalLeads = await personalRes.json()
-        const mappedPersonal = personalLeads.map((l: any) => ({
-          lead_id: l.id,
-          status: l.my_proposal_status || 'new',
-          price_offer: l.price_credits || 0,
-          proposed_dates: l.session_date ? new Date(l.session_date).toISOString() : '',
-          leads: {
-            title: l.client_contact ? `[Свой] ${l.title}` : l.title,
-            description: l.description,
-            image_urls: l.image_urls || [],
-            client_priority: 'personal'
-          }
-        }))
-        // Ensure no duplicates if backend somehow mixed them
-        const existingIds = new Set(allItems.map(i => i.lead_id))
-        for (const item of mappedPersonal) {
-          if (!existingIds.has(item.lead_id)) {
-            allItems.push(item)
-          }
-        }
-      }
-      
-      setItems(allItems)
       
       if (chatsRes.ok) {
         const chats = await chatsRes.json()
@@ -102,12 +79,12 @@ export function CRMBoard() {
     }
   }
 
-  const updateStatus = async (leadId: string, newStatus: string) => {
+  const updateStatus = async (clientId: string, newStatus: string) => {
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
       const { data: { session } } = await supabase.auth.getSession()
       const token = session?.access_token
-      const res = await fetch(`${apiUrl}/api/leads/${leadId}/proposals/status`, {
+      const res = await fetch(`${apiUrl}/api/crm/clients/${clientId}/status`, {
         method: 'PUT',
         headers: { 
           'Authorization': `Bearer ${token}`,
@@ -118,7 +95,7 @@ export function CRMBoard() {
       if (!res.ok) throw new Error('Failed to update status')
       
       setItems(prev => prev.map(item => 
-        item.lead_id === leadId ? { ...item, status: newStatus } : item
+        item.id === clientId ? { ...item, kanban_status: newStatus } : item
       ))
       toast.success('Статус обновлен')
     } catch (err) {
@@ -127,17 +104,15 @@ export function CRMBoard() {
   }
 
   const columns = [
-    { id: 'new', title: 'Новые (Мои)', icon: <UserPlus className="w-4 h-4" />, color: 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border-emerald-200' },
-    { id: 'pending', title: 'Ожидание (Отправлено)', icon: <Clock className="w-4 h-4" />, color: 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border-amber-200' },
-    { id: 'accepted', title: 'В обсуждении (Победа)', icon: <MessageCircle className="w-4 h-4" />, color: 'bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-400 border-violet-200' },
-    { id: 'booked', title: 'Забронировано', icon: <Calendar className="w-4 h-4" />, color: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border-blue-200' },
+    { id: 'new', title: 'Новые', icon: <UserPlus className="w-4 h-4" />, color: 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border-emerald-200' },
+    { id: 'discussing', title: 'В диалоге', icon: <MessageCircle className="w-4 h-4" />, color: 'bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-400 border-violet-200' },
+    { id: 'booked', title: 'Записан', icon: <Calendar className="w-4 h-4" />, color: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border-blue-200' },
     { id: 'completed', title: 'Завершено', icon: <CheckCircle className="w-4 h-4" />, color: 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-green-200' },
-    { id: 'rejected', title: 'Отказ', icon: <Flag className="w-4 h-4" />, color: 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border-red-200' },
+    { id: 'cancelled', title: 'Отмена / Отказ', icon: <Flag className="w-4 h-4" />, color: 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border-red-200' },
   ]
 
-  // HTML5 Drag and Drop handlers
-  const handleDragStart = (e: React.DragEvent, leadId: string) => {
-    e.dataTransfer.setData('leadId', leadId)
+  const handleDragStart = (e: React.DragEvent, clientId: string) => {
+    e.dataTransfer.setData('clientId', clientId)
   }
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -146,10 +121,10 @@ export function CRMBoard() {
 
   const handleDrop = (e: React.DragEvent, colId: string) => {
     e.preventDefault()
-    const leadId = e.dataTransfer.getData('leadId')
-    const item = items.find(i => i.lead_id === leadId)
-    if (item && item.status !== colId) {
-      updateStatus(leadId, colId)
+    const clientId = e.dataTransfer.getData('clientId')
+    const item = items.find(i => i.id === clientId)
+    if (item && item.kanban_status !== colId) {
+      updateStatus(clientId, colId)
     }
   }
 
@@ -183,14 +158,6 @@ export function CRMBoard() {
         
         <div className="flex items-center gap-3">
           <button
-            onClick={() => setIsDayOffModalOpen(true)}
-            className="flex items-center gap-2 px-5 py-2.5 bg-red-50 dark:bg-red-900/10 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900/30 rounded-xl font-bold shadow-sm hover:bg-red-100 dark:hover:bg-red-900/30 transition-all hover:-translate-y-0.5"
-          >
-            <Calendar className="w-4 h-4" />
-            Выходной
-          </button>
-          
-          <button
             onClick={() => setIsManualModalOpen(true)}
             className="flex items-center gap-2 px-5 py-2.5 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rounded-xl font-bold shadow-md hover:shadow-lg transition-all hover:-translate-y-0.5"
           >
@@ -204,7 +171,7 @@ export function CRMBoard() {
         <div className="overflow-x-auto">
           <div className="flex gap-4 min-w-[1200px]">
             {columns.map(col => {
-          const colItems = items.filter(i => i.status === col.id)
+          const colItems = items.filter(i => i.kanban_status === col.id)
           
           return (
             <div 
@@ -231,40 +198,36 @@ export function CRMBoard() {
                 ) : (
                   colItems.map(item => (
                     <motion.div
-                      key={item.lead_id}
+                      key={item.id}
                       draggable
-                      onDragStart={(e) => handleDragStart(e as any, item.lead_id)}
+                      onDragStart={(e) => handleDragStart(e as any, item.id)}
+                      onClick={() => setSelectedClient(item)}
                       className="bg-white dark:bg-neutral-800 p-4 rounded-2xl shadow-sm border border-neutral-200 dark:border-white/5 cursor-grab active:cursor-grabbing hover:shadow-md transition-shadow"
                     >
                       <div className="flex gap-3 mb-3">
-                        {item.leads.image_urls && item.leads.image_urls.length > 0 ? (
+                        {item.leads?.image_urls && item.leads.image_urls.length > 0 ? (
                           <img src={item.leads.image_urls[0]} alt="" className="w-12 h-12 rounded-xl object-cover" />
                         ) : (
-                          <div className="w-12 h-12 bg-neutral-100 dark:bg-neutral-700 rounded-xl"></div>
+                          <div className="w-12 h-12 flex items-center justify-center bg-neutral-100 dark:bg-neutral-700 text-neutral-400 rounded-xl">
+                            <UserPlus className="w-5 h-5" />
+                          </div>
                         )}
                         <div className="flex-1 min-w-0">
-                          <h4 className="font-bold text-neutral-900 dark:text-white text-sm truncate">{item.leads.title}</h4>
-                          <p className="text-xs text-neutral-500 line-clamp-1">{item.leads.description}</p>
+                          <h4 className="font-bold text-neutral-900 dark:text-white text-sm truncate">
+                            {item.name}
+                          </h4>
+                          <p className="text-xs text-neutral-500 line-clamp-1">
+                            {item.leads?.title || item.source}
+                          </p>
                         </div>
                       </div>
                       
                       <div className="flex items-center justify-between mt-3 pt-3 border-t border-neutral-100 dark:border-white/5">
                         <div className="text-xs font-bold text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-900/20 px-2 py-1 rounded-lg">
-                          Оффер: {item.price_offer}
+                          {item.master_sessions && item.master_sessions.length > 0 
+                            ? `Сеансов: ${item.master_sessions.length}` 
+                            : 'Нет сеансов'}
                         </div>
-                        
-                        {chatsMap[item.lead_id] && (
-                          <button 
-                            onClick={() => {
-                              setSelectedChatId(chatsMap[item.lead_id])
-                              setSelectedChatTitle(item.leads.title)
-                            }}
-                            className="p-1.5 bg-neutral-100 dark:bg-neutral-700 hover:bg-neutral-200 dark:hover:bg-neutral-600 rounded-lg transition-colors text-neutral-600 dark:text-neutral-300"
-                            title="Открыть чат"
-                          >
-                            <MessageCircle className="w-4 h-4" />
-                          </button>
-                        )}
                       </div>
                     </motion.div>
                   ))
@@ -276,25 +239,24 @@ export function CRMBoard() {
           </div>
         </div>
       ) : (
-        <CalendarView items={items} />
+        <CalendarView items={items} onDateClick={(date) => {
+          // Pass date to modal
+        }} />
       )}
 
-      <ChatModal
-        isOpen={!!selectedChatId}
-        onClose={() => setSelectedChatId(null)}
-        chatId={selectedChatId}
-        leadTitle={selectedChatTitle}
-      />
+      {selectedClient && (
+        <ClientDetailsModal
+          isOpen={!!selectedClient}
+          onClose={() => setSelectedClient(null)}
+          client={selectedClient}
+          onUpdate={fetchData}
+          chatId={selectedClient.lead_id ? chatsMap[selectedClient.lead_id] : null}
+        />
+      )}
       
       <ManualClientModal 
         isOpen={isManualModalOpen}
         onClose={() => setIsManualModalOpen(false)}
-        onSuccess={fetchData}
-      />
-
-      <DayOffModal 
-        isOpen={isDayOffModalOpen}
-        onClose={() => setIsDayOffModalOpen(false)}
         onSuccess={fetchData}
       />
     </div>
