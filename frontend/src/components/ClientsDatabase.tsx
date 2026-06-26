@@ -48,8 +48,9 @@ export function ClientsDatabase() {
   const fetchClients = async () => {
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
-      const { data: { session, user } } = await supabase.auth.getSession()
+      const { data: { session } } = await supabase.auth.getSession()
       const token = session?.access_token
+      const user = session?.user
       
       let clientsData = null;
       try {
