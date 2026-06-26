@@ -31,6 +31,7 @@ class Settings(BaseSettings):
     APP_PORT: int = 8000
     APP_ENV: str = "development"
     DONATELLO_X_KEY: str = "TATTOO_HUB_SECRET_123"
+    LEMON_SQUEEZY_WEBHOOK_SECRET: str | None = None
     
     # Conversational AI
     GEMINI_API_KEY: str | None = None
