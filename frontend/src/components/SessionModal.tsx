@@ -171,44 +171,27 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
         reference_images: imageUrls
       }
 
-      let success = false;
-      try {
-        const sessionRes = await fetch(url, {
-          method,
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(bodyPayload)
-        })
-        if (sessionRes.ok) success = true;
-      } catch (err) {
-        console.warn("API session save failed, falling back to Supabase", err)
-      }
-
-      if (!success) {
-        if (editSession) {
-          const { error } = await supabase.from('master_sessions').update(bodyPayload).eq('id', editSession.id)
-          if (error) throw error
-        } else {
-          // New session fallback
-          const { data: { user } } = await supabase.auth.getUser()
-          if (!user) throw new Error('Not authenticated')
-          
-          const session_data = {
-              master_id: user.id,
-              client_id: bodyPayload.client_id,
-              session_date: bodyPayload.session_date,
-              start_time: bodyPayload.start_time,
-              end_time: bodyPayload.end_time,
-              price: bodyPayload.price,
-              style: bodyPayload.style,
-              reference_images: bodyPayload.reference_images,
-              status: "new"
-          }
-          const { error } = await supabase.from('master_sessions').insert(session_data)
-          if (error) throw error
+      if (editSession) {
+        const { error } = await supabase.from('master_sessions').update(bodyPayload).eq('id', editSession.id)
+        if (error) throw error
+      } else {
+        // New session
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) throw new Error('Not authenticated')
+        
+        const session_data = {
+            master_id: user.id,
+            client_id: bodyPayload.client_id,
+            session_date: bodyPayload.session_date,
+            start_time: bodyPayload.start_time,
+            end_time: bodyPayload.end_time,
+            price: bodyPayload.price,
+            style: bodyPayload.style,
+            reference_images: bodyPayload.reference_images,
+            status: "new"
         }
+        const { error } = await supabase.from('master_sessions').insert(session_data)
+        if (error) throw error
       }
 
       toast.success(editSession ? 'Сеанс обновлен' : 'Сеанс успешно создан')

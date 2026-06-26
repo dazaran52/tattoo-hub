@@ -48,19 +48,44 @@ export function ClientsDatabase() {
   const fetchClients = async () => {
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
-      const { data: { session } } = await supabase.auth.getSession()
+      const { data: { session, user } } = await supabase.auth.getSession()
       const token = session?.access_token
       
-      const res = await fetch(`${apiUrl}/api/crm/clients`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      })
+      let clientsData = null;
+      try {
+        const res = await fetch(`${apiUrl}/api/crm/clients`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        })
+        if (res.ok) {
+           clientsData = await res.json()
+        }
+      } catch (err) {}
+
+      if (!clientsData && user) {
+        // Fallback to Supabase
+        const { data } = await supabase.from('master_clients')
+          .select('*, leads(title, description, image_urls, client_priority), master_sessions(id, session_date, start_time, end_time, status, price, style, is_deleted)')
+          .eq('master_id', user.id)
+          .eq('is_deleted', false)
+          .order('created_at', { ascending: false })
+        
+        clientsData = data || []
+      } else if (clientsData) {
+        // Even if API succeeds, it might be the old backend returning deleted items!
+        clientsData = clientsData.filter((c: any) => !c.is_deleted)
+      }
       
       const chatsRes = await fetch(`${apiUrl}/api/chat/my`, {
         headers: { 'Authorization': `Bearer ${token}` }
       })
       
-      if (res.ok) {
-        setClients(await res.json())
+      if (clientsData) {
+        // Filter out deleted sessions inside clients
+        const processedClients = clientsData.map((c: any) => ({
+          ...c,
+          master_sessions: c.master_sessions ? c.master_sessions.filter((s: any) => !s.is_deleted) : []
+        }))
+        setClients(processedClients)
       }
       
       if (chatsRes.ok) {
@@ -87,37 +112,19 @@ export function ClientsDatabase() {
       const token = session.session?.access_token
       if (!token) throw new Error('Not authenticated')
 
-      // 1. Try to delete via API first
-      let success = false;
-      try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/crm/clients/${id}`, {
-          method: 'DELETE',
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        })
-        if (res.ok) {
-          success = true;
-        }
-      } catch (err) {
-        console.warn("API delete failed, falling back to direct Supabase update", err);
-      }
+      // Delete directly via Supabase
+      // Soft delete the client
+      const { error: clientErr } = await supabase
+        .from('master_clients')
+        .update({ is_deleted: true })
+        .eq('id', id)
+      if (clientErr) throw clientErr
 
-      // 2. Fallback to direct Supabase update if backend is outdated
-      if (!success) {
-        // Soft delete the client
-        const { error: clientErr } = await supabase
-          .from('master_clients')
-          .update({ is_deleted: true })
-          .eq('id', id)
-        if (clientErr) throw clientErr
-
-        // Soft delete all associated sessions
-        await supabase
-          .from('master_sessions')
-          .update({ is_deleted: true })
-          .eq('client_id', id)
-      }
+      // Soft delete all associated sessions
+      await supabase
+        .from('master_sessions')
+        .update({ is_deleted: true })
+        .eq('client_id', id)
 
       toast.success('Клиент удален')
       fetchClients()
