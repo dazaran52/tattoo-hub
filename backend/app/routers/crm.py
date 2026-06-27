@@ -112,6 +112,24 @@ async def create_manual_client(
     supabase: AsyncClient = Depends(get_async_supabase_client)
 ):
     try:
+        # Check for existing
+        or_conditions = []
+        if data.phone and data.phone.strip():
+            or_conditions.append(f"phone.eq.{data.phone.strip()}")
+        if data.telegram and data.telegram.strip():
+            or_conditions.append(f"telegram.eq.{data.telegram.strip()}")
+        if data.instagram and data.instagram.strip():
+            or_conditions.append(f"instagram.eq.{data.instagram.strip()}")
+            
+        if or_conditions:
+            query = supabase.table("master_clients").select("id, name") \
+                .eq("master_id", current_user.user_id) \
+                .eq("is_deleted", False) \
+                .or_(",".join(or_conditions))
+            existing = await query.execute()
+            if existing.data:
+                raise HTTPException(status_code=409, detail={"error": "client_exists", "client": existing.data[0]})
+
         # 1. Create client
         client_data = {
             "master_id": current_user.user_id,

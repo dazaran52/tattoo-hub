@@ -7,9 +7,10 @@ interface AddClientModalProps {
   isOpen: boolean
   onClose: () => void
   onSuccess: () => void
+  onDuplicateFound?: (clientId: string) => void
 }
 
-export function AddClientModal({ isOpen, onClose, onSuccess }: AddClientModalProps) {
+export function AddClientModal({ isOpen, onClose, onSuccess, onDuplicateFound }: AddClientModalProps) {
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
     name: '',
@@ -38,7 +39,32 @@ export function AddClientModal({ isOpen, onClose, onSuccess }: AddClientModalPro
         body: JSON.stringify(formData)
       })
       
-      if (!res.ok) throw new Error('Ошибка при создании клиента')
+      if (!res.ok) {
+        if (res.status === 409) {
+          const errData = await res.json().catch(() => null)
+          if (errData?.detail?.error === 'client_exists') {
+            toast((t) => (
+              <div className="flex flex-col gap-2">
+                <span className="font-medium text-sm">
+                  Клиент с такими контактами уже существует: <b>{errData.detail.client.name}</b>
+                </span>
+                <button 
+                  onClick={() => {
+                    toast.dismiss(t.id);
+                    if (onDuplicateFound) onDuplicateFound(errData.detail.client.id);
+                  }}
+                  className="bg-violet-600 hover:bg-violet-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold w-fit transition-colors"
+                >
+                  Перейти к профилю
+                </button>
+              </div>
+            ), { duration: 5000 })
+            setLoading(false)
+            return
+          }
+        }
+        throw new Error('Ошибка при создании клиента')
+      }
       
       toast.success('Клиент успешно добавлен')
       onSuccess()

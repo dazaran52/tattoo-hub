@@ -288,6 +288,13 @@ export function ClientsDatabase() {
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         onSuccess={fetchClients}
+        onDuplicateFound={(clientId) => {
+          setIsAddModalOpen(false)
+          const existing = clients.find(c => c.id === clientId)
+          if (existing) {
+            setSelectedClient(existing)
+          }
+        }}
       />
     </div>
   )
