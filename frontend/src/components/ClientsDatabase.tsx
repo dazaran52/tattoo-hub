@@ -12,6 +12,7 @@ export interface CRMClient {
   phone?: string
   telegram?: string
   instagram?: string
+  email?: string
   source: string
   notes: string
   lead_id?: string

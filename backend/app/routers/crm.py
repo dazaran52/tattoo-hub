@@ -23,6 +23,7 @@ class ManualClientCreate(BaseModel):
     phone: Optional[str] = None
     telegram: Optional[str] = None
     instagram: Optional[str] = None
+    email: Optional[str] = None
     notes: Optional[str] = None
     session_date: Optional[str] = None
 
@@ -120,6 +121,8 @@ async def create_manual_client(
             or_conditions.append(f"telegram.eq.{data.telegram.strip()}")
         if data.instagram and data.instagram.strip():
             or_conditions.append(f"instagram.eq.{data.instagram.strip()}")
+        if data.email and data.email.strip():
+            or_conditions.append(f"email.eq.{data.email.strip()}")
             
         if or_conditions:
             query = supabase.table("master_clients").select("id, name") \
@@ -138,6 +141,7 @@ async def create_manual_client(
             "phone": data.phone,
             "telegram": data.telegram,
             "instagram": data.instagram,
+            "email": data.email,
             "notes": data.notes,
             "source": "manual",
             "kanban_status": "new"
@@ -161,7 +165,7 @@ async def update_client(
 ):
     try:
         # Validate that we only update allowed fields
-        allowed_fields = {"name", "contact_info", "phone", "telegram", "instagram", "notes", "kanban_status"}
+        allowed_fields = {"name", "contact_info", "phone", "telegram", "instagram", "email", "notes", "kanban_status"}
         filtered_data = {k: v for k, v in update_data.items() if k in allowed_fields}
         
         if not filtered_data:

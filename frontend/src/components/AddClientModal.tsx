@@ -17,6 +17,7 @@ export function AddClientModal({ isOpen, onClose, onSuccess, onDuplicateFound }:
     phone: '',
     telegram: '',
     instagram: '',
+    email: '',
     notes: ''
   })
 
@@ -109,6 +110,17 @@ export function AddClientModal({ isOpen, onClose, onSuccess, onDuplicateFound }:
               value={formData.phone}
               onChange={(e) => setFormData(p => ({ ...p, phone: e.target.value }))}
               placeholder="+420..."
+              className="w-full bg-neutral-100 dark:bg-neutral-800 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-violet-500/20 outline-none"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-neutral-500 dark:text-neutral-400 mb-1.5 uppercase tracking-wider">Email</label>
+            <input
+              type="email"
+              value={formData.email}
+              onChange={(e) => setFormData(p => ({ ...p, email: e.target.value }))}
+              placeholder="example@mail.com"
               className="w-full bg-neutral-100 dark:bg-neutral-800 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-violet-500/20 outline-none"
             />
           </div>

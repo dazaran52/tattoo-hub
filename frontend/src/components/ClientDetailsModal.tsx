@@ -106,9 +106,19 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId }
             {activeTab === 'info' && (
               <div className="space-y-6">
                 <div className="flex justify-between items-start">
-                  <div>
+                  <div className="flex-1 mr-4">
                     <label className="text-xs font-bold text-neutral-400 uppercase tracking-wider">Имя клиента</label>
-                    <div className="mt-1 text-lg font-bold text-neutral-900 dark:text-white">{client.name}</div>
+                    <input 
+                      defaultValue={client.name}
+                      onBlur={async (e) => {
+                         if (e.target.value.trim() && e.target.value !== client.name) {
+                           await supabase.from('master_clients').update({name: e.target.value.trim()}).eq('id', client.id)
+                           onUpdate()
+                           toast.success('Имя сохранено')
+                         }
+                      }}
+                      className="mt-1 block text-lg font-bold text-neutral-900 dark:text-white bg-transparent border-b-2 border-transparent hover:border-neutral-200 dark:hover:border-neutral-700 focus:border-violet-500 outline-none w-full transition-colors pb-1"
+                    />
                   </div>
                   <button 
                     onClick={handleDeleteClient}
@@ -120,8 +130,64 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId }
                 
                 <div>
                   <label className="text-xs font-bold text-neutral-400 uppercase tracking-wider flex items-center gap-1"><Phone className="w-3 h-3"/> Контакты</label>
-                  <div className="mt-1 text-neutral-700 dark:text-neutral-300">
-                    {[client.contact_info, client.phone, client.telegram, client.instagram].filter(Boolean).join(', ') || 'Не указаны'}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
+                    <div>
+                      <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider ml-1">Телефон</span>
+                      <input 
+                        defaultValue={client.phone || ''}
+                        placeholder="+420..."
+                        onBlur={async (e) => {
+                           if (e.target.value !== (client.phone || '')) {
+                             await supabase.from('master_clients').update({phone: e.target.value}).eq('id', client.id)
+                             onUpdate()
+                           }
+                        }}
+                        className="w-full bg-neutral-50 dark:bg-neutral-800 border-none rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-violet-500/20 outline-none mt-1"
+                      />
+                    </div>
+                    <div>
+                      <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider ml-1">Telegram</span>
+                      <input 
+                        defaultValue={client.telegram || ''}
+                        placeholder="@username"
+                        onBlur={async (e) => {
+                           if (e.target.value !== (client.telegram || '')) {
+                             await supabase.from('master_clients').update({telegram: e.target.value}).eq('id', client.id)
+                             onUpdate()
+                           }
+                        }}
+                        className="w-full bg-neutral-50 dark:bg-neutral-800 border-none rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-violet-500/20 outline-none mt-1"
+                      />
+                    </div>
+                    <div>
+                      <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider ml-1">Instagram</span>
+                      <input 
+                        defaultValue={client.instagram || ''}
+                        placeholder="@username"
+                        onBlur={async (e) => {
+                           if (e.target.value !== (client.instagram || '')) {
+                             await supabase.from('master_clients').update({instagram: e.target.value}).eq('id', client.id)
+                             onUpdate()
+                           }
+                        }}
+                        className="w-full bg-neutral-50 dark:bg-neutral-800 border-none rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-violet-500/20 outline-none mt-1"
+                      />
+                    </div>
+                    <div>
+                      <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider ml-1">Email</span>
+                      <input 
+                        defaultValue={client.email || ''}
+                        type="email"
+                        placeholder="example@mail.com"
+                        onBlur={async (e) => {
+                           if (e.target.value !== (client.email || '')) {
+                             await supabase.from('master_clients').update({email: e.target.value}).eq('id', client.id)
+                             onUpdate()
+                           }
+                        }}
+                        className="w-full bg-neutral-50 dark:bg-neutral-800 border-none rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-violet-500/20 outline-none mt-1"
+                      />
+                    </div>
                   </div>
                 </div>
 
