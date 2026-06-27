@@ -43,7 +43,12 @@ export function CookieBanner() {
                 <Cookie className="w-4 h-4" />
               </div>
               <p className="text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed">
-                Мы используем файлы cookie для улучшения работы сайта. Продолжая пользоваться сайтом, вы соглашаетесь с нашей <a href="#" className="text-cyan-600 dark:text-cyan-400 hover:underline">Политикой конфиденциальности</a>.
+                {useLanguage().lang === 'ru' 
+                  ? <>Мы используем файлы cookie для улучшения работы сайта. Продолжая пользоваться сайтом, вы соглашаетесь с нашей <a href="/privacy" className="text-cyan-600 dark:text-cyan-400 hover:underline">Политикой конфиденциальности</a>.</>
+                  : useLanguage().lang === 'cs'
+                  ? <>Používáme soubory cookie ke zlepšení funkčnosti webu. Pokračováním v používání webu souhlasíte s naší <a href="/privacy" className="text-cyan-600 dark:text-cyan-400 hover:underline">Zásadou ochrany osobních údajů</a>.</>
+                  : <>We use cookies to improve website functionality. By continuing to use the site, you agree to our <a href="/privacy" className="text-cyan-600 dark:text-cyan-400 hover:underline">Privacy Policy</a>.</>
+                }
               </p>
             </div>
 

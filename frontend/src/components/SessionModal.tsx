@@ -127,6 +127,7 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
             },
             body: JSON.stringify({
               name: formData.client_name,
+              contact_info: formData.phone || formData.telegram || formData.instagram || '',
               phone: formData.phone,
               telegram: formData.telegram,
               instagram: formData.instagram,

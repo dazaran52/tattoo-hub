@@ -3,11 +3,13 @@
 import { useState, useEffect } from 'react'
 import { usePathname } from 'next/navigation'
 import { X, Download } from 'lucide-react'
+import { useLanguage } from '@/i18n/LanguageContext'
 
 export function InstallPrompt() {
   const pathname = usePathname()
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null)
   const [showPrompt, setShowPrompt] = useState(false)
+  const { t, lang } = useLanguage()
 
   useEffect(() => {
     const handler = (e: Event) => {
@@ -54,15 +56,19 @@ export function InstallPrompt() {
   if (!showPrompt) return null
 
   return (
-    <div className="fixed bottom-28 md:bottom-6 left-4 right-4 md:left-auto md:right-6 md:w-[400px] z-[9999] animate-fade-in-up">
+    <div className="fixed top-4 left-4 right-4 md:top-auto md:bottom-6 md:left-auto md:right-6 md:w-[400px] z-[9999] animate-fade-in-up">
       <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-2xl rounded-2xl p-4 flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 bg-indigo-100 dark:bg-indigo-900/30 rounded-xl flex items-center justify-center flex-shrink-0">
             <Download className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
           </div>
           <div>
-            <h3 className="text-sm font-bold text-neutral-900 dark:text-white">Установить приложение</h3>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400">Для быстрого доступа и уведомлений</p>
+            <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
+              {lang === 'ru' ? 'Установить приложение' : lang === 'cs' ? 'Nainstalovat aplikaci' : 'Install App'}
+            </h3>
+            <p className="text-xs text-neutral-500 dark:text-neutral-400">
+              {lang === 'ru' ? 'Для быстрого доступа и уведомлений' : lang === 'cs' ? 'Pro rychlý přístup a upozornění' : 'For quick access and notifications'}
+            </p>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -70,7 +76,7 @@ export function InstallPrompt() {
             onClick={handleInstallClick}
             className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-bold rounded-lg transition-colors whitespace-nowrap"
           >
-            Установить
+            {lang === 'ru' ? 'Установить' : lang === 'cs' ? 'Instalovat' : 'Install'}
           </button>
           <button
             onClick={() => setShowPrompt(false)}

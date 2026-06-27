@@ -110,6 +110,7 @@ function LoginContent() {
           options: {
             data: {
               role: role,
+              username: email.split('@')[0],
               referred_by: referredBy || undefined
             }
           }
@@ -358,7 +359,7 @@ function LoginContent() {
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         className={`block w-full pl-12 pr-4 py-4 bg-white/40 dark:bg-neutral-950/40 border border-neutral-200 dark:border-white/10 rounded-2xl text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-offset-0 transition-all backdrop-blur-md shadow-inner ${role === 'master' ? 'focus:border-orange-500 focus:ring-orange-500/20 focus:bg-orange-950/10' : 'focus:border-indigo-500 focus:ring-indigo-500/20 focus:bg-indigo-950/10'}`}
-                        placeholder="E-mail / Username"
+                        placeholder="E-mail"
                       />
                     </div>
                   </motion.div>
@@ -378,7 +379,7 @@ function LoginContent() {
                     </div>
                   </motion.div>
 
-                  {isSignUp && (
+                  {isSignUp && role === 'master' && (
                     <motion.div 
                       layout
                       initial={{ opacity: 0, height: 0, y: -10 }}

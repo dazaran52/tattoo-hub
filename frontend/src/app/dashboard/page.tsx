@@ -67,17 +67,24 @@ export default function DashboardPage() {
       }
 
       // Fetch profile from backend API
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/profile`,
-        {
-          headers: {
-            'Authorization': `Bearer ${session.access_token}`,
-            'Content-Type': 'application/json',
-          },
-        }
-      )
+      let response;
+      let retries = 3;
+      while (retries > 0) {
+        response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/profile`,
+          {
+            headers: {
+              'Authorization': `Bearer ${session.access_token}`,
+              'Content-Type': 'application/json',
+            },
+          }
+        );
+        if (response.ok) break;
+        await new Promise(r => setTimeout(r, 1000));
+        retries--;
+      }
 
-      if (!response.ok) {
+      if (!response || !response.ok) {
         throw new Error('Failed to fetch profile')
       }
 
@@ -179,7 +186,7 @@ export default function DashboardPage() {
             <div className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
               <div>
                 <h2 className="text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-white">
-                  {t('welcome')}, {profile.email.split('@')[0]}
+                  {t('welcome')}, {profile.username || profile.email.split('@')[0]}
                 </h2>
                 <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400 font-medium">
                   {t('availableLeads')}
@@ -187,8 +194,7 @@ export default function DashboardPage() {
               </div>
               
               {/* Tabs */}
-              {profile.status === 'approved' && (
-                <div className="mt-4 md:mt-0 flex overflow-x-auto p-1 bg-white/40 dark:bg-neutral-900/40 backdrop-blur-md border border-neutral-200/50 dark:border-white/5 rounded-xl shadow-sm gap-1 no-scrollbar">
+              <div className="mt-4 md:mt-0 flex overflow-x-auto p-1 bg-white/40 dark:bg-neutral-900/40 backdrop-blur-md border border-neutral-200/50 dark:border-white/5 rounded-xl shadow-sm gap-1 no-scrollbar">
                   <button
                     id="tour-leads"
                     onClick={() => setActiveTab('feed')}
@@ -244,12 +250,13 @@ export default function DashboardPage() {
                     {t('messages')}
                   </button>
                 </div>
-              )}
+              
             </div>
 
-            {/* Leads Feed or Status Message */}
-            {profile.role === 'master' && !profile.is_verified_master ? (
-              <div className="text-center p-12 bg-white/60 dark:bg-neutral-900/60 backdrop-blur-xl rounded-3xl border border-indigo-200 dark:border-indigo-900/30 shadow-2xl relative overflow-hidden mt-8">
+            {/* Content Rendering based on Tab */}
+            {['feed', 'my-leads', 'auctions'].includes(activeTab) ? (
+              profile.role === 'master' && !profile.is_verified_master ? (
+                <div className="text-center p-12 bg-white/60 dark:bg-neutral-900/60 backdrop-blur-xl rounded-3xl border border-indigo-200 dark:border-indigo-900/30 shadow-2xl relative overflow-hidden mt-8">
                 <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(79,70,229,0.1)_0%,transparent_70%)] pointer-events-none" />
                 <div className="relative z-10">
                   <div className="w-24 h-24 bg-indigo-100/50 dark:bg-indigo-950/50 rounded-full mx-auto mb-6 flex items-center justify-center border border-indigo-500/20 shadow-[0_0_30px_rgba(79,70,229,0.15)]">
@@ -314,10 +321,12 @@ export default function DashboardPage() {
                   </>
                 )}
                 
-                {activeTab === 'crm' && <CRMBoard />}
-                {activeTab === 'messages' && <MessagesList />}
-              </>
-            )}
+                )}
+              ) : null}
+
+              {activeTab === 'crm' && <CRMBoard />}
+              {activeTab === 'messages' && <MessagesList />}
+
 
           </>
         )}

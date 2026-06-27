@@ -51,7 +51,7 @@ export default function TermsPage() {
         <div className="text-sm text-neutral-500">
           <p><strong>Operator:</strong> Tattoo HUB</p>
           <p><strong>Registered Address:</strong> Na Lysine 772/12, Praha, 147 00</p>
-          <p><strong>Email:</strong> support@tattoo-hub.cz</p>
+          <p><strong>Email:</strong> contact@tattoo-hub.xyz</p>
         </div>
         
         <div className="mt-8">

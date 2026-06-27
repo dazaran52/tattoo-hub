@@ -25,7 +25,7 @@ export default function RefundsPage() {
 
         <h2>4. How to Request a Refund</h2>
         <p>
-          If you meet the conditions stated in point 2, send us a request at <strong>support@tattoo-hub.cz</strong>. 
+          If you meet the conditions stated in point 2, send us a request at <strong>contact@tattoo-hub.xyz</strong>. 
           Be sure to include:
         </p>
         <ul>
@@ -40,7 +40,7 @@ export default function RefundsPage() {
         <div className="text-sm text-neutral-500">
           <p><strong>Operator:</strong> Tattoo HUB</p>
           <p><strong>Registered Address:</strong> Na Lysine 772/12, Praha, 147 00</p>
-          <p><strong>Email:</strong> support@tattoo-hub.cz</p>
+          <p><strong>Email:</strong> contact@tattoo-hub.xyz</p>
         </div>
 
         <div className="mt-8">

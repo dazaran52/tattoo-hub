@@ -86,19 +86,33 @@ export default function ProfilePage() {
         return
       }
 
-      const profileData = await api.getProfile()
-      setProfile(profileData)
-      
-      setUsername(profileData.username || '')
-      setDisplayName(profileData.display_name || '')
-      setPhone(profileData.phone || '')
-      setBio(profileData.bio || '')
-      setPortfolioUrl(profileData.portfolio_url || '')
-      if (profileData.country_ids && profileData.country_ids.length > 0) {
-        setSelectedCountry(profileData.country_ids?.[0] || '2a71599c-91f2-4461-b77b-86a150db3aab')
+      let profileData;
+      let retries = 3;
+      while (retries > 0) {
+        try {
+          profileData = await api.getProfile();
+          break;
+        } catch (e) {
+          if (retries === 1) throw e;
+          await new Promise(r => setTimeout(r, 1000));
+          retries--;
+        }
       }
-      if (profileData.city_ids && profileData.city_ids.length > 0) {
-        setSelectedCity(profileData.city_ids[0])
+      
+      if (profileData) {
+        setProfile(profileData)
+        
+        setUsername(profileData.username || '')
+        setDisplayName(profileData.display_name || '')
+        setPhone(profileData.phone || '')
+        setBio(profileData.bio || '')
+        setPortfolioUrl(profileData.portfolio_url || '')
+        if (profileData.country_ids && profileData.country_ids.length > 0) {
+          setSelectedCountry(profileData.country_ids?.[0] || '2a71599c-91f2-4461-b77b-86a150db3aab')
+        }
+        if (profileData.city_ids && profileData.city_ids.length > 0) {
+          setSelectedCity(profileData.city_ids[0])
+        }
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load profile')
@@ -455,17 +469,28 @@ export default function ProfilePage() {
                 
 
                 {profile.role === 'master' && (
-                  <div className="flex items-center justify-center md:justify-start gap-2 text-cyan-600 dark:text-cyan-400">
-                    <Gem className="w-5 h-5 animate-pulse" />
-                    <span className="font-extrabold text-xl tracking-tight">{profile.balance}</span>
-                    <span className="text-sm text-neutral-500 dark:text-neutral-400 font-medium">{t('credits')}</span>
+                  <div className="flex flex-col md:flex-row items-center md:items-start gap-3 mt-1">
+                    <div className="flex items-center gap-2 text-cyan-600 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-900/20 px-3 py-1.5 rounded-xl border border-cyan-100 dark:border-cyan-800/30">
+                      <Gem className="w-4 h-4 animate-pulse" />
+                      <span className="font-extrabold text-lg tracking-tight">{profile.balance}</span>
+                      <span className="text-xs text-cyan-700 dark:text-cyan-300 font-medium uppercase tracking-wider">{t('credits')}</span>
+                    </div>
+                  </div>
+                )}
+                
+                {profile.role === 'master' && profile.portfolio_url && (
+                  <div className="mt-3 flex items-center justify-center md:justify-start">
+                    <a href={profile.portfolio_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-pink-600 dark:text-pink-400 hover:text-pink-700 dark:hover:text-pink-300 font-medium text-sm bg-pink-50 dark:bg-pink-900/20 px-3 py-1.5 rounded-xl border border-pink-100 dark:border-pink-800/30 transition-colors">
+                      <Globe className="w-4 h-4" />
+                      Instagram
+                    </a>
                   </div>
                 )}
               </div>
 
               {/* Stats */}
               {profile.role === 'master' && (
-                <div className="flex-1 grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <div className="flex-1 grid grid-cols-2 sm:grid-cols-3 gap-4">
                   <div className="bg-white/50 dark:bg-neutral-800/40 border border-neutral-200/30 dark:border-white/5 backdrop-blur-md rounded-2xl p-4 text-center shadow-sm hover:scale-[1.02] transition-all duration-300">
                     <Unlock className="w-5 h-5 text-neutral-500 dark:text-neutral-400 mx-auto mb-2" />
                     <p className="text-neutral-900 dark:text-white font-bold text-lg">{profile.unlocked_leads_count || 0}</p>
@@ -475,11 +500,6 @@ export default function ProfilePage() {
                     <CreditCard className="w-5 h-5 text-neutral-500 dark:text-neutral-400 mx-auto mb-2" />
                     <p className="text-neutral-900 dark:text-white font-bold text-lg">{profile.total_spent || 0}</p>
                     <p className="text-neutral-500 dark:text-neutral-400 text-xs font-medium">{t('spent')}</p>
-                  </div>
-                  <div className="bg-white/50 dark:bg-neutral-800/40 border border-neutral-200/30 dark:border-white/5 backdrop-blur-md rounded-2xl p-4 text-center shadow-sm hover:scale-[1.02] transition-all duration-300">
-                    <Tag className="w-5 h-5 text-neutral-500 dark:text-neutral-400 mx-auto mb-2" />
-                    <p className="text-neutral-900 dark:text-white font-bold text-lg">{profile.discount_tokens || 0}</p>
-                    <p className="text-neutral-500 dark:text-neutral-400 text-xs font-medium">{language === 'ru' ? 'Скидки' : language === 'cs' ? 'Slevy' : 'Discounts'}</p>
                   </div>
                   <div className="bg-white/50 dark:bg-neutral-800/40 border border-neutral-200/30 dark:border-white/5 backdrop-blur-md rounded-2xl p-4 text-center shadow-sm hover:scale-[1.02] transition-all duration-300">
                     <Calendar className="w-5 h-5 text-neutral-500 dark:text-neutral-400 mx-auto mb-2" />
@@ -744,7 +764,7 @@ export default function ProfilePage() {
                 {profile.role === 'master' && (
                   <div className="md:col-span-2">
                     <label className="block text-sm font-semibold text-neutral-600 dark:text-neutral-400 mb-2">
-                      {t('portfolioUrl')}
+                      {language === 'ru' ? 'Ссылка на Instagram' : language === 'cs' ? 'Odkaz na Instagram' : 'Instagram Link'}
                     </label>
                     <div className="relative">
                       <Globe className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500 dark:text-neutral-400" />
