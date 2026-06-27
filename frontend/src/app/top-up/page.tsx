@@ -6,10 +6,13 @@ import { ArrowLeft, Gem, Sparkles, CheckCircle2, ShieldCheck, Zap } from 'lucide
 import { supabase } from '@/lib/supabase'
 import Script from 'next/script'
 
-// Lemon Squeezy type for window
 declare global {
   interface Window {
     createLemonSqueezy?: () => void;
+    LemonSqueezy?: {
+      Setup: (options: { eventHandler: (event: { event: string }) => void }) => void;
+      Url: { Close: () => void };
+    };
   }
 }
 
@@ -42,8 +45,20 @@ export default function TopUpPage() {
   useEffect(() => {
     if (window.createLemonSqueezy) {
       window.createLemonSqueezy()
+      if (window.LemonSqueezy) {
+        window.LemonSqueezy.Setup({
+          eventHandler: (event) => {
+            if (event.event === 'Checkout.Success') {
+              // Wait 1.5s for the webhook to finish, then go to dashboard
+              setTimeout(() => {
+                router.push('/dashboard?payment_success=true')
+              }, 1500)
+            }
+          }
+        })
+      }
     }
-  }, [userId])
+  }, [userId, router])
 
   const packages: Package[] = [
     {
@@ -99,6 +114,17 @@ export default function TopUpPage() {
         onLoad={() => {
           if (window.createLemonSqueezy) {
             window.createLemonSqueezy()
+            if (window.LemonSqueezy) {
+              window.LemonSqueezy.Setup({
+                eventHandler: (event) => {
+                  if (event.event === 'Checkout.Success') {
+                    setTimeout(() => {
+                      router.push('/dashboard?payment_success=true')
+                    }, 1500)
+                  }
+                }
+              })
+            }
           }
         }} 
       />

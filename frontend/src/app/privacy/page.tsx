@@ -2,50 +2,56 @@ export default function PrivacyPage() {
   return (
     <div className="min-h-screen bg-white dark:bg-neutral-950 text-neutral-900 dark:text-white py-20 px-4 sm:px-6 lg:px-8">
       <div className="max-w-3xl mx-auto prose dark:prose-invert prose-neutral">
-        <h1>Privacy Policy (Zásady ochrany osobních údajů)</h1>
+        <h1>Privacy Policy</h1>
         <p className="lead">Last updated: June 2026</p>
         
-        <h2>1. Správce osobních údajů</h2>
+        <h2>1. Data Controller</h2>
         <p>
-          Správcem osobních údajů je provozovatel platformy Tattoo HUB. Kontaktovat nás můžete na emailu <strong>support@tattoo-hub.cz</strong>.
+          The data controller is the operator of the Tattoo HUB platform. You can contact us at <strong>support@tattoo-hub.cz</strong>.
         </p>
 
-        <h2>2. Jaké údaje shromažďujeme?</h2>
-        <p>Při registraci a používání našich služeb zpracováváme následující údaje:</p>
+        <h2>2. What Data Do We Collect?</h2>
+        <p>When registering and using our services, we process the following data:</p>
         <ul>
-          <li><strong>Identifikační údaje:</strong> Jméno, uživatelské jméno.</li>
-          <li><strong>Kontaktní údaje:</strong> E-mailová adresa, telefonní číslo, Instagram, Telegram.</li>
-          <li><strong>Technické údaje:</strong> IP adresa, cookies, logy ze serveru.</li>
+          <li><strong>Identification Data:</strong> Name, username.</li>
+          <li><strong>Contact Data:</strong> Email address, phone number, Instagram, Telegram.</li>
+          <li><strong>Technical Data:</strong> IP address, cookies, server logs.</li>
         </ul>
 
-        <h2>3. Účel zpracování</h2>
-        <p>Vaše data používáme výhradně pro:</p>
+        <h2>3. Purpose of Processing</h2>
+        <p>We use your data exclusively for:</p>
         <ul>
-          <li>Zajištění chodu platformy a funkčnosti uživatelského účtu.</li>
-          <li>Zprostředkování komunikace mezi Klienty a Mastery.</li>
-          <li>Vyřizování plateb a plnění zákonných povinností (účetnictví).</li>
-          <li>Zlepšování našich služeb (analytika).</li>
+          <li>Ensuring the operation of the platform and user account functionality.</li>
+          <li>Facilitating communication between Clients and Masters.</li>
+          <li>Processing payments and fulfilling legal obligations (accounting).</li>
+          <li>Improving our services (analytics).</li>
         </ul>
 
-        <h2>4. Kdo má k údajům přístup?</h2>
+        <h2>4. Who Has Access to the Data?</h2>
         <p>
-          Vaše údaje sdílíme s Masterem, u kterého si vytvoříte rezervaci nebo lead. 
-          Dále využíváme zpracovatele třetích stran (např. poskytovatele cloudových služeb Supabase, platební brány).
+          We share your data with the Master with whom you create a booking or lead. 
+          We also use third-party processors (e.g., cloud service providers like Supabase, payment gateways).
         </p>
 
-        <h2>5. Vaše práva (GDPR)</h2>
-        <p>Máte právo na:</p>
+        <h2>5. Your Rights (GDPR)</h2>
+        <p>You have the right to:</p>
         <ul>
-          <li>Přístup ke svým osobním údajům.</li>
-          <li>Opravu nepřesných údajů.</li>
-          <li>Výmaz údajů ("právo být zapomenut"). Chcete-li svůj účet a data smazat, kontaktujte nás na e-mailu.</li>
-          <li>Omezení zpracování nebo přenositelnost údajů.</li>
+          <li>Access your personal data.</li>
+          <li>Correct inaccurate data.</li>
+          <li>Delete your data ("right to be forgotten"). If you wish to delete your account and data, contact us via email.</li>
+          <li>Restrict processing or data portability.</li>
         </ul>
 
         <hr className="my-8 border-neutral-200 dark:border-neutral-800" />
         
+        <div className="text-sm text-neutral-500">
+          <p><strong>Operator:</strong> Tattoo HUB</p>
+          <p><strong>Registered Address:</strong> Na Lysine 772/12, Praha, 147 00</p>
+          <p><strong>Email:</strong> support@tattoo-hub.cz</p>
+        </div>
+
         <div className="mt-8">
-          <a href="/" className="text-cyan-600 dark:text-cyan-400 hover:underline">← Zpět na hlavní stránku</a>
+          <a href="/" className="text-cyan-600 dark:text-cyan-400 hover:underline">← Back to home page</a>
         </div>
       </div>
     </div>

@@ -419,10 +419,10 @@ function LoginContent() {
                             </div>
                           </div>
                           <span className="text-xs font-medium text-neutral-500 leading-relaxed">
-                            {language === 'cs' && <>Souhlasím s <a href="/terms" target="_blank" className="text-neutral-900 dark:text-white hover:underline">Obchodními podmínkami</a> a <a href="/privacy" target="_blank" className="text-neutral-900 dark:text-white hover:underline">Zásadami ochrany osobních údajů</a>.</>}
-                            {language === 'ru' && <>Я соглашаюсь с <a href="/terms" target="_blank" className="text-neutral-900 dark:text-white hover:underline">Условиями использования</a> и <a href="/privacy" target="_blank" className="text-neutral-900 dark:text-white hover:underline">Политикой конфиденциальности</a>.</>}
+                            {language === 'cs' && <>Souhlasím s <a href="/terms" target="_blank" className="text-neutral-900 dark:text-white hover:underline">Terms of Service</a> a <a href="/privacy" target="_blank" className="text-neutral-900 dark:text-white hover:underline">Privacy Policy</a>.</>}
+                            {language === 'ru' && <>Я соглашаюсь с <a href="/terms" target="_blank" className="text-neutral-900 dark:text-white hover:underline">Terms of Service</a> и <a href="/privacy" target="_blank" className="text-neutral-900 dark:text-white hover:underline">Privacy Policy</a>.</>}
                             {language === 'en' && <>I agree to the <a href="/terms" target="_blank" className="text-neutral-900 dark:text-white hover:underline">Terms of Service</a> and <a href="/privacy" target="_blank" className="text-neutral-900 dark:text-white hover:underline">Privacy Policy</a>.</>}
-                            {language === 'uk' && <>Я погоджуюсь з <a href="/terms" target="_blank" className="text-neutral-900 dark:text-white hover:underline">Умовами використання</a> та <a href="/privacy" target="_blank" className="text-neutral-900 dark:text-white hover:underline">Політикою конфіденційності</a>.</>}
+                            {language === 'uk' && <>Я погоджуюсь з <a href="/terms" target="_blank" className="text-neutral-900 dark:text-white hover:underline">Terms of Service</a> та <a href="/privacy" target="_blank" className="text-neutral-900 dark:text-white hover:underline">Privacy Policy</a>.</>}
                           </span>
                         </label>
                       </motion.div>
@@ -462,11 +462,11 @@ function LoginContent() {
           )}
 
           <div className="flex flex-wrap justify-center gap-4 text-xs font-semibold text-neutral-600">
-            <a href="/terms" className="hover:text-neutral-950 dark:hover:text-white transition-colors uppercase tracking-wider">{t('termsOfService')}</a>
+            <a href="/terms" className="hover:text-neutral-950 dark:hover:text-white transition-colors uppercase tracking-wider">Terms of Service</a>
             <span>&middot;</span>
-            <a href="/privacy" className="hover:text-neutral-950 dark:hover:text-white transition-colors uppercase tracking-wider">{t('privacyPolicy')}</a>
+            <a href="/privacy" className="hover:text-neutral-950 dark:hover:text-white transition-colors uppercase tracking-wider">Privacy Policy</a>
             <span>&middot;</span>
-            <a href="/refunds" className="hover:text-neutral-950 dark:hover:text-white transition-colors uppercase tracking-wider">{t('refundPolicy')}</a>
+            <a href="/refunds" className="hover:text-neutral-950 dark:hover:text-white transition-colors uppercase tracking-wider">Refund Policy</a>
           </div>
         </div>
       </div>

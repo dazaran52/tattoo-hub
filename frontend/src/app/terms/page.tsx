@@ -2,61 +2,60 @@ export default function TermsPage() {
   return (
     <div className="min-h-screen bg-white dark:bg-neutral-950 text-neutral-900 dark:text-white py-20 px-4 sm:px-6 lg:px-8">
       <div className="max-w-3xl mx-auto prose dark:prose-invert prose-neutral">
-        <h1>Terms of Service (Obchodní podmínky)</h1>
+        <h1>Terms of Service</h1>
         <p className="lead">Last updated: June 2026</p>
         
-        <h2>1. Úvodní ustanovení</h2>
+        <h2>1. Introduction</h2>
         <p>
-          Tyto obchodní podmínky (dále jen "Podmínky") upravují vzájemná práva a povinnosti mezi provozovatelem platformy Tattoo HUB (dále jen "Provozovatel") a uživateli této platformy (dále jen "Uživatel"). 
-          Uživatelem může být Tattoo Master (dále jen "Master") nebo Klient hledající služby tetování.
+          These Terms of Service (hereinafter referred to as the "Terms") govern the mutual rights and obligations between the operator of the Tattoo HUB platform (hereinafter referred to as the "Operator") and the users of this platform (hereinafter referred to as the "User"). 
+          A User can be a Tattoo Master (hereinafter referred to as the "Master") or a Client seeking tattoo services.
         </p>
 
-        <h2>2. Registrace a Uživatelský účet</h2>
+        <h2>2. Registration and User Account</h2>
         <p>
-          Pro využívání plného rozsahu služeb je nutná registrace. Uživatel je povinen uvádět správné a pravdivé údaje. 
-          Provozovatel nenese odpovědnost za škody způsobené sdílením přístupových údajů třetím osobám.
+          Registration is required to use the full scope of services. The User is obliged to provide correct and truthful information. 
+          The Operator bears no responsibility for damages caused by sharing access credentials with third parties.
         </p>
 
-        <h2>3. Vnitřní měna (Kredity) a Platby</h2>
+        <h2>3. Internal Currency (Credits) and Payments</h2>
         <p>
-          Na platformě je využíván systém virtuálních kreditů (dále jen "Kredity"). Kredity neslouží jako elektronické peníze a nelze je směnit zpět na reálnou měnu, pokud není výslovně uvedeno jinak v pravidlech pro refundace.
+          The platform utilizes a system of virtual credits (hereinafter referred to as "Credits"). Credits do not serve as electronic money and cannot be exchanged back into real currency unless expressly stated otherwise in the refund rules.
           <ul>
-            <li>Zakoupením Kreditů Uživatel získává právo využívat prémiové funkce platformy (např. otevírání kontaktů na leady).</li>
-            <li>Provozovatel si vyhrazuje právo měnit ceník Kreditů.</li>
+            <li>By purchasing Credits, the User gains the right to use premium platform features (e.g., revealing contact details for leads).</li>
+            <li>The Operator reserves the right to change the pricing of Credits at any time.</li>
           </ul>
         </p>
 
-        <h2>4. Odpovědnost a vyloučení záruk</h2>
+        <h2>4. Liability and Disclaimer of Warranties</h2>
         <p>
-          Provozovatel poskytuje platformu jako zprostředkovatelskou službu B2B/B2C a <strong>nenese odpovědnost</strong> za:
+          The Operator provides the platform as a B2B/B2C intermediary service and <strong>bears no responsibility</strong> for:
         </p>
         <ul>
-          <li>Kvalitu odvedené práce ze strany Mastera.</li>
-          <li>Nezaplacení služeb ze strany Klienta Masterovi.</li>
-          <li>Případné zdravotní komplikace vzniklé aplikací tetování.</li>
+          <li>The quality of the work performed by the Master.</li>
+          <li>Failure of the Client to pay for services rendered by the Master.</li>
+          <li>Any health complications arising from the tattoo application.</li>
         </ul>
-        <p>Všechny smlouvy a dohody o samotném tetování vznikají výhradně mezi Klientem a Masterem.</p>
+        <p>All contracts and agreements regarding the tattoo itself are formed exclusively between the Client and the Master.</p>
 
-        <h2>5. Ochrana osobních údajů</h2>
+        <h2>5. Privacy Policy</h2>
         <p>
-          Zpracování osobních údajů se řídí samostatným dokumentem <a href="/privacy">Zásady ochrany osobních údajů (Privacy Policy)</a>, který je v souladu s nařízením GDPR.
+          The processing of personal data is governed by a separate document, the <a href="/privacy">Privacy Policy</a>, which complies with GDPR regulations.
         </p>
 
-        <h2>6. Závěrečná ustanovení</h2>
+        <h2>6. Final Provisions</h2>
         <p>
-          Tyto podmínky se řídí právním řádem České republiky. Provozovatel si vyhrazuje právo Podmínky kdykoliv jednostranně změnit.
+          These Terms are governed by the laws of the Czech Republic. The Operator reserves the right to unilaterally change the Terms at any time.
         </p>
 
         <hr className="my-8 border-neutral-200 dark:border-neutral-800" />
         <div className="text-sm text-neutral-500">
-          <p><strong>Provozovatel:</strong> [ZDE DOPLNIT NÁZEV FIRMY NEBO JMÉNO OSVČ]</p>
-          <p><strong>IČO:</strong> [ZDE DOPLNIT IČO]</p>
-          <p><strong>Sídlo:</strong> [ZDE DOPLNIT ADRESU]</p>
+          <p><strong>Operator:</strong> Tattoo HUB</p>
+          <p><strong>Registered Address:</strong> Na Lysine 772/12, Praha, 147 00</p>
           <p><strong>Email:</strong> support@tattoo-hub.cz</p>
         </div>
         
         <div className="mt-8">
-          <a href="/" className="text-cyan-600 dark:text-cyan-400 hover:underline">← Zpět na hlavní stránku</a>
+          <a href="/" className="text-cyan-600 dark:text-cyan-400 hover:underline">← Back to home page</a>
         </div>
       </div>
     </div>
