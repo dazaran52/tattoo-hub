@@ -332,7 +332,7 @@ function LoginContent() {
             </div>
 
             <div className="p-6 sm:p-8">
-              <form className="space-y-6" onSubmit={handleSubmit}>
+              <form id="login-form" className="space-y-6" onSubmit={handleSubmit}>
                 <AnimatePresence mode="popLayout">
                   {error && (
                     <motion.div 
@@ -399,6 +399,36 @@ function LoginContent() {
                     </motion.div>
                   )}
 
+                  <AnimatePresence>
+                    {isSignUp && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="pt-2"
+                      >
+                        <label className="flex items-start gap-3 cursor-pointer group">
+                          <div className="relative flex items-center justify-center mt-0.5 shrink-0">
+                            <input 
+                              type="checkbox" 
+                              required 
+                              className="peer sr-only"
+                            />
+                            <div className={`w-5 h-5 rounded-md border-2 border-neutral-300 dark:border-neutral-600 flex items-center justify-center transition-colors peer-checked:bg-neutral-900 dark:peer-checked:bg-white peer-checked:border-neutral-900 dark:peer-checked:border-white ${role === 'master' ? 'group-hover:border-orange-500' : 'group-hover:border-indigo-500'}`}>
+                              <svg className="w-3 h-3 text-white dark:text-black opacity-0 peer-checked:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="4"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"></path></svg>
+                            </div>
+                          </div>
+                          <span className="text-xs font-medium text-neutral-500 leading-relaxed">
+                            {language === 'cs' && <>Souhlasím s <a href="/terms" target="_blank" className="text-neutral-900 dark:text-white hover:underline">Obchodními podmínkami</a> a <a href="/privacy" target="_blank" className="text-neutral-900 dark:text-white hover:underline">Zásadami ochrany osobních údajů</a>.</>}
+                            {language === 'ru' && <>Я соглашаюсь с <a href="/terms" target="_blank" className="text-neutral-900 dark:text-white hover:underline">Условиями использования</a> и <a href="/privacy" target="_blank" className="text-neutral-900 dark:text-white hover:underline">Политикой конфиденциальности</a>.</>}
+                            {language === 'en' && <>I agree to the <a href="/terms" target="_blank" className="text-neutral-900 dark:text-white hover:underline">Terms of Service</a> and <a href="/privacy" target="_blank" className="text-neutral-900 dark:text-white hover:underline">Privacy Policy</a>.</>}
+                            {language === 'uk' && <>Я погоджуюсь з <a href="/terms" target="_blank" className="text-neutral-900 dark:text-white hover:underline">Умовами використання</a> та <a href="/privacy" target="_blank" className="text-neutral-900 dark:text-white hover:underline">Політикою конфіденційності</a>.</>}
+                          </span>
+                        </label>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
                 </div>
 
                 <motion.button
@@ -425,9 +455,11 @@ function LoginContent() {
             </div>
           </div>
 
-          <p className="text-center text-xs font-medium text-neutral-500 px-4 leading-relaxed">
-            {t('termsAgreement')}
-          </p>
+          {!isSignUp && (
+            <p className="text-center text-xs font-medium text-neutral-500 px-4 leading-relaxed">
+              {t('termsAgreement')}
+            </p>
+          )}
 
           <div className="flex flex-wrap justify-center gap-4 text-xs font-semibold text-neutral-600">
             <a href="/terms" className="hover:text-neutral-950 dark:hover:text-white transition-colors uppercase tracking-wider">{t('termsOfService')}</a>
