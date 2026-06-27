@@ -16,6 +16,7 @@ function LoginContent() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [role, setRole] = useState<'master' | 'client'>('master')
+  const [referredBy, setReferredBy] = useState('')
   const [error, setError] = useState('')
   const [language, setLanguage] = useState<string>('cs')
   const [theme, setTheme] = useState<'dark' | 'light'>('dark')
@@ -109,6 +110,7 @@ function LoginContent() {
           options: {
             data: {
               role: role,
+              referred_by: referredBy || undefined
             }
           }
         })
@@ -375,7 +377,27 @@ function LoginContent() {
                       />
                     </div>
                   </motion.div>
-                  
+
+                  {isSignUp && (
+                    <motion.div 
+                      layout
+                      initial={{ opacity: 0, height: 0, y: -10 }}
+                      animate={{ opacity: 1, height: 'auto', y: 0 }}
+                      exit={{ opacity: 0, height: 0, y: -10 }}
+                    >
+                      <div className="relative group">
+                        <Tag className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500 transition-all duration-300 ${role === 'master' ? 'group-focus-within:text-orange-400' : 'group-focus-within:text-indigo-400'}`} />
+                        <input
+                          id="referredBy"
+                          type="text"
+                          value={referredBy}
+                          onChange={(e) => setReferredBy(e.target.value)}
+                          className={`block w-full pl-12 pr-4 py-4 bg-white/40 dark:bg-neutral-950/40 border border-neutral-200 dark:border-white/10 rounded-2xl text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-offset-0 transition-all backdrop-blur-md shadow-inner ${role === 'master' ? 'focus:border-orange-500 focus:ring-orange-500/20 focus:bg-orange-950/10' : 'focus:border-indigo-500 focus:ring-indigo-500/20 focus:bg-indigo-950/10'}`}
+                          placeholder={t('referralCode')}
+                        />
+                      </div>
+                    </motion.div>
+                  )}
 
                 </div>
 
