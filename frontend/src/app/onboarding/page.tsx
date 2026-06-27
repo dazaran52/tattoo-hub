@@ -16,6 +16,7 @@ export default function OnboardingPage() {
 
   // Form State
   const [displayName, setDisplayName] = useState('')
+  const [portfolioUrl, setPortfolioUrl] = useState('')
   const [selectedCountry, setSelectedCountry] = useState('2a71599c-91f2-4461-b77b-86a150db3aab')
   const [selectedCities, setSelectedCities] = useState<string[]>([])
   
@@ -54,6 +55,7 @@ export default function OnboardingPage() {
         const data = await response.json()
         setProfile(data)
         if (data.display_name) setDisplayName(data.display_name)
+        if (data.portfolio_url) setPortfolioUrl(data.portfolio_url)
       }
     } catch (e) {
       console.error(e)
@@ -77,10 +79,24 @@ export default function OnboardingPage() {
       return
     }
 
+    if (profile?.role === 'master' && !portfolioUrl.trim()) {
+      toast.error('Пожалуйста, укажите ссылку на ваше портфолио')
+      return
+    }
+
     setIsLoading(true)
     try {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) throw new Error('No session')
+
+      const bodyData: any = {
+        display_name: displayName,
+        country_ids: [selectedCountry],
+        city_ids: selectedCities
+      }
+      if (profile?.role === 'master') {
+        bodyData.portfolio_url = portfolioUrl
+      }
 
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/profile`, {
         method: 'PUT',
@@ -88,11 +104,7 @@ export default function OnboardingPage() {
           'Authorization': `Bearer ${session.access_token}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-          display_name: displayName,
-          country_ids: [selectedCountry],
-          city_ids: selectedCities
-        })
+        body: JSON.stringify(bodyData)
       })
 
       if (!response.ok) throw new Error('Failed to update profile')
@@ -133,6 +145,30 @@ export default function OnboardingPage() {
               />
             </div>
           </div>
+
+          <AnimatePresence>
+            {profile?.role === 'master' && (
+              <motion.div 
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                className="space-y-2 overflow-hidden"
+              >
+                <label className="text-sm font-medium ml-1">Ссылка на портфолио (Instagram/Фейсбук) <span className="text-red-500">*</span></label>
+                <div className="relative">
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400">@</div>
+                  <input
+                    required
+                    type="url"
+                    value={portfolioUrl}
+                    onChange={e => setPortfolioUrl(e.target.value)}
+                    placeholder="https://instagram.com/..."
+                    className="w-full pl-12 pr-4 py-4 bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-2xl focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-all"
+                  />
+                </div>
+                <p className="text-xs text-neutral-500 ml-1">Обязательно для верификации вашего профиля администратором.</p>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* 
           <div className="space-y-2">
