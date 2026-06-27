@@ -127,29 +127,32 @@ export function Header({ profile, onLogout }: HeaderProps) {
 
             {/* Credits Counter & Top-up (Master only) */}
             {profile.role === 'master' && (
-              <div id="tour-balance" className="flex items-center gap-1">
+              <div id="tour-balance" className="flex items-stretch bg-neutral-100 dark:bg-neutral-800/80 border border-neutral-200 dark:border-neutral-700 rounded-xl overflow-hidden transition-all shadow-sm hover:shadow-md">
                 <button 
                   onClick={() => setShowHistory(true)}
                   title={t('topupHistory')}
-                  className="flex items-center gap-2 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800/50 dark:hover:bg-neutral-800 transition-colors pl-4 pr-3 py-2 rounded-l-lg border border-neutral-200 dark:border-neutral-700 cursor-pointer"
+                  className="flex items-center gap-2 px-3 py-1.5 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
                 >
-                  <Gem className="w-4 h-4 text-cyan-500 dark:text-cyan-400" />
-                  <span className="font-bold text-neutral-900 dark:text-white">{profile.balance}</span>
-                  <span className="text-sm text-neutral-600 dark:text-neutral-300 pr-1">{t('credit_plural')}</span>
+                  <Gem className="w-4 h-4 text-cyan-500 dark:text-cyan-400 shrink-0" />
+                  <div className="flex items-baseline gap-1">
+                    <span className="font-bold text-[15px] text-neutral-900 dark:text-white leading-none">{profile.balance}</span>
+                    <span className="font-semibold text-xs text-neutral-500 dark:text-neutral-400 leading-none uppercase tracking-wider">{t('credit_plural')}</span>
+                  </div>
                   
                   {profile.discount_tokens > 0 && (
-                    <div className="flex items-center gap-1 ml-2 pl-2 border-l border-neutral-300 dark:border-neutral-600" title={t('discountTokens')}>
-                      <Ticket className="w-4 h-4 text-amber-500" />
-                      <span className="font-bold text-neutral-900 dark:text-white">{profile.discount_tokens}</span>
+                    <div className="flex items-center gap-1 ml-2 pl-2.5 border-l border-neutral-300 dark:border-neutral-600" title={t('discountTokens')}>
+                      <Ticket className="w-4 h-4 text-amber-500 shrink-0" />
+                      <span className="font-bold text-[15px] text-neutral-900 dark:text-white leading-none">{profile.discount_tokens}</span>
                     </div>
                   )}
                 </button>
+                <div className="w-[1px] bg-neutral-200 dark:bg-neutral-700" />
                 <button
                   onClick={() => router.push('/top-up')}
-                  className="flex items-center justify-center bg-cyan-500 hover:bg-cyan-600 dark:bg-cyan-600 dark:hover:bg-cyan-500 text-white px-2 py-2 rounded-r-lg transition-colors border border-cyan-500 dark:border-cyan-600"
+                  className="flex items-center justify-center bg-cyan-500 hover:bg-cyan-600 dark:bg-cyan-600 dark:hover:bg-cyan-500 text-white px-3 transition-colors group"
                   title={t('topupBalance')}
                 >
-                  <Plus className="w-4 h-4" />
+                  <Plus className="w-4 h-4 group-hover:scale-110 transition-transform" />
                 </button>
               </div>
             )}
