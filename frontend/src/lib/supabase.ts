@@ -10,6 +10,7 @@ export const supabase = createBrowserClient(supabaseUrl, supabaseKey)
 export type Profile = {
   id: string
   email: string
+  username?: string
   balance: number
   is_admin: boolean
   status: string

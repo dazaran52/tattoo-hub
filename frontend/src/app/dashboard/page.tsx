@@ -320,15 +320,13 @@ export default function DashboardPage() {
                     {activeTab === 'auctions' && <AuctionsFeed />}
                   </>
                 )}
-                
-                )}
-              ) : null}
+              </>
+            )
+          ) : null}
 
-              {activeTab === 'crm' && <CRMBoard />}
-              {activeTab === 'messages' && <MessagesList />}
-
-
-          </>
+          {activeTab === 'crm' && <CRMBoard />}
+          {activeTab === 'messages' && <MessagesList />}
+        </>
         )}
       </main>
     </div>
