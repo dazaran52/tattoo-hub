@@ -147,16 +147,7 @@ async def create_manual_client(
             raise HTTPException(status_code=400, detail="Failed to create client")
             
         client = res.data[0]
-        
-        # 2. Add session automatically (so it appears on kanban board)
-        session_data = {
-            "master_id": current_user.user_id,
-            "client_id": client["id"],
-            "session_date": data.session_date or datetime.utcnow().date().isoformat(),
-            "status": "new"
-        }
-        await supabase.table("master_sessions").insert(session_data).execute()
-            
+        # 2. Return client
         return client
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

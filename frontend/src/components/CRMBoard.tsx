@@ -47,6 +47,7 @@ export function CRMBoard() {
   // Modals
   const [isSessionModalOpen, setIsSessionModalOpen] = useState(false)
   const [sessionToComplete, setSessionToComplete] = useState<string | null>(null)
+  const [sessionToEdit, setSessionToEdit] = useState<CRMSession | null>(null)
   const [clientsForModal, setClientsForModal] = useState([])
   
   // Filters
@@ -291,7 +292,8 @@ export function CRMBoard() {
                             key={item.id}
                             draggable
                             onDragStart={(e) => handleDragStart(e as any, item.id)}
-                            className="bg-white dark:bg-neutral-800 p-4 rounded-2xl shadow-sm border border-neutral-200 dark:border-white/5 cursor-grab active:cursor-grabbing hover:shadow-md transition-shadow"
+                            onClick={() => setSessionToEdit(item)}
+                            className="bg-white dark:bg-neutral-800 p-4 rounded-2xl shadow-sm border border-neutral-200 dark:border-white/5 cursor-pointer hover:shadow-md transition-shadow"
                           >
                             <div className="flex gap-3 mb-3">
                               {item.master_clients?.leads?.image_urls && item.master_clients.leads.image_urls.length > 0 ? (
@@ -340,6 +342,19 @@ export function CRMBoard() {
             setIsSessionModalOpen(false)
             fetchData()
           }}
+          existingClients={clientsForModal}
+        />
+      )}
+
+      {sessionToEdit && (
+        <SessionModal
+          isOpen={!!sessionToEdit}
+          onClose={() => setSessionToEdit(null)}
+          onSuccess={() => {
+            setSessionToEdit(null)
+            fetchData()
+          }}
+          editSession={sessionToEdit}
           existingClients={clientsForModal}
         />
       )}

@@ -121,7 +121,7 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId }
                 <div>
                   <label className="text-xs font-bold text-neutral-400 uppercase tracking-wider flex items-center gap-1"><Phone className="w-3 h-3"/> Контакты</label>
                   <div className="mt-1 text-neutral-700 dark:text-neutral-300">
-                    {client.contact_info || 'Не указаны'}
+                    {[client.contact_info, client.phone, client.telegram, client.instagram].filter(Boolean).join(', ') || 'Не указаны'}
                   </div>
                 </div>
 
