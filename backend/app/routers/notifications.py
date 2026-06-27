@@ -65,7 +65,7 @@ async def get_notifications(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/{notification_id}/read")
+@router.put("/{notification_id}/read")
 async def mark_read(
     notification_id: str,
     current_user: AuthUser = Depends(get_current_user),
@@ -81,7 +81,7 @@ async def mark_read(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/read-all")
+@router.put("/read-all")
 async def mark_all_read(
     current_user: AuthUser = Depends(get_current_user),
     supabase: Client = Depends(get_supabase_client)

@@ -174,6 +174,17 @@ async def lemonsqueezy_webhook(
         "type": "payment"
     }).execute()
     
+    # Insert transaction history
+    supabase.table("transactions").insert({
+        "user_id": user_id,
+        "amount": subtotal_cents / 100,
+        "currency": attributes.get("currency", "CZK"),
+        "credits_added": credits_to_deposit,
+        "provider": "lemonsqueezy",
+        "provider_tx_id": payload.get("data", {}).get("id", ""),
+        "status": "completed"
+    }).execute()
+    
     return {
         "success": True,
         "message": "Top-up successful",
