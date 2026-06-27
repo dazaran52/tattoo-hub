@@ -267,7 +267,7 @@ export function CalendarView({ sessions, onUpdate }: CalendarViewProps) {
       {/* Daily Schedule Sidebar / Modal */}
       <AnimatePresence>
         {selectedDate && (
-          <div className="fixed inset-0 z-50 flex justify-end bg-black/20 backdrop-blur-sm">
+          <div className="fixed inset-0 z-50 flex justify-end bg-black/20 backdrop-blur-sm" onClick={(e) => { if (e.target === e.currentTarget) setIsSessionModalOpen(false) }}>
             <motion.div
               initial={{ x: '100%' }}
               animate={{ x: 0 }}

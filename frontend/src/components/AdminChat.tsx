@@ -426,7 +426,7 @@ export function AdminChat() {
       </div>
 
       {balanceModalUser && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200" onClick={(e) => { if (e.target === e.currentTarget) setBalanceModalUser(null) }}>
           <div className="bg-white dark:bg-neutral-900 w-full max-w-md rounded-2xl shadow-xl overflow-hidden animate-in zoom-in-95 duration-200 p-6 border border-neutral-200 dark:border-neutral-800">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-bold text-neutral-900 dark:text-white">Изменить баланс пользователя</h3>

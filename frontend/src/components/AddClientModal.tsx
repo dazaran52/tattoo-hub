@@ -78,7 +78,7 @@ export function AddClientModal({ isOpen, onClose, onSuccess, onDuplicateFound }:
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm overflow-y-auto" onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
       <div className="bg-white dark:bg-neutral-900 rounded-3xl w-full max-w-md shadow-2xl overflow-hidden my-8">
         <div className="flex justify-between items-center p-6 border-b border-neutral-200 dark:border-neutral-800">
           <h2 className="text-xl font-bold flex items-center gap-2 text-neutral-900 dark:text-white">
