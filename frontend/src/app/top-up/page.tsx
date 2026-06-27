@@ -136,7 +136,7 @@ export default function TopUpPage() {
           {packages.map((pkg) => (
             <div 
               key={pkg.id} 
-              className={`relative bg-gradient-to-br ${pkg.color} border ${pkg.borderColor} rounded-3xl p-6 sm:p-8 flex flex-col items-center text-center hover:scale-[1.02] transition-transform duration-300 backdrop-blur-xl`}
+              className={`relative bg-gradient-to-br ${pkg.color} border ${pkg.borderColor} rounded-3xl p-6 sm:p-8 flex flex-col items-center text-center hover:scale-[1.02] transition-all duration-300 transform-gpu`}
             >
               {pkg.popular && (
                 <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-cyan-500 to-purple-500 text-white text-xs font-black uppercase px-4 py-1.5 rounded-full shadow-lg">

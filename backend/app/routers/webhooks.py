@@ -57,10 +57,17 @@ async def donatello_webhook(
     except ValueError:
         credits_to_deposit = 0
 
-    new_balance = master["credits"] + credits_to_deposit
+    current_balance = master.get("balance", 0) or 0
+    current_credits = master.get("credits", 0) or 0
+    
+    new_balance = float(current_balance) + credits_to_deposit
+    new_credits = int(current_credits) + credits_to_deposit
     
     # Update balance
-    supabase.table("users").update({"credits": new_balance}).eq("id", master["id"]).execute()
+    supabase.table("users").update({
+        "balance": new_balance,
+        "credits": new_credits
+    }).eq("id", master["id"]).execute()
     
     # Create notification
     supabase.table("notifications").insert({
@@ -149,10 +156,16 @@ async def lemonsqueezy_webhook(
         
     master = user_res.data[0]
     
-    current_balance = master.get("credits", 0)
-    new_balance = current_balance + credits_to_deposit
+    current_balance = master.get("balance", 0) or 0
+    current_credits = master.get("credits", 0) or 0
     
-    supabase.table("users").update({"credits": new_balance}).eq("id", user_id).execute()
+    new_balance = float(current_balance) + credits_to_deposit
+    new_credits = int(current_credits) + credits_to_deposit
+    
+    supabase.table("users").update({
+        "balance": new_balance,
+        "credits": new_credits
+    }).eq("id", user_id).execute()
     
     supabase.table("notifications").insert({
         "user_id": user_id,
