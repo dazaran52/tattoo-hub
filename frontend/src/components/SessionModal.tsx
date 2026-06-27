@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { X, User, Clock, FileText, Upload, Calendar as CalendarIcon, Tag, Plus } from 'lucide-react'
+import { X, User, Clock, FileText, Upload, Calendar as CalendarIcon, Tag, Plus, Trash2 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import toast from 'react-hot-toast'
 import { CRMClient } from './ClientsDatabase'
@@ -79,6 +79,26 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
   }, [isOpen, initialDate, initialClientId, editSession])
 
   if (!isOpen) return null
+
+  const handleDelete = async () => {
+    if (!editSession) return
+    if (!window.confirm('Вы уверены, что хотите удалить этот сеанс?')) return
+    
+    setLoading(true)
+    try {
+      const { error } = await supabase.from('master_sessions').delete().eq('id', editSession.id)
+      if (error) throw error
+      
+      toast.success('Сеанс удален')
+      onSuccess()
+      onClose()
+    } catch (error: any) {
+      console.error(error)
+      toast.error(error.message || 'Произошла ошибка при удалении')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -439,11 +459,22 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
             </div>
           </div>
 
-          <div className="pt-2">
+          <div className="pt-2 flex gap-3">
+            {editSession && (
+              <button
+                type="button"
+                onClick={handleDelete}
+                disabled={loading || isUploading}
+                className="flex items-center justify-center p-3.5 bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 rounded-xl hover:bg-red-100 dark:hover:bg-red-500/20 transition-colors disabled:opacity-50"
+                title="Удалить сеанс"
+              >
+                <Trash2 className="w-5 h-5" />
+              </button>
+            )}
             <button
               type="submit"
               disabled={loading || isUploading}
-              className="w-full flex items-center justify-center gap-2 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 font-bold py-3.5 rounded-xl hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-all shadow-lg disabled:opacity-50"
+              className="flex-1 flex items-center justify-center gap-2 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 font-bold py-3.5 rounded-xl hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-all shadow-lg disabled:opacity-50"
             >
               {(loading || isUploading) ? (
                 <div className="w-5 h-5 border-2 border-white/30 dark:border-black/30 border-t-white dark:border-t-black rounded-full animate-spin" />
