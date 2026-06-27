@@ -54,7 +54,7 @@ export function InstallPrompt() {
   if (!showPrompt) return null
 
   return (
-    <div className="fixed bottom-4 left-4 right-4 z-50 animate-fade-in-up">
+    <div className="fixed bottom-28 md:bottom-6 left-4 right-4 md:left-auto md:right-6 md:w-[400px] z-[9999] animate-fade-in-up">
       <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-2xl rounded-2xl p-4 flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 bg-indigo-100 dark:bg-indigo-900/30 rounded-xl flex items-center justify-center flex-shrink-0">
