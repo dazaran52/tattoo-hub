@@ -49,9 +49,14 @@ export default function TopUpPage() {
         window.LemonSqueezy.Setup({
           eventHandler: (event) => {
             if (event.event === 'Checkout.Success') {
-              // Wait 1.5s for the webhook to finish, then go to dashboard
+              // Wait 1.5s for the webhook to finish
               setTimeout(() => {
-                router.push('/dashboard?payment_success=true')
+                // Close the LemonSqueezy iframe explicitly
+                if (window.LemonSqueezy?.Url?.Close) {
+                  window.LemonSqueezy.Url.Close()
+                }
+                // Force a full page reload to the dashboard to guarantee iframe destruction
+                window.location.href = '/dashboard?payment_success=true'
               }, 1500)
             }
           }
@@ -119,7 +124,10 @@ export default function TopUpPage() {
                 eventHandler: (event) => {
                   if (event.event === 'Checkout.Success') {
                     setTimeout(() => {
-                      router.push('/dashboard?payment_success=true')
+                      if (window.LemonSqueezy?.Url?.Close) {
+                        window.LemonSqueezy.Url.Close()
+                      }
+                      window.location.href = '/dashboard?payment_success=true'
                     }, 1500)
                   }
                 }
