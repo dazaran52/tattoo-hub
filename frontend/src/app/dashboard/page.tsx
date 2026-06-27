@@ -95,15 +95,14 @@ export default function DashboardPage() {
         profileData.role = session.user.user_metadata.role
       }
       
+      setProfile(profileData)
+      setCurrentSession(session)
+      
       // Redirect to onboarding if critical profile info is missing
       if (!profileData.country_ids || profileData.country_ids.length === 0) {
         router.push('/onboarding')
         return
       }
-
-      setProfile(profileData)
-      
-      setCurrentSession(session)
     } catch (error) {
       console.error('Error fetching profile:', error)
     } finally {
