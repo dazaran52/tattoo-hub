@@ -8,6 +8,7 @@ import { InstallPrompt } from '@/components/InstallPrompt'
 import { LanguageProvider } from '@/i18n/LanguageContext'
 import { CustomCursor } from '@/components/CustomCursor'
 import { TouchEffect } from '@/components/TouchEffect'
+import { CookieBanner } from '@/components/CookieBanner'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 
@@ -68,6 +69,7 @@ export default function RootLayout({
           {children}
           <ChatWidget />
           <InstallPrompt />
+          <CookieBanner />
         </LanguageProvider>
       </body>
     </html>
