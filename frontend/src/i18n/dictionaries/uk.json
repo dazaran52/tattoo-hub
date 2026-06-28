@@ -268,5 +268,16 @@
   "styleLabel": "Стиль:",
   "sizeLabel": "Размер:",
   "locationLabel": "Место:",
-  "referencesCount": "Референсов:"
+  "referencesCount": "Референсов:",
+  "forgotPassword": "Забули пароль?",
+  "loginWithCode": "Увійти за кодом (швидко)",
+  "loginWithPassword": "Увійти за паролем",
+  "verifyEmailTitle": "Підтвердіть Email",
+  "verifyEmailDesc": "Введіть 6-значний код, надісланий на вашу пошту",
+  "enterCode": "Введіть код",
+  "newPassword": "Новий пароль",
+  "confirmBtn": "Підтвердити",
+  "resetBtn": "Скинути пароль",
+  "passwordChanged": "Пароль успішно змінено!",
+  "codeSent": "Код надіслано! Перевірте пошту."
 }

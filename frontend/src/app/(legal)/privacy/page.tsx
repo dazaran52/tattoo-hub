@@ -7,7 +7,7 @@ export default function PrivacyPage() {
         
         <h2>1. Data Controller</h2>
         <p>
-          The data controller is the operator of the Tattoo HUB platform. You can contact us at <strong>contact@tattoo-hub.xyz</strong>.
+          The data controller is the operator of the Tattoo HUB platform. You can contact us at <strong>support@tattoo-hub.xyz</strong>.
         </p>
 
         <h2>2. What Data Do We Collect?</h2>
@@ -47,7 +47,7 @@ export default function PrivacyPage() {
         <div className="text-sm text-neutral-500">
           <p><strong>Operator:</strong> Tattoo HUB</p>
           <p><strong>Registered Address:</strong> Na Lysine 772/12, Praha, 147 00</p>
-          <p><strong>Email:</strong> contact@tattoo-hub.xyz</p>
+          <p><strong>Email:</strong> support@tattoo-hub.xyz</p>
         </div>
 
         <div className="mt-8">

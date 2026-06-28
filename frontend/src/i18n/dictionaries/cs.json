@@ -238,5 +238,16 @@
   "styleLabel": "Styl:",
   "sizeLabel": "Velikost:",
   "locationLabel": "Místo:",
-  "referencesCount": "Reference:"
+  "referencesCount": "Reference:",
+  "forgotPassword": "Zapomenuté heslo?",
+  "loginWithCode": "Přihlásit se pomocí kódu (rychle)",
+  "loginWithPassword": "Přihlásit se heslem",
+  "verifyEmailTitle": "Potvrdit Email",
+  "verifyEmailDesc": "Zadejte 6místný kód zaslaný na váš e-mail",
+  "enterCode": "Zadejte kód",
+  "newPassword": "Nové heslo",
+  "confirmBtn": "Potvrdit",
+  "resetBtn": "Obnovit heslo",
+  "passwordChanged": "Heslo bylo úspěšně změněno!",
+  "codeSent": "Kód byl odeslán! Zkontrolujte svůj e-mail."
 }

@@ -267,5 +267,16 @@
   "styleLabel": "Style:",
   "sizeLabel": "Size:",
   "locationLabel": "Location:",
-  "referencesCount": "References:"
+  "referencesCount": "References:",
+  "forgotPassword": "Forgot password?",
+  "loginWithCode": "Login with code (fast)",
+  "loginWithPassword": "Login with password",
+  "verifyEmailTitle": "Confirm Email",
+  "verifyEmailDesc": "Enter the 6-digit code sent to your email",
+  "enterCode": "Enter code",
+  "newPassword": "New password",
+  "confirmBtn": "Confirm",
+  "resetBtn": "Reset password",
+  "passwordChanged": "Password successfully changed!",
+  "codeSent": "Code sent! Check your email."
 }

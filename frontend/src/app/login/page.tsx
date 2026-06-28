@@ -3,27 +3,30 @@
 import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Mail, Lock, Loader2, ArrowRight, Link as LinkIcon, Tag, MapPin, Globe, X, Sun, Moon } from 'lucide-react'
+import { Mail, Lock, Loader2, ArrowRight, Link as LinkIcon, Tag, MapPin, Globe, X, Sun, Moon, KeyRound } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { getTranslation, Language } from '@/lib/i18n'
 import { Logo } from '@/components/Logo'
+
+type AuthMode = 'login' | 'signup' | 'verify_email' | 'forgot_password' | 'reset_password' | 'magic_link'
 
 function LoginContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [isLoading, setIsLoading] = useState(false)
-  const [isSignUp, setIsSignUp] = useState(false)
+  const [authMode, setAuthMode] = useState<AuthMode>('login')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [code, setCode] = useState('')
   const [role, setRole] = useState<'master' | 'client'>('master')
   const [referredBy, setReferredBy] = useState('')
   const [error, setError] = useState('')
+  const [successMsg, setSuccessMsg] = useState('')
   const [language, setLanguage] = useState<string>('cs')
   const [theme, setTheme] = useState<'dark' | 'light'>('dark')
   const [tilt, setTilt] = useState({ x: 0, y: 0 })
 
   useEffect(() => {
-    // Add gyroscope listener for mobile parallax
     const handleTilt = (e: DeviceOrientationEvent) => {
       if (e.gamma !== null && e.beta !== null) {
         const x = Math.min(Math.max(e.gamma, -30), 30)
@@ -39,7 +42,6 @@ function LoginContent() {
   }, [])
 
   useEffect(() => {
-    // Read from URL params safely
     const registerParam = searchParams.get('register')
     const roleParam = searchParams.get('role')
 
@@ -48,10 +50,10 @@ function LoginContent() {
     }
 
     if (registerParam === 'client') {
-      setIsSignUp(true)
+      setAuthMode('signup')
       setRole('client')
     } else if (registerParam === 'master') {
-      setIsSignUp(true)
+      setAuthMode('signup')
       setRole('master')
     }
   }, [searchParams])
@@ -72,7 +74,7 @@ function LoginContent() {
   }, [])
 
   const toggleLanguage = () => {
-    const langs = ['cs', 'en', 'ru']
+    const langs = ['cs', 'en', 'ru', 'uk']
     const currentIndex = langs.indexOf(language)
     const newLang = langs[(currentIndex + 1) % langs.length] || 'cs'
     setLanguage(newLang)
@@ -94,16 +96,23 @@ function LoginContent() {
 
   const t = (key: Parameters<typeof getTranslation>[1]) => getTranslation(language as Language, key)
 
+  const handleAuthSuccess = (session: any, isSpecialAdmin: boolean = false) => {
+    if (session) {
+      const token = session.access_token
+      const maxAge = 60 * 60 * 24 * 7 // 7 days
+      document.cookie = `sb-access-token=${token};path=/;max-age=${maxAge};SameSite=Lax${window.location.protocol === 'https:' ? ';Secure' : ''}`
+      window.location.href = isSpecialAdmin ? '/admin' : '/dashboard'
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
     setError('')
+    setSuccessMsg('')
     
-
     try {
-      if (isSignUp) {
-        // Sign up
-
+      if (authMode === 'signup') {
         const { data, error: signUpError } = await supabase.auth.signUp({
           email,
           password,
@@ -115,22 +124,20 @@ function LoginContent() {
             }
           }
         })
-
-
         if (signUpError) throw signUpError
-
-        if (data.user) {
-          const token = data.session?.access_token
-          if (token) {
-            const maxAge = 60 * 60 * 24 * 7 // 7 days
-            document.cookie = `sb-access-token=${token};path=/;max-age=${maxAge};SameSite=Lax${window.location.protocol === 'https:' ? ';Secure' : ''}`
-          }
-
-          let redirectUrl = '/dashboard'
-          window.location.href = redirectUrl
+        if (data.session) {
+          handleAuthSuccess(data.session)
+        } else {
+          setAuthMode('verify_email')
         }
-      } else {
-        // Sign in
+      } 
+      else if (authMode === 'verify_email') {
+        const { data, error } = await supabase.auth.verifyOtp({ email, token: code, type: 'signup' })
+        if (error) throw error
+        if (data.session) handleAuthSuccess(data.session)
+        else throw new Error('No session returned')
+      }
+      else if (authMode === 'login') {
         let loginEmail = email
         let isSpecialAdmin = false
         
@@ -139,25 +146,35 @@ function LoginContent() {
           isSpecialAdmin = true
         }
 
-        const { data, error: signInError } = await supabase.auth.signInWithPassword({
-          email: loginEmail,
-          password,
-        })
-
-
+        const { data, error: signInError } = await supabase.auth.signInWithPassword({ email: loginEmail, password })
         if (signInError) throw signInError
-
+        if (data.session) handleAuthSuccess(data.session, isSpecialAdmin)
+        else throw new Error('No session returned')
+      }
+      else if (authMode === 'forgot_password') {
+        const { error } = await supabase.auth.resetPasswordForEmail(email)
+        if (error) throw error
+        setSuccessMsg(t('codeSent'))
+        setAuthMode('reset_password')
+      }
+      else if (authMode === 'reset_password') {
+        const { data, error } = await supabase.auth.verifyOtp({ email, token: code, type: 'recovery' })
+        if (error) throw error
         if (data.session) {
-
-          // Manually set cookie for middleware detection
-          const token = data.session.access_token
-          const maxAge = 60 * 60 * 24 * 7 // 7 days
-          document.cookie = `sb-access-token=${token};path=/;max-age=${maxAge};SameSite=Lax${window.location.protocol === 'https:' ? ';Secure' : ''}`
-
-          let redirectUrl = isSpecialAdmin ? '/admin' : '/dashboard'
-          window.location.href = redirectUrl
+          const { error: updateError } = await supabase.auth.updateUser({ password })
+          if (updateError) throw updateError
+          handleAuthSuccess(data.session)
+        }
+      }
+      else if (authMode === 'magic_link') {
+        if (!successMsg) {
+          const { error } = await supabase.auth.signInWithOtp({ email })
+          if (error) throw error
+          setSuccessMsg(t('codeSent'))
         } else {
-          throw new Error('No session returned')
+          const { data, error } = await supabase.auth.verifyOtp({ email, token: code, type: 'magiclink' })
+          if (error) throw error
+          if (data.session) handleAuthSuccess(data.session)
         }
       }
     } catch (err: any) {
@@ -168,10 +185,14 @@ function LoginContent() {
     }
   }
 
+  const isSignUp = authMode === 'signup'
+  const needsCode = authMode === 'verify_email' || authMode === 'reset_password' || (authMode === 'magic_link' && successMsg !== '')
+  const isForgotPassword = authMode === 'forgot_password' || authMode === 'reset_password'
+  
   return (
     <div className="min-h-[100dvh] flex flex-col md:flex-row overflow-hidden relative bg-neutral-50 dark:bg-[#050505] transition-colors duration-300">
       
-      {/* LEFT SIDE: Visuals & Branding (Hidden on small mobile, stacked on tablet, split on desktop) */}
+      {/* LEFT SIDE: Visuals & Branding */}
       <div className="relative w-full md:w-1/2 min-h-[30vh] md:min-h-screen flex flex-col items-center justify-center p-8 lg:p-16 overflow-hidden border-b md:border-b-0 md:border-r border-neutral-200/50 dark:border-white/5 bg-neutral-100 dark:bg-[#0a0a0a] text-neutral-900 dark:text-white transition-colors duration-300 z-0">
         
         {/* Dynamic Abstract Background Orb */}
@@ -314,18 +335,18 @@ function LoginContent() {
           {/* Glassmorphism Form Container */}
           <div className="bg-white/40 dark:bg-neutral-900/40 backdrop-blur-2xl border border-neutral-200/50 dark:border-white/5 shadow-2xl rounded-3xl overflow-hidden">
             
-            {/* Mode Switcher (Login / Register) */}
+            {/* Mode Switcher */}
             <div className="flex border-b border-neutral-200/50 dark:border-white/5">
               <button
                 type="button"
-                onClick={() => setIsSignUp(false)}
-                className={`flex-1 py-5 text-sm font-bold uppercase tracking-widest transition-all ${!isSignUp ? `text-neutral-900 dark:text-white bg-neutral-900/5 dark:bg-white/5 border-b-2 ${role === 'master' ? 'border-orange-500' : 'border-indigo-500'}` : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-300 hover:bg-neutral-900/5 dark:hover:bg-white/5'}`}
+                onClick={() => { setAuthMode('login'); setError(''); setSuccessMsg('') }}
+                className={`flex-1 py-5 text-sm font-bold uppercase tracking-widest transition-all ${!isSignUp && !isForgotPassword && authMode !== 'magic_link' ? `text-neutral-900 dark:text-white bg-neutral-900/5 dark:bg-white/5 border-b-2 ${role === 'master' ? 'border-orange-500' : 'border-indigo-500'}` : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-300 hover:bg-neutral-900/5 dark:hover:bg-white/5'}`}
               >
                 {t('loginTab')}
               </button>
               <button
                 type="button"
-                onClick={() => setIsSignUp(true)}
+                onClick={() => { setAuthMode('signup'); setError(''); setSuccessMsg('') }}
                 className={`flex-1 py-5 text-sm font-bold uppercase tracking-widest transition-all ${isSignUp ? `text-neutral-900 dark:text-white bg-neutral-900/5 dark:bg-white/5 border-b-2 ${role === 'master' ? 'border-orange-500' : 'border-indigo-500'}` : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-300 hover:bg-neutral-900/5 dark:hover:bg-white/5'}`}
               >
                 {t('registerTab')}
@@ -334,16 +355,41 @@ function LoginContent() {
 
             <div className="p-6 sm:p-8">
               <form id="login-form" className="space-y-6" onSubmit={handleSubmit}>
+                
+                {authMode === 'verify_email' && (
+                  <div className="text-center mb-6">
+                    <h2 className="text-xl font-bold dark:text-white">{t('verifyEmailTitle')}</h2>
+                    <p className="text-neutral-500 text-sm mt-2">{t('verifyEmailDesc')}</p>
+                  </div>
+                )}
+                {isForgotPassword && (
+                  <div className="text-center mb-6">
+                    <h2 className="text-xl font-bold dark:text-white">{t('forgotPassword')}</h2>
+                    <p className="text-neutral-500 text-sm mt-2">{t('verifyEmailDesc')}</p>
+                  </div>
+                )}
+
                 <AnimatePresence mode="popLayout">
                   {error && (
                     <motion.div 
                       initial={{ opacity: 0, height: 0, y: -10 }}
                       animate={{ opacity: 1, height: 'auto', y: 0 }}
                       exit={{ opacity: 0, height: 0, y: -10 }}
-                      className="bg-red-500/10 border border-red-500/20 rounded-2xl p-4 text-sm text-red-400 flex items-center gap-3 overflow-hidden"
+                      className="bg-red-500/10 border border-red-500/20 rounded-2xl p-4 text-sm text-red-400 flex items-center gap-3 overflow-hidden mb-4"
                     >
                       <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse flex-shrink-0" />
                       {error}
+                    </motion.div>
+                  )}
+                  {successMsg && (
+                    <motion.div 
+                      initial={{ opacity: 0, height: 0, y: -10 }}
+                      animate={{ opacity: 1, height: 'auto', y: 0 }}
+                      exit={{ opacity: 0, height: 0, y: -10 }}
+                      className="bg-green-500/10 border border-green-500/20 rounded-2xl p-4 text-sm text-green-500 flex items-center gap-3 overflow-hidden mb-4"
+                    >
+                      <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse flex-shrink-0" />
+                      {successMsg}
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -358,26 +404,64 @@ function LoginContent() {
                         required
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className={`block w-full pl-12 pr-4 py-4 bg-white/40 dark:bg-neutral-950/40 border border-neutral-200 dark:border-white/10 rounded-2xl text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-offset-0 transition-all backdrop-blur-md shadow-inner ${role === 'master' ? 'focus:border-orange-500 focus:ring-orange-500/20 focus:bg-orange-950/10' : 'focus:border-indigo-500 focus:ring-indigo-500/20 focus:bg-indigo-950/10'}`}
+                        disabled={needsCode}
+                        className={`block w-full pl-12 pr-4 py-4 bg-white/40 dark:bg-neutral-950/40 border border-neutral-200 dark:border-white/10 rounded-2xl text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-offset-0 transition-all backdrop-blur-md shadow-inner disabled:opacity-50 ${role === 'master' ? 'focus:border-orange-500 focus:ring-orange-500/20 focus:bg-orange-950/10' : 'focus:border-indigo-500 focus:ring-indigo-500/20 focus:bg-indigo-950/10'}`}
                         placeholder="E-mail"
                       />
                     </div>
                   </motion.div>
 
-                  <motion.div layout>
-                    <div className="relative group">
-                      <Lock className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500 transition-all duration-300 ${role === 'master' ? 'group-focus-within:text-orange-400' : 'group-focus-within:text-indigo-400'}`} />
-                      <input
-                        id="password"
-                        type="password"
-                        required
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        className={`block w-full pl-12 pr-4 py-4 bg-white/40 dark:bg-neutral-950/40 border border-neutral-200 dark:border-white/10 rounded-2xl text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-offset-0 transition-all backdrop-blur-md shadow-inner ${role === 'master' ? 'focus:border-orange-500 focus:ring-orange-500/20 focus:bg-orange-950/10' : 'focus:border-indigo-500 focus:ring-indigo-500/20 focus:bg-indigo-950/10'}`}
-                        placeholder={t('passwordAuth')}
-                      />
-                    </div>
-                  </motion.div>
+                  {!needsCode && authMode !== 'forgot_password' && authMode !== 'magic_link' && (
+                    <motion.div layout>
+                      <div className="relative group">
+                        <Lock className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500 transition-all duration-300 ${role === 'master' ? 'group-focus-within:text-orange-400' : 'group-focus-within:text-indigo-400'}`} />
+                        <input
+                          id="password"
+                          type="password"
+                          required
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          className={`block w-full pl-12 pr-4 py-4 bg-white/40 dark:bg-neutral-950/40 border border-neutral-200 dark:border-white/10 rounded-2xl text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-offset-0 transition-all backdrop-blur-md shadow-inner ${role === 'master' ? 'focus:border-orange-500 focus:ring-orange-500/20 focus:bg-orange-950/10' : 'focus:border-indigo-500 focus:ring-indigo-500/20 focus:bg-indigo-950/10'}`}
+                          placeholder={t('passwordAuth')}
+                        />
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {authMode === 'reset_password' && (
+                    <motion.div layout>
+                      <div className="relative group">
+                        <Lock className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500 transition-all duration-300 ${role === 'master' ? 'group-focus-within:text-orange-400' : 'group-focus-within:text-indigo-400'}`} />
+                        <input
+                          id="new-password"
+                          type="password"
+                          required
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          className={`block w-full pl-12 pr-4 py-4 bg-white/40 dark:bg-neutral-950/40 border border-neutral-200 dark:border-white/10 rounded-2xl text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-offset-0 transition-all backdrop-blur-md shadow-inner ${role === 'master' ? 'focus:border-orange-500 focus:ring-orange-500/20 focus:bg-orange-950/10' : 'focus:border-indigo-500 focus:ring-indigo-500/20 focus:bg-indigo-950/10'}`}
+                          placeholder={t('newPassword')}
+                        />
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {needsCode && (
+                    <motion.div layout initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}>
+                      <div className="relative group">
+                        <KeyRound className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500 transition-all duration-300 ${role === 'master' ? 'group-focus-within:text-orange-400' : 'group-focus-within:text-indigo-400'}`} />
+                        <input
+                          id="code"
+                          type="text"
+                          required
+                          value={code}
+                          onChange={(e) => setCode(e.target.value)}
+                          className={`block w-full pl-12 pr-4 py-4 bg-white/40 dark:bg-neutral-950/40 border border-neutral-200 dark:border-white/10 rounded-2xl text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-offset-0 transition-all backdrop-blur-md shadow-inner tracking-widest font-mono text-center text-lg ${role === 'master' ? 'focus:border-orange-500 focus:ring-orange-500/20 focus:bg-orange-950/10' : 'focus:border-indigo-500 focus:ring-indigo-500/20 focus:bg-indigo-950/10'}`}
+                          placeholder="------"
+                          maxLength={6}
+                        />
+                      </div>
+                    </motion.div>
+                  )}
 
                   {isSignUp && role === 'master' && (
                     <motion.div 
@@ -447,22 +531,37 @@ function LoginContent() {
                     <Loader2 className="w-6 h-6 animate-spin" />
                   ) : (
                     <>
-                      {isSignUp ? t('createAccount') : t('signIn')}
+                      {authMode === 'signup' ? t('createAccount') : 
+                       authMode === 'login' ? t('signIn') : 
+                       (authMode === 'forgot_password' || (authMode === 'magic_link' && !successMsg)) ? t('nextBtn') : 
+                       t('confirmBtn')}
                       <ArrowRight className="w-5 h-5" />
                     </>
                   )}
                 </motion.button>
               </form>
+
+              {authMode === 'login' && (
+                <div className="mt-6 flex flex-col items-center gap-3 text-sm font-medium">
+                  <button type="button" onClick={() => { setAuthMode('forgot_password'); setError(''); setSuccessMsg('') }} className="text-neutral-500 hover:text-neutral-900 dark:hover:text-white transition-colors">{t('forgotPassword')}</button>
+                  <button type="button" onClick={() => { setAuthMode('magic_link'); setError(''); setSuccessMsg('') }} className={`transition-colors ${role === 'master' ? 'text-orange-500 hover:text-orange-600' : 'text-indigo-500 hover:text-indigo-600'}`}>{t('loginWithCode')}</button>
+                </div>
+              )}
+              {authMode === 'magic_link' && (
+                <div className="mt-6 flex justify-center">
+                  <button type="button" onClick={() => { setAuthMode('login'); setError(''); setSuccessMsg('') }} className="text-neutral-500 hover:text-neutral-900 dark:hover:text-white transition-colors text-sm font-medium">{t('loginWithPassword')}</button>
+                </div>
+              )}
             </div>
           </div>
 
-          {!isSignUp && (
+          {!isSignUp && authMode === 'login' && (
             <p className="text-center text-xs font-medium text-neutral-500 px-4 leading-relaxed">
               {t('termsAgreement')}
             </p>
           )}
 
-          <div className="flex flex-wrap justify-center gap-4 text-xs font-semibold text-neutral-600">
+          <div className="flex flex-wrap justify-center gap-4 text-xs font-semibold text-neutral-600 mt-8">
             <a href="/terms" className="hover:text-neutral-950 dark:hover:text-white transition-colors uppercase tracking-wider">Terms of Service</a>
             <span>&middot;</span>
             <a href="/privacy" className="hover:text-neutral-950 dark:hover:text-white transition-colors uppercase tracking-wider">Privacy Policy</a>
