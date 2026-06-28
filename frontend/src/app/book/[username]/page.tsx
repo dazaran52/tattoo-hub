@@ -211,7 +211,7 @@ export default function BookMasterPage({ params }: { params: { username: string 
 
           {master.portfolio_url && (
             <a 
-              href={master.portfolio_url} 
+              href={master.portfolio_url.startsWith('http') ? master.portfolio_url : `https://${master.portfolio_url}`} 
               target="_blank" 
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 px-5 py-2.5 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-900 dark:text-white rounded-full transition-colors font-medium text-sm"
