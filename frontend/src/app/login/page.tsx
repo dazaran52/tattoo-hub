@@ -458,7 +458,7 @@ function LoginContent() {
                           onChange={(e) => setCode(e.target.value.replace(/\s+/g, ''))}
                           className={`block w-full pl-12 pr-4 py-4 bg-white/40 dark:bg-neutral-950/40 border border-neutral-200 dark:border-white/10 rounded-2xl text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-offset-0 transition-all backdrop-blur-md shadow-inner tracking-widest font-mono text-center text-lg ${role === 'master' ? 'focus:border-orange-500 focus:ring-orange-500/20 focus:bg-orange-950/10' : 'focus:border-indigo-500 focus:ring-indigo-500/20 focus:bg-indigo-950/10'}`}
                           placeholder="------"
-                          maxLength={10}
+                          maxLength={6}
                         />
                       </div>
                     </motion.div>
