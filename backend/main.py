@@ -175,7 +175,7 @@ def create_application() -> FastAPI:
     @app.get("/health")
     async def health_check():
         """Health check endpoint."""
-        return {"status": "ok", "service": "tattoo-hub-api"}
+        return {"status": "ok", "service": "tattoo-hub-api", "auto_deploy": "working"}
     
     @app.get("/")
     async def root():
