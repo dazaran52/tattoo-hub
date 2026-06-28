@@ -152,29 +152,23 @@ function LoginContent() {
         else throw new Error('No session returned')
       }
       else if (authMode === 'forgot_password') {
-        const { error } = await supabase.auth.resetPasswordForEmail(email)
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: `${window.location.origin}/auth/callback?next=/update-password`
+        })
         if (error) throw error
-        setSuccessMsg(t('codeSent'))
-        setAuthMode('reset_password')
-      }
-      else if (authMode === 'reset_password') {
-        const { data, error } = await supabase.auth.verifyOtp({ email, token: code, type: 'recovery' })
-        if (error) throw error
-        if (data.session) {
-          const { error: updateError } = await supabase.auth.updateUser({ password })
-          if (updateError) throw updateError
-          handleAuthSuccess(data.session)
-        }
+        setSuccessMsg(t('codeSent')) // Text can be repurposed for 'link sent'
       }
       else if (authMode === 'magic_link') {
         if (!successMsg) {
-          const { error } = await supabase.auth.signInWithOtp({ email })
+          const { error } = await supabase.auth.signInWithOtp({ 
+            email,
+            options: {
+              shouldCreateUser: false,
+              emailRedirectTo: `${window.location.origin}/auth/callback?next=/dashboard`
+            }
+          })
           if (error) throw error
-          setSuccessMsg(t('codeSent'))
-        } else {
-          const { data, error } = await supabase.auth.verifyOtp({ email, token: code, type: 'magiclink' })
-          if (error) throw error
-          if (data.session) handleAuthSuccess(data.session)
+          setSuccessMsg(t('codeSent')) // Text can be repurposed for 'link sent'
         }
       }
     } catch (err: any) {
@@ -186,8 +180,8 @@ function LoginContent() {
   }
 
   const isSignUp = authMode === 'signup'
-  const needsCode = authMode === 'verify_email' || authMode === 'reset_password' || (authMode === 'magic_link' && successMsg !== '')
-  const isForgotPassword = authMode === 'forgot_password' || authMode === 'reset_password'
+  const needsCode = authMode === 'verify_email'
+  const isForgotPassword = authMode === 'forgot_password'
   
   return (
     <div className="min-h-[100dvh] flex flex-col md:flex-row overflow-hidden relative bg-neutral-50 dark:bg-[#050505] transition-colors duration-300">
@@ -428,23 +422,6 @@ function LoginContent() {
                     </motion.div>
                   )}
 
-                  {authMode === 'reset_password' && (
-                    <motion.div layout>
-                      <div className="relative group">
-                        <Lock className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500 transition-all duration-300 ${role === 'master' ? 'group-focus-within:text-orange-400' : 'group-focus-within:text-indigo-400'}`} />
-                        <input
-                          id="new-password"
-                          type="password"
-                          required
-                          value={password}
-                          onChange={(e) => setPassword(e.target.value)}
-                          className={`block w-full pl-12 pr-4 py-4 bg-white/40 dark:bg-neutral-950/40 border border-neutral-200 dark:border-white/10 rounded-2xl text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-offset-0 transition-all backdrop-blur-md shadow-inner ${role === 'master' ? 'focus:border-orange-500 focus:ring-orange-500/20 focus:bg-orange-950/10' : 'focus:border-indigo-500 focus:ring-indigo-500/20 focus:bg-indigo-950/10'}`}
-                          placeholder={t('newPassword')}
-                        />
-                      </div>
-                    </motion.div>
-                  )}
-
                   {needsCode && (
                     <motion.div layout initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}>
                       <div className="relative group">
@@ -520,7 +497,7 @@ function LoginContent() {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   type="submit"
-                  disabled={isLoading}
+                  disabled={isLoading || !!successMsg}
                   className={`w-full flex items-center justify-center gap-3 py-4 px-6 text-white text-lg font-bold rounded-2xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed ${
                     role === 'master' 
                       ? 'bg-gradient-to-r from-orange-600 to-amber-500 hover:from-orange-500 hover:to-amber-400 shadow-[0_10px_30px_rgba(234,88,12,0.3)] hover:shadow-[0_10px_40px_rgba(234,88,12,0.5)] border border-orange-500/50' 

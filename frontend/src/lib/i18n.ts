@@ -122,6 +122,14 @@ type Translations = {
     // Auth
     loginTab: string;
     registerTab: string;
+    verifyEmailTitle: string;
+    verifyEmailDesc: string;
+    forgotPassword: string;
+    codeSent: string;
+    nextBtn: string;
+    confirmBtn: string;
+    loginWithCode: string;
+    loginWithPassword: string;
     loginMasterTitle: string;
     loginClientTitle: string;
     loginMasterDesc: string;
@@ -319,6 +327,14 @@ const translations: Translations = {
     // Auth
     loginTab: 'Přihlásit se',
     registerTab: 'Registrace',
+    verifyEmailTitle: 'Potvrďte svůj email',
+    verifyEmailDesc: 'Na váš email byl odeslán 6místný kód. Zadejte jej níže pro potvrzení.',
+    forgotPassword: 'Zapomněli jste heslo?',
+    codeSent: 'Odkaz byl odeslán na váš email.',
+    nextBtn: 'Další',
+    confirmBtn: 'Potvrdit',
+    loginWithCode: 'Přihlásit se pomocí kódu (rychle)',
+    loginWithPassword: 'Přihlásit se heslem',
     loginMasterTitle: 'Spravujte své podnikání.',
     loginClientTitle: 'Najděte ideálního mistra.',
     loginMasterDesc: 'Prémiová platforma pro tatéry. Získejte klienty, spravujte rezervace a rozšiřujte se.',
@@ -513,6 +529,14 @@ const translations: Translations = {
     // Auth
     loginTab: 'Вход',
     registerTab: 'Регистрация',
+    verifyEmailTitle: 'Подтвердите почту',
+    verifyEmailDesc: 'Мы отправили 6-значный код на вашу почту. Введите его ниже.',
+    forgotPassword: 'Забыли пароль?',
+    codeSent: 'Ссылка отправлена на вашу почту.',
+    nextBtn: 'Далее',
+    confirmBtn: 'Подтвердить',
+    loginWithCode: 'Войти по коду (быстро)',
+    loginWithPassword: 'Войти по паролю',
     loginMasterTitle: 'Управляйте своим бизнесом.',
     loginClientTitle: 'Найдите идеального мастера.',
     loginMasterDesc: 'Premium платформа для тату-мастеров. Получайте клиентов, ведите запись и масштабируйтесь.',
@@ -707,6 +731,14 @@ const translations: Translations = {
     // Auth
     loginTab: 'Login',
     registerTab: 'Register',
+    verifyEmailTitle: 'Confirm your email',
+    verifyEmailDesc: 'We sent a 6-digit code to your email. Enter it below.',
+    forgotPassword: 'Forgot password?',
+    codeSent: 'Link sent to your email.',
+    nextBtn: 'Next',
+    confirmBtn: 'Confirm',
+    loginWithCode: 'Login with code (fast)',
+    loginWithPassword: 'Login with password',
     loginMasterTitle: 'Manage your business.',
     loginClientTitle: 'Find your perfect artist.',
     loginMasterDesc: 'Premium platform for tattoo artists. Get clients, manage bookings, and scale.',
@@ -901,6 +933,14 @@ const translations: Translations = {
     // Auth
     loginTab: 'Вхід',
     registerTab: 'Реєстрация',
+    verifyEmailTitle: 'Підтвердіть пошту',
+    verifyEmailDesc: 'Ми відправили 6-значний код на вашу пошту. Введіть його нижче.',
+    forgotPassword: 'Забули пароль?',
+    codeSent: 'Посилання відправлено на вашу пошту.',
+    nextBtn: 'Далі',
+    confirmBtn: 'Підтвердити',
+    loginWithCode: 'Увійти за кодом (швидко)',
+    loginWithPassword: 'Увійти за паролем',
     loginMasterTitle: 'Керуйте своїм бізнесом.',
     loginClientTitle: 'Знайдіть ідеального майстра.',
     loginMasterDesc: 'Premium платформа для тату-майстрів. Отримуйте клієнтів, ведіть запис і масштабуйтеся.',
