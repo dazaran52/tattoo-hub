@@ -116,13 +116,13 @@ async def create_manual_client(
         # Check for existing
         or_conditions = []
         if data.phone and data.phone.strip():
-            or_conditions.append(f"phone.eq.{data.phone.strip()}")
+            or_conditions.append(f'phone.eq."{data.phone.strip()}"')
         if data.telegram and data.telegram.strip():
-            or_conditions.append(f"telegram.eq.{data.telegram.strip()}")
+            or_conditions.append(f'telegram.eq."{data.telegram.strip()}"')
         if data.instagram and data.instagram.strip():
-            or_conditions.append(f"instagram.eq.{data.instagram.strip()}")
+            or_conditions.append(f'instagram.eq."{data.instagram.strip()}"')
         if data.email and data.email.strip():
-            or_conditions.append(f"email.eq.{data.email.strip()}")
+            or_conditions.append(f'email.eq."{data.email.strip()}"')
             
         if or_conditions:
             query = supabase.table("master_clients").select("id, name") \
