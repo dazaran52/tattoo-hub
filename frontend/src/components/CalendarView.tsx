@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { ChevronLeft, ChevronRight, Clock, Coffee, Plus, Calendar as CalendarIcon, PlayCircle, CheckCircle, Trash2, Edit3, Loader2 } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Clock, Coffee, Plus, Calendar as CalendarIcon, PlayCircle, CheckCircle, Trash2, Edit3, Loader2, Maximize2, Minimize2 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { supabase } from '@/lib/supabase'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -35,6 +35,7 @@ export function CalendarView({ sessions, onUpdate }: CalendarViewProps) {
   const [sessionToEdit, setSessionToEdit] = useState<CRMSession | null>(null)
   const [clientNameForWaiver, setClientNameForWaiver] = useState('')
   const [isSessionModalOpen, setIsSessionModalOpen] = useState(false)
+  const [isSidebarExpanded, setIsSidebarExpanded] = useState(false)
   const [clientsForModal, setClientsForModal] = useState<CRMClient[]>([])
 
   useEffect(() => {
@@ -267,13 +268,13 @@ export function CalendarView({ sessions, onUpdate }: CalendarViewProps) {
       {/* Daily Schedule Sidebar / Modal */}
       <AnimatePresence>
         {selectedDate && (
-          <div className="fixed inset-0 z-50 flex justify-end bg-black/20 backdrop-blur-sm" onClick={(e) => { if (e.target === e.currentTarget) setIsSessionModalOpen(false) }}>
+          <div className="fixed inset-0 z-50 flex justify-end bg-black/20 backdrop-blur-sm" onClick={(e) => { if (e.target === e.currentTarget) setSelectedDate(null) }}>
             <motion.div
               initial={{ x: '100%' }}
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="bg-white dark:bg-neutral-900 w-full max-w-md h-full shadow-2xl flex flex-col"
+              className={`bg-white dark:bg-neutral-900 w-full h-full shadow-2xl flex flex-col transition-all duration-300 ${isSidebarExpanded ? 'max-w-full' : 'max-w-md'}`}
             >
               <div className="p-6 border-b border-neutral-100 dark:border-neutral-800 flex justify-between items-center">
                 <div className="flex items-center gap-3">
@@ -285,9 +286,14 @@ export function CalendarView({ sessions, onUpdate }: CalendarViewProps) {
                     <p className="text-sm text-neutral-500">{new Date(selectedDate).toLocaleDateString('ru-RU', { weekday: 'long', day: 'numeric', month: 'long' })}</p>
                   </div>
                 </div>
-                <button onClick={() => setSelectedDate(null)} className="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-full transition-colors">
-                  <Plus className="w-5 h-5 rotate-45 text-neutral-400" />
-                </button>
+                <div className="flex items-center gap-2">
+                  <button onClick={() => setIsSidebarExpanded(!isSidebarExpanded)} className="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-full transition-colors" title={isSidebarExpanded ? "Свернуть" : "Развернуть"}>
+                    {isSidebarExpanded ? <Minimize2 className="w-5 h-5 text-neutral-400" /> : <Maximize2 className="w-5 h-5 text-neutral-400" />}
+                  </button>
+                  <button onClick={() => setSelectedDate(null)} className="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-full transition-colors">
+                    <Plus className="w-5 h-5 rotate-45 text-neutral-400" />
+                  </button>
+                </div>
               </div>
 
               <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-neutral-50 dark:bg-neutral-900/50">
