@@ -5,12 +5,13 @@ const protectedRoutes = ['/dashboard', '/profile', '/settings']
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  // Check for Supabase auth cookie - try all possible names
-  const hasAuthCookie = 
-    request.cookies.get('sb-access-token')?.value ||
-    request.cookies.get('sb-refresh-token')?.value ||
-    request.cookies.get('supabase-auth-token')?.value ||
-    request.cookies.get(`sb-${process.env.NEXT_PUBLIC_SUPABASE_URL?.split('.')[0]?.split('//')[1]}-auth-token`)?.value
+  // Check for Supabase auth cookie - try all possible names and chunked cookies
+  const allCookies = request.cookies.getAll()
+  const hasAuthCookie = allCookies.some(cookie => 
+    cookie.name.includes('-auth-token') || 
+    cookie.name === 'sb-access-token' || 
+    cookie.name === 'sb-refresh-token'
+  )
 
   const isProtectedRoute = protectedRoutes.some(route => 
     pathname.startsWith(route)
