@@ -165,7 +165,7 @@ export default function OnboardingPage() {
                     className="w-full pl-12 pr-4 py-4 bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-2xl focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-all"
                   />
                 </div>
-                <p className="text-xs text-neutral-500 ml-1">Обязательно для верификации вашего профиля администратором.</p>
+                <p className="text-xs text-neutral-500 ml-1">Обязательно, чтобы клиенты могли ознакомиться с вашими работами.</p>
               </motion.div>
             )}
           </AnimatePresence>

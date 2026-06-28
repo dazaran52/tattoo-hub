@@ -20,7 +20,7 @@ export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true)
   const { t, lang: language } = useLanguage()
   const [currentSession, setCurrentSession] = useState<any>(null)
-  const [activeTab, setActiveTab] = useState<'feed' | 'my-leads' | 'auctions' | 'crm' | 'messages'>('feed')
+  const [activeTab, setActiveTab] = useState<'feed' | 'my-leads' | 'auctions' | 'crm' | 'messages'>('crm')
 
   useEffect(() => {
     fetchProfile()
