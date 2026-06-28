@@ -14,14 +14,28 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Deploy to VPS
+      - name: Copy backend files via scp
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          password: ${{ secrets.SERVER_PASSWORD }}
+          source: "backend/*"
+          target: "/app"
+          strip_components: 0
+
+      - name: Restart backend service
         uses: appleboy/ssh-action@v0.1.10
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SERVER_SSH_KEY }}
           password: ${{ secrets.SERVER_PASSWORD }}
           script: |
-            cd /root/tattoo-hub/backend || cd /home/ubuntu/tattoo-hub/backend || cd /home/dazaran/tattoo-hub/backend || cd /home/dazaran/tattoo-hub || cd /var/www/tattoo-hub/backend
-            chmod +x deploy.sh
-            ./deploy.sh
+            cd /app/backend
+            # Install any new dependencies if needed
+            if [ -d ".venv" ]; then
+                source .venv/bin/activate
+                pip install -r requirements.txt
+            fi
+            # Restart the service
+            systemctl restart tattoohub.service
