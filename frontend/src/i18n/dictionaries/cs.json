@@ -249,5 +249,9 @@
   "confirmBtn": "Potvrdit",
   "resetBtn": "Obnovit heslo",
   "passwordChanged": "Heslo bylo úspěšně změněno!",
-  "codeSent": "Kód byl odeslán! Zkontrolujte svůj e-mail."
+  "codeSent": "Kód byl odeslán! Zkontrolujte svůj e-mail.",
+  "changeEmail": "Změnit e-mail",
+  "changeEmailDesc": "Zadejte nový e-mail. Na oba e-maily vám přijde potvrzovací odkaz.",
+  "newEmail": "Nový e-mail",
+  "emailSuccess": "Potvrzovací odkaz byl odeslán na nový e-mail"
 }

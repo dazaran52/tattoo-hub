@@ -278,5 +278,9 @@
   "confirmBtn": "Confirm",
   "resetBtn": "Reset password",
   "passwordChanged": "Password successfully changed!",
-  "codeSent": "Code sent! Check your email."
+  "codeSent": "Code sent! Check your email.",
+  "changeEmail": "Change Email",
+  "changeEmailDesc": "Enter a new email address. Confirmation links will be sent to both your old and new email.",
+  "newEmail": "New Email",
+  "emailSuccess": "Confirmation link sent to your new email"
 }
