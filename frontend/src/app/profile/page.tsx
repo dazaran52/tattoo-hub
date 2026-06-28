@@ -72,6 +72,13 @@ export default function ProfilePage() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [deleteConfirmText, setDeleteConfirmText] = useState('')
 
+  // Email change state
+  const [showEmailForm, setShowEmailForm] = useState(false)
+  const [newEmail, setNewEmail] = useState('')
+  const [isChangingEmail, setIsChangingEmail] = useState(false)
+  const [emailError, setEmailError] = useState<string | null>(null)
+  const [emailSuccess, setEmailSuccess] = useState(false)
+
   useEffect(() => {
     fetchProfile()
     loadSettings()
@@ -245,7 +252,7 @@ export default function ProfilePage() {
     }
 
     if (newPassword !== confirmPassword) {
-      setPasswordError('Hesla se neshodují')
+      setPasswordError(t('passwordMismatch'))
       return
     }
 
@@ -263,6 +270,31 @@ export default function ProfilePage() {
       setPasswordError(err instanceof Error ? err.message : 'Nepodařilo se změnit heslo')
     } finally {
       setIsChangingPassword(false)
+    }
+  }
+
+  const handleEmailChange = async () => {
+    setEmailError(null)
+    setEmailSuccess(false)
+
+    if (!newEmail || !newEmail.includes('@')) {
+      setEmailError(language === 'ru' ? 'Неверный формат email' : 'Invalid email format')
+      return
+    }
+
+    try {
+      setIsChangingEmail(true)
+      const { error } = await supabase.auth.updateUser({ email: newEmail })
+      if (error) throw error
+
+      setEmailSuccess(true)
+      setNewEmail('')
+      setShowEmailForm(false)
+      setTimeout(() => setEmailSuccess(false), 5000)
+    } catch (err) {
+      setEmailError(err instanceof Error ? err.message : 'Nepodařilo se změnit email')
+    } finally {
+      setIsChangingEmail(false)
     }
   }
 
@@ -931,6 +963,68 @@ export default function ProfilePage() {
                   </>
                 )}
               </div>
+            </div>
+
+            {/* Email Change */}
+            <div className="p-6 border-b border-neutral-200/50 dark:border-white/5">
+              <div className="flex items-center gap-2 mb-4">
+                <Mail className="w-5 h-5 text-neutral-600 dark:text-neutral-400" />
+                <p className="text-neutral-900 dark:text-white font-bold">{t('changeEmail')}</p>
+              </div>
+
+              {emailSuccess && (
+                <div className="bg-green-500/10 border border-green-500/20 text-green-600 dark:text-green-400 p-3.5 rounded-xl mb-4 flex items-center gap-2 font-medium">
+                  <Check className="w-4 h-4" />
+                  {t('emailSuccess')}
+                </div>
+              )}
+
+              {emailError && (
+                <div className="bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 p-3.5 rounded-xl mb-4 text-sm font-medium">
+                  {emailError}
+                </div>
+              )}
+
+              {!showEmailForm ? (
+                <button
+                  onClick={() => setShowEmailForm(true)}
+                  className="text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white transition-colors text-sm font-semibold pl-7"
+                >
+                  {t('changeEmail')} →
+                </button>
+              ) : (
+                <div className="space-y-4 pl-7">
+                  <p className="text-xs text-neutral-500 dark:text-neutral-400">{t('changeEmailDesc')}</p>
+                  <div>
+                    <input
+                      type="email"
+                      value={newEmail}
+                      onChange={(e) => setNewEmail(e.target.value)}
+                      placeholder={t('newEmail')}
+                      className="w-full bg-white/40 dark:bg-neutral-950/40 border border-neutral-200 dark:border-white/10 rounded-xl px-4 py-2.5 text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 transition-all shadow-inner"
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={handleEmailChange}
+                      disabled={isChangingEmail || !newEmail}
+                      className="px-5 py-2.5 bg-neutral-900 dark:bg-white text-white dark:text-neutral-950 rounded-xl font-bold hover:bg-neutral-800 dark:hover:bg-neutral-100 transition-all disabled:opacity-50 text-sm"
+                    >
+                      {isChangingEmail ? t('loading') : t('changeEmail')}
+                    </button>
+                    <button
+                      onClick={() => {
+                        setShowEmailForm(false)
+                        setNewEmail('')
+                        setEmailError(null)
+                      }}
+                      className="px-5 py-2.5 bg-neutral-200/50 dark:bg-neutral-800 text-neutral-900 dark:text-white rounded-xl hover:bg-neutral-300 dark:hover:bg-neutral-700 transition-all text-sm font-semibold"
+                    >
+                      {t('cancel')}
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Password Change */}

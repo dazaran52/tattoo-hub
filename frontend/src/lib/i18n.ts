@@ -45,6 +45,12 @@ type Translations = {
     confirmPassword: string;
     passwordSuccess: string;
     
+    // Email Change
+    changeEmail: string;
+    newEmail: string;
+    changeEmailDesc: string;
+    emailSuccess: string;
+    
     // Account
     dangerZone: string;
     deleteAccount: string;
@@ -131,6 +137,11 @@ type Translations = {
     loginWithCode: string;
     loginWithPassword: string;
     loginMasterTitle: string;
+    
+    // Auth Options
+    continueWithGoogle: string;
+    or: string;
+
     loginClientTitle: string;
     loginMasterDesc: string;
     loginClientDesc: string;
@@ -257,6 +268,11 @@ const translations: Translations = {
     confirmPassword: 'Potvrdit heslo',
     passwordSuccess: 'Heslo bylo změněno',
     
+    changeEmail: 'Změna emailu',
+    newEmail: 'Nový email',
+    changeEmailDesc: 'Zadejte nový email. Na oba emaily vám přijde potvrzovací odkaz.',
+    emailSuccess: 'Potvrzovací odkazy odeslány. Zkontrolujte prosím oba emaily.',
+    
     dangerZone: 'Nebezpečná zóna',
     deleteAccount: 'Smazat účet',
     deleteWarning: 'Tato akce je nevratná',
@@ -336,6 +352,10 @@ const translations: Translations = {
     loginWithCode: 'Přihlásit se pomocí kódu (rychle)',
     loginWithPassword: 'Přihlásit se heslem',
     loginMasterTitle: 'Spravujte své podnikání.',
+    
+    continueWithGoogle: 'Pokračovat s Googlem',
+    or: 'nebo',
+
     loginClientTitle: 'Najděte ideálního mistra.',
     loginMasterDesc: 'Prémiová platforma pro tatéry. Získejte klienty, spravujte rezervace a rozšiřujte se.',
     loginClientDesc: 'Stovky ověřených profesionálů, snadné vyhledávání a bezpečná rezervace termínu.',
@@ -459,6 +479,11 @@ const translations: Translations = {
     confirmPassword: 'Подтвердить пароль',
     passwordSuccess: 'Пароль изменен',
     
+    changeEmail: 'Сменить Email',
+    newEmail: 'Новый Email',
+    changeEmailDesc: 'Введите новый email. На старую и новую почту придут ссылки для подтверждения.',
+    emailSuccess: 'Ссылки для подтверждения отправлены. Пожалуйста, проверьте обе почты.',
+    
     dangerZone: 'Опасная зона',
     deleteAccount: 'Удалить аккаунт',
     deleteWarning: 'Это действие нельзя отменить',
@@ -538,6 +563,10 @@ const translations: Translations = {
     loginWithCode: 'Войти по коду (быстро)',
     loginWithPassword: 'Войти по паролю',
     loginMasterTitle: 'Управляйте своим бизнесом.',
+    
+    continueWithGoogle: 'Продолжить с Google',
+    or: 'или',
+
     loginClientTitle: 'Найдите идеального мастера.',
     loginMasterDesc: 'Premium платформа для тату-мастеров. Получайте клиентов, ведите запись и масштабируйтесь.',
     loginClientDesc: 'Сотни проверенных профессионалов, удобный поиск и безопасная запись на сеанс.',
@@ -661,6 +690,11 @@ const translations: Translations = {
     confirmPassword: 'Confirm Password',
     passwordSuccess: 'Password changed successfully',
     
+    changeEmail: 'Change Email',
+    newEmail: 'New Email',
+    changeEmailDesc: 'Enter a new email address. Confirmation links will be sent to both your old and new email.',
+    emailSuccess: 'Confirmation links sent. Please check both email inboxes.',
+    
     dangerZone: 'Danger Zone',
     deleteAccount: 'Delete Account',
     deleteWarning: 'This action cannot be undone',
@@ -740,6 +774,10 @@ const translations: Translations = {
     loginWithCode: 'Login with code (fast)',
     loginWithPassword: 'Login with password',
     loginMasterTitle: 'Manage your business.',
+    
+    continueWithGoogle: 'Continue with Google',
+    or: 'or',
+
     loginClientTitle: 'Find your perfect artist.',
     loginMasterDesc: 'Premium platform for tattoo artists. Get clients, manage bookings, and scale.',
     loginClientDesc: 'Hundreds of verified professionals, easy search and safe bookings.',
@@ -863,6 +901,11 @@ const translations: Translations = {
     confirmPassword: 'Підтвердити пароль',
     passwordSuccess: 'Пароль змінено',
     
+    changeEmail: 'Змінити Email',
+    newEmail: 'Новий Email',
+    changeEmailDesc: 'Введіть новий email. На стару та нову пошту прийдуть посилання для підтвердження.',
+    emailSuccess: 'Посилання для підтвердження відправлено. Будь ласка, перевірте обидві пошти.',
+    
     dangerZone: 'Небезпечна зона',
     deleteAccount: 'Видалити акаунт',
     deleteWarning: 'Цю дію неможливо скасувати',
@@ -942,6 +985,10 @@ const translations: Translations = {
     loginWithCode: 'Увійти за кодом (швидко)',
     loginWithPassword: 'Увійти за паролем',
     loginMasterTitle: 'Керуйте своїм бізнесом.',
+    
+    continueWithGoogle: 'Продовжити з Google',
+    or: 'або',
+
     loginClientTitle: 'Знайдіть ідеального майстра.',
     loginMasterDesc: 'Premium платформа для тату-майстрів. Отримуйте клієнтів, ведіть запис і масштабуйтеся.',
     loginClientDesc: 'Сотні перевірених професіоналів, зручний пошук і безпечний запис на сеанс.',
