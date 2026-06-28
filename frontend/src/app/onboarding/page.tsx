@@ -158,10 +158,10 @@ export default function OnboardingPage() {
                   <div className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400">@</div>
                   <input
                     required
-                    type="url"
+                    type="text"
                     value={portfolioUrl}
                     onChange={e => setPortfolioUrl(e.target.value)}
-                    placeholder="https://instagram.com/..."
+                    placeholder="instagram.com/..."
                     className="w-full pl-12 pr-4 py-4 bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-2xl focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-all"
                   />
                 </div>
