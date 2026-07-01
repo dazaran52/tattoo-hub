@@ -158,12 +158,16 @@ export default function OnboardingPage() {
           >
             <div className="text-center mb-8">
           <h1 className="text-3xl font-bold mb-2">Добро пожаловать! 🎉</h1>
-          <p className="text-neutral-500">Остался всего один шаг перед тем, как вы начнете работу.</p>
+          <p className="text-neutral-500">
+            Остался всего один шаг перед тем, как вы начнете {profile?.role === 'master' ? 'работу' : 'пользоваться сервисом'}.
+          </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
-            <label className="text-sm font-medium ml-1">Как вас зовут? (Или название студии)</label>
+            <label className="text-sm font-medium ml-1">
+              {profile?.role === 'master' ? 'Как вас зовут? (Или название студии)' : 'Как вас зовут?'}
+            </label>
             <div className="relative">
               <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
               <input
