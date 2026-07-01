@@ -12,15 +12,6 @@ const nextConfig = {
   images: {
     domains: [],
   },
-  async redirects() {
-    return [
-      {
-        source: '/settings',
-        destination: '/profile',
-        permanent: true,
-      },
-    ]
-  },
   async rewrites() {
     return [
       {
