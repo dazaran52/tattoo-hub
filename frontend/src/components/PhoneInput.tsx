@@ -121,6 +121,8 @@ export function PhoneInput({ value, onChange, placeholder = "Номер теле
   const maxLocalPartLength = selectedCountry.mask.replace(/[^#]/g, '').length
   const charsRemaining = maxLocalPartLength - currentLocalPartLength
 
+  const fullPlaceholder = selectedCountry.dialCode ? `+${selectedCountry.dialCode} ${selectedCountry.mask.replace(/#/g, '_')}` : ''
+
   return (
     <div className="relative w-full" ref={dropdownRef}>
       <div className="flex items-center w-full bg-neutral-100 dark:bg-neutral-800 rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-violet-500/20 transition-all">
@@ -135,21 +137,27 @@ export function PhoneInput({ value, onChange, placeholder = "Номер теле
         </button>
 
         {/* Input Field */}
-        <div className="relative flex-1">
+        <div className="relative flex-1 font-mono">
+          {/* Underlay for gaps */}
+          <div className="absolute inset-0 px-4 py-2.5 text-sm text-neutral-400/50 dark:text-neutral-500/50 pointer-events-none select-none whitespace-pre overflow-hidden flex items-center">
+            <span className="invisible">{displayValue}</span>
+            <span>{fullPlaceholder ? fullPlaceholder.slice(displayValue.length) : ''}</span>
+          </div>
+          
           <input
             type="tel"
             value={displayValue}
             onChange={handleInputChange}
             placeholder={placeholder}
-            className="w-full bg-transparent border-none px-4 py-2.5 text-sm focus:ring-0 outline-none"
+            className="w-full bg-transparent border-none px-4 py-2.5 text-sm focus:ring-0 outline-none relative z-10 text-neutral-900 dark:text-white"
           />
           {selectedCountry.dialCode && maxLocalPartLength > 0 && (
-            <div className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-mono font-medium text-neutral-400">
-              {charsRemaining > 0 ? (
-                <span>осталось: {charsRemaining}</span>
-              ) : (
+            <div className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-bold z-20">
+              {charsRemaining <= 0 ? (
                 <span className="text-green-500 dark:text-green-400">✓</span>
-              )}
+              ) : currentLocalPartLength > 0 ? (
+                <span className="text-red-400 dark:text-red-500">✗</span>
+              ) : null}
             </div>
           )}
         </div>

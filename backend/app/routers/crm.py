@@ -113,25 +113,26 @@ async def create_manual_client(
     supabase: AsyncClient = Depends(get_async_supabase_client)
 ):
     try:
-        # Check for existing
-        or_conditions = []
+        # Check for existing using separate queries to avoid .or_ syntax issues
+        existing_client = None
         if data.phone and data.phone.strip():
-            or_conditions.append(f'phone.eq."{data.phone.strip()}"')
-        if data.telegram and data.telegram.strip():
-            or_conditions.append(f'telegram.eq."{data.telegram.strip()}"')
-        if data.instagram and data.instagram.strip():
-            or_conditions.append(f'instagram.eq."{data.instagram.strip()}"')
-        if data.email and data.email.strip():
-            or_conditions.append(f'email.eq."{data.email.strip()}"')
+            res = await supabase.table("master_clients").select("id, name").eq("master_id", current_user.user_id).eq("is_deleted", False).eq("phone", data.phone.strip()).execute()
+            if res.data: existing_client = res.data[0]
             
-        if or_conditions:
-            query = supabase.table("master_clients").select("id, name") \
-                .eq("master_id", current_user.user_id) \
-                .eq("is_deleted", False) \
-                .or_(",".join(or_conditions))
-            existing = await query.execute()
-            if existing.data:
-                raise HTTPException(status_code=409, detail={"error": "client_exists", "client": existing.data[0]})
+        if not existing_client and data.telegram and data.telegram.strip():
+            res = await supabase.table("master_clients").select("id, name").eq("master_id", current_user.user_id).eq("is_deleted", False).eq("telegram", data.telegram.strip()).execute()
+            if res.data: existing_client = res.data[0]
+            
+        if not existing_client and data.instagram and data.instagram.strip():
+            res = await supabase.table("master_clients").select("id, name").eq("master_id", current_user.user_id).eq("is_deleted", False).eq("instagram", data.instagram.strip()).execute()
+            if res.data: existing_client = res.data[0]
+            
+        if not existing_client and data.email and data.email.strip():
+            res = await supabase.table("master_clients").select("id, name").eq("master_id", current_user.user_id).eq("is_deleted", False).eq("email", data.email.strip()).execute()
+            if res.data: existing_client = res.data[0]
+
+        if existing_client:
+            raise HTTPException(status_code=409, detail={"error": "client_exists", "client": existing_client})
 
         # 1. Create client
         client_data = {
