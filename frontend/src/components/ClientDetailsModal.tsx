@@ -1,13 +1,15 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, Calendar, Phone, Mail, FileText, Plus, MessageCircle, PlayCircle, Trash2, Edit3, CheckCircle } from 'lucide-react'
 import { CRMClient } from './ClientsDatabase'
+import { CRMSession } from './CRMBoard'
 import { ChatModal } from './ChatModal'
 import { supabase } from '@/lib/supabase'
 import { toast } from 'react-hot-toast'
 import { SessionModal } from './SessionModal'
 import { CompleteSessionModal } from './CompleteSessionModal'
 import { LiabilityWaiverModal } from './LiabilityWaiverModal'
+import { PhoneInput } from './PhoneInput'
 
 interface ClientDetailsModalProps {
   isOpen: boolean
@@ -21,6 +23,23 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId }
   const [activeTab, setActiveTab] = useState<'info'|'sessions'|'chat'>('info')
   const [isChatOpen, setIsChatOpen] = useState(false)
   const [isSessionModalOpen, setIsSessionModalOpen] = useState(false)
+  const [phone, setPhone] = useState(client.phone || '')
+  
+  useEffect(() => {
+    if (isOpen) {
+      setPhone(client.phone || '')
+    }
+  }, [isOpen, client.phone])
+
+  useEffect(() => {
+    if (phone !== (client.phone || '')) {
+      const timer = setTimeout(async () => {
+         await supabase.from('master_clients').update({phone}).eq('id', client.id)
+         onUpdate()
+      }, 1000)
+      return () => clearTimeout(timer)
+    }
+  }, [phone, client.phone, client.id, onUpdate])
   
   const [sessionToComplete, setSessionToComplete] = useState<string | null>(null)
   const [sessionToStart, setSessionToStart] = useState<string | null>(null)
@@ -133,17 +152,13 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId }
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
                     <div>
                       <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider ml-1">Телефон</span>
-                      <input 
-                        defaultValue={client.phone || ''}
-                        placeholder="+420..."
-                        onBlur={async (e) => {
-                           if (e.target.value !== (client.phone || '')) {
-                             await supabase.from('master_clients').update({phone: e.target.value}).eq('id', client.id)
-                             onUpdate()
-                           }
-                        }}
-                        className="w-full bg-neutral-50 dark:bg-neutral-800 border-none rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-violet-500/20 outline-none mt-1"
-                      />
+                      <div className="mt-1">
+                        <PhoneInput 
+                          value={phone}
+                          onChange={(val) => setPhone(val)}
+                          placeholder="+420..."
+                        />
+                      </div>
                     </div>
                     <div>
                       <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider ml-1">Telegram</span>

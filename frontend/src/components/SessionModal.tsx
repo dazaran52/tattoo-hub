@@ -4,6 +4,7 @@ import { supabase } from '@/lib/supabase'
 import toast from 'react-hot-toast'
 import { CRMClient } from './ClientsDatabase'
 import { CRMSession } from './CRMBoard'
+import { PhoneInput } from './PhoneInput'
 
 interface SessionModalProps {
   isOpen: boolean
@@ -47,6 +48,7 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
           phone: '',
           telegram: '',
           instagram: '',
+          email: '',
           session_date: editSession.session_date || '',
           start_time: editSession.start_time || '',
           end_time: editSession.end_time || '',
@@ -65,6 +67,7 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
           phone: '',
           telegram: '',
           instagram: '',
+          email: '',
           session_date: initialDate || '',
           start_time: '',
           end_time: '',
@@ -131,6 +134,7 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
               phone: formData.phone,
               telegram: formData.telegram,
               instagram: formData.instagram,
+              email: formData.email,
               notes: formData.notes
             })
           })
@@ -270,14 +274,23 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
                     className="w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-xl pl-9 pr-4 py-2.5 text-sm focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 transition-all outline-none"
                   />
                 </div>
-                <div className="relative">
-                  <input
-                    type="tel"
-                    value={formData.phone}
-                    onChange={(e) => setFormData(p => ({ ...p, phone: e.target.value }))}
-                    placeholder="Телефон"
-                    className="w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 transition-all outline-none"
-                  />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="relative">
+                    <PhoneInput
+                      value={formData.phone}
+                      onChange={(val) => setFormData(p => ({ ...p, phone: val }))}
+                      placeholder="Телефон"
+                    />
+                  </div>
+                  <div className="relative">
+                    <input
+                      type="email"
+                      value={formData.email}
+                      onChange={(e) => setFormData(p => ({ ...p, email: e.target.value }))}
+                      placeholder="Email"
+                      className="w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 transition-all outline-none"
+                    />
+                  </div>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="relative">

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { X, UserPlus } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import toast from 'react-hot-toast'
+import { PhoneInput } from './PhoneInput'
 
 interface AddClientModalProps {
   isOpen: boolean
@@ -105,12 +106,10 @@ export function AddClientModal({ isOpen, onClose, onSuccess, onDuplicateFound }:
 
           <div>
             <label className="block text-xs font-semibold text-neutral-500 dark:text-neutral-400 mb-1.5 uppercase tracking-wider">Телефон</label>
-            <input
-              type="tel"
+            <PhoneInput
               value={formData.phone}
-              onChange={(e) => setFormData(p => ({ ...p, phone: e.target.value }))}
+              onChange={(val) => setFormData(p => ({ ...p, phone: val }))}
               placeholder="+420..."
-              className="w-full bg-neutral-100 dark:bg-neutral-800 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-violet-500/20 outline-none"
             />
           </div>
 
