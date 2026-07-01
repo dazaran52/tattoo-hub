@@ -367,7 +367,7 @@ export function CalendarView({ sessions, onUpdate }: CalendarViewProps) {
                 )}
               </div>
 
-              <div className="p-6 pb-24 border-t border-neutral-100 dark:border-neutral-800 bg-white dark:bg-neutral-900">
+              <div className="p-6 border-t border-neutral-100 dark:border-neutral-800 bg-white dark:bg-neutral-900 mt-auto">
                 <button 
                   onClick={() => setIsSessionModalOpen(true)}
                   className="w-full flex items-center justify-center gap-2 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 font-bold py-3.5 rounded-xl hover:bg-neutral-800 transition-all shadow-lg"
