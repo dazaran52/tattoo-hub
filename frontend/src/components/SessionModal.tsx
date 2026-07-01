@@ -28,6 +28,7 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
     phone: '',
     telegram: '',
     instagram: '',
+    email: '',
     session_date: '',
     start_time: '',
     end_time: '',
