@@ -8,6 +8,7 @@ import { DayPicker } from 'react-day-picker'
 import 'react-day-picker/dist/style.css'
 import { format, parseISO } from 'date-fns'
 import { cs, ru, enUS } from 'date-fns/locale'
+import { ImageViewerModal } from '@/components/ImageViewerModal'
 
 // Use a subset of Lucide icons or basic SVG if needed
 export default function BookMasterPage({ params }: { params: { username: string } }) {
@@ -431,9 +432,14 @@ export default function BookMasterPage({ params }: { params: { username: string 
                   <div 
                     key={`port-${idx}`} 
                     onClick={() => setSelectedPortfolioImage(url)}
-                    className="aspect-square rounded-2xl overflow-hidden bg-neutral-100 dark:bg-neutral-800 shadow-md cursor-pointer"
+                    className="group relative aspect-square rounded-2xl overflow-hidden bg-neutral-100 dark:bg-neutral-800 shadow-md cursor-pointer"
                   >
-                    <img src={url} alt={`Portfolio ${idx}`} className="w-full h-full object-cover hover:scale-105 transition-transform duration-300" />
+                    <img src={url} alt={`Portfolio ${idx}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
+                      <div className="bg-white/20 backdrop-blur-sm text-white p-3 rounded-full shadow-lg">
+                        <ImageIcon className="w-5 h-5" />
+                      </div>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -447,26 +453,12 @@ export default function BookMasterPage({ params }: { params: { username: string 
         )}
       </div>
 
-      {selectedPortfolioImage && (
-        <div 
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
-          onClick={() => setSelectedPortfolioImage(null)}
-        >
-          <div className="relative max-w-4xl w-full h-full max-h-[80vh] flex flex-col items-center justify-center">
-            <button 
-              onClick={() => setSelectedPortfolioImage(null)}
-              className="absolute -top-12 right-0 p-2 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors"
-            >
-              <X className="w-6 h-6" />
-            </button>
-            <img 
-              src={selectedPortfolioImage} 
-              alt="Portfolio Detail" 
-              className="max-w-full max-h-full object-contain rounded-xl shadow-2xl" 
-            />
-          </div>
-        </div>
-      )}
+      <ImageViewerModal
+        isOpen={!!selectedPortfolioImage}
+        imageUrl={selectedPortfolioImage}
+        onClose={() => setSelectedPortfolioImage(null)}
+        showActions={false}
+      />
     </div>
   )
 }

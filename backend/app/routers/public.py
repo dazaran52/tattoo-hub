@@ -48,9 +48,9 @@ async def get_public_master(
             
         data = response.data
         
-        # Ensure it's an approved master
-        if data.get("role") != "master" or data.get("status") != "approved":
-            raise HTTPException(status_code=404, detail="Мастер не найден или еще не прошел проверку")
+        # Ensure it's a master
+        if data.get("role") != "master":
+            raise HTTPException(status_code=404, detail="Мастер не найден")
 
         return PublicMasterResponse(
             id=data["id"],

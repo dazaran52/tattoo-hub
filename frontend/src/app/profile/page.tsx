@@ -12,6 +12,7 @@ import {
   Globe, Instagram, Link as LinkIcon, Share2, ArrowLeft, Trash2, Upload
 } from 'lucide-react'
 import { toast } from 'react-hot-toast'
+import { ImageViewerModal } from '@/components/ImageViewerModal'
 
 export default function ProfilePage() {
   const router = useRouter()
@@ -23,6 +24,7 @@ export default function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
+  const [viewerImage, setViewerImage] = useState<string | null>(null)
 
   // Form State
   const [displayName, setDisplayName] = useState('')
@@ -495,15 +497,26 @@ export default function ProfilePage() {
                 <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
                   {profile.portfolio_image_urls.map((url, i) => (
                     <div key={i} className="group relative aspect-square rounded-2xl overflow-hidden border border-neutral-200 dark:border-neutral-800">
-                      <img src={url} alt={`Portfolio ${i}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                      {isEditing && (
+                      <img 
+                        src={url} 
+                        alt={`Portfolio ${i}`} 
+                        onClick={() => setViewerImage(url)}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 cursor-pointer" 
+                      />
+                      {isEditing ? (
                         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                           <button
-                            onClick={() => removePortfolioImage(url)}
+                            onClick={(e) => { e.stopPropagation(); removePortfolioImage(url); }}
                             className="bg-red-500 hover:bg-red-600 text-white p-3 rounded-full shadow-lg transition-transform hover:scale-110"
                           >
                             <Trash2 className="w-5 h-5" />
                           </button>
+                        </div>
+                      ) : (
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
+                          <div className="bg-white/20 backdrop-blur-sm text-white p-3 rounded-full shadow-lg">
+                            <ImageIcon className="w-5 h-5" />
+                          </div>
                         </div>
                       )}
                     </div>
@@ -523,6 +536,13 @@ export default function ProfilePage() {
           </div>
         </div>
       </main>
+
+      <ImageViewerModal
+        isOpen={!!viewerImage}
+        imageUrl={viewerImage}
+        onClose={() => setViewerImage(null)}
+        showActions={false}
+      />
     </div>
   )
 }
