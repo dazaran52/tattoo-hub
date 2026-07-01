@@ -281,7 +281,7 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
             style: bodyPayload.style,
             reference_images: bodyPayload.reference_images,
             result_image_urls: bodyPayload.result_image_urls,
-            status: "new"
+            status: "booked"
         }
         const { error } = await supabase.from('master_sessions').insert(session_data)
         if (error) throw error
