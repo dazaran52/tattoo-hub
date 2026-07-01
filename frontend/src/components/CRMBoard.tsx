@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { toast } from 'react-hot-toast'
-import { Clock, CheckCircle, Calendar, Flag, MessageCircle, UserPlus, LayoutGrid, CalendarDays, Search, Users, PlayCircle } from 'lucide-react'
+import { Clock, CheckCircle, Calendar, Flag, MessageCircle, UserPlus, LayoutGrid, CalendarDays, Search, Users, PlayCircle, Palette } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { SessionModal } from '@/components/SessionModal'
 import { CalendarView } from '@/components/CalendarView'
@@ -17,6 +17,7 @@ export interface CRMSession {
   end_time?: string
   price?: number
   style?: string
+  notes?: string
   reference_images?: string[]
   result_image_urls?: string[]
   status: string
@@ -388,24 +389,42 @@ export function CRMBoard() {
                               </div>
                             </div>
                             
-                            <div className="flex items-center justify-between mt-3 pt-3 border-t border-neutral-100 dark:border-white/5">
-                              <div className="flex flex-col gap-1">
-                                <div className="flex items-center gap-1.5 text-xs font-bold text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-900/20 px-2 py-1.5 rounded-lg w-fit">
-                                  <Calendar className="w-3.5 h-3.5" />
-                                  {new Date(item.session_date).toLocaleDateString('ru-RU')}
-                                  {cardView === 'expanded' && (item.start_time || item.end_time) && (
-                                    <span className="opacity-75">
-                                      • {item.start_time?.slice(0, 5)} {item.end_time ? `- ${item.end_time.slice(0, 5)}` : ''}
-                                    </span>
+                            <div className="flex flex-col gap-2 mt-3 pt-3 border-t border-neutral-100 dark:border-white/5">
+                              <div className="flex items-start justify-between gap-2">
+                                <div className="flex flex-col gap-1">
+                                  <div className="flex items-center gap-1.5 text-xs font-bold text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-900/20 px-2 py-1.5 rounded-lg w-fit">
+                                    <Calendar className="w-3.5 h-3.5 shrink-0" />
+                                    {new Date(item.session_date).toLocaleDateString('ru-RU')}
+                                    {cardView === 'expanded' && (item.start_time || item.end_time) && (
+                                      <span className="opacity-75 whitespace-nowrap">
+                                        • {item.start_time?.slice(0, 5)} {item.end_time ? `- ${item.end_time.slice(0, 5)}` : ''}
+                                      </span>
+                                    )}
+                                  </div>
+                                  <span className="text-[10px] text-neutral-400 font-medium ml-1">
+                                    Создано: {new Date(item.created_at).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute:'2-digit' })}
+                                  </span>
+                                </div>
+                                <div className="font-bold text-neutral-900 dark:text-white text-sm whitespace-nowrap mt-1">
+                                  {item.price ? `${item.price} Kč` : '—'}
+                                </div>
+                              </div>
+                              
+                              {cardView === 'expanded' && (item.style || item.notes) && (
+                                <div className="flex flex-col gap-1.5 mt-1 border-t border-dashed border-neutral-100 dark:border-white/5 pt-2">
+                                  {item.style && (
+                                    <div className="text-xs font-medium text-neutral-700 dark:text-neutral-300 flex items-center gap-1.5">
+                                      <Palette className="w-3.5 h-3.5 text-neutral-400 shrink-0" />
+                                      {item.style}
+                                    </div>
+                                  )}
+                                  {item.notes && (
+                                    <div className="text-xs text-neutral-500 italic line-clamp-3 leading-relaxed">
+                                      {item.notes}
+                                    </div>
                                   )}
                                 </div>
-                                <span className="text-[10px] text-neutral-400 font-medium">
-                                  Создано: {new Date(item.created_at).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute:'2-digit' })}
-                                </span>
-                              </div>
-                              <div className="font-bold text-neutral-900 dark:text-white text-sm">
-                                {item.price ? `${item.price} Kč` : '—'}
-                              </div>
+                              )}
                             </div>
                           </motion.div>
                         ))

@@ -193,6 +193,13 @@ export function CalendarView({ sessions, onUpdate }: CalendarViewProps) {
         </div>
       </div>
 
+      {calendarMode === 'day_off' && (
+        <div className="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 p-4 rounded-xl mb-6 text-sm flex items-start sm:items-center gap-3 border border-red-100 dark:border-red-900/30">
+          <Coffee className="w-5 h-5 shrink-0 mt-0.5 sm:mt-0" />
+          <p><strong>Режим настройки выходных:</strong> кликайте по дням в календаре, чтобы отметить их как выходные дни.</p>
+        </div>
+      )}
+
       <div className="grid grid-cols-7 gap-2 sm:gap-4 mb-4">
         {dayNames.map(day => (
           <div key={day} className="text-center font-bold text-neutral-400 text-xs sm:text-sm uppercase tracking-wider">
@@ -276,7 +283,7 @@ export function CalendarView({ sessions, onUpdate }: CalendarViewProps) {
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: 'tween', duration: 0.3, ease: 'easeInOut' }}
-              className={`bg-white dark:bg-neutral-900 w-full h-full shadow-2xl flex flex-col transition-all duration-300 pb-24 sm:pb-0 ${isSidebarExpanded ? 'max-w-full' : 'max-w-md'}`}
+              className={`bg-white dark:bg-neutral-900 w-full h-full shadow-2xl flex flex-col transition-[max-width] duration-300 pb-24 sm:pb-0 ${isSidebarExpanded ? 'max-w-full' : 'max-w-md'}`}
             >
               <div className="p-6 border-b border-neutral-100 dark:border-neutral-800 flex justify-between items-center">
                 <div className="flex items-center gap-3">
@@ -298,14 +305,15 @@ export function CalendarView({ sessions, onUpdate }: CalendarViewProps) {
                 </div>
               </div>
 
-              <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-neutral-50 dark:bg-neutral-900/50">
+              <div className="flex-1 overflow-y-auto p-6 bg-neutral-50 dark:bg-neutral-900/50">
                 {selectedDateSessions.length === 0 ? (
                   <div className="text-center py-12 text-neutral-400">
                     На этот день нет записей
                   </div>
                 ) : (
-                  selectedDateSessions.map(s => (
-                    <div key={s.id} className="bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-2xl p-4 shadow-sm">
+                  <div className={isSidebarExpanded ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" : "flex flex-col gap-4"}>
+                    {selectedDateSessions.map(s => (
+                      <div key={s.id} className="bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-2xl p-4 shadow-sm h-full flex flex-col">
                       <div className="flex justify-between items-start mb-3">
                         <div>
                           <div className="font-bold text-neutral-900 dark:text-white text-lg">
@@ -365,7 +373,8 @@ export function CalendarView({ sessions, onUpdate }: CalendarViewProps) {
                         </div>
                       </div>
                     </div>
-                  ))
+                  ))}
+                  </div>
                 )}
               </div>
 
