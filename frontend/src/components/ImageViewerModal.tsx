@@ -63,7 +63,7 @@ export function ImageViewerModal({ isOpen, imageUrl, onClose, showActions = fals
         className="relative max-w-5xl w-full h-full max-h-[90vh] flex flex-col items-center justify-center"
         onClick={e => e.stopPropagation()}
       >
-        <div className="absolute -top-12 right-0 flex items-center gap-3">
+        <div className="absolute top-4 right-4 sm:top-6 sm:right-6 flex items-center gap-3 z-10">
           {showActions && (
             <>
               <button 

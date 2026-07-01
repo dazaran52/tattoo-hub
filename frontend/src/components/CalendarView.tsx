@@ -8,6 +8,7 @@ import { LiabilityWaiverModal } from './LiabilityWaiverModal'
 import { CompleteSessionModal } from './CompleteSessionModal'
 import { SessionModal } from './SessionModal'
 import { CRMClient } from './ClientsDatabase'
+import { ImageViewerModal } from './ImageViewerModal'
 
 interface DayOff {
   id: string
@@ -37,6 +38,7 @@ export function CalendarView({ sessions, onUpdate }: CalendarViewProps) {
   const [isSessionModalOpen, setIsSessionModalOpen] = useState(false)
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(false)
   const [clientsForModal, setClientsForModal] = useState<CRMClient[]>([])
+  const [viewerImage, setViewerImage] = useState<string | null>(null)
 
   useEffect(() => {
     fetchDaysOff()
@@ -326,7 +328,7 @@ export function CalendarView({ sessions, onUpdate }: CalendarViewProps) {
                       {s.reference_images && s.reference_images.length > 0 && (
                         <div className="flex gap-2 overflow-x-auto mb-4 custom-scrollbar pb-2">
                           {s.reference_images.map((url, idx) => (
-                            <img key={idx} src={url} alt="ref" className="w-16 h-16 rounded-lg object-cover shrink-0 border border-neutral-200 dark:border-neutral-700" />
+                            <img key={idx} src={url} alt="ref" onClick={() => setViewerImage(url)} className="w-16 h-16 rounded-lg object-cover shrink-0 border border-neutral-200 dark:border-neutral-700 cursor-pointer" />
                           ))}
                         </div>
                       )}
@@ -431,6 +433,13 @@ export function CalendarView({ sessions, onUpdate }: CalendarViewProps) {
           existingClients={clientsForModal}
         />
       )}
+
+      <ImageViewerModal
+        isOpen={!!viewerImage}
+        imageUrl={viewerImage}
+        onClose={() => setViewerImage(null)}
+        showActions={true}
+      />
     </div>
   )
 }
