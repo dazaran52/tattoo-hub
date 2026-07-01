@@ -5,6 +5,7 @@ import toast from 'react-hot-toast'
 import { CRMClient } from './ClientsDatabase'
 import { CRMSession } from './CRMBoard'
 import { PhoneInput } from './PhoneInput'
+import { ImageViewerModal } from './ImageViewerModal'
 
 interface SessionModalProps {
   isOpen: boolean
@@ -38,6 +39,10 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
   })
   const [images, setImages] = useState<File[]>([])
   const [existingImages, setExistingImages] = useState<string[]>([])
+  const [resultImages, setResultImages] = useState<File[]>([])
+  const [existingResultImages, setExistingResultImages] = useState<string[]>([])
+  const [viewerImage, setViewerImage] = useState<string | null>(null)
+  const [viewerShowActions, setViewerShowActions] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
 
   useEffect(() => {
@@ -59,8 +64,10 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
         })
         setIsNewClient(false)
         setImages([])
+        setResultImages([])
         // Assuming reference_images exist on editSession, though we might need to add it to CRMSession interface if needed
         setExistingImages((editSession as any).reference_images || [])
+        setExistingResultImages((editSession as any).result_image_urls || [])
       } else {
         setFormData({
           client_id: initialClientId || '',
@@ -78,6 +85,9 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
         })
         setIsNewClient(false)
         setImages([])
+        setResultImages([])
+        setExistingImages([])
+        setExistingResultImages([])
       }
     }
   }, [isOpen, initialDate, initialClientId, editSession])
@@ -195,23 +205,35 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
           if (publicUrlData) imageUrls.push(publicUrlData.publicUrl)
         }
       }
+
+      let resImageUrls: string[] = [...existingResultImages]
+      for (const file of resultImages) {
+        const fileExt = file.name.split('.').pop()
+        const fileName = `${Date.now()}_res_${Math.random().toString(36).substring(2)}.${fileExt}`
+        const filePath = `${fileName}`
+        
+        const { error: uploadError } = await supabase.storage
+          .from('lead_images')
+          .upload(filePath, file)
+          
+        if (!uploadError) {
+          const { data: publicUrlData } = supabase.storage
+            .from('lead_images')
+            .getPublicUrl(filePath)
+          if (publicUrlData) resImageUrls.push(publicUrlData.publicUrl)
+        }
+      }
       setIsUploading(false)
 
       // 3. Create or Edit Session
-      const url = editSession 
-        ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/crm/sessions/${editSession.id}`
-        : `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/crm/sessions`
-      
-      const method = editSession ? 'PUT' : 'POST'
-      const allImages = [...existingImages, ...imageUrls]
-      
       const bodyPayload = editSession ? {
         session_date: formData.session_date,
         start_time: formData.start_time || null,
         end_time: formData.end_time || null,
         price: formData.price ? parseFloat(formData.price) : null,
         style: formData.style,
-        reference_images: allImages
+        reference_images: imageUrls,
+        result_image_urls: resImageUrls
       } : {
         client_id: finalClientId,
         session_date: formData.session_date,
@@ -219,7 +241,8 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
         end_time: formData.end_time || null,
         price: formData.price ? parseFloat(formData.price) : null,
         style: formData.style,
-        reference_images: allImages
+        reference_images: imageUrls,
+        result_image_urls: resImageUrls
       }
 
       if (editSession) {
@@ -239,6 +262,7 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
             price: bodyPayload.price,
             style: bodyPayload.style,
             reference_images: bodyPayload.reference_images,
+            result_image_urls: bodyPayload.result_image_urls,
             status: "new"
         }
         const { error } = await supabase.from('master_sessions').insert(session_data)
@@ -453,49 +477,113 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
             </div>
           </div>
 
-          <div>
-            <label className="block text-xs font-semibold text-neutral-500 dark:text-neutral-400 mb-1.5 uppercase tracking-wider">Фото-референсы</label>
-            <div className="flex flex-wrap gap-3">
-              {existingImages.map((url, idx) => (
-                <div key={`ext-${idx}`} className="relative w-16 h-16 rounded-lg overflow-hidden border border-neutral-200 dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-800">
-                  <img src={url} alt="ref" className="w-full h-full object-cover" />
-                  <button 
-                    type="button" 
-                    onClick={() => setExistingImages(prev => prev.filter((_, i) => i !== idx))}
-                    className="absolute top-1 right-1 w-4 h-4 bg-black/60 rounded-full flex items-center justify-center text-white hover:bg-red-500 transition-colors"
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-semibold text-neutral-500 dark:text-neutral-400 mb-1.5 uppercase tracking-wider">Фото-референсы</label>
+              <div className="flex flex-wrap gap-3">
+                {existingImages.map((url, idx) => (
+                  <div 
+                    key={`ext-${idx}`} 
+                    className="relative w-16 h-16 rounded-lg overflow-hidden border border-neutral-200 dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-800 cursor-pointer"
+                    onClick={() => { setViewerImage(url); setViewerShowActions(true); }}
                   >
-                    <X className="w-2.5 h-2.5" />
-                  </button>
-                </div>
-              ))}
-              {images.map((file, idx) => (
-                <div key={idx} className="relative w-16 h-16 rounded-lg overflow-hidden border border-neutral-200 dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-800">
-                  <img src={URL.createObjectURL(file)} alt="ref" className="w-full h-full object-cover" />
-                  <button 
-                    type="button" 
-                    onClick={() => setImages(prev => prev.filter((_, i) => i !== idx))}
-                    className="absolute top-1 right-1 w-4 h-4 bg-black/60 rounded-full flex items-center justify-center text-white hover:bg-red-500 transition-colors"
+                    <img src={url} alt="ref" className="w-full h-full object-cover" />
+                    <button 
+                      type="button" 
+                      onClick={(e) => { e.stopPropagation(); setExistingImages(prev => prev.filter((_, i) => i !== idx)); }}
+                      className="absolute top-1 right-1 w-4 h-4 bg-black/60 rounded-full flex items-center justify-center text-white hover:bg-red-500 transition-colors"
+                    >
+                      <X className="w-2.5 h-2.5" />
+                    </button>
+                  </div>
+                ))}
+                {images.map((file, idx) => (
+                  <div 
+                    key={idx} 
+                    className="relative w-16 h-16 rounded-lg overflow-hidden border border-neutral-200 dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-800 cursor-pointer"
+                    onClick={() => { setViewerImage(URL.createObjectURL(file)); setViewerShowActions(true); }}
                   >
-                    <X className="w-2.5 h-2.5" />
-                  </button>
-                </div>
-              ))}
-              <label className="w-16 h-16 rounded-lg border-2 border-dashed border-neutral-300 dark:border-neutral-700 flex flex-col items-center justify-center text-neutral-500 hover:text-cyan-500 hover:border-cyan-500 transition-colors cursor-pointer bg-neutral-50 dark:bg-neutral-800/50">
-                <Upload className="w-4 h-4 mb-0.5" />
-                <span className="text-[9px] font-medium uppercase tracking-wider">Добавить</span>
-                <input 
-                  type="file" 
-                  accept="image/*" 
-                  multiple 
-                  className="hidden" 
-                  onChange={(e) => {
-                    if (e.target.files) {
-                      const newFiles = Array.from(e.target.files)
-                      setImages(prev => [...prev, ...newFiles])
-                    }
-                  }} 
-                />
-              </label>
+                    <img src={URL.createObjectURL(file)} alt="ref" className="w-full h-full object-cover" />
+                    <button 
+                      type="button" 
+                      onClick={(e) => { e.stopPropagation(); setImages(prev => prev.filter((_, i) => i !== idx)); }}
+                      className="absolute top-1 right-1 w-4 h-4 bg-black/60 rounded-full flex items-center justify-center text-white hover:bg-red-500 transition-colors"
+                    >
+                      <X className="w-2.5 h-2.5" />
+                    </button>
+                  </div>
+                ))}
+                <label className="w-16 h-16 rounded-lg border-2 border-dashed border-neutral-300 dark:border-neutral-700 flex flex-col items-center justify-center text-neutral-500 hover:text-cyan-500 hover:border-cyan-500 transition-colors cursor-pointer bg-neutral-50 dark:bg-neutral-800/50">
+                  <Upload className="w-4 h-4 mb-0.5" />
+                  <span className="text-[9px] font-medium uppercase tracking-wider">Добавить</span>
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    multiple 
+                    className="hidden" 
+                    onChange={(e) => {
+                      if (e.target.files) {
+                        const newFiles = Array.from(e.target.files)
+                        setImages(prev => [...prev, ...newFiles])
+                      }
+                    }} 
+                  />
+                </label>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-neutral-500 dark:text-neutral-400 mb-1.5 uppercase tracking-wider">Фото результата</label>
+              <div className="flex flex-wrap gap-3">
+                {existingResultImages.map((url, idx) => (
+                  <div 
+                    key={`ext-res-${idx}`} 
+                    className="relative w-16 h-16 rounded-lg overflow-hidden border border-neutral-200 dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-800 cursor-pointer"
+                    onClick={() => { setViewerImage(url); setViewerShowActions(false); }}
+                  >
+                    <img src={url} alt="res" className="w-full h-full object-cover" />
+                    <button 
+                      type="button" 
+                      onClick={(e) => { e.stopPropagation(); setExistingResultImages(prev => prev.filter((_, i) => i !== idx)); }}
+                      className="absolute top-1 right-1 w-4 h-4 bg-black/60 rounded-full flex items-center justify-center text-white hover:bg-red-500 transition-colors"
+                    >
+                      <X className="w-2.5 h-2.5" />
+                    </button>
+                  </div>
+                ))}
+                {resultImages.map((file, idx) => (
+                  <div 
+                    key={`res-${idx}`} 
+                    className="relative w-16 h-16 rounded-lg overflow-hidden border border-neutral-200 dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-800 cursor-pointer"
+                    onClick={() => { setViewerImage(URL.createObjectURL(file)); setViewerShowActions(false); }}
+                  >
+                    <img src={URL.createObjectURL(file)} alt="res" className="w-full h-full object-cover" />
+                    <button 
+                      type="button" 
+                      onClick={(e) => { e.stopPropagation(); setResultImages(prev => prev.filter((_, i) => i !== idx)); }}
+                      className="absolute top-1 right-1 w-4 h-4 bg-black/60 rounded-full flex items-center justify-center text-white hover:bg-red-500 transition-colors"
+                    >
+                      <X className="w-2.5 h-2.5" />
+                    </button>
+                  </div>
+                ))}
+                <label className="w-16 h-16 rounded-lg border-2 border-dashed border-neutral-300 dark:border-neutral-700 flex flex-col items-center justify-center text-neutral-500 hover:text-cyan-500 hover:border-cyan-500 transition-colors cursor-pointer bg-neutral-50 dark:bg-neutral-800/50">
+                  <Upload className="w-4 h-4 mb-0.5" />
+                  <span className="text-[9px] font-medium uppercase tracking-wider">Добавить</span>
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    multiple 
+                    className="hidden" 
+                    onChange={(e) => {
+                      if (e.target.files) {
+                        const newFiles = Array.from(e.target.files)
+                        setResultImages(prev => [...prev, ...newFiles])
+                      }
+                    }} 
+                  />
+                </label>
+              </div>
             </div>
           </div>
 
@@ -536,6 +624,12 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
           </div>
         </form>
       </div>
+      <ImageViewerModal
+        isOpen={!!viewerImage}
+        imageUrl={viewerImage}
+        onClose={() => setViewerImage(null)}
+        showActions={viewerShowActions}
+      />
     </div>
   )
 }
