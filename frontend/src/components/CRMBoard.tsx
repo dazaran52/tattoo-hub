@@ -370,6 +370,11 @@ export function CRMBoard() {
                               <div className="flex items-center gap-1.5 text-xs font-bold text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-900/20 px-2 py-1.5 rounded-lg">
                                 <Calendar className="w-3.5 h-3.5" />
                                 {new Date(item.session_date).toLocaleDateString('ru-RU')}
+                                {(item.start_time || item.end_time) && (
+                                  <span className="opacity-75">
+                                    • {item.start_time?.slice(0, 5)} {item.end_time ? `- ${item.end_time.slice(0, 5)}` : ''}
+                                  </span>
+                                )}
                               </div>
                               <div className="font-bold text-neutral-900 dark:text-white text-sm">
                                 {item.price ? `${item.price} Kč` : '—'}

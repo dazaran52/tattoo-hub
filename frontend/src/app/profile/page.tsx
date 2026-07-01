@@ -1,152 +1,46 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Header } from '@/components/Header'
 import { supabase } from '@/lib/supabase'
 import { api, Profile } from '@/lib/api'
 import { useLanguage } from '@/i18n/LanguageContext'
 import { 
-  User, Mail, Coins, Calendar, Phone, FileText, Save, X, Edit2, 
-  Unlock, CreditCard, Settings, Bell, Lock, Globe, Moon, Sun,
-  Trash2, AlertTriangle, Eye, EyeOff, Check, ArrowLeft, Gem, Tag, Copy, Gift, MapPin, Camera, UploadCloud, ImagePlus, Link as LinkIcon
+  User, Image as ImageIcon, Check, X, Camera, MapPin, 
+  Globe, Instagram, Link as LinkIcon, Share2, ArrowLeft, Trash2, Upload
 } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 
-// Toggle Switch Component
-function Toggle({ checked, onChange, disabled = false }: { checked: boolean; onChange: () => void; disabled?: boolean }) {
-  return (
-    <button
-      onClick={onChange}
-      disabled={disabled}
-      className={`relative w-14 h-8 rounded-full transition-colors duration-200 ease-in-out ${
-        checked ? 'bg-amber-500' : 'bg-neutral-700'
-      } ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
-    >
-      <span
-        className={`absolute top-1 w-6 h-6 bg-white rounded-full shadow-md transition-all duration-200 ease-in-out ${
-          checked ? 'left-7' : 'left-1'
-        }`}
-      />
-    </button>
-  )
-}
-
 export default function ProfilePage() {
   const router = useRouter()
+  const { t, lang: language } = useLanguage()
   const [profile, setProfile] = useState<Profile | null>(null)
   const [isLoading, setIsLoading] = useState(true)
-  const [isSaving, setIsSaving] = useState(false)
-  const [isEditing, setIsEditing] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  
-  // Form state
-  const [username, setUsername] = useState('')
-  const [displayName, setDisplayName] = useState('')
-  const [phone, setPhone] = useState('')
-  const [bio, setBio] = useState('')
-  const [portfolioUrl, setPortfolioUrl] = useState('')
-  const [countries, setCountries] = useState<any[]>([])
-  const [cities, setCities] = useState<any[]>([])
-  const [selectedCountry, setSelectedCountry] = useState('')
-  const [selectedCity, setSelectedCity] = useState('')
+
+  const [isEditing, setIsEditing] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
 
-  // Settings state
-  const [theme, setTheme] = useState('dark')
-  const [emailNotifications, setEmailNotifications] = useState(true)
-  const [pushNotifications, setPushNotifications] = useState(false)
-  const [newLeadAlerts, setNewLeadAlerts] = useState(true)
-  const [lowCreditAlerts, setLowCreditAlerts] = useState(true)
+  // Form State
+  const [displayName, setDisplayName] = useState('')
+  const [username, setUsername] = useState('')
+  const [bio, setBio] = useState('')
+  const [phone, setPhone] = useState('')
+  const [portfolioUrl, setPortfolioUrl] = useState('')
+  const [selectedCountry, setSelectedCountry] = useState('')
+  const [selectedCity, setSelectedCity] = useState('')
 
-  // Password change state
-  const [showPasswordForm, setShowPasswordForm] = useState(false)
-  const [newPassword, setNewPassword] = useState('')
-  const [confirmPassword, setConfirmPassword] = useState('')
-  const [showNewPassword, setShowNewPassword] = useState(false)
-  const [isChangingPassword, setIsChangingPassword] = useState(false)
-  const [passwordError, setPasswordError] = useState<string | null>(null)
-  const [passwordSuccess, setPasswordSuccess] = useState(false)
+  const [countries, setCountries] = useState<any[]>([])
+  const [cities, setCities] = useState<any[]>([])
 
-  // Delete account state
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
-  const [deleteConfirmText, setDeleteConfirmText] = useState('')
-
-  // Email change state
-  const [showEmailForm, setShowEmailForm] = useState(false)
-  const [newEmail, setNewEmail] = useState('')
-  const [isChangingEmail, setIsChangingEmail] = useState(false)
-  const [emailError, setEmailError] = useState<string | null>(null)
-  const [emailSuccess, setEmailSuccess] = useState(false)
+  const avatarInputRef = useRef<HTMLInputElement>(null)
+  const portfolioInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     fetchProfile()
-    loadSettings()
-  }, [])
-
-  const fetchProfile = async () => {
-    try {
-      setIsLoading(true)
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session) {
-        router.push('/login')
-        return
-      }
-
-      let profileData;
-      let retries = 3;
-      while (retries > 0) {
-        try {
-          profileData = await api.getProfile();
-          break;
-        } catch (e) {
-          if (retries === 1) throw e;
-          await new Promise(r => setTimeout(r, 1000));
-          retries--;
-        }
-      }
-      
-      if (profileData) {
-        setProfile(profileData)
-        
-        setUsername(profileData.username || '')
-        setDisplayName(profileData.display_name || '')
-        setPhone(profileData.phone || '')
-        setBio(profileData.bio || '')
-        setPortfolioUrl(profileData.portfolio_url || '')
-        if (profileData.country_ids && profileData.country_ids.length > 0) {
-          setSelectedCountry(profileData.country_ids?.[0] || '2a71599c-91f2-4461-b77b-86a150db3aab')
-        }
-        if (profileData.city_ids && profileData.city_ids.length > 0) {
-          setSelectedCity(profileData.city_ids[0])
-        }
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load profile')
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  const loadSettings = () => {
-    if (typeof window !== 'undefined') {
-      const savedTheme = localStorage.getItem('theme') || 'dark'
-      setTheme(savedTheme)
-      setEmailNotifications(localStorage.getItem('emailNotifications') !== 'false')
-      setNewLeadAlerts(localStorage.getItem('newLeadAlerts') !== 'false')
-      setLowCreditAlerts(localStorage.getItem('lowCreditAlerts') !== 'false')
-      setPushNotifications(localStorage.getItem('pushNotifications') === 'true')
-      
-      // Apply theme immediately
-      applyTheme(savedTheme)
-    }
-  }
-
-  useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/locations/countries`)
-      .then(res => res.json())
-      .then(data => setCountries(data))
-      .catch(err => console.error(err))
+    fetchCountries()
   }, [])
 
   useEffect(() => {
@@ -166,37 +60,42 @@ export default function ProfilePage() {
     }
   }, [selectedCountry])
 
-  const applyTheme = (themeValue: string) => {
-    if (typeof window !== 'undefined') {
-      const root = document.documentElement
-      
-      if (themeValue === 'light') {
-        root.classList.remove('dark')
-      } else {
-        root.classList.add('dark')
+  const fetchCountries = async () => {
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/locations/countries`)
+      const data = await res.json()
+      setCountries(data)
+    } catch (err) {
+      console.error('Failed to load countries', err)
+    }
+  }
+
+  const fetchProfile = async () => {
+    try {
+      setIsLoading(true)
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) {
+        router.push('/login')
+        return
       }
+
+      let profileData = await api.getProfile();
+      setProfile(profileData)
       
-      // Also update localStorage immediately
-      localStorage.setItem('theme', themeValue)
+      // Init form
+      setDisplayName(profileData.display_name || '')
+      setUsername(profileData.username || '')
+      setBio(profileData.bio || '')
+      setPhone(profileData.phone || '')
+      setPortfolioUrl(profileData.portfolio_url || '')
+      setSelectedCountry(profileData.country_ids?.[0] || '2a71599c-91f2-4461-b77b-86a150db3aab')
+      setSelectedCity(profileData.city_ids?.[0] || '')
+
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load profile')
+    } finally {
+      setIsLoading(false)
     }
-  }
-
-  const { t, lang: language, setLang } = useLanguage()
-
-  const saveSetting = (key: string, value: string | boolean) => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem(key, value.toString())
-    }
-  }
-
-  const handleThemeChange = (newTheme: string) => {
-    setTheme(newTheme)
-    saveSetting('theme', newTheme)
-    applyTheme(newTheme)
-  }
-
-  const handleLanguageChange = (newLang: 'cs' | 'en' | 'ru') => {
-    setLang(newLang)
   }
 
   const handleSave = async () => {
@@ -210,10 +109,10 @@ export default function ProfilePage() {
       }
 
       const updated = await api.updateProfile({
-        username: username,
+        username,
         display_name: displayName,
-        phone: phone,
-        bio: bio,
+        phone,
+        bio,
         portfolio_url: finalPortfolioUrl,
         country_ids: selectedCountry ? [selectedCountry] : [],
         city_ids: selectedCity ? [selectedCity] : []
@@ -221,80 +120,12 @@ export default function ProfilePage() {
       
       setProfile(updated)
       setIsEditing(false)
+      toast.success(language === 'ru' ? 'Профиль сохранен' : 'Profile saved')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to save profile')
+      toast.error(language === 'ru' ? 'Ошибка сохранения' : 'Save failed')
     } finally {
       setIsSaving(false)
-    }
-  }
-
-  const handleCancel = () => {
-    if (profile) {
-      setUsername(profile.username || '')
-      setDisplayName(profile.display_name || '')
-      setPhone(profile.phone || '')
-      setBio(profile.bio || '')
-      setPortfolioUrl(profile.portfolio_url || '')
-      setSelectedCountry(profile.country_ids?.[0] || '2a71599c-91f2-4461-b77b-86a150db3aab')
-      setSelectedCity(profile.city_ids?.[0] || '')
-    }
-    setIsEditing(false)
-    setError(null)
-  }
-
-  const handlePasswordChange = async () => {
-    setPasswordError(null)
-    setPasswordSuccess(false)
-
-    if (newPassword.length < 6) {
-      setPasswordError('Heslo musí mít alespoň 6 znaků')
-      return
-    }
-
-    if (newPassword !== confirmPassword) {
-      setPasswordError(t('passwordMismatch'))
-      return
-    }
-
-    try {
-      setIsChangingPassword(true)
-      const { error } = await supabase.auth.updateUser({ password: newPassword })
-      if (error) throw error
-
-      setPasswordSuccess(true)
-      setNewPassword('')
-      setConfirmPassword('')
-      setShowPasswordForm(false)
-      setTimeout(() => setPasswordSuccess(false), 3000)
-    } catch (err) {
-      setPasswordError(err instanceof Error ? err.message : 'Nepodařilo se změnit heslo')
-    } finally {
-      setIsChangingPassword(false)
-    }
-  }
-
-  const handleEmailChange = async () => {
-    setEmailError(null)
-    setEmailSuccess(false)
-
-    if (!newEmail || !newEmail.includes('@')) {
-      setEmailError(language === 'ru' ? 'Неверный формат email' : 'Invalid email format')
-      return
-    }
-
-    try {
-      setIsChangingEmail(true)
-      const { error } = await supabase.auth.updateUser({ email: newEmail })
-      if (error) throw error
-
-      setEmailSuccess(true)
-      setNewEmail('')
-      setShowEmailForm(false)
-      setTimeout(() => setEmailSuccess(false), 5000)
-    } catch (err) {
-      setEmailError(err instanceof Error ? err.message : 'Nepodařilo se změnit email')
-    } finally {
-      setIsChangingEmail(false)
     }
   }
 
@@ -315,7 +146,7 @@ export default function ProfilePage() {
       
       const updated = await api.updateProfile({ avatar_url: data.publicUrl })
       setProfile(updated)
-      toast.success(language === 'ru' ? 'Аватар обновлен' : language === 'cs' ? 'Avatar aktualizován' : 'Avatar updated')
+      toast.success(language === 'ru' ? 'Аватар обновлен' : 'Avatar updated')
     } catch (error: any) {
       toast.error(language === 'ru' ? 'Ошибка загрузки аватара' : 'Upload error')
       console.error(error)
@@ -331,7 +162,6 @@ export default function ProfilePage() {
       
       const newUrls: string[] = []
       
-      // Upload each file
       for (let i = 0; i < e.target.files.length; i++) {
         const file = e.target.files[i]
         const fileExt = file.name.split('.').pop()
@@ -362,7 +192,7 @@ export default function ProfilePage() {
   const removePortfolioImage = async (urlToRemove: string) => {
     if (!profile?.portfolio_image_urls) return
     try {
-      setIsSaving(true)
+      setIsUploading(true)
       const updatedUrls = profile.portfolio_image_urls.filter(url => url !== urlToRemove)
       const updated = await api.updateProfile({ portfolio_image_urls: updatedUrls })
       setProfile(updated)
@@ -370,7 +200,7 @@ export default function ProfilePage() {
     } catch (error: any) {
       toast.error(language === 'ru' ? 'Ошибка' : 'Error')
     } finally {
-      setIsSaving(false)
+      setIsUploading(false)
     }
   }
 
@@ -381,793 +211,303 @@ export default function ProfilePage() {
     window.location.href = '/login'
   }
 
-  const handleDeleteAccount = async () => {
-    try {
-      setError(null)
-      setIsLoading(true)
-      await api.deleteProfile()
-      await supabase.auth.signOut()
-      document.cookie = 'sb-access-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT'
-      document.cookie = 'sb-refresh-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT'
-      window.location.href = '/login'
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Nepodařilo se smazat účet')
-      setIsLoading(false)
+  const copyPublicLink = () => {
+    if (!profile?.username) {
+      toast.error(language === 'ru' ? 'Сначала установите username' : 'Set username first')
+      return
     }
+    const url = `${window.location.origin}/book/${profile.username}`
+    navigator.clipboard.writeText(url)
+    toast.success(language === 'ru' ? 'Ссылка скопирована' : 'Link copied')
   }
-
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950 transition-colors duration-200">
+      <div className="min-h-screen bg-neutral-50 dark:bg-[#050505] transition-colors duration-200">
         <div className="h-16 border-b border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900" />
-        <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="mb-8">
-            <div className="h-8 w-48 bg-neutral-200 dark:bg-neutral-800 rounded animate-pulse mb-2" />
-            <div className="h-4 w-64 bg-neutral-200 dark:bg-neutral-800 rounded animate-pulse" />
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-            {[...Array(4)].map((_, i) => (
-              <div key={i} className="bg-white dark:bg-neutral-900 rounded-2xl p-4 border border-neutral-200 dark:border-neutral-800 animate-pulse h-24" />
-            ))}
-          </div>
-          <div className="bg-white dark:bg-neutral-900 rounded-3xl p-6 border border-neutral-200 dark:border-neutral-800 animate-pulse h-64 mb-6" />
-          <div className="bg-white dark:bg-neutral-900 rounded-3xl p-6 border border-neutral-200 dark:border-neutral-800 animate-pulse h-48" />
+        <main className="max-w-4xl mx-auto px-4 py-8">
+          <div className="h-40 w-full bg-neutral-200 dark:bg-neutral-800 rounded-3xl animate-pulse mb-8" />
+          <div className="h-64 w-full bg-neutral-200 dark:bg-neutral-800 rounded-3xl animate-pulse" />
         </main>
       </div>
     )
   }
 
-  if (!profile) {
-    return (
-      <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950 flex items-center justify-center transition-colors duration-200">
-        <div className="text-red-400">{t('failedToLoad')}</div>
-      </div>
-    )
-  }
+  if (!profile) return null
 
   return (
-    <div className="min-h-screen bg-neutral-50 dark:bg-[#050505] text-neutral-900 dark:text-white transition-colors duration-300 relative overflow-hidden">
-      {/* Premium ambient glows */}
-      <div className="absolute top-0 left-0 w-full h-full pointer-events-none overflow-hidden z-0">
-        {profile.role === 'master' ? (
-          <>
-            <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-orange-500/5 dark:bg-orange-500/10 blur-[120px]" />
-            <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-amber-500/5 dark:bg-amber-500/10 blur-[120px]" />
-          </>
-        ) : (
-          <>
-            <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-indigo-500/5 dark:bg-indigo-500/10 blur-[120px]" />
-            <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-purple-500/5 dark:bg-purple-500/10 blur-[120px]" />
-          </>
-        )}
-      </div>
-
+    <div className="min-h-screen bg-neutral-50 dark:bg-[#050505] text-neutral-900 dark:text-white transition-colors duration-300 relative overflow-hidden pb-20">
       <Header profile={profile} onLogout={handleLogout} />
       
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10">
-        <div className="flex items-center gap-4 mb-8">
+      {/* Cool Background Gradients */}
+      <div className="absolute top-0 left-0 w-full h-[500px] overflow-hidden pointer-events-none -z-10">
+        <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[80%] bg-violet-500/20 dark:bg-violet-600/20 blur-[120px] rounded-full mix-blend-multiply dark:mix-blend-screen opacity-70 animate-blob"></div>
+        <div className="absolute top-[10%] right-[-10%] w-[40%] h-[60%] bg-cyan-400/20 dark:bg-cyan-500/20 blur-[100px] rounded-full mix-blend-multiply dark:mix-blend-screen opacity-70 animate-blob animation-delay-2000"></div>
+      </div>
+
+      <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10">
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => router.push('/dashboard')}
+              className="flex items-center gap-2 text-neutral-600 dark:text-neutral-400 hover:text-neutral-950 dark:hover:text-white transition-colors"
+            >
+              <ArrowLeft className="w-5 h-5" />
+              {t('back')}
+            </button>
+            <h1 className="text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-white">Моя страница</h1>
+          </div>
           <button
-            onClick={() => router.push('/dashboard')}
-            className="flex items-center gap-2 text-neutral-600 dark:text-neutral-400 hover:text-neutral-950 dark:hover:text-white transition-colors"
+            onClick={() => isEditing ? handleSave() : setIsEditing(true)}
+            disabled={isSaving}
+            className={`px-6 py-2.5 rounded-full font-bold transition-all shadow-lg ${
+              isEditing 
+                ? 'bg-violet-600 hover:bg-violet-700 text-white shadow-violet-500/25 scale-105'
+                : 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white border border-neutral-200 dark:border-neutral-700 hover:border-violet-500/50 hover:shadow-violet-500/10'
+            }`}
           >
-            <ArrowLeft className="w-5 h-5" />
-            {t('back')}
+            {isSaving ? '...' : isEditing ? (language === 'ru' ? 'Сохранить' : 'Save') : (language === 'ru' ? 'Редактировать' : 'Edit')}
           </button>
-          <h1 className="text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-white">{t('profileAndSettings')}</h1>
         </div>
 
         {error && (
-          <div className="bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 p-4 rounded-2xl mb-6 backdrop-blur-md">
+          <div className="bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 p-4 rounded-2xl mb-6 backdrop-blur-md font-medium">
             {error}
           </div>
         )}
 
-        <div className="space-y-6">
-          {/* Profile Card */}
-          <div className="bg-white/40 dark:bg-neutral-900/40 backdrop-blur-md border border-neutral-200/50 dark:border-white/5 shadow-xl rounded-3xl p-6">
-            <div className="flex flex-col md:flex-row gap-6">
-              {/* Avatar and main info */}
-              <div className="flex-shrink-0 text-center md:text-left">
-                <div className="relative w-24 h-24 mx-auto md:mx-0 mb-4 group">
-                  <div className="w-full h-full bg-gradient-to-br from-neutral-200 dark:from-neutral-800 to-neutral-300 dark:to-neutral-700 rounded-full flex items-center justify-center border border-neutral-200/50 dark:border-white/5 shadow-inner overflow-hidden">
-                    {profile.avatar_url ? (
-                      <img src={profile.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
-                    ) : (
-                      <User className="w-12 h-12 text-neutral-600 dark:text-neutral-400" />
-                    )}
-                  </div>
-                  <label className="absolute inset-0 flex flex-col items-center justify-center bg-black/50 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
-                    <Camera className="w-6 h-6 mb-1" />
-                    <span className="text-[10px] font-bold">Upload</span>
-                    <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} disabled={isUploading} />
-                  </label>
-                </div>
-                <div className="flex items-center justify-center md:justify-start gap-2 mb-1">
-                  <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">
-                    {profile.display_name || t('user')}
-                  </h2>
-                  {profile.gamification_level && profile.gamification_level !== 'Newbie' && (
-                    <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${
-                      profile.gamification_level === 'Elite' 
-                        ? 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400 border border-amber-200 dark:border-amber-500/30'
-                        : 'bg-indigo-100 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-500/30'
-                    }`}>
-                      {profile.gamification_level}
-                    </span>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          
+          {/* Left Column: Avatar & Public Link */}
+          <div className="space-y-6">
+            <div className="bg-white/60 dark:bg-neutral-900/60 backdrop-blur-xl border border-white/40 dark:border-white/5 rounded-3xl p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.2)] text-center relative overflow-hidden group">
+              <div className="absolute inset-0 bg-gradient-to-br from-violet-500/5 to-cyan-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              
+              <div className="relative inline-block mb-6">
+                <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-white dark:border-neutral-800 shadow-xl mx-auto">
+                  {profile.avatar_url ? (
+                    <img src={profile.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-br from-violet-100 to-cyan-100 dark:from-violet-900/30 dark:to-cyan-900/30 flex items-center justify-center text-violet-500">
+                      <User className="w-12 h-12" />
+                    </div>
                   )}
                 </div>
-                <p className="text-neutral-500 dark:text-neutral-400 text-sm mb-3">{profile.email}</p>
-                
-
-                {profile.role === 'master' && (
-                  <div className="flex flex-col md:flex-row items-center md:items-start gap-3 mt-1">
-                    <div className="flex items-center gap-2 text-cyan-600 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-900/20 px-3 py-1.5 rounded-xl border border-cyan-100 dark:border-cyan-800/30">
-                      <Gem className="w-4 h-4 animate-pulse" />
-                      <span className="font-extrabold text-lg tracking-tight">{profile.balance}</span>
-                      <span className="text-xs text-cyan-700 dark:text-cyan-300 font-medium uppercase tracking-wider">{t('credits')}</span>
-                    </div>
-                  </div>
-                )}
-                
-                {profile.role === 'master' && profile.portfolio_url && (
-                  <div className="mt-3 flex items-center justify-center md:justify-start">
-                    <a href={profile.portfolio_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-pink-600 dark:text-pink-400 hover:text-pink-700 dark:hover:text-pink-300 font-medium text-sm bg-pink-50 dark:bg-pink-900/20 px-3 py-1.5 rounded-xl border border-pink-100 dark:border-pink-800/30 transition-colors">
-                      <Globe className="w-4 h-4" />
-                      Instagram
-                    </a>
-                  </div>
-                )}
+                <button
+                  onClick={() => avatarInputRef.current?.click()}
+                  disabled={isUploading}
+                  className="absolute bottom-0 right-0 w-10 h-10 bg-violet-600 hover:bg-violet-700 text-white rounded-full flex items-center justify-center shadow-lg transition-transform hover:scale-110 disabled:opacity-50"
+                >
+                  <Camera className="w-5 h-5" />
+                </button>
+                <input
+                  type="file"
+                  ref={avatarInputRef}
+                  onChange={handleAvatarUpload}
+                  accept="image/*"
+                  className="hidden"
+                />
               </div>
 
-              {/* Stats */}
-              {profile.role === 'master' && (
-                <div className="flex-1 grid grid-cols-2 sm:grid-cols-3 gap-4">
-                  <div className="bg-white/50 dark:bg-neutral-800/40 border border-neutral-200/30 dark:border-white/5 backdrop-blur-md rounded-2xl p-4 text-center shadow-sm hover:scale-[1.02] transition-all duration-300">
-                    <Unlock className="w-5 h-5 text-neutral-500 dark:text-neutral-400 mx-auto mb-2" />
-                    <p className="text-neutral-900 dark:text-white font-bold text-lg">{profile.unlocked_leads_count || 0}</p>
-                    <p className="text-neutral-500 dark:text-neutral-400 text-xs font-medium">{t('unlocked')}</p>
-                  </div>
-                  <div className="bg-white/50 dark:bg-neutral-800/40 border border-neutral-200/30 dark:border-white/5 backdrop-blur-md rounded-2xl p-4 text-center shadow-sm hover:scale-[1.02] transition-all duration-300">
-                    <CreditCard className="w-5 h-5 text-neutral-500 dark:text-neutral-400 mx-auto mb-2" />
-                    <p className="text-neutral-900 dark:text-white font-bold text-lg">{profile.total_spent || 0}</p>
-                    <p className="text-neutral-500 dark:text-neutral-400 text-xs font-medium">{t('spent')}</p>
-                  </div>
-                  <div className="bg-white/50 dark:bg-neutral-800/40 border border-neutral-200/30 dark:border-white/5 backdrop-blur-md rounded-2xl p-4 text-center shadow-sm hover:scale-[1.02] transition-all duration-300">
-                    <Calendar className="w-5 h-5 text-neutral-500 dark:text-neutral-400 mx-auto mb-2" />
-                    <p className="text-neutral-900 dark:text-white font-bold text-sm leading-6">
-                      {new Date(profile.created_at).toLocaleDateString('cs-CZ')}
-                    </p>
-                    <p className="text-neutral-500 dark:text-neutral-400 text-xs font-medium">{t('memberSince')}</p>
-                  </div>
+              <h2 className="text-2xl font-black text-neutral-900 dark:text-white mb-1">
+                {profile.display_name || 'Твое имя'}
+              </h2>
+              <p className="text-violet-600 dark:text-violet-400 font-bold mb-4">
+                @{profile.username || 'username'}
+              </p>
+              
+              {profile.country_ids && profile.country_ids.length > 0 && (
+                <div className="flex items-center justify-center gap-1.5 text-neutral-500 text-sm font-medium">
+                  <MapPin className="w-4 h-4" />
+                  <span>Ваш город</span>
                 </div>
               )}
             </div>
 
-            {/* Referral Card */}
-            {profile.role === 'master' && (
-              <div className="mt-6 bg-gradient-to-r from-purple-500/10 to-indigo-500/10 border border-purple-200 dark:border-purple-500/20 rounded-2xl p-5 relative overflow-hidden">
-                <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
-                  <Gift className="w-24 h-24 text-purple-500" />
-                </div>
-                <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                  <div>
-                    <h3 className="text-lg font-bold text-neutral-900 dark:text-white flex items-center gap-2 mb-1">
-                      <Gift className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                      {language === 'ru' ? 'Пригласи друга - получи бонус!' : language === 'cs' ? 'Pozvi přítele a získej bonus!' : 'Invite a friend and get a bonus!'}
-                    </h3>
-                    <p className="text-sm text-neutral-500 dark:text-neutral-400 max-w-md">
-                      {language === 'ru' 
-                        ? 'Поделись своим кодом с другими мастерами. Когда их профиль одобрят, ты получишь 1 скидочный токен (скидка 50% на любую заявку).'
-                        : language === 'cs'
-                        ? 'Sdílej svůj kód s dalšími tatéry. Když bude jejich profil schválen, získáš 1 slevový token (sleva 50 % na jakoukoli poptávku).'
-                        : 'Share your code with other artists. When their profile is approved, you will get 1 discount token (50% discount on any lead).'}
-                    </p>
-                  </div>
-                  
-                  {profile.own_referral_code && (
-                    <div className="flex flex-col items-center md:items-end">
-                      <div className="bg-white/60 dark:bg-neutral-900/60 backdrop-blur-md shadow-sm border border-purple-200 dark:border-purple-900/30 rounded-xl px-4 py-2 flex items-center gap-3">
-                        <span className="font-mono font-bold text-lg text-purple-700 dark:text-purple-400">
-                          {profile.own_referral_code}
-                        </span>
-                        <button 
-                          onClick={() => navigator.clipboard.writeText(profile.own_referral_code || '')}
-                          className="p-1.5 hover:bg-purple-100 dark:hover:bg-purple-900/30 text-purple-600 dark:text-purple-300 rounded transition-colors"
-                          title="Скопировать"
-                        >
-                          <Copy className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
+            <div className="bg-gradient-to-br from-violet-600 to-indigo-600 rounded-3xl p-6 shadow-xl shadow-violet-500/20 text-white relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2" />
+              <h3 className="font-bold text-lg mb-2 flex items-center gap-2">
+                <Globe className="w-5 h-5" />
+                Публичная ссылка
+              </h3>
+              <p className="text-violet-100 text-sm mb-4">
+                Это твоя страница-визитка для клиентов. Отправь им ссылку для записи.
+              </p>
+              
+              <div className="bg-black/20 rounded-xl p-3 flex items-center justify-between backdrop-blur-sm border border-white/10">
+                <span className="text-sm truncate font-medium opacity-90">
+                  tattoo-hub.xyz/book/{profile.username || '...'}
+                </span>
+                <button 
+                  onClick={copyPublicLink}
+                  className="p-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors ml-2 shrink-0"
+                >
+                  <Share2 className="w-4 h-4" />
+                </button>
               </div>
-            )}
-
-            {/* Public Link Card */}
-            {profile.role === 'master' && profile.username && (
-              <div className="mt-6 bg-gradient-to-r from-orange-500/10 to-amber-500/10 border border-orange-200 dark:border-orange-500/20 rounded-2xl p-5 flex items-center justify-between">
-                <div>
-                  <h3 className="text-lg font-bold text-neutral-900 dark:text-white flex items-center gap-2 mb-1">
-                    <LinkIcon className="w-5 h-5 text-orange-600 dark:text-orange-400" />
-                    {language === 'ru' ? 'Ваша публичная ссылка' : language === 'cs' ? 'Váš veřejný odkaz' : 'Your public link'}
-                  </h3>
-                  <p className="text-sm text-neutral-500 dark:text-neutral-400 max-w-md">
-                    {language === 'ru' 
-                      ? 'Отправьте эту ссылку клиентам, чтобы они могли посмотреть ваше портфолио и записаться к вам.'
-                      : 'Send this link to clients so they can view your portfolio and book an appointment.'}
-                  </p>
-                </div>
-                <div className="flex flex-col items-center md:items-end">
-                  <div className="bg-white/60 dark:bg-neutral-900/60 backdrop-blur-md shadow-sm border border-orange-200 dark:border-orange-900/30 rounded-xl px-4 py-2 flex items-center gap-3">
-                    <span className="font-mono font-medium text-sm text-orange-700 dark:text-orange-400">
-                      tattoohub.cz/book/{profile.username}
-                    </span>
-                    <button 
-                      onClick={() => {
-                        navigator.clipboard.writeText(`https://tattoohub.cz/book/${profile.username}`)
-                        toast.success(language === 'ru' ? 'Ссылка скопирована' : 'Link copied')
-                      }}
-                      className="p-1.5 hover:bg-orange-100 dark:hover:bg-orange-900/30 text-orange-600 dark:text-orange-300 rounded transition-colors"
-                      title="Скопировать"
-                    >
-                      <Copy className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Portfolio Grid */}
-            {profile.role === 'master' && (
-              <div className="mt-6 bg-white/40 dark:bg-neutral-900/40 backdrop-blur-md border border-neutral-200/50 dark:border-white/5 shadow-xl rounded-3xl p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-xl font-bold text-neutral-900 dark:text-white flex items-center gap-2">
-                    <ImagePlus className="w-6 h-6 text-indigo-500" />
-                    {language === 'ru' ? 'Мое портфолио' : 'My Portfolio'}
-                  </h3>
-                  <label className="cursor-pointer bg-neutral-900 dark:bg-neutral-800 hover:bg-neutral-800 dark:hover:bg-neutral-700 text-white px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 transition-colors">
-                    <UploadCloud className="w-4 h-4" />
-                    {language === 'ru' ? 'Загрузить фото' : 'Upload photo'}
-                    <input type="file" multiple accept="image/*" className="hidden" onChange={handlePortfolioUpload} disabled={isUploading} />
-                  </label>
-                </div>
-                
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {profile.portfolio_image_urls && profile.portfolio_image_urls.length > 0 ? (
-                    profile.portfolio_image_urls.map((url, idx) => (
-                      <div key={idx} className="relative aspect-square rounded-2xl overflow-hidden group border border-neutral-200 dark:border-neutral-800">
-                        <img src={url} alt="Portfolio" className="w-full h-full object-cover transition-transform group-hover:scale-110 duration-500" />
-                        <button 
-                          onClick={() => removePortfolioImage(url)}
-                          className="absolute top-2 right-2 p-1.5 bg-black/50 hover:bg-red-500 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-all"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="col-span-full py-12 text-center text-neutral-500 dark:text-neutral-400 border-2 border-dashed border-neutral-200 dark:border-neutral-800 rounded-2xl">
-                      {language === 'ru' ? 'В вашем портфолио пока нет фотографий' : 'No photos in your portfolio yet'}
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {!isEditing && (
-              <button
-                onClick={() => setIsEditing(true)}
-                className="mt-6 flex items-center gap-2 px-5 py-3 bg-neutral-900 dark:bg-neutral-800 hover:bg-neutral-800 dark:hover:bg-neutral-700 text-white rounded-xl transition-all shadow-md hover:scale-[1.02]"
-              >
-                <Edit2 className="w-4 h-4" />
-                {t('editProfile')}
-              </button>
-            )}
+            </div>
           </div>
 
-          {/* Edit Form */}
-          {isEditing && (
-            <div className="bg-white/40 dark:bg-neutral-900/40 backdrop-blur-md border border-neutral-200/50 dark:border-white/5 shadow-xl rounded-3xl p-6">
-              <h3 className="text-lg font-bold text-neutral-900 dark:text-white mb-6">{t('editProfile')}</h3>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          {/* Right Column: Settings & Portfolio */}
+          <div className="lg:col-span-2 space-y-6">
+            
+            <div className="bg-white/60 dark:bg-neutral-900/60 backdrop-blur-xl border border-white/40 dark:border-white/5 rounded-3xl p-6 md:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.2)]">
+              <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
+                <User className="w-5 h-5 text-violet-500" />
+                Основная информация
+              </h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-semibold text-neutral-600 dark:text-neutral-400 mb-2">
-                    {language === 'ru' ? 'Ссылка на профиль (Username)' : language === 'cs' ? 'Odkaz na profil (Username)' : 'Profile Link (Username)'}
-                  </label>
-                  <div className="flex items-stretch rounded-xl shadow-inner border border-neutral-200 dark:border-white/10 bg-white/40 dark:bg-neutral-950/40 overflow-hidden focus-within:ring-2 focus-within:ring-cyan-500/20 focus-within:border-cyan-500 transition-all">
-                    <div className="flex items-center px-4 bg-neutral-100 dark:bg-neutral-900 border-r border-neutral-200 dark:border-white/10 text-neutral-500 dark:text-neutral-400 select-none">
-                      tattoohub.cz/book/
-                    </div>
+                  <label className="block text-sm font-bold text-neutral-700 dark:text-neutral-300 mb-2">{t('displayName')}</label>
+                  <input
+                    type="text"
+                    value={displayName}
+                    onChange={e => setDisplayName(e.target.value)}
+                    disabled={!isEditing}
+                    className="w-full bg-white dark:bg-black/50 border border-neutral-200 dark:border-neutral-800 rounded-xl px-4 py-3 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all disabled:opacity-70 font-medium"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-neutral-700 dark:text-neutral-300 mb-2">{t('username')}</label>
+                  <div className="relative">
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400 font-bold">@</span>
                     <input
                       type="text"
                       value={username}
-                      onChange={(e) => {
-                        let val = e.target.value;
-                        if (val.includes('tattoohub.cz/book/')) {
-                          val = val.split('tattoohub.cz/book/').pop() || '';
-                        }
-                        setUsername(val.toLowerCase().replace(/[^a-z0-9_]/g, ''));
-                      }}
-                      placeholder="alex_ink"
-                      className="w-full bg-transparent pl-3 pr-4 py-3 text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none font-mono"
-                    />
-                  </div>
-                  <p className="text-xs text-neutral-500 mt-1 ml-1">Только латинские буквы, цифры и _</p>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-neutral-600 dark:text-neutral-400 mb-2">
-                    {t('displayName')}
-                  </label>
-                  <div className="relative">
-                    <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500 dark:text-neutral-400" />
-                    <input
-                      type="text"
-                      value={displayName}
-                      onChange={(e) => setDisplayName(e.target.value)}
-                      placeholder={t('displayName')}
-                      className="w-full bg-white/40 dark:bg-neutral-950/40 border border-neutral-200 dark:border-white/10 rounded-xl pl-11 pr-4 py-3 text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 transition-all shadow-inner"
+                      onChange={e => setUsername(e.target.value.replace(/[^a-zA-Z0-9_-]/g, ''))}
+                      disabled={!isEditing}
+                      className="w-full bg-white dark:bg-black/50 border border-neutral-200 dark:border-neutral-800 rounded-xl pl-9 pr-4 py-3 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all disabled:opacity-70 font-medium"
                     />
                   </div>
                 </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-neutral-600 dark:text-neutral-400 mb-2">
-                    {t('phone')}
-                  </label>
-                  <div className="relative">
-                    <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500 dark:text-neutral-400" />
-                    <input
-                      type="tel"
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      placeholder="+X 000 000 000"
-                      className="w-full bg-white/40 dark:bg-neutral-950/40 border border-neutral-200 dark:border-white/10 rounded-xl pl-11 pr-4 py-3 text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 transition-all shadow-inner"
-                    />
-                  </div>
-                </div>
-
-                {/*
-                <div>
-                  <label className="block text-sm font-semibold text-neutral-600 dark:text-neutral-400 mb-2">
-                    {t('country')}
-                  </label>
-                  <div className="relative">
-                    <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500 dark:text-neutral-400" />
-                    <select
-                      value={selectedCountry}
-                      onChange={(e) => setSelectedCountry(e.target.value)}
-                      className="w-full bg-white/40 dark:bg-neutral-950/40 border border-neutral-200 dark:border-white/10 rounded-xl pl-11 pr-4 py-3 text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 transition-all shadow-inner appearance-none"
-                    >
-                      <option value="" disabled className="text-neutral-900 dark:text-white bg-white dark:bg-neutral-900">{t('selectCountry')}</option>
-                      {countries.map(c => (
-                        <option key={c.id} value={c.id} className="text-neutral-900 dark:text-white bg-white dark:bg-neutral-900">
-                          {language === 'ru' ? c.name_ru : language === 'cs' ? (c.name_cs || c.name_en) : c.name_en}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-                */}
-
-                <div>
-                  <label className="block text-sm font-semibold text-neutral-600 dark:text-neutral-400 mb-2">
-                    {t('city')}
-                  </label>
-                  <div className="relative">
-                    <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500 dark:text-neutral-400" />
-                    <select
-                      value={selectedCity}
-                      onChange={(e) => setSelectedCity(e.target.value)}
-                      disabled={!selectedCountry || cities.length === 0}
-                      className="w-full bg-white/40 dark:bg-neutral-950/40 border border-neutral-200 dark:border-white/10 rounded-xl pl-11 pr-4 py-3 text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 transition-all shadow-inner appearance-none disabled:opacity-50"
-                    >
-                      <option value="" disabled className="text-neutral-900 dark:text-white bg-white dark:bg-neutral-900">{t('selectCity')}</option>
-                      {cities.map(c => (
-                        <option key={c.id} value={c.id} className="text-neutral-900 dark:text-white bg-white dark:bg-neutral-900">
-                          {language === 'ru' ? c.name_ru : language === 'cs' ? (c.name_cs || c.name_en) : c.name_en}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                {profile.role === 'master' && (
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-semibold text-neutral-600 dark:text-neutral-400 mb-2">
-                      {t('bio')}
-                    </label>
-                    <div className="relative">
-                      <FileText className="absolute left-3.5 top-3.5 w-5 h-5 text-neutral-500 dark:text-neutral-400" />
-                      <textarea
-                        value={bio}
-                        onChange={(e) => setBio(e.target.value)}
-                        placeholder={t('aboutMe')}
-                        rows={3}
-                        className="w-full bg-white/40 dark:bg-neutral-950/40 border border-neutral-200 dark:border-white/10 rounded-xl pl-11 pr-4 py-3.5 text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 transition-all resize-none shadow-inner"
-                      />
-                    </div>
-                  </div>
-                )}
-
-                {profile.role === 'master' && (
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-semibold text-neutral-600 dark:text-neutral-400 mb-2">
-                      {language === 'ru' ? 'Ссылка на Instagram' : language === 'cs' ? 'Odkaz na Instagram' : 'Instagram Link'}
-                    </label>
-                    <div className="relative">
-                      <Globe className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500 dark:text-neutral-400" />
-                      <input
-                        type="text"
-                        value={portfolioUrl}
-                        onChange={(e) => setPortfolioUrl(e.target.value)}
-                        placeholder="https://instagram.com/..."
-                        className="w-full bg-white/40 dark:bg-neutral-950/40 border border-neutral-200 dark:border-white/10 rounded-xl pl-11 pr-4 py-3 text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 transition-all shadow-inner"
-                      />
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              <div className="flex gap-3">
-                <button
-                  onClick={handleSave}
-                  disabled={isSaving}
-                  className="flex items-center gap-2 px-5 py-3 bg-neutral-900 dark:bg-white text-white dark:text-neutral-950 rounded-xl font-bold hover:bg-neutral-800 dark:hover:bg-neutral-100 transition-all disabled:opacity-50"
-                >
-                  <Save className="w-4 h-4" />
-                  {isSaving ? t('loading') : t('saveChanges')}
-                </button>
-                <button
-                  onClick={handleCancel}
-                  disabled={isSaving}
-                  className="flex items-center gap-2 px-5 py-3 bg-neutral-200/50 dark:bg-neutral-800 text-neutral-900 dark:text-white rounded-xl hover:bg-neutral-300 dark:hover:bg-neutral-700 transition-all disabled:opacity-50 font-semibold"
-                >
-                  <X className="w-4 h-4" />
-                  {t('cancel')}
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Settings */}
-          <div className="bg-white/40 dark:bg-neutral-900/40 backdrop-blur-md border border-neutral-200/50 dark:border-white/5 shadow-xl rounded-3xl overflow-hidden">
-            <div className="p-6 border-b border-neutral-200/50 dark:border-white/5">
-              <h2 className="text-lg font-bold text-neutral-900 dark:text-white flex items-center gap-2">
-                <Settings className="w-5 h-5 text-neutral-600 dark:text-neutral-400" />
-                {t('settings')}
-              </h2>
-            </div>
-
-            {/* Language */}
-            <div className="p-6 border-b border-neutral-200/50 dark:border-white/5">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <Globe className="w-5 h-5 text-neutral-600 dark:text-neutral-400" />
-                  <div>
-                    <p className="text-neutral-900 dark:text-white font-semibold">{t('language')}</p>
-                    <p className="text-neutral-500 dark:text-neutral-400 text-sm">{t('languageDescription')}</p>
-                  </div>
-                </div>
-                <select
-                  value={language}
-                  onChange={(e) => setLang(e.target.value as 'ru' | 'en' | 'cs')}
-                  className="bg-white/60 dark:bg-neutral-800/80 border border-neutral-200 dark:border-neutral-700 rounded-xl px-4 py-2 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/20 font-semibold cursor-pointer transition-all shadow-sm"
-                >
-                  <option value="cs">Čeština</option>
-                  <option value="ru">Русский</option>
-                  <option value="en">English</option>
-                </select>
-              </div>
-            </div>
-
-            {/* Theme */}
-            <div className="p-6 border-b border-neutral-200/50 dark:border-white/5">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  {theme === 'dark' ? <Moon className="w-5 h-5 text-neutral-600 dark:text-neutral-400" /> : <Sun className="w-5 h-5 text-neutral-600 dark:text-neutral-400" />}
-                  <div>
-                    <p className="text-neutral-900 dark:text-white font-semibold">{t('theme')}</p>
-                    <p className="text-neutral-500 dark:text-neutral-400 text-sm">{t('themeDescription')}</p>
-                  </div>
-                </div>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => handleThemeChange('dark')}
-                    className={`px-4 py-2.5 rounded-xl transition-all font-semibold flex items-center shadow-sm ${theme === 'dark' ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-950 scale-[1.02]' : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 hover:bg-neutral-200 dark:hover:bg-neutral-700'}`}
-                  >
-                    <Moon className="w-4 h-4 inline mr-2" />
-                    {t('dark')}
-                  </button>
-                  <button
-                    onClick={() => handleThemeChange('light')}
-                    className={`px-4 py-2.5 rounded-xl transition-all font-semibold flex items-center shadow-sm ${theme === 'light' ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-950 scale-[1.02]' : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 hover:bg-neutral-200 dark:hover:bg-neutral-700'}`}
-                  >
-                    <Sun className="w-4 h-4 inline mr-2" />
-                    {t('light')}
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Notifications */}
-            <div className="p-6 border-b border-neutral-200/50 dark:border-white/5">
-              <div className="flex items-center gap-2 mb-4">
-                <Bell className="w-5 h-5 text-neutral-600 dark:text-neutral-400" />
-                <p className="text-neutral-900 dark:text-white font-bold">{t('notifications')}</p>
-              </div>
-
-              <div className="space-y-4 pl-7">
-                <div className="flex items-center justify-between">
-                  <p className="text-neutral-700 dark:text-neutral-300 font-medium">{t('emailNotifications')}</p>
-                  <Toggle 
-                    checked={emailNotifications} 
-                    onChange={() => {
-                      const newVal = !emailNotifications
-                      setEmailNotifications(newVal)
-                      saveSetting('emailNotifications', newVal)
-                    }} 
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-bold text-neutral-700 dark:text-neutral-300 mb-2">{t('bio')}</label>
+                  <textarea
+                    value={bio}
+                    onChange={e => setBio(e.target.value)}
+                    disabled={!isEditing}
+                    rows={3}
+                    placeholder="Пара слов о вас и вашем стиле работы..."
+                    className="w-full bg-white dark:bg-black/50 border border-neutral-200 dark:border-neutral-800 rounded-xl px-4 py-3 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all disabled:opacity-70 font-medium resize-none"
                   />
                 </div>
-                <div className="flex items-center justify-between">
-                  <p className="text-neutral-700 dark:text-neutral-300 font-medium">{t('enablePushNotifications')}</p>
-                  <Toggle 
-                    checked={pushNotifications} 
-                    onChange={async () => {
-                      const newVal = !pushNotifications
-                      setPushNotifications(newVal)
-                      saveSetting('pushNotifications', newVal)
-                      if (newVal) {
-                        try {
-                          const { subscribeToPush } = await import('@/lib/push');
-                          await subscribeToPush();
-                          import('react-hot-toast').then(mod => mod.default.success(t('pushEnabled') || 'Уведомления включены'));
-                        } catch (e) {
-                          setPushNotifications(false);
-                          saveSetting('pushNotifications', false);
-                          import('react-hot-toast').then(mod => mod.default.error(t('pushFailed') || 'Не удалось включить уведомления'));
-                        }
-                      }
-                    }} 
-                  />
-                </div>
-                {profile.role === 'master' && (
-                  <>
-                    <div className="flex items-center justify-between">
-                      <p className="text-neutral-700 dark:text-neutral-300 font-medium">{t('newLeadAlerts')}</p>
-                      <Toggle 
-                        checked={newLeadAlerts} 
-                        onChange={() => {
-                          const newVal = !newLeadAlerts
-                          setNewLeadAlerts(newVal)
-                          saveSetting('newLeadAlerts', newVal)
-                        }}
-                        disabled={!emailNotifications}
-                      />
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <p className="text-neutral-700 dark:text-neutral-300 font-medium">{t('lowCreditAlerts')}</p>
-                      <Toggle 
-                        checked={lowCreditAlerts} 
-                        onChange={() => {
-                          const newVal = !lowCreditAlerts
-                          setLowCreditAlerts(newVal)
-                          saveSetting('lowCreditAlerts', newVal)
-                        }}
-                        disabled={!emailNotifications}
-                      />
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
-
-            {/* Email Change */}
-            <div className="p-6 border-b border-neutral-200/50 dark:border-white/5">
-              <div className="flex items-center gap-2 mb-4">
-                <Mail className="w-5 h-5 text-neutral-600 dark:text-neutral-400" />
-                <p className="text-neutral-900 dark:text-white font-bold">{t('changeEmail')}</p>
-              </div>
-
-              {emailSuccess && (
-                <div className="bg-green-500/10 border border-green-500/20 text-green-600 dark:text-green-400 p-3.5 rounded-xl mb-4 flex items-center gap-2 font-medium">
-                  <Check className="w-4 h-4" />
-                  {t('emailSuccess')}
-                </div>
-              )}
-
-              {emailError && (
-                <div className="bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 p-3.5 rounded-xl mb-4 text-sm font-medium">
-                  {emailError}
-                </div>
-              )}
-
-              {!showEmailForm ? (
-                <button
-                  onClick={() => setShowEmailForm(true)}
-                  className="text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white transition-colors text-sm font-semibold pl-7"
-                >
-                  {t('changeEmail')} →
-                </button>
-              ) : (
-                <div className="space-y-4 pl-7">
-                  <p className="text-xs text-neutral-500 dark:text-neutral-400">{t('changeEmailDesc')}</p>
-                  <div>
-                    <input
-                      type="email"
-                      value={newEmail}
-                      onChange={(e) => setNewEmail(e.target.value)}
-                      placeholder={t('newEmail')}
-                      className="w-full bg-white/40 dark:bg-neutral-950/40 border border-neutral-200 dark:border-white/10 rounded-xl px-4 py-2.5 text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 transition-all shadow-inner"
-                    />
-                  </div>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={handleEmailChange}
-                      disabled={isChangingEmail || !newEmail}
-                      className="px-5 py-2.5 bg-neutral-900 dark:bg-white text-white dark:text-neutral-950 rounded-xl font-bold hover:bg-neutral-800 dark:hover:bg-neutral-100 transition-all disabled:opacity-50 text-sm"
-                    >
-                      {isChangingEmail ? t('loading') : t('changeEmail')}
-                    </button>
-                    <button
-                      onClick={() => {
-                        setShowEmailForm(false)
-                        setNewEmail('')
-                        setEmailError(null)
-                      }}
-                      className="px-5 py-2.5 bg-neutral-200/50 dark:bg-neutral-800 text-neutral-900 dark:text-white rounded-xl hover:bg-neutral-300 dark:hover:bg-neutral-700 transition-all text-sm font-semibold"
-                    >
-                      {t('cancel')}
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Password Change */}
-            <div className="p-6 border-b border-neutral-200/50 dark:border-white/5">
-              <div className="flex items-center gap-2 mb-4">
-                <Lock className="w-5 h-5 text-neutral-600 dark:text-neutral-400" />
-                <p className="text-neutral-900 dark:text-white font-bold">{t('changePassword')}</p>
-              </div>
-
-              {passwordSuccess && (
-                <div className="bg-green-500/10 border border-green-500/20 text-green-600 dark:text-green-400 p-3.5 rounded-xl mb-4 flex items-center gap-2 font-medium">
-                  <Check className="w-4 h-4" />
-                  {t('passwordSuccess')}
-                </div>
-              )}
-
-              {passwordError && (
-                <div className="bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 p-3.5 rounded-xl mb-4 text-sm font-medium">
-                  {passwordError}
-                </div>
-              )}
-
-              {!showPasswordForm ? (
-                <button
-                  onClick={() => setShowPasswordForm(true)}
-                  className="text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white transition-colors text-sm font-semibold pl-7"
-                >
-                  {t('changePassword')} →
-                </button>
-              ) : (
-                <div className="space-y-4 pl-7">
-                  <div>
-                    <input
-                      type={showNewPassword ? 'text' : 'password'}
-                      value={newPassword}
-                      onChange={(e) => setNewPassword(e.target.value)}
-                      placeholder={t('newPassword')}
-                      className="w-full bg-white/40 dark:bg-neutral-950/40 border border-neutral-200 dark:border-white/10 rounded-xl px-4 py-2.5 text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 transition-all shadow-inner"
-                    />
-                  </div>
-                  <div className="relative">
-                    <input
-                      type={showNewPassword ? 'text' : 'password'}
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                      placeholder={t('confirmPassword')}
-                      className="w-full bg-white/40 dark:bg-neutral-950/40 border border-neutral-200 dark:border-white/10 rounded-xl pr-12 pl-4 py-2.5 text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 transition-all shadow-inner"
-                    />
-                    <button
-                      onClick={() => setShowNewPassword(!showNewPassword)}
-                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white"
-                    >
-                      {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    </button>
-                  </div>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={handlePasswordChange}
-                      disabled={isChangingPassword || !newPassword || !confirmPassword}
-                      className="px-5 py-2.5 bg-neutral-900 dark:bg-white text-white dark:text-neutral-950 rounded-xl font-bold hover:bg-neutral-800 dark:hover:bg-neutral-100 transition-all disabled:opacity-50 text-sm"
-                    >
-                      {isChangingPassword ? t('loading') : t('changePassword')}
-                    </button>
-                    <button
-                      onClick={() => {
-                        setShowPasswordForm(false)
-                        setNewPassword('')
-                        setConfirmPassword('')
-                        setPasswordError(null)
-                      }}
-                      className="px-5 py-2.5 bg-neutral-200/50 dark:bg-neutral-800 text-neutral-900 dark:text-white rounded-xl hover:bg-neutral-300 dark:hover:bg-neutral-700 transition-all text-sm font-semibold"
-                    >
-                      {t('cancel')}
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Danger Zone */}
-            <div className="p-6">
-              <div className="flex items-center gap-2 mb-4">
-                <AlertTriangle className="w-5 h-5 text-red-500" />
-                <p className="text-red-500 font-bold">{t('dangerZone')}</p>
-              </div>
-
-              {!showDeleteConfirm ? (
-                <button
-                  onClick={() => setShowDeleteConfirm(true)}
-                  className="flex items-center gap-2 text-red-500 hover:text-red-600 transition-colors text-sm font-bold pl-7"
-                >
-                  <Trash2 className="w-4 h-4" />
-                  {t('deleteAccount')}
-                </button>
-              ) : (
-                <div className="pl-7 space-y-3">
-                  <p className="text-neutral-700 dark:text-neutral-300 text-sm font-medium">
-                    {t('typeToConfirm')}:
-                  </p>
+                <div>
+                  <label className="block text-sm font-bold text-neutral-700 dark:text-neutral-300 mb-2">
+                    <div className="flex items-center gap-1.5"><Instagram className="w-4 h-4"/> Instagram URL</div>
+                  </label>
                   <input
                     type="text"
-                    value={deleteConfirmText}
-                    onChange={(e) => setDeleteConfirmText(e.target.value)}
-                    placeholder={language === 'ru' ? 'УДАЛИТЬ' : language === 'cs' ? 'SMAZAT' : 'DELETE'}
-                    className="w-full bg-white/40 dark:bg-neutral-950/40 border border-red-500/30 rounded-xl px-4 py-2.5 text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all shadow-inner"
+                    value={portfolioUrl}
+                    onChange={e => setPortfolioUrl(e.target.value)}
+                    disabled={!isEditing}
+                    placeholder="instagram.com/your_nick"
+                    className="w-full bg-white dark:bg-black/50 border border-neutral-200 dark:border-neutral-800 rounded-xl px-4 py-3 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all disabled:opacity-70 font-medium"
                   />
-                  <div className="flex gap-2">
-                    <button
-                      onClick={handleDeleteAccount}
-                      disabled={deleteConfirmText !== (language === 'ru' ? 'УДАЛИТЬ' : language === 'cs' ? 'SMAZAT' : 'DELETE')}
-                      className="px-5 py-2.5 bg-red-600 text-white rounded-xl font-bold hover:bg-red-500 transition-all disabled:opacity-50 text-sm flex items-center gap-1.5 shadow-md"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                      {t('deleteAccount')}
-                    </button>
-                    <button
-                      onClick={() => {
-                        setShowDeleteConfirm(false)
-                        setDeleteConfirmText('')
-                      }}
-                      className="px-5 py-2.5 bg-neutral-200/50 dark:bg-neutral-800 text-neutral-900 dark:text-white rounded-xl hover:bg-neutral-300 dark:hover:bg-neutral-700 transition-all text-sm font-semibold"
-                    >
-                      {t('cancel')}
-                    </button>
-                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-neutral-700 dark:text-neutral-300 mb-2">Номер телефона</label>
+                  <input
+                    type="text"
+                    value={phone}
+                    onChange={e => setPhone(e.target.value)}
+                    disabled={!isEditing}
+                    placeholder="+420..."
+                    className="w-full bg-white dark:bg-black/50 border border-neutral-200 dark:border-neutral-800 rounded-xl px-4 py-3 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all disabled:opacity-70 font-medium"
+                  />
+                </div>
+
+                {/* Locations */}
+                <div>
+                  <label className="block text-sm font-bold text-neutral-700 dark:text-neutral-300 mb-2">{t('country')}</label>
+                  <select
+                    value={selectedCountry}
+                    onChange={(e) => setSelectedCountry(e.target.value)}
+                    disabled={!isEditing}
+                    className="w-full bg-white dark:bg-black/50 border border-neutral-200 dark:border-neutral-800 rounded-xl px-4 py-3 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all disabled:opacity-70 font-medium cursor-pointer"
+                  >
+                    <option value="">{t('selectCountry')}</option>
+                    {countries.map(country => (
+                      <option key={country.id} value={country.id}>{country.name}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-neutral-700 dark:text-neutral-300 mb-2">{t('city')}</label>
+                  <select
+                    value={selectedCity}
+                    onChange={(e) => setSelectedCity(e.target.value)}
+                    disabled={!isEditing || !selectedCountry}
+                    className="w-full bg-white dark:bg-black/50 border border-neutral-200 dark:border-neutral-800 rounded-xl px-4 py-3 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all disabled:opacity-70 font-medium cursor-pointer"
+                  >
+                    <option value="">{t('selectCity')}</option>
+                    {cities.map(city => (
+                      <option key={city.id} value={city.id}>{city.name}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {/* Portfolio Gallery */}
+            <div className="bg-white/60 dark:bg-neutral-900/60 backdrop-blur-xl border border-white/40 dark:border-white/5 rounded-3xl p-6 md:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.2)]">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-bold flex items-center gap-2">
+                  <ImageIcon className="w-5 h-5 text-cyan-500" />
+                  Галерея работ
+                </h3>
+                {isEditing && (
+                  <button
+                    onClick={() => portfolioInputRef.current?.click()}
+                    disabled={isUploading}
+                    className="flex items-center gap-2 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 px-4 py-2 rounded-xl font-bold transition-colors text-sm"
+                  >
+                    <Upload className="w-4 h-4" />
+                    Загрузить фото
+                  </button>
+                )}
+                <input
+                  type="file"
+                  multiple
+                  accept="image/*"
+                  ref={portfolioInputRef}
+                  onChange={handlePortfolioUpload}
+                  className="hidden"
+                />
+              </div>
+
+              {profile.portfolio_image_urls && profile.portfolio_image_urls.length > 0 ? (
+                <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {profile.portfolio_image_urls.map((url, i) => (
+                    <div key={i} className="group relative aspect-square rounded-2xl overflow-hidden border border-neutral-200 dark:border-neutral-800">
+                      <img src={url} alt={`Portfolio ${i}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                      {isEditing && (
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                          <button
+                            onClick={() => removePortfolioImage(url)}
+                            className="bg-red-500 hover:bg-red-600 text-white p-3 rounded-full shadow-lg transition-transform hover:scale-110"
+                          >
+                            <Trash2 className="w-5 h-5" />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="bg-neutral-100/50 dark:bg-black/30 border-2 border-dashed border-neutral-300 dark:border-neutral-800 rounded-3xl p-12 text-center">
+                  <ImageIcon className="w-12 h-12 text-neutral-400 mx-auto mb-4" />
+                  <p className="text-neutral-500 dark:text-neutral-400 font-medium mb-2">У вас еще нет добавленных работ</p>
+                  {isEditing && (
+                    <p className="text-sm text-neutral-400">Нажмите "Загрузить фото", чтобы пополнить портфолио.</p>
+                  )}
                 </div>
               )}
             </div>
-          </div>
-        </div>
 
-        <div className="mt-12 mb-8 border-t border-neutral-200/50 dark:border-white/5 pt-8 pb-4 text-center">
-          <div className="flex flex-wrap justify-center gap-6 text-sm font-medium text-neutral-500 dark:text-neutral-500">
-            <a href="/terms" className="hover:text-neutral-900 dark:hover:text-white transition-colors">Terms of Service</a>
-            <a href="/privacy" className="hover:text-neutral-900 dark:hover:text-white transition-colors">Privacy Policy</a>
-            <a href="/refunds" className="hover:text-neutral-900 dark:hover:text-white transition-colors">Refund Policy</a>
           </div>
-          <p className="mt-4 text-xs text-neutral-400 dark:text-neutral-600">
-            &copy; 2026 Tattoo HUB. Все права защищены.
-          </p>
         </div>
       </main>
     </div>
   )
 }
-

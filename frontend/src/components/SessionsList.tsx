@@ -37,7 +37,8 @@ export function SessionsList({ sessions, searchQuery, setSearchQuery, onStatusCh
     let result = sessions.filter(s => {
       const q = searchQuery.toLowerCase()
       const name = (s.master_clients?.name || '').toLowerCase()
-      const contact = (s.master_clients?.contact_info || '').toLowerCase()
+      const contactInfo = s.master_clients?.phone || s.master_clients?.telegram || s.master_clients?.email || s.master_clients?.contact_info || 'Нет контактов'
+      const contact = contactInfo.toLowerCase()
       const matchesSearch = name.includes(q) || contact.includes(q)
       const matchesStatus = statusFilter === 'all' || s.status === statusFilter
       return matchesSearch && matchesStatus
@@ -175,12 +176,19 @@ export function SessionsList({ sessions, searchQuery, setSearchQuery, onStatusCh
             <thead>
               <tr className="bg-neutral-50 dark:bg-neutral-800/50 text-xs uppercase tracking-wider text-neutral-500 dark:text-neutral-400 border-b border-neutral-200 dark:border-neutral-800">
                 <th className="p-4 w-12 text-center">
-                  <input 
-                    type="checkbox" 
-                    checked={selectedIds.size === paginated.length && paginated.length > 0}
-                    onChange={toggleSelectAll}
-                    className="w-4 h-4 rounded border-neutral-300 text-violet-600 focus:ring-violet-500"
-                  />
+                  <div className="relative flex items-center justify-center w-5 h-5 mx-auto">
+                    <input 
+                      type="checkbox" 
+                      checked={selectedIds.size === paginated.length && paginated.length > 0}
+                      onChange={toggleSelectAll}
+                      className="peer absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                    />
+                    <div className="w-5 h-5 rounded-md border-2 border-neutral-300 dark:border-neutral-600 bg-transparent peer-checked:bg-violet-500 peer-checked:border-violet-500 transition-colors flex items-center justify-center">
+                      <svg className="w-3.5 h-3.5 text-white opacity-0 peer-checked:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                  </div>
                 </th>
                 <th className="p-4 font-bold cursor-pointer hover:text-neutral-700 dark:hover:text-neutral-200 transition-colors" onClick={() => handleSort('client')}>
                   <div className="flex items-center gap-1">Клиент <SortIcon field="client" /></div>
@@ -208,16 +216,23 @@ export function SessionsList({ sessions, searchQuery, setSearchQuery, onStatusCh
                   }}
                 >
                   <td className="p-4 text-center">
-                    <input 
-                      type="checkbox" 
-                      checked={selectedIds.has(session.id)}
-                      onChange={() => toggleSelect(session.id)}
-                      className="w-4 h-4 rounded border-neutral-300 text-violet-600 focus:ring-violet-500"
-                    />
+                    <div className="relative flex items-center justify-center w-5 h-5 mx-auto">
+                      <input 
+                        type="checkbox" 
+                        checked={selectedIds.has(session.id)}
+                        onChange={() => toggleSelect(session.id)}
+                        className="peer absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                      />
+                      <div className="w-5 h-5 rounded-md border-2 border-neutral-300 dark:border-neutral-600 bg-transparent peer-checked:bg-violet-500 peer-checked:border-violet-500 transition-colors flex items-center justify-center">
+                        <svg className="w-3.5 h-3.5 text-white opacity-0 peer-checked:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                      </div>
+                    </div>
                   </td>
                   <td className="p-4">
                     <div className="font-bold text-neutral-900 dark:text-white">{session.master_clients?.name}</div>
-                    <div className="text-sm text-neutral-500">{session.master_clients?.contact_info || 'Нет контактов'}</div>
+                    <div className="text-sm text-neutral-500">{session.master_clients?.phone || session.master_clients?.telegram || session.master_clients?.email || session.master_clients?.contact_info || 'Нет контактов'}</div>
                   </td>
                   <td className="p-4">
                     <div className="font-medium text-neutral-900 dark:text-white">

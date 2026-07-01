@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { LogOut, Gem, Menu, X, LayoutDashboard, Settings, Plus, Moon, Sun, Globe, Ticket, Copy, Bell, BarChart2, HelpCircle, Shield } from 'lucide-react'
+import { LogOut, Gem, Menu, X, LayoutDashboard, Settings, Plus, Moon, Sun, Globe, Ticket, Copy, Bell, BarChart2, HelpCircle, Shield, User } from 'lucide-react'
 import { Profile } from '@/lib/supabase'
 import { subscribeToPush } from '@/lib/push'
 import { useLanguage } from '@/i18n/LanguageContext'
@@ -196,6 +196,10 @@ export function Header({ profile, onLogout }: HeaderProps) {
                     <div className="border-t border-neutral-200 dark:border-neutral-800 my-1"></div>
                     
                     <a href="/profile" className="flex items-center gap-3 px-4 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800">
+                      <User className="w-4 h-4" />
+                      Моя страница
+                    </a>
+                    <a href="/settings" className="flex items-center gap-3 px-4 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800">
                       <Settings className="w-4 h-4" />
                       {t('settings')}
                     </a>
