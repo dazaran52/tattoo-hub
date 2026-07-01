@@ -46,8 +46,9 @@ class SessionUpdate(BaseModel):
     reference_images: Optional[List[str]] = None
 
 class CompleteSessionData(BaseModel):
-    result_image_urls: List[str]
+    result_image_urls: Optional[List[str]] = []
     publish_to_portfolio: bool = False
+    end_time: Optional[str] = None
 
 @router.get("/clients")
 async def get_clients(
@@ -310,7 +311,7 @@ async def complete_session(
     supabase: AsyncClient = Depends(get_async_supabase_client)
 ):
     try:
-        now_time = datetime.now().strftime("%H:%M")
+        now_time = data.end_time if data.end_time else datetime.now().strftime("%H:%M")
         res = await supabase.table("master_sessions") \
             .update({
                 "status": "completed",

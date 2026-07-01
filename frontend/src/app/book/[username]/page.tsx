@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Calendar as CalendarIcon, User, MapPin, FileText, CheckCircle, ArrowLeft, Send, Link as LinkIcon, Instagram, Upload, Loader2, X } from 'lucide-react'
+import { Calendar as CalendarIcon, User, MapPin, FileText, CheckCircle, ArrowLeft, Send, Link as LinkIcon, Instagram, Upload, Loader2, X, Image as ImageIcon } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { DayPicker } from 'react-day-picker'
 import 'react-day-picker/dist/style.css'
@@ -17,6 +17,8 @@ export default function BookMasterPage({ params }: { params: { username: string 
   const [error, setError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
+  const [activeTab, setActiveTab] = useState<'booking' | 'portfolio'>('booking')
+  const [selectedPortfolioImage, setSelectedPortfolioImage] = useState<string | null>(null)
 
   // Form State
   const [name, setName] = useState('')
@@ -221,12 +223,36 @@ export default function BookMasterPage({ params }: { params: { username: string 
               ) : (
                 <LinkIcon className="w-4 h-4" />
               )}
-              Смотреть портфолио
+              Смотреть внешнее портфолио
             </a>
           )}
         </div>
 
-        {/* Booking Form */}
+        {/* Tabs */}
+        <div className="flex gap-2 mb-8 bg-neutral-100 dark:bg-neutral-900 p-1.5 rounded-2xl max-w-sm mx-auto relative z-10">
+          <button
+            onClick={() => setActiveTab('booking')}
+            className={`flex-1 py-2.5 text-sm font-semibold rounded-xl transition-all ${
+              activeTab === 'booking'
+                ? 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white shadow-sm'
+                : 'text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300 hover:bg-white/50 dark:hover:bg-neutral-800/50'
+            }`}
+          >
+            Запись на сеанс
+          </button>
+          <button
+            onClick={() => setActiveTab('portfolio')}
+            className={`flex-1 py-2.5 text-sm font-semibold rounded-xl transition-all ${
+              activeTab === 'portfolio'
+                ? 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white shadow-sm'
+                : 'text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300 hover:bg-white/50 dark:hover:bg-neutral-800/50'
+            }`}
+          >
+            Портфолио
+          </button>
+        </div>
+
+        {activeTab === 'booking' ? (
         <div className="bg-white/60 dark:bg-neutral-900/60 backdrop-blur-xl border border-neutral-200/50 dark:border-white/5 shadow-xl rounded-3xl p-8">
           <div className="mb-8">
             <h2 className="text-2xl font-bold mb-2">Запись на сеанс</h2>
@@ -396,7 +422,51 @@ export default function BookMasterPage({ params }: { params: { username: string 
             </p>
           </form>
         </div>
+        ) : (
+          <div className="bg-white/60 dark:bg-neutral-900/60 backdrop-blur-xl border border-neutral-200/50 dark:border-white/5 shadow-xl rounded-3xl p-8">
+            <h2 className="text-2xl font-bold mb-6 text-center">Портфолио</h2>
+            {master.portfolio_image_urls && master.portfolio_image_urls.length > 0 ? (
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                {master.portfolio_image_urls.map((url: string, idx: number) => (
+                  <div 
+                    key={`port-${idx}`} 
+                    onClick={() => setSelectedPortfolioImage(url)}
+                    className="aspect-square rounded-2xl overflow-hidden bg-neutral-100 dark:bg-neutral-800 shadow-md cursor-pointer"
+                  >
+                    <img src={url} alt={`Portfolio ${idx}`} className="w-full h-full object-cover hover:scale-105 transition-transform duration-300" />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12 text-neutral-500 dark:text-neutral-400">
+                <ImageIcon className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                <p>Мастер пока не добавил фото в портфолио</p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
+
+      {selectedPortfolioImage && (
+        <div 
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
+          onClick={() => setSelectedPortfolioImage(null)}
+        >
+          <div className="relative max-w-4xl w-full h-full max-h-[80vh] flex flex-col items-center justify-center">
+            <button 
+              onClick={() => setSelectedPortfolioImage(null)}
+              className="absolute -top-12 right-0 p-2 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors"
+            >
+              <X className="w-6 h-6" />
+            </button>
+            <img 
+              src={selectedPortfolioImage} 
+              alt="Portfolio Detail" 
+              className="max-w-full max-h-full object-contain rounded-xl shadow-2xl" 
+            />
+          </div>
+        </div>
+      )}
     </div>
   )
 }

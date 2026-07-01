@@ -17,11 +17,15 @@ export interface CRMSession {
   price?: number
   style?: string
   reference_images?: string[]
+  result_image_urls?: string[]
   status: string
   master_clients?: {
     id: string
     name: string
-    contact_info: string
+    contact_info?: string
+    phone?: string
+    telegram?: string
+    email?: string
     leads?: {
       title: string
       image_urls: string[]
@@ -357,7 +361,7 @@ export function CRMBoard() {
                                   {item.master_clients?.name || 'Неизвестный'}
                                 </h4>
                                 <p className="text-xs text-neutral-500 line-clamp-1 mt-0.5">
-                                  {item.master_clients?.contact_info || 'Нет контактов'}
+                                  {item.master_clients?.phone || item.master_clients?.telegram || item.master_clients?.email || 'Нет контактов'}
                                 </p>
                               </div>
                             </div>

@@ -60,7 +60,7 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
         setIsNewClient(false)
         setImages([])
         // Assuming reference_images exist on editSession, though we might need to add it to CRMSession interface if needed
-        // For now, editSession doesn't fetch reference_images in Kanban, but let's just keep it simple
+        setExistingImages((editSession as any).reference_images || [])
       } else {
         setFormData({
           client_id: initialClientId || '',
@@ -203,6 +203,7 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
         : `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/crm/sessions`
       
       const method = editSession ? 'PUT' : 'POST'
+      const allImages = [...existingImages, ...imageUrls]
       
       const bodyPayload = editSession ? {
         session_date: formData.session_date,
@@ -210,7 +211,7 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
         end_time: formData.end_time || null,
         price: formData.price ? parseFloat(formData.price) : null,
         style: formData.style,
-        ...(imageUrls.length > 0 && { reference_images: imageUrls })
+        reference_images: allImages
       } : {
         client_id: finalClientId,
         session_date: formData.session_date,
@@ -218,7 +219,7 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
         end_time: formData.end_time || null,
         price: formData.price ? parseFloat(formData.price) : null,
         style: formData.style,
-        reference_images: imageUrls
+        reference_images: allImages
       }
 
       if (editSession) {

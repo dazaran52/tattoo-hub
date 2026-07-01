@@ -268,13 +268,13 @@ export function CalendarView({ sessions, onUpdate }: CalendarViewProps) {
       {/* Daily Schedule Sidebar / Modal */}
       <AnimatePresence>
         {selectedDate && (
-          <div className="fixed inset-0 z-[60] flex justify-end bg-black/20 backdrop-blur-sm" onClick={(e) => { if (e.target === e.currentTarget) setSelectedDate(null) }}>
+          <div className="fixed inset-0 z-[100] flex justify-end bg-black/20 backdrop-blur-sm" onClick={(e) => { if (e.target === e.currentTarget) setSelectedDate(null) }}>
             <motion.div
               initial={{ x: '100%' }}
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: 'tween', duration: 0.3, ease: 'easeInOut' }}
-              className={`bg-white dark:bg-neutral-900 w-full h-full shadow-2xl flex flex-col transition-all duration-300 ${isSidebarExpanded ? 'max-w-full' : 'max-w-md'}`}
+              className={`bg-white dark:bg-neutral-900 w-full h-full shadow-2xl flex flex-col transition-all duration-300 pb-24 sm:pb-0 ${isSidebarExpanded ? 'max-w-full' : 'max-w-md'}`}
             >
               <div className="p-6 border-b border-neutral-100 dark:border-neutral-800 flex justify-between items-center">
                 <div className="flex items-center gap-3">

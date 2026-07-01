@@ -290,9 +290,23 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId }
                       </div>
                       {s.reference_images && s.reference_images.length > 0 && (
                         <div className="w-full flex gap-2 overflow-x-auto custom-scrollbar pb-1 border-t border-neutral-100 dark:border-neutral-800 pt-3">
-                          {s.reference_images.map((url, idx) => (
-                            <img key={idx} src={url} alt="ref" className="w-14 h-14 rounded-lg object-cover shrink-0 border border-neutral-200 dark:border-neutral-700" />
+                          {s.reference_images.map((url: string, idx: number) => (
+                            <img key={`ref-${idx}`} src={url} alt="ref" className="w-14 h-14 rounded-lg object-cover shrink-0 border border-neutral-200 dark:border-neutral-700" />
                           ))}
+                        </div>
+                      )}
+                      
+                      {s.status === 'completed' && s.result_image_urls && s.result_image_urls.length > 0 && (
+                        <div className="mt-2 bg-green-50 dark:bg-green-900/10 p-3 rounded-xl border border-green-100 dark:border-green-900/30">
+                          <div className="flex items-center gap-2 mb-2">
+                            <CheckCircle className="w-4 h-4 text-green-600 dark:text-green-500" />
+                            <span className="text-xs font-semibold text-green-700 dark:text-green-400 uppercase tracking-wider">Результат сеанса</span>
+                          </div>
+                          <div className="w-full flex gap-2 overflow-x-auto custom-scrollbar pb-1">
+                            {s.result_image_urls.map((url: string, idx: number) => (
+                              <img key={`res-${idx}`} src={url} alt="result" className="w-16 h-16 rounded-lg object-cover shrink-0 border border-green-200 dark:border-green-800" />
+                            ))}
+                          </div>
                         </div>
                       )}
                     </div>
