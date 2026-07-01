@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { X, User, Clock, FileText, Upload, Calendar as CalendarIcon, Tag, Plus, Trash2 } from 'lucide-react'
+import imageCompression from 'browser-image-compression'
 import { supabase } from '@/lib/supabase'
 import toast from 'react-hot-toast'
 import { CRMClient } from './ClientsDatabase'
@@ -188,21 +189,33 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
 
       // 2. Upload images
       setIsUploading(true)
+      
+      const compressionOptions = {
+        maxSizeMB: 1,
+        maxWidthOrHeight: 1920,
+        useWebWorker: true,
+      }
+
       let imageUrls: string[] = [...existingImages]
       for (const file of images) {
         const fileExt = file.name.split('.').pop()
         const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`
         const filePath = `${fileName}`
         
-        const { error: uploadError } = await supabase.storage
-          .from('lead_images')
-          .upload(filePath, file)
-          
-        if (!uploadError) {
-          const { data: publicUrlData } = supabase.storage
+        try {
+          const compressedFile = await imageCompression(file, compressionOptions)
+          const { error: uploadError } = await supabase.storage
             .from('lead_images')
-            .getPublicUrl(filePath)
-          if (publicUrlData) imageUrls.push(publicUrlData.publicUrl)
+            .upload(filePath, compressedFile)
+            
+          if (!uploadError) {
+            const { data: publicUrlData } = supabase.storage
+              .from('lead_images')
+              .getPublicUrl(filePath)
+            if (publicUrlData) imageUrls.push(publicUrlData.publicUrl)
+          }
+        } catch (err) {
+          console.error('Upload error', err)
         }
       }
 
@@ -212,15 +225,20 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
         const fileName = `${Date.now()}_res_${Math.random().toString(36).substring(2)}.${fileExt}`
         const filePath = `${fileName}`
         
-        const { error: uploadError } = await supabase.storage
-          .from('lead_images')
-          .upload(filePath, file)
-          
-        if (!uploadError) {
+        try {
+          const compressedFile = await imageCompression(file, compressionOptions)
+          const { error: uploadError } = await supabase.storage
+            .from('lead_images')
+            .upload(filePath, compressedFile)
+            
+          if (!uploadError) {
           const { data: publicUrlData } = supabase.storage
             .from('lead_images')
             .getPublicUrl(filePath)
           if (publicUrlData) resImageUrls.push(publicUrlData.publicUrl)
+        }
+        } catch (e) {
+          console.error('Upload error', e)
         }
       }
       setIsUploading(false)

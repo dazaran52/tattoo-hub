@@ -6,6 +6,7 @@ import { Header } from '@/components/Header'
 import { supabase } from '@/lib/supabase'
 import { api, Profile } from '@/lib/api'
 import { useLanguage } from '@/i18n/LanguageContext'
+import imageCompression from 'browser-image-compression'
 import { 
   User, Image as ImageIcon, Check, X, Camera, MapPin, 
   Globe, Instagram, Link as LinkIcon, Share2, ArrowLeft, Trash2, Upload
@@ -135,11 +136,18 @@ export default function ProfilePage() {
       const file = e.target.files[0]
       setIsUploading(true)
       
+      const compressionOptions = {
+        maxSizeMB: 1,
+        maxWidthOrHeight: 1024,
+        useWebWorker: true,
+      }
+      
       const fileExt = file.name.split('.').pop()
       const fileName = `${profile?.id}-${Math.random()}.${fileExt}`
       const filePath = `avatars/${fileName}`
 
-      const { error: uploadError } = await supabase.storage.from('avatars').upload(filePath, file)
+      const compressedFile = await imageCompression(file, compressionOptions)
+      const { error: uploadError } = await supabase.storage.from('avatars').upload(filePath, compressedFile)
       if (uploadError) throw uploadError
 
       const { data } = supabase.storage.from('avatars').getPublicUrl(filePath)
@@ -160,6 +168,12 @@ export default function ProfilePage() {
       if (!e.target.files || e.target.files.length === 0) return
       setIsUploading(true)
       
+      const compressionOptions = {
+        maxSizeMB: 1.5,
+        maxWidthOrHeight: 1920,
+        useWebWorker: true,
+      }
+      
       const newUrls: string[] = []
       
       for (let i = 0; i < e.target.files.length; i++) {
@@ -168,7 +182,8 @@ export default function ProfilePage() {
         const fileName = `${profile?.id}-${Math.random()}-${i}.${fileExt}`
         const filePath = `portfolio/${fileName}`
 
-        const { error: uploadError } = await supabase.storage.from('portfolio').upload(filePath, file)
+        const compressedFile = await imageCompression(file, compressionOptions)
+        const { error: uploadError } = await supabase.storage.from('portfolio').upload(filePath, compressedFile)
         if (uploadError) throw uploadError
 
         const { data } = supabase.storage.from('portfolio').getPublicUrl(filePath)
