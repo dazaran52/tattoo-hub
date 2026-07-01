@@ -239,7 +239,7 @@ export function SessionsList({ sessions, searchQuery, setSearchQuery, onStatusCh
                     <div className="font-medium text-neutral-900 dark:text-white">
                       {new Date(session.session_date).toLocaleDateString('ru-RU')}
                     </div>
-                    {cardView === 'expanded' && (session.start_time || session.end_time) && (
+                    {(session.start_time || session.end_time) && (
                       <div className="text-sm text-neutral-500">
                         {session.start_time?.slice(0, 5)} {session.end_time ? `- ${session.end_time.slice(0, 5)}` : ''}
                       </div>
