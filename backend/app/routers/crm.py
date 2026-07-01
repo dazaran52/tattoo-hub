@@ -310,10 +310,12 @@ async def complete_session(
     supabase: AsyncClient = Depends(get_async_supabase_client)
 ):
     try:
+        now_time = datetime.now().strftime("%H:%M")
         res = await supabase.table("master_sessions") \
             .update({
                 "status": "completed",
-                "result_image_urls": data.result_image_urls
+                "result_image_urls": data.result_image_urls,
+                "end_time": now_time
             }) \
             .eq("id", session_id) \
             .eq("master_id", current_user.user_id) \

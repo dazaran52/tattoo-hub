@@ -90,15 +90,39 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
     
     setLoading(true)
     try {
-      const { error } = await supabase.from('master_sessions').delete().eq('id', editSession.id)
+      const { error } = await supabase.from('master_sessions')
+        .update({ is_deleted: true })
+        .eq('id', editSession.id)
+        
       if (error) throw error
       
       toast.success('Сеанс удален')
       onSuccess()
       onClose()
-    } catch (error: any) {
-      console.error(error)
-      toast.error(error.message || 'Произошла ошибка при удалении')
+    } catch (e: any) {
+      toast.error(e.message || 'Ошибка удаления')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleCancelSession = async () => {
+    if (!editSession) return
+    if (!window.confirm('Вы уверены, что хотите отменить этот сеанс?')) return
+    
+    setLoading(true)
+    try {
+      const { error } = await supabase.from('master_sessions')
+        .update({ status: 'cancelled' })
+        .eq('id', editSession.id)
+        
+      if (error) throw error
+      
+      toast.success('Сеанс отменен')
+      onSuccess()
+      onClose()
+    } catch (e: any) {
+      toast.error(e.message || 'Ошибка отмены сеанса')
     } finally {
       setLoading(false)
     }
@@ -234,7 +258,7 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
   const isClientLocked = (!!initialClientId && existingClients.length === 1 && existingClients[0].id === initialClientId) || !!editSession
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm overflow-y-auto" onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
+    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm overflow-y-auto" onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
       <div className="bg-white dark:bg-neutral-900 rounded-3xl w-full max-w-2xl shadow-2xl overflow-hidden my-8">
         <div className="flex justify-between items-center p-6 border-b border-neutral-200 dark:border-neutral-800">
           <h2 className="text-xl font-bold flex items-center gap-2 text-neutral-900 dark:text-white">
@@ -484,6 +508,17 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
                 title="Удалить сеанс"
               >
                 <Trash2 className="w-5 h-5" />
+              </button>
+            )}
+            {editSession && editSession.status !== 'cancelled' && (
+              <button
+                type="button"
+                onClick={handleCancelSession}
+                disabled={loading || isUploading}
+                className="flex items-center justify-center px-4 py-3.5 bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400 font-bold rounded-xl hover:bg-orange-100 dark:hover:bg-orange-500/20 transition-colors disabled:opacity-50 text-sm shrink-0"
+                title="Отменить сеанс"
+              >
+                Отменить
               </button>
             )}
             <button

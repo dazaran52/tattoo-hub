@@ -268,7 +268,7 @@ export function CalendarView({ sessions, onUpdate }: CalendarViewProps) {
       {/* Daily Schedule Sidebar / Modal */}
       <AnimatePresence>
         {selectedDate && (
-          <div className="fixed inset-0 z-50 flex justify-end bg-black/20 backdrop-blur-sm" onClick={(e) => { if (e.target === e.currentTarget) setSelectedDate(null) }}>
+          <div className="fixed inset-0 z-[60] flex justify-end bg-black/20 backdrop-blur-sm" onClick={(e) => { if (e.target === e.currentTarget) setSelectedDate(null) }}>
             <motion.div
               initial={{ x: '100%' }}
               animate={{ x: 0 }}
@@ -323,6 +323,13 @@ export function CalendarView({ sessions, onUpdate }: CalendarViewProps) {
                       </div>
                       
                       {s.style && <div className="text-sm text-neutral-500 mb-4">Стиль: {s.style}</div>}
+                      {s.reference_images && s.reference_images.length > 0 && (
+                        <div className="flex gap-2 overflow-x-auto mb-4 custom-scrollbar pb-2">
+                          {s.reference_images.map((url, idx) => (
+                            <img key={idx} src={url} alt="ref" className="w-16 h-16 rounded-lg object-cover shrink-0 border border-neutral-200 dark:border-neutral-700" />
+                          ))}
+                        </div>
+                      )}
 
                       <div className="flex items-center justify-between border-t border-neutral-100 dark:border-neutral-700 pt-3">
                         <div className="flex gap-2">
@@ -360,7 +367,7 @@ export function CalendarView({ sessions, onUpdate }: CalendarViewProps) {
                 )}
               </div>
 
-              <div className="p-6 border-t border-neutral-100 dark:border-neutral-800 bg-white dark:bg-neutral-900">
+              <div className="p-6 pb-24 border-t border-neutral-100 dark:border-neutral-800 bg-white dark:bg-neutral-900">
                 <button 
                   onClick={() => setIsSessionModalOpen(true)}
                   className="w-full flex items-center justify-center gap-2 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 font-bold py-3.5 rounded-xl hover:bg-neutral-800 transition-all shadow-lg"

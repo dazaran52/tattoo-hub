@@ -31,6 +31,7 @@ export interface CRMClient {
     status: string
     price?: number
     style?: string
+    reference_images?: string[]
   }[]
 }
 

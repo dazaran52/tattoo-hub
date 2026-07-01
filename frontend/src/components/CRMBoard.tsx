@@ -16,6 +16,7 @@ export interface CRMSession {
   end_time?: string
   price?: number
   style?: string
+  reference_images?: string[]
   status: string
   master_clients?: {
     id: string
@@ -52,6 +53,8 @@ export function CRMBoard() {
   
   // Filters
   const [searchQuery, setSearchQuery] = useState('')
+  const [kanbanDateFilter, setKanbanDateFilter] = useState<'all'|'this_week'|'this_month'>('all')
+  const [selectedKanbanIds, setSelectedKanbanIds] = useState<Set<string>>(new Set())
 
   // Scroll ref for drag and drop
   const scrollContainerRef = useRef<HTMLDivElement>(null)
@@ -210,6 +213,17 @@ export function CRMBoard() {
                   />
                 </div>
               )}
+              {sessionView === 'kanban' && (
+                <select 
+                  value={kanbanDateFilter}
+                  onChange={(e) => setKanbanDateFilter(e.target.value as any)}
+                  className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-violet-500/20 outline-none font-medium"
+                >
+                  <option value="all">Все время</option>
+                  <option value="this_week">Эта неделя</option>
+                  <option value="this_month">Этот месяц</option>
+                </select>
+              )}
             </>
           )}
         </div>
@@ -237,6 +251,8 @@ export function CRMBoard() {
           searchQuery={searchQuery} 
           setSearchQuery={setSearchQuery} 
           onStatusChange={updateSessionStatus} 
+          onSessionClick={(session) => setSessionToEdit(session)}
+          onUpdate={fetchData}
         />
       ) : (
         <div className="relative">
@@ -261,7 +277,26 @@ export function CRMBoard() {
                   const cName = (i.master_clients?.name || '').toLowerCase().replace(/\s/g, '')
                   const cContact = (i.master_clients?.contact_info || '').toLowerCase().replace(/\s/g, '')
                   const matchesSearch = cName.includes(search) || cContact.includes(search)
-                  return (i.status === col.id || (i.status === 'scheduled' && col.id === 'booked')) && matchesSearch
+                  
+                  let matchesDate = true
+                  if (kanbanDateFilter !== 'all') {
+                    const d = new Date(i.session_date)
+                    const now = new Date()
+                    if (kanbanDateFilter === 'this_month') {
+                      matchesDate = d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear()
+                    } else if (kanbanDateFilter === 'this_week') {
+                      const day = now.getDay() || 7
+                      const diff = now.getDate() - day + 1
+                      const monday = new Date(now.setDate(diff))
+                      monday.setHours(0,0,0,0)
+                      const sunday = new Date(monday)
+                      sunday.setDate(monday.getDate() + 6)
+                      sunday.setHours(23,59,59,999)
+                      matchesDate = d >= monday && d <= sunday
+                    }
+                  }
+                  
+                  return (i.status === col.id || (i.status === 'scheduled' && col.id === 'booked')) && matchesSearch && matchesDate
                 })
                 
                 return (
@@ -293,10 +328,24 @@ export function CRMBoard() {
                             draggable
                             onDragStart={(e) => handleDragStart(e as any, item.id)}
                             onClick={() => setSessionToEdit(item)}
-                            className="bg-white dark:bg-neutral-800 p-4 rounded-2xl shadow-sm border border-neutral-200 dark:border-white/5 cursor-pointer hover:shadow-md transition-shadow"
+                            className={`bg-white dark:bg-neutral-800 p-4 rounded-2xl shadow-sm border ${selectedKanbanIds.has(item.id) ? 'border-violet-500 ring-2 ring-violet-500' : 'border-neutral-200 dark:border-white/5'} cursor-pointer hover:shadow-md transition-shadow relative`}
                           >
-                            <div className="flex gap-3 mb-3">
-                              {item.master_clients?.leads?.image_urls && item.master_clients.leads.image_urls.length > 0 ? (
+                            <input 
+                              type="checkbox"
+                              checked={selectedKanbanIds.has(item.id)}
+                              onChange={(e) => {
+                                const newSet = new Set(selectedKanbanIds)
+                                if (newSet.has(item.id)) newSet.delete(item.id)
+                                else newSet.add(item.id)
+                                setSelectedKanbanIds(newSet)
+                              }}
+                              onClick={(e) => e.stopPropagation()}
+                              className="absolute top-3 right-3 w-4 h-4 rounded border-neutral-300 text-violet-600 focus:ring-violet-500 z-10"
+                            />
+                            <div className="flex gap-3 mb-3 pr-6">
+                              {item.reference_images && item.reference_images.length > 0 ? (
+                                <img src={item.reference_images[0]} alt="" className="w-12 h-12 rounded-xl object-cover" />
+                              ) : item.master_clients?.leads?.image_urls && item.master_clients.leads.image_urls.length > 0 ? (
                                 <img src={item.master_clients.leads.image_urls[0]} alt="" className="w-12 h-12 rounded-xl object-cover" />
                               ) : (
                                 <div className="w-12 h-12 flex items-center justify-center bg-neutral-100 dark:bg-neutral-700 text-neutral-400 rounded-xl">
@@ -369,6 +418,30 @@ export function CRMBoard() {
             fetchData()
           }}
         />
+      )}
+
+      {sessionView === 'kanban' && selectedKanbanIds.size > 0 && (
+        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[60] bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-4 shadow-2xl flex items-center gap-4 animate-in slide-in-from-bottom-10">
+          <span className="font-bold text-violet-600 dark:text-violet-400">Выбрано: {selectedKanbanIds.size}</span>
+          <select 
+            onChange={(e) => { 
+              if(e.target.value) {
+                Array.from(selectedKanbanIds).forEach(id => updateSessionStatus(id, e.target.value))
+                setSelectedKanbanIds(new Set())
+              }
+              e.target.value=''
+            }}
+            className="bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl px-4 py-2 text-sm outline-none font-bold"
+          >
+            <option value="">Сменить статус...</option>
+            <option value="new">Новые</option>
+            <option value="discussing">В диалоге</option>
+            <option value="booked">Записан</option>
+            <option value="in_progress">В процессе</option>
+            <option value="completed">Завершено</option>
+            <option value="cancelled">Отмена</option>
+          </select>
+        </div>
       )}
     </div>
   )

@@ -85,7 +85,7 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId }
   return (
     <>
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/60 backdrop-blur-sm" onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
+      <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 sm:p-6 bg-black/60 backdrop-blur-sm" onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
         <motion.div 
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -248,44 +248,53 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId }
                 
                 {client.master_sessions && client.master_sessions.length > 0 ? (
                   client.master_sessions.map(s => (
-                    <div key={s.id} className="p-4 border border-neutral-200 dark:border-neutral-800 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-xl flex items-center justify-center shrink-0">
-                          <Calendar className="w-5 h-5" />
+                    <div key={s.id} className="p-4 border border-neutral-200 dark:border-neutral-800 rounded-2xl flex flex-col gap-3">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-xl flex items-center justify-center shrink-0">
+                            <Calendar className="w-5 h-5" />
+                          </div>
+                          <div>
+                            <div className="font-bold text-neutral-900 dark:text-white">{new Date(s.session_date).toLocaleDateString()}</div>
+                            <div className="text-sm text-neutral-500">{s.start_time || 'Время не указано'} - {s.end_time || ''}</div>
+                            <div className="text-xs font-bold text-neutral-400 uppercase mt-1">{s.status === 'in_progress' ? 'В процессе' : s.status === 'completed' ? 'Завершен' : s.status === 'booked' ? 'Записан' : s.status}</div>
+                          </div>
                         </div>
-                        <div>
-                          <div className="font-bold text-neutral-900 dark:text-white">{new Date(s.session_date).toLocaleDateString()}</div>
-                          <div className="text-sm text-neutral-500">{s.start_time || 'Время не указано'} - {s.end_time || ''}</div>
-                          <div className="text-xs font-bold text-neutral-400 uppercase mt-1">{s.status === 'in_progress' ? 'В процессе' : s.status === 'completed' ? 'Завершен' : s.status === 'booked' ? 'Записан' : s.status}</div>
+                        <div className="flex flex-col sm:items-end gap-2">
+                          <div className="font-bold text-neutral-900 dark:text-white text-lg">{s.price ? `${s.price} Kč` : '—'}</div>
+                          <div className="flex items-center gap-2">
+                            {s.status === 'booked' && (
+                              <button 
+                                onClick={() => setSessionToStart(s.id)}
+                                className="px-3 py-1.5 bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400 font-bold text-xs rounded-lg flex items-center gap-1"
+                              >
+                                <PlayCircle className="w-3 h-3" /> Начать
+                              </button>
+                            )}
+                            {s.status === 'in_progress' && (
+                              <button 
+                                onClick={() => setSessionToComplete(s.id)}
+                                className="px-3 py-1.5 bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 font-bold text-xs rounded-lg flex items-center gap-1"
+                              >
+                                <CheckCircle className="w-3 h-3" /> Завершить
+                              </button>
+                            )}
+                            <button onClick={() => setSessionToEdit({ ...s, master_clients: { id: client.id, name: client.name } })} className="p-1.5 text-neutral-400 hover:text-violet-500 rounded-md">
+                              <Edit3 className="w-4 h-4" />
+                            </button>
+                            <button onClick={() => handleDeleteSession(s.id)} className="p-1.5 text-neutral-400 hover:text-red-500 rounded-md">
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
                         </div>
                       </div>
-                      <div className="flex flex-col sm:items-end gap-2">
-                        <div className="font-bold text-neutral-900 dark:text-white text-lg">{s.price ? `${s.price} Kč` : '—'}</div>
-                        <div className="flex items-center gap-2">
-                          {s.status === 'booked' && (
-                            <button 
-                              onClick={() => setSessionToStart(s.id)}
-                              className="px-3 py-1.5 bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400 font-bold text-xs rounded-lg flex items-center gap-1"
-                            >
-                              <PlayCircle className="w-3 h-3" /> Начать
-                            </button>
-                          )}
-                          {s.status === 'in_progress' && (
-                            <button 
-                              onClick={() => setSessionToComplete(s.id)}
-                              className="px-3 py-1.5 bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 font-bold text-xs rounded-lg flex items-center gap-1"
-                            >
-                              <CheckCircle className="w-3 h-3" /> Завершить
-                            </button>
-                          )}
-                          <button onClick={() => setSessionToEdit({ ...s, master_clients: { id: client.id, name: client.name } })} className="p-1.5 text-neutral-400 hover:text-violet-500 rounded-md">
-                            <Edit3 className="w-4 h-4" />
-                          </button>
-                          <button onClick={() => handleDeleteSession(s.id)} className="p-1.5 text-neutral-400 hover:text-red-500 rounded-md">
-                            <Trash2 className="w-4 h-4" />
-                          </button>
+                      {s.reference_images && s.reference_images.length > 0 && (
+                        <div className="w-full flex gap-2 overflow-x-auto custom-scrollbar pb-1 border-t border-neutral-100 dark:border-neutral-800 pt-3">
+                          {s.reference_images.map((url, idx) => (
+                            <img key={idx} src={url} alt="ref" className="w-14 h-14 rounded-lg object-cover shrink-0 border border-neutral-200 dark:border-neutral-700" />
+                          ))}
                         </div>
-                      </div>
+                      )}
                     </div>
                   ))
                 ) : (
