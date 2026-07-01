@@ -140,12 +140,16 @@ export default function OnboardingPage() {
               </svg>
             </motion.div>
             <h2 className="text-3xl font-bold mb-4">Всё готово!</h2>
-            <p className="text-neutral-500 mb-8">Ваш профиль настроен. Теперь вы можете начать работу в своей СРМ.</p>
+            <p className="text-neutral-500 mb-8">
+              {profile?.role === 'master' 
+                ? 'Ваш профиль настроен. Теперь вы можете начать работу в своей СРМ.'
+                : 'Ваш профиль настроен. Теперь вы можете искать мастеров и записываться на сеансы.'}
+            </p>
             <button
-              onClick={() => router.push('/dashboard')}
+              onClick={() => router.push(profile?.role === 'master' ? '/dashboard' : '/')}
               className="w-full py-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold rounded-2xl flex items-center justify-center gap-2 transition-all shadow-lg shadow-indigo-500/25"
             >
-              Перейти в CRM <ArrowRight className="w-5 h-5" />
+              {profile?.role === 'master' ? 'Перейти в CRM' : 'На главную'} <ArrowRight className="w-5 h-5" />
             </button>
           </motion.div>
         ) : (
