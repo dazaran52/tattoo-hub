@@ -11,6 +11,7 @@ import { SessionsList } from '@/components/SessionsList'
 
 export interface CRMSession {
   id: string
+  created_at: string
   session_date: string
   start_time?: string
   end_time?: string
@@ -48,6 +49,7 @@ export function CRMBoard() {
   
   const [mainTab, setMainTab] = useState<'sessions' | 'clients'>('sessions')
   const [sessionView, setSessionView] = useState<'kanban' | 'list' | 'calendar'>('kanban')
+  const [cardView, setCardView] = useState<'normal' | 'expanded'>('normal')
   
   // Modals
   const [isSessionModalOpen, setIsSessionModalOpen] = useState(false)
@@ -228,6 +230,22 @@ export function CRMBoard() {
                   <option value="this_month">Этот месяц</option>
                 </select>
               )}
+              {(sessionView === 'kanban' || sessionView === 'list') && (
+                <div className="flex items-center bg-neutral-200/50 dark:bg-neutral-800/50 p-1 rounded-xl">
+                  <button
+                    onClick={() => setCardView('normal')}
+                    className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${cardView === 'normal' ? 'bg-white dark:bg-neutral-900 shadow-sm text-neutral-900 dark:text-white' : 'text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'}`}
+                  >
+                    Обычный
+                  </button>
+                  <button
+                    onClick={() => setCardView('expanded')}
+                    className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${cardView === 'expanded' ? 'bg-white dark:bg-neutral-900 shadow-sm text-neutral-900 dark:text-white' : 'text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'}`}
+                  >
+                    Расширенный
+                  </button>
+                </div>
+              )}
             </>
           )}
         </div>
@@ -248,15 +266,19 @@ export function CRMBoard() {
       {mainTab === 'clients' ? (
         <ClientsDatabase />
       ) : sessionView === 'calendar' ? (
-        <CalendarView sessions={sessions} onUpdate={fetchData} />
+        <CalendarView 
+          sessions={sessions} 
+          onUpdate={fetchData} 
+        />
       ) : sessionView === 'list' ? (
         <SessionsList 
           sessions={sessions} 
-          searchQuery={searchQuery} 
-          setSearchQuery={setSearchQuery} 
-          onStatusChange={updateSessionStatus} 
-          onSessionClick={(session) => setSessionToEdit(session)}
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          onStatusChange={updateSessionStatus}
+          onSessionClick={setSessionToEdit}
           onUpdate={fetchData}
+          cardView={cardView}
         />
       ) : (
         <div className="relative">
@@ -367,14 +389,19 @@ export function CRMBoard() {
                             </div>
                             
                             <div className="flex items-center justify-between mt-3 pt-3 border-t border-neutral-100 dark:border-white/5">
-                              <div className="flex items-center gap-1.5 text-xs font-bold text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-900/20 px-2 py-1.5 rounded-lg">
-                                <Calendar className="w-3.5 h-3.5" />
-                                {new Date(item.session_date).toLocaleDateString('ru-RU')}
-                                {(item.start_time || item.end_time) && (
-                                  <span className="opacity-75">
-                                    • {item.start_time?.slice(0, 5)} {item.end_time ? `- ${item.end_time.slice(0, 5)}` : ''}
-                                  </span>
-                                )}
+                              <div className="flex flex-col gap-1">
+                                <div className="flex items-center gap-1.5 text-xs font-bold text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-900/20 px-2 py-1.5 rounded-lg w-fit">
+                                  <Calendar className="w-3.5 h-3.5" />
+                                  {new Date(item.session_date).toLocaleDateString('ru-RU')}
+                                  {cardView === 'expanded' && (item.start_time || item.end_time) && (
+                                    <span className="opacity-75">
+                                      • {item.start_time?.slice(0, 5)} {item.end_time ? `- ${item.end_time.slice(0, 5)}` : ''}
+                                    </span>
+                                  )}
+                                </div>
+                                <span className="text-[10px] text-neutral-400 font-medium">
+                                  Создано: {new Date(item.created_at).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute:'2-digit' })}
+                                </span>
                               </div>
                               <div className="font-bold text-neutral-900 dark:text-white text-sm">
                                 {item.price ? `${item.price} Kč` : '—'}

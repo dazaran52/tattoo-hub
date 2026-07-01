@@ -11,12 +11,13 @@ interface SessionsListProps {
   onStatusChange: (id: string, status: string) => void
   onSessionClick: (session: CRMSession) => void
   onUpdate: () => void
+  cardView?: 'normal' | 'expanded'
 }
 
 type SortField = 'date' | 'client' | 'price'
 type SortOrder = 'asc' | 'desc'
 
-export function SessionsList({ sessions, searchQuery, setSearchQuery, onStatusChange, onSessionClick, onUpdate }: SessionsListProps) {
+export function SessionsList({ sessions, searchQuery, setSearchQuery, onStatusChange, onSessionClick, onUpdate, cardView = 'normal' }: SessionsListProps) {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [sortField, setSortField] = useState<SortField>('date')
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc')
@@ -238,9 +239,14 @@ export function SessionsList({ sessions, searchQuery, setSearchQuery, onStatusCh
                     <div className="font-medium text-neutral-900 dark:text-white">
                       {new Date(session.session_date).toLocaleDateString('ru-RU')}
                     </div>
-                    {(session.start_time || session.end_time) && (
+                    {cardView === 'expanded' && (session.start_time || session.end_time) && (
                       <div className="text-sm text-neutral-500">
                         {session.start_time?.slice(0, 5)} {session.end_time ? `- ${session.end_time.slice(0, 5)}` : ''}
+                      </div>
+                    )}
+                    {cardView === 'expanded' && (
+                      <div className="text-[10px] text-neutral-400 mt-1">
+                        Создано: {new Date(session.created_at).toLocaleDateString('ru-RU')}
                       </div>
                     )}
                   </td>
