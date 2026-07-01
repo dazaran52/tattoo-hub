@@ -301,7 +301,7 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
   const isClientLocked = (!!initialClientId && existingClients.length === 1 && existingClients[0].id === initialClientId) || !!editSession
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm overflow-y-auto" onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
+    <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm overflow-y-auto" onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
       <div className="bg-white dark:bg-neutral-900 rounded-3xl w-full max-w-2xl shadow-2xl overflow-hidden my-8">
         <div className="flex justify-between items-center p-6 border-b border-neutral-200 dark:border-neutral-800">
           <h2 className="text-xl font-bold flex items-center gap-2 text-neutral-900 dark:text-white">
