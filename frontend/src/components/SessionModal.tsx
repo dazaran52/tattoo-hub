@@ -550,8 +550,9 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
               </div>
             </div>
 
-            <div>
-              <label className="block text-xs font-semibold text-neutral-500 dark:text-neutral-400 mb-1.5 uppercase tracking-wider">Фото результата</label>
+            {editSession && (
+              <div>
+                <label className="block text-xs font-semibold text-neutral-500 dark:text-neutral-400 mb-1.5 uppercase tracking-wider">Фото результата</label>
               <div className="flex flex-wrap gap-3">
                 {existingResultImages.map((url, idx) => (
                   <div 
@@ -603,6 +604,7 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
                 </label>
               </div>
             </div>
+            )}
           </div>
 
           <div className="pt-2 flex gap-3">
