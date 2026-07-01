@@ -12,7 +12,7 @@ import { MessagesList } from '@/components/MessagesList'
 import { toast } from 'react-hot-toast'
 import { ClientDashboard } from '@/components/ClientDashboard'
 import { useLanguage } from '@/i18n/LanguageContext'
-import { MessageCircle, LayoutDashboard } from 'lucide-react'
+import { MessageCircle, LayoutDashboard, Share2, Link as LinkIcon } from 'lucide-react'
 
 export default function DashboardPage() {
   const router = useRouter()
@@ -123,6 +123,16 @@ export default function DashboardPage() {
     }
   }
 
+  const copyPublicLink = () => {
+    if (!profile?.username) {
+      toast.error(language === 'ru' ? 'Сначала установите username в профиле' : 'Set username in profile first')
+      return
+    }
+    const url = `${window.location.origin}/book/${profile.username}`
+    navigator.clipboard.writeText(url)
+    toast.success(language === 'ru' ? 'Ссылка на визитку скопирована!' : 'Booking link copied!')
+  }
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950 transition-colors duration-200">
@@ -187,9 +197,18 @@ export default function DashboardPage() {
                 <h2 className="text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-white">
                   {t('welcome')}, {profile.username || profile.email.split('@')[0]}
                 </h2>
-                <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400 font-medium">
-                  {t('availableLeads')}
-                </p>
+                <div className="mt-2 flex items-center gap-3">
+                  <button 
+                    onClick={copyPublicLink}
+                    className="inline-flex items-center gap-1.5 text-xs font-bold bg-violet-100 dark:bg-violet-500/20 text-violet-700 dark:text-violet-300 px-3 py-1.5 rounded-full hover:bg-violet-200 dark:hover:bg-violet-500/30 transition-colors"
+                  >
+                    <Share2 className="w-3.5 h-3.5" />
+                    {language === 'ru' ? 'Поделиться визиткой' : 'Share Booking Link'}
+                  </button>
+                  <p className="text-sm text-neutral-500 dark:text-neutral-400 font-medium">
+                    {t('availableLeads')}
+                  </p>
+                </div>
               </div>
               
               {/* Tabs */}
