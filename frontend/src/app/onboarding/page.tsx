@@ -12,6 +12,7 @@ export default function OnboardingPage() {
   const router = useRouter()
   const { t } = useLanguage()
   const [isLoading, setIsLoading] = useState(false)
+  const [isSuccess, setIsSuccess] = useState(false)
   const [profile, setProfile] = useState<any>(null)
 
   // Form State
@@ -110,7 +111,7 @@ export default function OnboardingPage() {
       if (!response.ok) throw new Error('Failed to update profile')
       
       toast.success('Профиль успешно настроен!')
-      router.push('/dashboard')
+      setIsSuccess(true)
     } catch (err: any) {
       toast.error(err.message || 'Произошла ошибка')
     } finally {
@@ -120,12 +121,42 @@ export default function OnboardingPage() {
 
   return (
     <div className="min-h-screen bg-neutral-100 dark:bg-neutral-950 flex flex-col justify-center items-center p-4">
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-md bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-2xl rounded-3xl p-8"
-      >
-        <div className="text-center mb-8">
+      <AnimatePresence mode="wait">
+        {isSuccess ? (
+          <motion.div
+            key="success"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="w-full max-w-md bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-2xl rounded-3xl p-8 text-center"
+          >
+            <motion.div 
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ type: "spring", stiffness: 200, damping: 15 }}
+              className="w-24 h-24 bg-green-100 dark:bg-green-900/30 text-green-500 rounded-full flex items-center justify-center mx-auto mb-6"
+            >
+              <svg className="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+            </motion.div>
+            <h2 className="text-3xl font-bold mb-4">Всё готово!</h2>
+            <p className="text-neutral-500 mb-8">Ваш профиль настроен. Теперь вы можете начать работу в своей СРМ.</p>
+            <button
+              onClick={() => router.push('/dashboard')}
+              className="w-full py-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold rounded-2xl flex items-center justify-center gap-2 transition-all shadow-lg shadow-indigo-500/25"
+            >
+              Перейти в CRM <ArrowRight className="w-5 h-5" />
+            </button>
+          </motion.div>
+        ) : (
+          <motion.div 
+            key="form"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="w-full max-w-md bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-2xl rounded-3xl p-8"
+          >
+            <div className="text-center mb-8">
           <h1 className="text-3xl font-bold mb-2">Добро пожаловать! 🎉</h1>
           <p className="text-neutral-500">Остался всего один шаг перед тем, как вы начнете работу.</p>
         </div>
@@ -228,7 +259,9 @@ export default function OnboardingPage() {
             )}
           </button>
         </form>
-      </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }
