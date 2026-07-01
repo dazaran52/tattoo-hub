@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { toast } from 'react-hot-toast'
-import { Clock, CheckCircle, Calendar, Flag, MessageCircle, UserPlus, LayoutGrid, CalendarDays, Search, Users, PlayCircle, Palette } from 'lucide-react'
+import { Clock, CheckCircle, Calendar, Flag, MessageCircle, UserPlus, LayoutGrid, CalendarDays, Search, Users, PlayCircle, Palette, Trash2, X } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { SessionModal } from '@/components/SessionModal'
 import { CalendarView } from '@/components/CalendarView'
@@ -496,6 +496,40 @@ export function CRMBoard() {
             <option value="completed">Завершено</option>
             <option value="cancelled">Отмена</option>
           </select>
+          <div className="w-px h-6 bg-neutral-200 dark:bg-neutral-800"></div>
+          <button
+            onClick={async () => {
+              if (!window.confirm(`Вы уверены, что хотите удалить ${selectedKanbanIds.size} выбранных сеансов?`)) return;
+              try {
+                const { data: { session } } = await supabase.auth.getSession()
+                const token = session?.access_token
+                const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+                
+                for (const id of Array.from(selectedKanbanIds)) {
+                  await fetch(`${apiUrl}/api/crm/sessions/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                  })
+                }
+                toast.success(`Удалено сеансов: ${selectedKanbanIds.size}`)
+                setSelectedKanbanIds(new Set())
+                fetchData()
+              } catch (err) {
+                toast.error('Ошибка при удалении')
+              }
+            }}
+            className="flex items-center justify-center p-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-xl hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors"
+            title="Удалить выбранные"
+          >
+            <Trash2 className="w-5 h-5" />
+          </button>
+          <button
+            onClick={() => setSelectedKanbanIds(new Set())}
+            className="flex items-center justify-center p-2 bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 rounded-xl hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
+            title="Отменить выбор"
+          >
+            <X className="w-5 h-5" />
+          </button>
         </div>
       )}
     </div>
