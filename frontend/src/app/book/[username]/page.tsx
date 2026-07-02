@@ -258,8 +258,12 @@ export default function BookMasterPage({ params }: { params: { username: string 
       <div className="max-w-2xl mx-auto relative z-10">
         {/* Profile Card */}
         <div className={`rounded-3xl p-8 mb-8 text-center transition-colors duration-500 ${tClasses.card}`}>
-          <div className="w-28 h-28 bg-gradient-to-br from-neutral-200 dark:from-neutral-800 to-neutral-300 dark:to-neutral-700 rounded-full mx-auto mb-5 flex items-center justify-center border-4 border-white dark:border-neutral-950 shadow-xl">
-            <User className="w-12 h-12 text-neutral-500" />
+          <div className="w-28 h-28 bg-gradient-to-br from-neutral-200 dark:from-neutral-800 to-neutral-300 dark:to-neutral-700 rounded-full mx-auto mb-5 flex items-center justify-center border-4 border-white dark:border-neutral-950 shadow-xl overflow-hidden">
+            {master.avatar_url ? (
+              <img src={master.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
+            ) : (
+              <User className="w-12 h-12 text-neutral-500" />
+            )}
           </div>
           <h1 className="text-3xl font-extrabold tracking-tight mb-2">
             {master.display_name || master.username || 'Мастер'}
