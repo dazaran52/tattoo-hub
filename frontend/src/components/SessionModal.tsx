@@ -7,7 +7,6 @@ import { CRMClient } from './ClientsDatabase'
 import { CRMSession } from './CRMBoard'
 import { PhoneInput } from './PhoneInput'
 import { ImageViewerModal } from './ImageViewerModal'
-import { BodyMapSelector } from './BodyMapSelector'
 
 const PREDEFINED_STYLES = [
   'Реализм', 'Олдскул', 'Минимализм', 'Япония', 'Блэкворк', 'Лайнворк', 'Неотрад', 'Леттеринг', 'Акварель', 'Аниме'
@@ -541,10 +540,22 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
             <div>
               <label className="block text-xs font-semibold text-neutral-500 dark:text-neutral-400 mb-1.5 uppercase tracking-wider">Место на теле</label>
               <div className="flex flex-col gap-3">
-                <BodyMapSelector 
-                  value={formData.body_place} 
-                  onChange={(val) => setFormData(p => ({ ...p, body_place: val }))} 
-                />
+                <div className="flex flex-wrap gap-2">
+                  {['Рука', 'Нога', 'Торс', 'Спина', 'Шея'].map(place => (
+                    <button
+                      key={place}
+                      type="button"
+                      onClick={() => setFormData(p => ({ ...p, body_place: place }))}
+                      className={`px-3 py-1.5 rounded-xl border text-xs font-semibold transition-all ${
+                        formData.body_place === place
+                          ? 'bg-cyan-500/10 border-cyan-500 text-cyan-600 dark:text-cyan-400'
+                          : 'bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800'
+                      }`}
+                    >
+                      {place}
+                    </button>
+                  ))}
+                </div>
                 <input
                   type="text"
                   value={formData.body_place}
