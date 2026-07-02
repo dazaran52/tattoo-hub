@@ -488,7 +488,7 @@ export default function ProfilePage() {
                   >
                     <option value="">{t('selectCountry')}</option>
                     {countries.map(country => (
-                      <option key={country.id} value={country.id}>{country.name}</option>
+                      <option key={country.id} value={country.id}>{country.name_ru}</option>
                     ))}
                   </select>
                 </div>
@@ -530,7 +530,7 @@ export default function ProfilePage() {
                   >
                     <option value="">{t('selectCity')}</option>
                     {cities.map(city => (
-                      <option key={city.id} value={city.id}>{city.name}</option>
+                      <option key={city.id} value={city.id}>{city.name_ru}</option>
                     ))}
                   </select>
                 </div>

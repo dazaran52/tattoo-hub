@@ -165,30 +165,30 @@ async def get_profile(
         id=data["id"],
         username=data.get("username"),
         email=data["email"],
-        credits=data["credits"],
-        balance=float(data.get("balance", 0.0)),
-        currency=data.get("currency", "CZK"),
+        credits=data.get("credits") or 0,
+        balance=float(data.get("balance") or 0.0),
+        currency=data.get("currency") or "CZK",
         created_at=data.get("created_at"),
         display_name=data.get("display_name"),
         phone=data.get("phone"),
         bio=data.get("bio"),
-        status=data.get("status", "pending"),
-        is_admin=data.get("is_admin", False),
+        status=data.get("status") or "pending",
+        is_admin=data.get("is_admin") or False,
         portfolio_url=data.get("portfolio_url"),
         own_referral_code=data.get("own_referral_code"),
         referred_by=data.get("referred_by"),
-        country_ids=data.get("country_ids", []),
-        city_ids=data.get("city_ids", []),
-        discount_tokens=data.get("discount_tokens", 0),
+        country_ids=data.get("country_ids") or [],
+        city_ids=data.get("city_ids") or [],
+        discount_tokens=data.get("discount_tokens") or 0,
         unlocked_leads_count=unlocked_count,
         gamification_level=level,
-        withdrawable_credits=data.get("withdrawable_credits", 0),
+        withdrawable_credits=data.get("withdrawable_credits") or 0,
         role=data.get("role"),
-        is_verified_master=data.get("is_verified_master", False),
+        is_verified_master=data.get("is_verified_master") or False,
         certificate_url=data.get("certificate_url"),
         avatar_url=data.get("avatar_url"),
-        portfolio_image_urls=data.get("portfolio_image_urls", []),
-        theme=data.get("theme", "system")
+        portfolio_image_urls=data.get("portfolio_image_urls") or [],
+        theme=data.get("theme") or "system"
     )
 
 
@@ -253,6 +253,7 @@ async def update_profile(
             response = await supabase.table("users") \
                 .update(update_dict) \
                 .eq("id", current_user.user_id) \
+                .select("*") \
                 .execute()
             print(f"DEBUG PUT: response={response}")
             print(f"DEBUG PUT: response.data={response.data}")
@@ -277,31 +278,32 @@ async def update_profile(
         print(f"DEBUG PUT: Success, returning profile")
         return ProfileResponse(
             id=data["id"],
+            username=data.get("username"),
             email=data["email"],
-            credits=data["credits"],
-            balance=float(data.get("balance", 0.0)),
-            currency=data.get("currency", "CZK"),
+            credits=data.get("credits") or 0,
+            balance=float(data.get("balance") or 0.0),
+            currency=data.get("currency") or "CZK",
             created_at=data.get("created_at"),
             display_name=data.get("display_name"),
             phone=data.get("phone"),
             bio=data.get("bio"),
-            status=data.get("status", "pending"),
-            is_admin=data.get("is_admin", False),
+            status=data.get("status") or "pending",
+            is_admin=data.get("is_admin") or False,
             portfolio_url=data.get("portfolio_url"),
             own_referral_code=data.get("own_referral_code"),
             referred_by=data.get("referred_by"),
-            country_ids=data.get("country_ids", []),
-            city_ids=data.get("city_ids", []),
-            discount_tokens=data.get("discount_tokens", 0),
+            country_ids=data.get("country_ids") or [],
+            city_ids=data.get("city_ids") or [],
+            discount_tokens=data.get("discount_tokens") or 0,
             unlocked_leads_count=unlocked_count,
             gamification_level=level,
-            withdrawable_credits=data.get("withdrawable_credits", 0),
+            withdrawable_credits=data.get("withdrawable_credits") or 0,
             role=data.get("role"),
-            is_verified_master=data.get("is_verified_master", False),
+            is_verified_master=data.get("is_verified_master") or False,
             certificate_url=data.get("certificate_url"),
             avatar_url=data.get("avatar_url"),
-            portfolio_image_urls=data.get("portfolio_image_urls", []),
-            theme=data.get("theme", "system")
+            portfolio_image_urls=data.get("portfolio_image_urls") or [],
+            theme=data.get("theme") or "system"
         )
         
     except HTTPException:
