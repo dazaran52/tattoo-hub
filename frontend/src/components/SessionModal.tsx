@@ -7,6 +7,11 @@ import { CRMClient } from './ClientsDatabase'
 import { CRMSession } from './CRMBoard'
 import { PhoneInput } from './PhoneInput'
 import { ImageViewerModal } from './ImageViewerModal'
+import { BodyMapSelector } from './BodyMapSelector'
+
+const PREDEFINED_STYLES = [
+  'Реализм', 'Олдскул', 'Минимализм', 'Япония', 'Блэкворк', 'Лайнворк', 'Неотрад', 'Леттеринг', 'Акварель', 'Аниме'
+]
 
 interface SessionModalProps {
   isOpen: boolean
@@ -36,8 +41,11 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
     end_time: '',
     price: '',
     style: '',
+    body_place: '',
+    size: '',
     notes: ''
   })
+  const [isCustomStyle, setIsCustomStyle] = useState(true)
   const [images, setImages] = useState<File[]>([])
   const [existingImages, setExistingImages] = useState<string[]>([])
   const [resultImages, setResultImages] = useState<File[]>([])
@@ -61,8 +69,11 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
           end_time: editSession.end_time || '',
           price: editSession.price ? editSession.price.toString() : '',
           style: editSession.style || '',
+          body_place: (editSession as any).body_place || '',
+          size: (editSession as any).size || '',
           notes: ''
         })
+        setIsCustomStyle(!PREDEFINED_STYLES.includes(editSession.style || ''))
         setIsNewClient(false)
         setImages([])
         setResultImages([])
@@ -82,8 +93,11 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
           end_time: '',
           price: '',
           style: '',
+          body_place: '',
+          size: '',
           notes: ''
         })
+        setIsCustomStyle(true)
         setIsNewClient(false)
         setImages([])
         setResultImages([])
@@ -250,6 +264,8 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
         end_time: formData.end_time || null,
         price: formData.price ? parseFloat(formData.price) : null,
         style: formData.style,
+        body_place: formData.body_place || null,
+        size: formData.size || null,
         reference_images: imageUrls,
         result_image_urls: resImageUrls
       } : {
@@ -259,6 +275,8 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
         end_time: formData.end_time || null,
         price: formData.price ? parseFloat(formData.price) : null,
         style: formData.style,
+        body_place: formData.body_place || null,
+        size: formData.size || null,
         reference_images: imageUrls,
         result_image_urls: resImageUrls
       }
@@ -279,6 +297,8 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
             end_time: bodyPayload.end_time,
             price: bodyPayload.price,
             style: bodyPayload.style,
+            body_place: bodyPayload.body_place,
+            size: bodyPayload.size,
             reference_images: bodyPayload.reference_images,
             result_image_urls: bodyPayload.result_image_urls,
             status: "booked"
@@ -472,15 +492,37 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-semibold text-neutral-500 dark:text-neutral-400 mb-1.5 uppercase tracking-wider">Стиль татуировки</label>
-              <div className="relative">
-                <Tag className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
-                <input
-                  type="text"
-                  value={formData.style}
-                  onChange={(e) => setFormData(p => ({ ...p, style: e.target.value }))}
-                  placeholder="Напр. Традишнл, Графика"
-                  className="w-full bg-neutral-100 dark:bg-neutral-800 border-none rounded-xl pl-9 pr-4 py-2.5 text-sm focus:ring-2 focus:ring-cyan-500/20 outline-none"
-                />
+              <div className="flex flex-col gap-2">
+                <select
+                  value={isCustomStyle ? 'custom' : formData.style}
+                  onChange={(e) => {
+                    if (e.target.value === 'custom') {
+                      setIsCustomStyle(true)
+                      setFormData(p => ({ ...p, style: '' }))
+                    } else {
+                      setIsCustomStyle(false)
+                      setFormData(p => ({ ...p, style: e.target.value }))
+                    }
+                  }}
+                  className="w-full bg-neutral-100 dark:bg-neutral-800 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-cyan-500/20 outline-none"
+                >
+                  <option value="custom">Прочее (ввести вручную)</option>
+                  {PREDEFINED_STYLES.map(s => (
+                    <option key={s} value={s}>{s}</option>
+                  ))}
+                </select>
+                {isCustomStyle && (
+                  <div className="relative">
+                    <Tag className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
+                    <input
+                      type="text"
+                      value={formData.style}
+                      onChange={(e) => setFormData(p => ({ ...p, style: e.target.value }))}
+                      placeholder="Напр. Традишнл, Графика"
+                      className="w-full bg-neutral-100 dark:bg-neutral-800 border-none rounded-xl pl-9 pr-4 py-2.5 text-sm focus:ring-2 focus:ring-cyan-500/20 outline-none"
+                    />
+                  </div>
+                )}
               </div>
             </div>
             <div>
@@ -490,6 +532,56 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
                 value={formData.price}
                 onChange={(e) => setFormData(p => ({ ...p, price: e.target.value }))}
                 placeholder="0.00"
+                className="w-full bg-neutral-100 dark:bg-neutral-800 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-cyan-500/20 outline-none"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-xs font-semibold text-neutral-500 dark:text-neutral-400 mb-1.5 uppercase tracking-wider">Место на теле</label>
+              <div className="flex flex-col gap-3">
+                <BodyMapSelector 
+                  value={formData.body_place} 
+                  onChange={(val) => setFormData(p => ({ ...p, body_place: val }))} 
+                />
+                <input
+                  type="text"
+                  value={formData.body_place}
+                  onChange={(e) => setFormData(p => ({ ...p, body_place: e.target.value }))}
+                  placeholder="Уточнение (напр. Внутренняя сторона)"
+                  className="w-full bg-neutral-100 dark:bg-neutral-800 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-cyan-500/20 outline-none"
+                />
+              </div>
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-neutral-500 dark:text-neutral-400 mb-1.5 uppercase tracking-wider">Примерный размер</label>
+              <div className="grid grid-cols-2 gap-2 mb-3">
+                {[
+                  { id: 'Мини (до 5 см)', name: 'Мини' },
+                  { id: 'Средняя (до 15 см)', name: 'Средняя' },
+                  { id: 'Крупная (от 20 см)', name: 'Крупная' },
+                  { id: 'Рукав / Масштабная', name: 'Масштабная' }
+                ].map(sz => (
+                  <button
+                    key={sz.id}
+                    type="button"
+                    onClick={() => setFormData(p => ({ ...p, size: sz.id }))}
+                    className={`p-2 rounded-xl border text-xs font-semibold transition-all ${
+                      formData.size === sz.id
+                        ? 'bg-cyan-500/10 border-cyan-500 text-cyan-600 dark:text-cyan-400'
+                        : 'bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800'
+                    }`}
+                  >
+                    {sz.name}
+                  </button>
+                ))}
+              </div>
+              <input
+                type="text"
+                value={formData.size}
+                onChange={(e) => setFormData(p => ({ ...p, size: e.target.value }))}
+                placeholder="Или введите размер (напр. 15x10 см)"
                 className="w-full bg-neutral-100 dark:bg-neutral-800 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-cyan-500/20 outline-none"
               />
             </div>

@@ -34,6 +34,8 @@ class SessionCreate(BaseModel):
     end_time: Optional[str] = None
     price: Optional[float] = None
     style: Optional[str] = None
+    body_place: Optional[str] = None
+    size: Optional[str] = None
     reference_images: Optional[List[str]] = []
 
 class SessionUpdate(BaseModel):
@@ -42,6 +44,8 @@ class SessionUpdate(BaseModel):
     end_time: Optional[str] = None
     price: Optional[float] = None
     style: Optional[str] = None
+    body_place: Optional[str] = None
+    size: Optional[str] = None
     status: Optional[str] = None
     reference_images: Optional[List[str]] = None
 
@@ -226,6 +230,8 @@ async def create_session(
             "end_time": data.end_time,
             "price": data.price,
             "style": data.style,
+            "body_place": data.body_place,
+            "size": data.size,
             "reference_images": data.reference_images,
             "status": "booked"
         }
