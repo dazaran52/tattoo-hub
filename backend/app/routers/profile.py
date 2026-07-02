@@ -253,7 +253,6 @@ async def update_profile(
             response = await supabase.table("users") \
                 .update(update_dict) \
                 .eq("id", current_user.user_id) \
-                .select("*") \
                 .execute()
             print(f"DEBUG PUT: response={response}")
             print(f"DEBUG PUT: response.data={response.data}")
