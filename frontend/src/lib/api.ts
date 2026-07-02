@@ -28,6 +28,7 @@ export interface Profile {
   certificate_url?: string
   avatar_url?: string
   portfolio_image_urls?: string[]
+  theme?: string
 }
 
 async function getAuthHeaders() {

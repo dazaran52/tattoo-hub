@@ -13,6 +13,8 @@ import {
 } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 import { ImageViewerModal } from '@/components/ImageViewerModal'
+import { QRCodeModal } from '@/components/QRCodeModal'
+import { QrCode } from 'lucide-react'
 
 export default function ProfilePage() {
   const router = useRouter()
@@ -25,6 +27,7 @@ export default function ProfilePage() {
   const [isSaving, setIsSaving] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
   const [viewerImage, setViewerImage] = useState<string | null>(null)
+  const [isQRModalOpen, setIsQRModalOpen] = useState(false)
 
   // Form State
   const [displayName, setDisplayName] = useState('')
@@ -34,6 +37,7 @@ export default function ProfilePage() {
   const [portfolioUrl, setPortfolioUrl] = useState('')
   const [selectedCountry, setSelectedCountry] = useState('')
   const [selectedCity, setSelectedCity] = useState('')
+  const [theme, setTheme] = useState('system')
 
   const [countries, setCountries] = useState<any[]>([])
   const [cities, setCities] = useState<any[]>([])
@@ -93,6 +97,7 @@ export default function ProfilePage() {
       setPortfolioUrl(profileData.portfolio_url || '')
       setSelectedCountry(profileData.country_ids?.[0] || '2a71599c-91f2-4461-b77b-86a150db3aab')
       setSelectedCity(profileData.city_ids?.[0] || '')
+      setTheme(profileData.theme || 'system')
 
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load profile')
@@ -118,7 +123,8 @@ export default function ProfilePage() {
         bio,
         portfolio_url: finalPortfolioUrl,
         country_ids: selectedCountry ? [selectedCountry] : [],
-        city_ids: selectedCity ? [selectedCity] : []
+        city_ids: selectedCity ? [selectedCity] : [],
+        theme
       })
       
       setProfile(updated)
@@ -228,12 +234,27 @@ export default function ProfilePage() {
     window.location.href = '/login'
   }
 
-  const copyPublicLink = () => {
+  const copyPublicLink = async () => {
     if (!profile?.username) {
       toast.error(language === 'ru' ? 'Сначала установите username' : 'Set username first')
       return
     }
     const url = `${window.location.origin}/book/${profile.username}`
+    
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: profile.display_name || 'Tattoo Master',
+          text: language === 'ru' ? 'Запишись ко мне на сеанс!' : 'Book a session with me!',
+          url: url
+        })
+        return
+      } catch (err) {
+        // Fallback to clipboard if share was cancelled or failed
+        console.error('Share failed', err)
+      }
+    }
+
     navigator.clipboard.writeText(url)
     toast.success(language === 'ru' ? 'Ссылка скопирована' : 'Link copied')
   }
@@ -255,6 +276,12 @@ export default function ProfilePage() {
   return (
     <div className="min-h-screen bg-neutral-50 dark:bg-[#050505] text-neutral-900 dark:text-white transition-colors duration-300 relative overflow-hidden pb-20">
       <Header profile={profile} onLogout={handleLogout} />
+      
+      <QRCodeModal 
+        isOpen={isQRModalOpen} 
+        onClose={() => setIsQRModalOpen(false)} 
+        url={`${window.location.origin}/book/${profile.username}`} 
+      />
       
       {/* Cool Background Gradients */}
       <div className="absolute top-0 left-0 w-full h-[500px] overflow-hidden pointer-events-none -z-10">
@@ -351,16 +378,32 @@ export default function ProfilePage() {
                 Это твоя страница-визитка для клиентов. Отправь им ссылку для записи.
               </p>
               
-              <div className="bg-black/20 rounded-xl p-3 flex items-center justify-between backdrop-blur-sm border border-white/10">
+              <div className="bg-black/20 rounded-xl p-3 flex items-center justify-between backdrop-blur-sm border border-white/10 mt-4">
                 <span className="text-sm truncate font-medium opacity-90">
                   tattoo-hub.xyz/book/{profile.username || '...'}
                 </span>
-                <button 
-                  onClick={copyPublicLink}
-                  className="p-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors ml-2 shrink-0"
-                >
-                  <Share2 className="w-4 h-4" />
-                </button>
+                <div className="flex gap-2 ml-2 shrink-0">
+                  <button 
+                    onClick={() => {
+                      if (!profile.username) {
+                        toast.error(language === 'ru' ? 'Сначала установите username' : 'Set username first')
+                        return
+                      }
+                      setIsQRModalOpen(true)
+                    }}
+                    className="p-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors tooltip"
+                    title={language === 'ru' ? 'Показать QR-код' : 'Show QR Code'}
+                  >
+                    <QrCode className="w-4 h-4" />
+                  </button>
+                  <button 
+                    onClick={copyPublicLink}
+                    className="p-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors tooltip"
+                    title={language === 'ru' ? 'Поделиться' : 'Share'}
+                  >
+                    <Share2 className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -448,6 +491,34 @@ export default function ProfilePage() {
                       <option key={country.id} value={country.id}>{country.name}</option>
                     ))}
                   </select>
+                </div>
+                
+                {/* Theme Selector */}
+                <div className="md:col-span-2 mt-4 pt-4 border-t border-neutral-100 dark:border-neutral-800">
+                  <label className="block text-sm font-bold text-neutral-700 dark:text-neutral-300 mb-4">
+                    Тема публичной страницы
+                  </label>
+                  <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                    {[
+                      { id: 'system', name: 'Системная', classes: 'bg-gradient-to-r from-neutral-200 to-neutral-800 text-black dark:text-white border-neutral-300 dark:border-neutral-700' },
+                      { id: 'light', name: 'Светлая', classes: 'bg-white text-black border-neutral-200 shadow-sm' },
+                      { id: 'dark', name: 'Темная', classes: 'bg-neutral-900 text-white border-neutral-700' },
+                      { id: 'violet', name: 'Violet', classes: 'bg-gradient-to-br from-violet-600 to-purple-900 text-white border-violet-500' },
+                      { id: 'cyberpunk', name: 'Cyberpunk', classes: 'bg-gradient-to-br from-yellow-400 via-pink-500 to-cyan-500 text-white border-pink-500' },
+                    ].map(t => (
+                      <button
+                        key={t.id}
+                        type="button"
+                        disabled={!isEditing}
+                        onClick={() => setTheme(t.id)}
+                        className={`flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-all ${t.classes} ${
+                          theme === t.id ? 'ring-2 ring-offset-2 ring-violet-500 scale-105' : 'opacity-70 hover:opacity-100'
+                        } ${!isEditing && 'cursor-not-allowed opacity-50'}`}
+                      >
+                        <span className="font-bold text-sm mix-blend-difference text-white">{t.name}</span>
+                      </button>
+                    ))}
+                  </div>
                 </div>
                 <div>
                   <label className="block text-sm font-bold text-neutral-700 dark:text-neutral-300 mb-2">{t('city')}</label>

@@ -15,6 +15,7 @@ class PublicMasterResponse(BaseModel):
     city_ids: list[str] | None = None
     is_verified_master: bool = False
     portfolio_image_urls: list[str] | None = None
+    theme: str = "system"
 
 @router.get("/master/{username_or_id}", response_model=PublicMasterResponse)
 async def get_public_master(
@@ -34,7 +35,7 @@ async def get_public_master(
         except ValueError:
             pass
 
-        query = supabase.table("users").select("id, username, display_name, bio, portfolio_url, city_ids, is_verified_master, status, role, portfolio_image_urls")
+        query = supabase.table("users").select("id, username, display_name, bio, portfolio_url, city_ids, is_verified_master, status, role, portfolio_image_urls, theme")
         
         if is_uuid:
             query = query.eq("id", username_or_id)
@@ -60,7 +61,8 @@ async def get_public_master(
             portfolio_url=data.get("portfolio_url"),
             city_ids=data.get("city_ids", []),
             is_verified_master=data.get("is_verified_master", False),
-            portfolio_image_urls=data.get("portfolio_image_urls", [])
+            portfolio_image_urls=data.get("portfolio_image_urls", []),
+            theme=data.get("theme", "system")
         )
 
     except HTTPException:

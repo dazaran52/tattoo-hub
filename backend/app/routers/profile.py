@@ -38,6 +38,7 @@ class ProfileResponse(BaseModel):
     certificate_url: str | None = None
     avatar_url: str | None = None
     portfolio_image_urls: list[str] | None = None
+    theme: str = "system"
 
 
 class ProfileCreate(BaseModel):
@@ -58,6 +59,7 @@ class ProfileUpdate(BaseModel):
     portfolio_image_urls: list[str] | None = None
     country_ids: list[str] | None = None
     city_ids: list[str] | None = None
+    theme: str | None = None
 
 
 @router.get("/profile", response_model=ProfileResponse)
@@ -115,7 +117,8 @@ async def get_profile(
                 "is_verified_master": False,
                 "certificate_url": None,
                 "currency": "CZK",
-                "balance": 0.0
+                "balance": 0.0,
+                "theme": "system"
             }
             
             response = await supabase.table("users").insert(new_profile).execute()
@@ -184,7 +187,8 @@ async def get_profile(
         is_verified_master=data.get("is_verified_master", False),
         certificate_url=data.get("certificate_url"),
         avatar_url=data.get("avatar_url"),
-        portfolio_image_urls=data.get("portfolio_image_urls", [])
+        portfolio_image_urls=data.get("portfolio_image_urls", []),
+        theme=data.get("theme", "system")
     )
 
 
@@ -229,6 +233,8 @@ async def update_profile(
             update_dict["country_ids"] = update_data.country_ids
         if update_data.city_ids is not None:
             update_dict["city_ids"] = update_data.city_ids
+        if update_data.theme is not None:
+            update_dict["theme"] = update_data.theme
         print(f"DEBUG PUT: update_dict={update_dict}")
         
         if not update_dict:
@@ -294,7 +300,8 @@ async def update_profile(
             is_verified_master=data.get("is_verified_master", False),
             certificate_url=data.get("certificate_url"),
             avatar_url=data.get("avatar_url"),
-            portfolio_image_urls=data.get("portfolio_image_urls", [])
+            portfolio_image_urls=data.get("portfolio_image_urls", []),
+            theme=data.get("theme", "system")
         )
         
     except HTTPException:
