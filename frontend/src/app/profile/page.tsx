@@ -360,10 +360,14 @@ export default function ProfilePage() {
                 @{profile.username || 'username'}
               </p>
               
-              {profile.country_ids && profile.country_ids.length > 0 && (
+              {(profile.country_ids?.[0] || profile.city_ids?.[0]) && (
                 <div className="flex items-center justify-center gap-1.5 text-neutral-500 text-sm font-medium">
                   <MapPin className="w-4 h-4" />
-                  <span>Ваш город</span>
+                  <span>
+                    {cities.find(c => c.id === profile.city_ids?.[0])?.name_ru || 
+                     countries.find(c => c.id === profile.country_ids?.[0])?.name_ru || 
+                     (language === 'ru' ? 'Ваш город' : 'Location')}
+                  </span>
                 </div>
               )}
             </div>
