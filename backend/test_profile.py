@@ -9,20 +9,23 @@ from app.routers.profile import update_profile, ProfileUpdate
 from app.middleware.auth import AuthUser
 
 async def test():
-    client = get_async_supabase_client()
+    client = await get_async_supabase_client()
     user = AuthUser(
-        user_id="d2110a58-6b45-4394-9878-a28d57d7629c", # Just a dummy, but we need a real one if RLS
-        email="test@test.com",
+        user_id="26871c06-2686-406b-be67-86ad63f9505c", # the same user
+        email="fenix.mcferson@gmail.com",
         user_metadata={}
     )
-    # Let's find a real user id
-    res = await client.table("users").select("id").limit(1).execute()
-    if not res.data:
-        print("No users found")
-        return
-    user.user_id = res.data[0]["id"]
     
-    update_data = ProfileUpdate(avatar_url="https://test.com/avatar.jpg")
+    update_data = ProfileUpdate(
+        username="dazaran",
+        display_name="dazaran",
+        phone="+420 728 715 574",
+        bio="делаю партаки",
+        portfolio_url="https://instagram.com/dazaran",
+        country_ids=["2a71599c-91f2-4461-b77b-86a150db3aab"],
+        city_ids=["349c9e1a-01a2-41db-b5b0-f9c12df92ccf"],
+        theme="violet"
+    )
     try:
         res = await update_profile(update_data=update_data, current_user=user, supabase=client)
         print("Success:", res)

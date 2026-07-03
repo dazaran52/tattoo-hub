@@ -7,10 +7,7 @@ import { CRMClient } from './ClientsDatabase'
 import { CRMSession } from './CRMBoard'
 import { PhoneInput } from './PhoneInput'
 import { ImageViewerModal } from './ImageViewerModal'
-
-const PREDEFINED_STYLES = [
-  'Реализм', 'Олдскул', 'Минимализм', 'Япония', 'Блэкворк', 'Лайнворк', 'Неотрад', 'Леттеринг', 'Акварель', 'Аниме'
-]
+import { TATTOO_STYLES, BODY_PLACES, TATTOO_SIZES } from '@/lib/constants'
 
 interface SessionModalProps {
   isOpen: boolean
@@ -72,7 +69,7 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
           size: (editSession as any).size || '',
           notes: ''
         })
-        setIsCustomStyle(!PREDEFINED_STYLES.includes(editSession.style || ''))
+        setIsCustomStyle(!TATTOO_STYLES.includes(editSession.style || ''))
         setIsNewClient(false)
         setImages([])
         setResultImages([])
@@ -506,7 +503,7 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
                   className="w-full bg-neutral-100 dark:bg-neutral-800 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-cyan-500/20 outline-none"
                 >
                   <option value="custom">Прочее (ввести вручную)</option>
-                  {PREDEFINED_STYLES.map(s => (
+                  {TATTOO_STYLES.map(s => (
                     <option key={s} value={s}>{s}</option>
                   ))}
                 </select>
@@ -541,7 +538,7 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
               <label className="block text-xs font-semibold text-neutral-500 dark:text-neutral-400 mb-1.5 uppercase tracking-wider">Место на теле</label>
               <div className="flex flex-col gap-3">
                 <div className="flex flex-wrap gap-2">
-                  {['Рука', 'Нога', 'Торс', 'Спина', 'Шея'].map(place => (
+                  {BODY_PLACES.map(place => (
                     <button
                       key={place}
                       type="button"
@@ -568,12 +565,7 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
             <div>
               <label className="block text-xs font-semibold text-neutral-500 dark:text-neutral-400 mb-1.5 uppercase tracking-wider">Примерный размер</label>
               <div className="grid grid-cols-2 gap-2 mb-3">
-                {[
-                  { id: 'Мини (до 5 см)', name: 'Мини' },
-                  { id: 'Средняя (до 15 см)', name: 'Средняя' },
-                  { id: 'Крупная (от 20 см)', name: 'Крупная' },
-                  { id: 'Рукав / Масштабная', name: 'Масштабная' }
-                ].map(sz => (
+                {TATTOO_SIZES.map(sz => (
                   <button
                     key={sz.id}
                     type="button"

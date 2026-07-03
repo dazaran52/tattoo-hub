@@ -9,6 +9,7 @@ import 'react-day-picker/dist/style.css'
 import { format, parseISO } from 'date-fns'
 import { cs, ru, enUS } from 'date-fns/locale'
 import { ImageViewerModal } from '@/components/ImageViewerModal'
+import { TATTOO_STYLES, BODY_PLACES, TATTOO_SIZES } from '@/lib/constants'
 
 const getThemeClasses = (theme: string) => {
   switch (theme) {
@@ -81,6 +82,7 @@ export default function BookMasterPage({ params }: { params: { username: string 
   const [name, setName] = useState('')
   const [contact, setContact] = useState('')
   const [description, setDescription] = useState('')
+  const [style, setStyle] = useState('')
   const [bodyPlace, setBodyPlace] = useState('')
   const [size, setSize] = useState('')
   const [sessionDate, setSessionDate] = useState<Date | undefined>(undefined)
@@ -163,6 +165,7 @@ export default function BookMasterPage({ params }: { params: { username: string 
         name,
         contact,
         description,
+        style,
         body_place: bodyPlace,
         size,
         image_urls: imageUrls,
@@ -355,32 +358,97 @@ export default function BookMasterPage({ params }: { params: { username: string 
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div className="space-y-6">
               <div>
-                <label className="block text-sm font-semibold opacity-90 mb-2">
+                <label className="block text-sm font-semibold opacity-90 mb-3">
+                  Стиль татуировки
+                </label>
+                <div className="flex flex-wrap gap-2 mb-3">
+                  {TATTOO_STYLES.map(s => (
+                    <button
+                      key={s}
+                      type="button"
+                      onClick={() => setStyle(s)}
+                      className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all border ${
+                        style === s 
+                          ? 'bg-cyan-500/20 border-cyan-500 text-cyan-600 dark:text-cyan-400 shadow-sm scale-[1.02]' 
+                          : 'bg-white/50 dark:bg-neutral-900/50 border-neutral-200 dark:border-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-800 hover:scale-[1.01]'
+                      }`}
+                    >
+                      {s}
+                    </button>
+                  ))}
+                </div>
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={style}
+                    onChange={(e) => setStyle(e.target.value)}
+                    placeholder="Или введите свой вариант..."
+                    className={`w-full rounded-xl px-4 py-3 transition-all ${tClasses.input}`}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold opacity-90 mb-3">
                   Место на теле
                 </label>
+                <div className="flex flex-wrap gap-2 mb-3">
+                  {BODY_PLACES.map(place => (
+                    <button
+                      key={place}
+                      type="button"
+                      onClick={() => setBodyPlace(place)}
+                      className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all border ${
+                        bodyPlace === place 
+                          ? 'bg-cyan-500/20 border-cyan-500 text-cyan-600 dark:text-cyan-400 shadow-sm scale-[1.02]' 
+                          : 'bg-white/50 dark:bg-neutral-900/50 border-neutral-200 dark:border-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-800 hover:scale-[1.01]'
+                      }`}
+                    >
+                      {place}
+                    </button>
+                  ))}
+                </div>
                 <div className="relative">
                   <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 opacity-50" />
                   <input
                     type="text"
                     value={bodyPlace}
                     onChange={(e) => setBodyPlace(e.target.value)}
-                    placeholder="Например: Предплечье"
+                    placeholder="Уточнение (например: Внутренняя сторона предплечья)"
                     className={`w-full rounded-xl pl-11 pr-4 py-3 transition-all ${tClasses.input}`}
                   />
                 </div>
               </div>
+
               <div>
-                <label className="block text-sm font-semibold opacity-90 mb-2">
-                  Примерный размер (см)
+                <label className="block text-sm font-semibold opacity-90 mb-3">
+                  Примерный размер
                 </label>
+                <div className="grid grid-cols-2 gap-3 mb-3">
+                  {TATTOO_SIZES.map(sz => (
+                    <button
+                      key={sz.id}
+                      type="button"
+                      onClick={() => setSize(sz.id)}
+                      className={`p-3 rounded-xl flex flex-col items-center justify-center gap-1 transition-all border ${
+                        size === sz.id 
+                          ? 'bg-cyan-500/20 border-cyan-500 text-cyan-600 dark:text-cyan-400 shadow-sm scale-[1.02]' 
+                          : 'bg-white/50 dark:bg-neutral-900/50 border-neutral-200 dark:border-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-800 hover:scale-[1.01]'
+                      }`}
+                    >
+                      <span className="text-sm font-bold">{sz.name}</span>
+                      <span className="text-[10px] opacity-70 uppercase tracking-wider">{sz.desc}</span>
+                    </button>
+                  ))}
+                </div>
                 <div className="relative">
                   <input
                     type="text"
                     value={size}
                     onChange={(e) => setSize(e.target.value)}
-                    placeholder="Например: 15x10 см"
+                    placeholder="Или введите точный размер (например: 15x10 см)"
                     className={`w-full rounded-xl px-4 py-3 transition-all ${tClasses.input}`}
                   />
                 </div>
