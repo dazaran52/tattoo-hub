@@ -456,6 +456,8 @@ class ClientLeadCreate(BaseModel):
     country_id: str | None = None
     name: str | None = None
     contact: str
+    email: str | None = None
+    instagram: str | None = None
     is_negotiable_budget: bool = False
     image_urls: list[str] | None = None
     assigned_master_id: str | None = None
@@ -488,6 +490,10 @@ async def create_client_lead(
             full_description += f"Желаемое время: {lead_data.session_time}\n"
             
         contacts = f"Имя: {lead_data.name or 'Без имени'}, Контакт: {lead_data.contact}"
+        if lead_data.email:
+            contacts += f", Email: {lead_data.email}"
+        if lead_data.instagram:
+            contacts += f", Inst: {lead_data.instagram}"
 
         # Calculate dynamic price based on base currency (EUR)
         base_unlock_price_eur = calculate_unlock_price_base(
@@ -537,7 +543,8 @@ async def create_client_lead(
                             "lead_id": new_lead["id"],
                             "user_id": lead_data.assigned_master_id,
                             "status": "accepted",
-                            "price_offer": 0
+                            "price_offer": 0,
+                            "proposed_dates": "Сразу в работу"
                         }).execute()
                         
                         # Create the chat
