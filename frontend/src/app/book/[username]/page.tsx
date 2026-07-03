@@ -81,6 +81,8 @@ export default function BookMasterPage({ params }: { params: { username: string 
   // Form State
   const [name, setName] = useState('')
   const [contact, setContact] = useState('')
+  const [email, setEmail] = useState('')
+  const [instagram, setInstagram] = useState('')
   const [description, setDescription] = useState('')
   const [style, setStyle] = useState('')
   const [bodyPlace, setBodyPlace] = useState('')
@@ -165,6 +167,8 @@ export default function BookMasterPage({ params }: { params: { username: string 
       const payload = {
         name,
         contact,
+        email: email || null,
+        instagram: instagram || null,
         description,
         style,
         body_place: bodyPlace,
@@ -353,7 +357,39 @@ export default function BookMasterPage({ params }: { params: { username: string 
                     required
                     value={contact}
                     onChange={(e) => setContact(e.target.value)}
-                    placeholder="@username или +420..."
+                    placeholder="+420... или @username"
+                    className={`w-full rounded-xl pl-11 pr-4 py-3 transition-all ${tClasses.input}`}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-semibold opacity-90 mb-2">
+                  Email (Необязательно)
+                </label>
+                <div className="relative">
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="example@mail.com"
+                    className={`w-full rounded-xl px-4 py-3 transition-all ${tClasses.input}`}
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-semibold opacity-90 mb-2">
+                  Instagram (Необязательно)
+                </label>
+                <div className="relative">
+                  <Instagram className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 opacity-50" />
+                  <input
+                    type="text"
+                    value={instagram}
+                    onChange={(e) => setInstagram(e.target.value)}
+                    placeholder="@username"
                     className={`w-full rounded-xl pl-11 pr-4 py-3 transition-all ${tClasses.input}`}
                   />
                 </div>
