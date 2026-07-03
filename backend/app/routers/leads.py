@@ -589,6 +589,7 @@ async def create_client_lead(
                                 "master_id": lead_data.assigned_master_id,
                                 "client_id": existing_client["id"],
                                 "session_date": session_date,
+                                "start_time": lead_data.session_time,
                                 "status": "new",
                                 "style": lead_data.style,
                                 "body_place": lead_data.body_place,

@@ -174,7 +174,9 @@ export default function BookMasterPage({ params }: { params: { username: string 
         body_place: bodyPlace,
         size,
         image_urls: imageUrls,
-        session_date: sessionDate ? new Date(sessionDate).toISOString() : null,
+        session_date: sessionDate 
+          ? `${sessionDate.getFullYear()}-${String(sessionDate.getMonth() + 1).padStart(2, '0')}-${String(sessionDate.getDate()).padStart(2, '0')}` 
+          : null,
         session_time: sessionTime || null,
         assigned_master_id: master.id,
         is_negotiable_budget: true, // Default for personal leads to let them discuss in chat
