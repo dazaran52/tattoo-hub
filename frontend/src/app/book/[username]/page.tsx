@@ -175,7 +175,7 @@ export default function BookMasterPage({ params }: { params: { username: string 
         size,
         image_urls: imageUrls,
         session_date: sessionDate 
-          ? `${sessionDate.getFullYear()}-${String(sessionDate.getMonth() + 1).padStart(2, '0')}-${String(sessionDate.getDate()).padStart(2, '0')}` 
+          ? `${sessionDate.getFullYear()}-${String(sessionDate.getMonth() + 1).padStart(2, '0')}-${String(sessionDate.getDate()).padStart(2, '0')}T00:00:00.000Z` 
           : null,
         session_time: sessionTime || null,
         assigned_master_id: master.id,
