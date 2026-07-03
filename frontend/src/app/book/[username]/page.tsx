@@ -86,6 +86,7 @@ export default function BookMasterPage({ params }: { params: { username: string 
   const [bodyPlace, setBodyPlace] = useState('')
   const [size, setSize] = useState('')
   const [sessionDate, setSessionDate] = useState<Date | undefined>(undefined)
+  const [sessionTime, setSessionTime] = useState('')
   const [images, setImages] = useState<File[]>([])
   const [isUploading, setIsUploading] = useState(false)
   const [unavailableDates, setUnavailableDates] = useState<Date[]>([])
@@ -170,6 +171,7 @@ export default function BookMasterPage({ params }: { params: { username: string 
         size,
         image_urls: imageUrls,
         session_date: sessionDate ? new Date(sessionDate).toISOString() : null,
+        session_time: sessionTime || null,
         assigned_master_id: master.id,
         is_negotiable_budget: true, // Default for personal leads to let them discuss in chat
         is_personal: true
@@ -494,6 +496,22 @@ export default function BookMasterPage({ params }: { params: { username: string 
                 />
               </div>
             </div>
+
+            {sessionDate && (
+              <div className="animate-in fade-in slide-in-from-top-2 duration-300">
+                <label className="block text-sm font-semibold opacity-90 mb-2">
+                  Желаемое время (Необязательно)
+                </label>
+                <div className="relative">
+                  <input
+                    type="time"
+                    value={sessionTime}
+                    onChange={(e) => setSessionTime(e.target.value)}
+                    className={`w-full rounded-xl px-4 py-3 transition-all ${tClasses.input}`}
+                  />
+                </div>
+              </div>
+            )}
 
             <div>
               <label className="block text-sm font-semibold opacity-90 mb-2">
