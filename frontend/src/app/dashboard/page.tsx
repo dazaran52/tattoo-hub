@@ -327,7 +327,7 @@ export default function DashboardPage() {
                       <p className="text-neutral-600 dark:text-neutral-400 font-medium leading-relaxed mb-6">
                         Скоро вы сможете получать здесь новых клиентов! А пока используйте нашу мощную CRM для ведения своих текущих записей и работы с клиентами.
                         <br/><br/>
-                        <span className="font-bold text-indigo-600 dark:text-indigo-400">Доступно 1 июля в 12:00!</span>
+                        <span className="font-bold text-indigo-600 dark:text-indigo-400">Доступно 1 августа в 12:00!</span>
                       </p>
                     </div>
                   </div>

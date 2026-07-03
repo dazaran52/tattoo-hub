@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { toast } from 'react-hot-toast'
-import { Clock, CheckCircle, Calendar, Flag, MessageCircle, UserPlus, LayoutGrid, CalendarDays, Search, Users, PlayCircle, Palette, Trash2, X } from 'lucide-react'
+import { Clock, CheckCircle, Calendar, Flag, MessageCircle, UserPlus, LayoutGrid, CalendarDays, Search, Users, PlayCircle, Palette, Trash2, X, Pencil, Send, Phone } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { SessionModal } from '@/components/SessionModal'
 import { CalendarView } from '@/components/CalendarView'
@@ -422,6 +422,48 @@ export function CRMBoard() {
                                     <div className="text-xs text-neutral-500 italic line-clamp-3 leading-relaxed">
                                       {item.notes}
                                     </div>
+                                  )}
+                                </div>
+                              )}
+
+                              {cardView === 'expanded' && (
+                                <div className="flex items-center gap-1 mt-3 pt-3 border-t border-neutral-100 dark:border-white/5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                  <button
+                                    onClick={(e) => { e.stopPropagation(); setSessionToEdit(item); }}
+                                    className="p-1.5 text-neutral-400 hover:text-violet-500 hover:bg-violet-50 dark:hover:bg-violet-500/20 rounded-lg transition-colors flex-1 flex justify-center"
+                                    title="Редактировать сеанс"
+                                  >
+                                    <Pencil className="w-4 h-4" />
+                                  </button>
+                                  
+                                  {item.master_clients?.leads && (
+                                    <button
+                                      onClick={(e) => { e.stopPropagation(); window.location.href = '/messages'; }}
+                                      className="p-1.5 text-neutral-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-500/20 rounded-lg transition-colors flex-1 flex justify-center"
+                                      title="Чат платформы"
+                                    >
+                                      <MessageCircle className="w-4 h-4" />
+                                    </button>
+                                  )}
+                                  
+                                  {item.master_clients?.telegram && (
+                                    <button
+                                      onClick={(e) => { e.stopPropagation(); window.open(`https://t.me/${item.master_clients?.telegram.replace('@', '')}`, '_blank'); }}
+                                      className="p-1.5 text-neutral-400 hover:text-sky-500 hover:bg-sky-50 dark:hover:bg-sky-500/20 rounded-lg transition-colors flex-1 flex justify-center"
+                                      title="Telegram"
+                                    >
+                                      <Send className="w-4 h-4" />
+                                    </button>
+                                  )}
+
+                                  {item.master_clients?.phone && !item.master_clients?.telegram && (
+                                    <button
+                                      onClick={(e) => { e.stopPropagation(); window.open(`https://wa.me/${item.master_clients?.phone.replace(/[^0-9]/g, '')}`, '_blank'); }}
+                                      className="p-1.5 text-neutral-400 hover:text-green-500 hover:bg-green-50 dark:hover:bg-green-500/20 rounded-lg transition-colors flex-1 flex justify-center"
+                                      title="WhatsApp"
+                                    >
+                                      <Phone className="w-4 h-4" />
+                                    </button>
                                   )}
                                 </div>
                               )}
