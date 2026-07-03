@@ -185,9 +185,23 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
             })
           })
           
-          if (!clientRes.ok) throw new Error('Ошибка при создании клиента')
-          const newClient = await clientRes.json()
-          finalClientId = newClient.id
+          if (!clientRes.ok) {
+            if (clientRes.status === 409) {
+              const errData = await clientRes.json().catch(() => null)
+              if (errData?.detail?.error === 'client_exists') {
+                // Silently auto-link to existing client
+                finalClientId = errData.detail.client.id
+                toast.success(`Найден существующий клиент: ${errData.detail.client.name}`)
+              } else {
+                throw new Error('Ошибка при создании клиента')
+              }
+            } else {
+              throw new Error('Ошибка при создании клиента')
+            }
+          } else {
+            const newClient = await clientRes.json()
+            finalClientId = newClient.id
+          }
         } else {
           if (!finalClientId) {
             toast.error('Выберите клиента')

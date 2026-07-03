@@ -56,7 +56,20 @@ export function ManualClientModal({ isOpen, onClose, onSuccess, initialDate }: M
         body: JSON.stringify(payload)
       })
 
-      if (!res.ok) throw new Error('Failed to create client')
+      if (!res.ok) {
+        if (res.status === 409) {
+          const errData = await res.json().catch(() => null)
+          if (errData?.detail?.error === 'client_exists') {
+            toast.success(`Найден существующий клиент: ${errData.detail.client.name}`)
+            onSuccess()
+            onClose()
+            setFormData({ client_name: '', contact: '', notes: '', session_date: '' })
+            setLoading(false)
+            return
+          }
+        }
+        throw new Error('Failed to create client')
+      }
 
       toast.success('Клиент успешно добавлен!')
       onSuccess()
