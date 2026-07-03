@@ -536,7 +536,8 @@ async def create_client_lead(
                         await supabase.table("lead_proposals").insert({
                             "lead_id": new_lead["id"],
                             "user_id": lead_data.assigned_master_id,
-                            "status": "accepted"
+                            "status": "accepted",
+                            "price_offer": 0
                         }).execute()
                         
                         # Create the chat
