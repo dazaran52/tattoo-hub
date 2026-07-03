@@ -554,6 +554,48 @@ async def create_client_lead(
                             "client_session_id": client_token
                         }).execute()
                         
+                        # Also automatically add to CRM (master_clients & master_sessions)
+                        # Try to find an existing client first
+                        existing_client = None
+                        if lead_data.instagram:
+                            res_client = await supabase.table("master_clients").select("id").eq("master_id", lead_data.assigned_master_id).eq("instagram", lead_data.instagram.strip()).eq("is_deleted", False).execute()
+                            if res_client.data: existing_client = res_client.data[0]
+                        if not existing_client and lead_data.email:
+                            res_client = await supabase.table("master_clients").select("id").eq("master_id", lead_data.assigned_master_id).eq("email", lead_data.email.strip()).eq("is_deleted", False).execute()
+                            if res_client.data: existing_client = res_client.data[0]
+                        
+                        if not existing_client:
+                            # Create new master_client
+                            client_data = {
+                                "master_id": lead_data.assigned_master_id,
+                                "lead_id": new_lead["id"],
+                                "name": lead_data.name or "Новый клиент",
+                                "contact_info": lead_data.contact,
+                                "phone": lead_data.contact if not lead_data.email and not lead_data.instagram else None,
+                                "instagram": lead_data.instagram,
+                                "email": lead_data.email,
+                                "notes": lead_data.description,
+                                "source": "lead",
+                                "kanban_status": "new"
+                            }
+                            new_c_res = await supabase.table("master_clients").insert(client_data).execute()
+                            if new_c_res.data:
+                                existing_client = new_c_res.data[0]
+                                
+                        if existing_client:
+                            # Create a master_sessions for this new request
+                            session_date = lead_data.session_date.isoformat()[:10] if lead_data.session_date else datetime.datetime.utcnow().date().isoformat()
+                            await supabase.table("master_sessions").insert({
+                                "master_id": lead_data.assigned_master_id,
+                                "client_id": existing_client["id"],
+                                "session_date": session_date,
+                                "status": "new",
+                                "style": lead_data.style,
+                                "body_place": lead_data.body_place,
+                                "size": lead_data.size,
+                                "reference_images": lead_data.image_urls or []
+                            }).execute()
+                        
                     return {"success": True, "lead": new_lead}
                 if attempt == max_retries - 1:
                     raise HTTPException(status_code=400, detail="Failed to create lead")
