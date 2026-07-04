@@ -39,6 +39,7 @@ class ProfileResponse(BaseModel):
     avatar_url: str | None = None
     portfolio_image_urls: list[str] | None = None
     theme: str = "system"
+    kanban_columns: list | None = None
 
 
 class ProfileCreate(BaseModel):
@@ -60,6 +61,7 @@ class ProfileUpdate(BaseModel):
     country_ids: list[str] | None = None
     city_ids: list[str] | None = None
     theme: str | None = None
+    kanban_columns: list | None = None
 
 
 @router.get("/profile", response_model=ProfileResponse)
@@ -188,7 +190,8 @@ async def get_profile(
         certificate_url=data.get("certificate_url"),
         avatar_url=data.get("avatar_url"),
         portfolio_image_urls=data.get("portfolio_image_urls") or [],
-        theme=data.get("theme") or "system"
+        theme=data.get("theme") or "system",
+        kanban_columns=data.get("kanban_columns")
     )
 
 
@@ -235,6 +238,8 @@ async def update_profile(
             update_dict["city_ids"] = update_data.city_ids
         if update_data.theme is not None:
             update_dict["theme"] = update_data.theme
+        if update_data.kanban_columns is not None:
+            update_dict["kanban_columns"] = update_data.kanban_columns
         print(f"DEBUG PUT: update_dict={update_dict}")
         
         if not update_dict:
@@ -302,7 +307,8 @@ async def update_profile(
             certificate_url=data.get("certificate_url"),
             avatar_url=data.get("avatar_url"),
             portfolio_image_urls=data.get("portfolio_image_urls") or [],
-            theme=data.get("theme") or "system"
+            theme=data.get("theme") or "system",
+            kanban_columns=data.get("kanban_columns")
         )
         
     except HTTPException:

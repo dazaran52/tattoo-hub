@@ -186,7 +186,7 @@ export default function DashboardPage() {
 
       <Header profile={profile} onLogout={handleLogout} />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative">
+      <main className={`mx-auto py-8 relative ${activeTab === 'crm' ? 'max-w-full px-2 sm:px-4 lg:px-6' : 'max-w-7xl px-4 sm:px-6 lg:px-8'}`}>
         {profile.role === 'client' ? (
           <ClientDashboard profile={profile} />
         ) : (
@@ -205,9 +205,6 @@ export default function DashboardPage() {
                     <Share2 className="w-3.5 h-3.5" />
                     {language === 'ru' ? 'Поделиться визиткой' : 'Share Booking Link'}
                   </button>
-                  <p className="text-sm text-neutral-500 dark:text-neutral-400 font-medium">
-                    {t('availableLeads')}
-                  </p>
                 </div>
               </div>
               

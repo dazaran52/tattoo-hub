@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { toast } from 'react-hot-toast'
-import { Clock, CheckCircle, Calendar, Flag, MessageCircle, UserPlus, LayoutGrid, CalendarDays, Search, Users, PlayCircle, Palette, Trash2, X, Pencil, Send, Phone } from 'lucide-react'
+import { Clock, CheckCircle, Calendar, Flag, MessageCircle, UserPlus, LayoutGrid, CalendarDays, Search, Users, PlayCircle, Palette, Trash2, X, Pencil, Send, Phone, Settings2 } from 'lucide-react'
+import * as Icons from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { SessionModal } from '@/components/SessionModal'
 import { CalendarView } from '@/components/CalendarView'
@@ -9,6 +10,7 @@ import { ClientsDatabase } from '@/components/ClientsDatabase'
 import { CompleteSessionModal } from '@/components/CompleteSessionModal'
 import { SessionsList } from '@/components/SessionsList'
 import { LeadAcceptWizardModal } from '@/components/LeadAcceptWizardModal'
+import { KanbanColumnEditor } from '@/components/KanbanColumnEditor'
 
 export interface CRMSession {
   id: string
@@ -37,14 +39,34 @@ export interface CRMSession {
   }
 }
 
-const COLUMNS = [
-  { id: 'new', title: 'Новые', icon: <UserPlus className="w-4 h-4" />, color: 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border-emerald-200' },
-  { id: 'discussing', title: 'В диалоге', icon: <MessageCircle className="w-4 h-4" />, color: 'bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-400 border-violet-200' },
-  { id: 'booked', title: 'Записан', icon: <Calendar className="w-4 h-4" />, color: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border-blue-200' },
-  { id: 'in_progress', title: 'В процессе', icon: <PlayCircle className="w-4 h-4" />, color: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 border-yellow-200' },
-  { id: 'completed', title: 'Завершено', icon: <CheckCircle className="w-4 h-4" />, color: 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-green-200' },
-  { id: 'cancelled', title: 'Отмена', icon: <Flag className="w-4 h-4" />, color: 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border-red-200' },
+export interface KanbanColumn {
+  id: string
+  title: string
+  iconName: string
+  color: string
+}
+
+const DEFAULT_COLUMNS: KanbanColumn[] = [
+  { id: 'new', title: 'Новые', iconName: 'UserPlus', color: 'emerald' },
+  { id: 'discussing', title: 'В диалоге', iconName: 'MessageCircle', color: 'violet' },
+  { id: 'booked', title: 'Записан', iconName: 'Calendar', color: 'blue' },
+  { id: 'in_progress', title: 'В процессе', iconName: 'PlayCircle', color: 'yellow' },
+  { id: 'completed', title: 'Завершено', iconName: 'CheckCircle', color: 'green' },
+  { id: 'cancelled', title: 'Отмена', iconName: 'Flag', color: 'red' },
 ]
+
+const COLOR_STYLES: Record<string, { bg: string, border: string, leftBorder: string }> = {
+  emerald: { bg: 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border-emerald-200', border: 'border-emerald-500/50', leftBorder: 'border-l-emerald-500' },
+  violet: { bg: 'bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-400 border-violet-200', border: 'border-violet-500/50', leftBorder: 'border-l-violet-500' },
+  blue: { bg: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border-blue-200', border: 'border-blue-500/50', leftBorder: 'border-l-blue-500' },
+  yellow: { bg: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 border-yellow-200', border: 'border-yellow-500/50', leftBorder: 'border-l-yellow-500' },
+  green: { bg: 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-green-200', border: 'border-green-500/50', leftBorder: 'border-l-green-500' },
+  red: { bg: 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border-red-200', border: 'border-red-500/50', leftBorder: 'border-l-red-500' },
+  pink: { bg: 'bg-pink-100 dark:bg-pink-900/30 text-pink-700 dark:text-pink-400 border-pink-200', border: 'border-pink-500/50', leftBorder: 'border-l-pink-500' },
+  orange: { bg: 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 border-orange-200', border: 'border-orange-500/50', leftBorder: 'border-l-orange-500' },
+  cyan: { bg: 'bg-cyan-100 dark:bg-cyan-900/30 text-cyan-700 dark:text-cyan-400 border-cyan-200', border: 'border-cyan-500/50', leftBorder: 'border-l-cyan-500' },
+  slate: { bg: 'bg-slate-100 dark:bg-slate-900/30 text-slate-700 dark:text-slate-400 border-slate-200', border: 'border-slate-500/50', leftBorder: 'border-l-slate-500' },
+}
 
 export function CRMBoard() {
   const [sessions, setSessions] = useState<CRMSession[]>([])
@@ -65,6 +87,8 @@ export function CRMBoard() {
   const [searchQuery, setSearchQuery] = useState('')
   const [kanbanDateFilter, setKanbanDateFilter] = useState<'all'|'this_week'|'this_month'>('all')
   const [selectedKanbanIds, setSelectedKanbanIds] = useState<Set<string>>(new Set())
+  const [columns, setColumns] = useState<KanbanColumn[]>(DEFAULT_COLUMNS)
+  const [isEditingColumns, setIsEditingColumns] = useState(false)
 
   // Scroll ref for drag and drop
   const scrollContainerRef = useRef<HTMLDivElement>(null)
@@ -102,6 +126,16 @@ export function CRMBoard() {
         headers: { 'Authorization': `Bearer ${token}` }
       })
       if (clientsRes.ok) setClientsForModal(await clientsRes.json())
+      
+      const profileRes = await fetch(`${apiUrl}/api/profile`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      if (profileRes.ok) {
+        const profileData = await profileRes.json()
+        if (profileData.kanban_columns && profileData.kanban_columns.length > 0) {
+          setColumns(profileData.kanban_columns)
+        }
+      }
         
     } catch (err) {
       console.error(err)
@@ -150,7 +184,38 @@ export function CRMBoard() {
     const item = sessions.find(i => i.id === sessionId)
     // Avoid double trigger if it's already in the same column
     if (item && item.status !== colId) {
-      updateSessionStatus(sessionId, colId)
+      if (item.status === 'new' && colId !== 'cancelled') {
+        setSessionToAccept(item)
+      } else {
+        updateSessionStatus(sessionId, colId)
+      }
+    }
+  }
+
+  const saveColumns = async (newCols: KanbanColumn[]) => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const token = session?.access_token
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+      
+      const res = await fetch(`${apiUrl}/api/profile`, {
+        method: 'PUT',
+        headers: { 
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ kanban_columns: newCols })
+      })
+      
+      if (res.ok) {
+        setColumns(newCols)
+        setIsEditingColumns(false)
+        toast.success('Настройки колонок сохранены')
+      } else {
+        throw new Error('Failed to save columns')
+      }
+    } catch (err) {
+      toast.error('Ошибка при сохранении колонок')
     }
   }
 
@@ -247,6 +312,15 @@ export function CRMBoard() {
                   </button>
                 </div>
               )}
+              {sessionView === 'kanban' && !isEditingColumns && (
+                <button
+                  onClick={() => setIsEditingColumns(true)}
+                  className="px-3 py-1.5 text-xs font-bold text-neutral-500 bg-neutral-200/50 hover:bg-neutral-200 dark:bg-neutral-800/50 dark:hover:bg-neutral-800 rounded-lg transition-colors flex items-center gap-1.5"
+                >
+                  <Settings2 className="w-4 h-4" />
+                  Настроить колонки
+                </button>
+              )}
             </>
           )}
         </div>
@@ -281,6 +355,12 @@ export function CRMBoard() {
           onUpdate={fetchData}
           cardView={cardView}
         />
+      ) : isEditingColumns ? (
+        <KanbanColumnEditor 
+          columns={columns} 
+          onSave={saveColumns} 
+          onCancel={() => setIsEditingColumns(false)} 
+        />
       ) : (
         <div className="relative">
           {/* Scroll zones for dragging */}
@@ -298,7 +378,10 @@ export function CRMBoard() {
             className="overflow-x-auto pb-4 custom-scrollbar"
           >
             <div className="flex gap-4 min-w-[1500px]">
-              {COLUMNS.map(col => {
+              {columns.map(col => {
+                const styles = COLOR_STYLES[col.color] || COLOR_STYLES.slate
+                const Icon = (Icons as any)[col.iconName] || Icons.Star
+                
                 const colItems = sessions.filter(i => {
                   const search = searchQuery.toLowerCase().replace(/\s/g, '')
                   const cName = (i.master_clients?.name || '').toLowerCase().replace(/\s/g, '')
@@ -333,9 +416,9 @@ export function CRMBoard() {
                     onDragOver={(e) => handleDragOver(e, 'none')}
                     onDrop={(e) => handleDrop(e, col.id)}
                   >
-                    <div className={`px-4 py-3 rounded-2xl border flex items-center justify-between mb-4 ${col.color}`}>
+                    <div className={`px-4 py-3 rounded-2xl border flex items-center justify-between mb-4 ${styles.bg}`}>
                       <div className="flex items-center gap-2 font-bold text-sm">
-                        {col.icon}
+                        <Icon className="w-4 h-4" />
                         {col.title}
                       </div>
                       <span className="bg-white/50 dark:bg-black/20 px-2 py-0.5 rounded-full text-xs font-bold">
@@ -357,7 +440,7 @@ export function CRMBoard() {
                             draggable
                             onDragStart={(e) => handleDragStart(e as any, item.id)}
                             onClick={() => !isNewLead && setSessionToEdit(item)}
-                            className={`p-4 rounded-2xl shadow-sm border ${selectedKanbanIds.has(item.id) ? 'border-violet-500 ring-2 ring-violet-500 bg-white dark:bg-neutral-800' : isNewLead ? 'border-emerald-400/50 bg-emerald-50/70 dark:bg-emerald-900/20 ring-1 ring-emerald-500/30' : 'bg-white dark:bg-neutral-800 border-neutral-200 dark:border-white/5'} ${!isNewLead ? 'cursor-pointer hover:shadow-md transition-shadow' : ''} relative`}
+                            className={`p-4 rounded-2xl shadow-sm border-y border-r border-l-4 ${styles.leftBorder} ${selectedKanbanIds.has(item.id) ? 'ring-2 ring-violet-500 bg-white dark:bg-neutral-800' : isNewLead ? 'border-y-emerald-400/50 border-r-emerald-400/50 bg-emerald-50/70 dark:bg-emerald-900/20 ring-1 ring-emerald-500/30' : 'bg-white dark:bg-neutral-800 border-y-neutral-200 border-r-neutral-200 dark:border-y-white/5 dark:border-r-white/5'} ${!isNewLead ? 'cursor-pointer hover:shadow-md transition-shadow' : ''} relative overflow-hidden`}
                           >
                             <input 
                               type="checkbox"
