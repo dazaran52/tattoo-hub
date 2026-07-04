@@ -52,7 +52,7 @@ export function CRMBoard() {
   
   const [mainTab, setMainTab] = useState<'sessions' | 'clients'>('sessions')
   const [sessionView, setSessionView] = useState<'kanban' | 'list' | 'calendar'>('kanban')
-  const [cardView, setCardView] = useState<'normal' | 'expanded'>('expanded')
+  const [cardView, setCardView] = useState<'normal' | 'expanded'>('normal')
   
   // Modals
   const [isSessionModalOpen, setIsSessionModalOpen] = useState(false)
@@ -329,7 +329,7 @@ export function CRMBoard() {
                 return (
                   <div 
                     key={col.id} 
-                    className="flex-1 min-w-[320px] max-w-[350px] bg-neutral-50 dark:bg-neutral-900/50 rounded-3xl border border-neutral-200 dark:border-white/5 p-4 flex flex-col h-[75vh]"
+                    className="flex-1 min-w-[280px] max-w-[300px] bg-neutral-50 dark:bg-neutral-900/50 rounded-3xl border border-neutral-200 dark:border-white/5 p-4 flex flex-col h-[75vh]"
                     onDragOver={(e) => handleDragOver(e, 'none')}
                     onDrop={(e) => handleDrop(e, col.id)}
                   >
@@ -357,14 +357,8 @@ export function CRMBoard() {
                             draggable
                             onDragStart={(e) => handleDragStart(e as any, item.id)}
                             onClick={() => !isNewLead && setSessionToEdit(item)}
-                            className={`bg-white dark:bg-neutral-800 p-4 rounded-2xl shadow-sm border ${selectedKanbanIds.has(item.id) ? 'border-violet-500 ring-2 ring-violet-500' : isNewLead ? 'border-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.15)] ring-1 ring-emerald-500/50' : 'border-neutral-200 dark:border-white/5'} ${!isNewLead ? 'cursor-pointer hover:shadow-md transition-shadow' : ''} relative`}
+                            className={`p-4 rounded-2xl shadow-sm border ${selectedKanbanIds.has(item.id) ? 'border-violet-500 ring-2 ring-violet-500 bg-white dark:bg-neutral-800' : isNewLead ? 'border-emerald-400/50 bg-emerald-50/70 dark:bg-emerald-900/20 ring-1 ring-emerald-500/30' : 'bg-white dark:bg-neutral-800 border-neutral-200 dark:border-white/5'} ${!isNewLead ? 'cursor-pointer hover:shadow-md transition-shadow' : ''} relative`}
                           >
-                            {isNewLead && (
-                              <div className="absolute -top-3 left-4 bg-emerald-500 text-white text-[10px] font-bold px-2 py-1 rounded-full flex items-center gap-1 shadow-sm">
-                                <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-                                НОВАЯ ЗАЯВКА
-                              </div>
-                            )}
                             <input 
                               type="checkbox"
                               checked={selectedKanbanIds.has(item.id)}

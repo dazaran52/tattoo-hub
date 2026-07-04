@@ -4,6 +4,8 @@ from app.middleware.auth import get_current_user, AuthUser, get_optional_user
 from app.database import get_supabase_client, get_async_supabase_client
 from supabase import Client
 from supabase._async.client import AsyncClient
+from app.services.mail import send_transactional_email
+from app.services.notifications import send_push_notification
 from typing import List, Optional
 import datetime
 import uuid
@@ -585,7 +587,7 @@ async def create_client_lead(
                         if existing_client:
                             # Create a master_sessions for this new request
                             session_date = lead_data.session_date.isoformat()[:10] if lead_data.session_date else datetime.datetime.utcnow().date().isoformat()
-                            await supabase.table("master_sessions").insert({
+                            res = supabase.table("master_sessions").insert({
                                 "master_id": lead_data.assigned_master_id,
                                 "client_id": existing_client["id"],
                                 "session_date": session_date,
@@ -596,6 +598,24 @@ async def create_client_lead(
                                 "size": lead_data.size,
                                 "reference_images": lead_data.image_urls or []
                             }).execute()
+                            
+                            # Create in-app and push notifications for new lead
+                            try:
+                                supabase.table("notifications").insert({
+                                    "user_id": lead_data.assigned_master_id,
+                                    "title": "Новая персональная заявка!",
+                                    "message": f"У вас новая персональная заявка от клиента {lead_data.client_name}.",
+                                    "type": "system"
+                                }).execute()
+                                
+                                send_push_notification(
+                                    user_id=lead_data.assigned_master_id,
+                                    title="Новая заявка! 🔥",
+                                    body=f"Клиент {lead_data.client_name} хочет записаться к вам на сеанс.",
+                                    url="/dashboard"
+                                )
+                            except Exception as notif_e:
+                                print(f"Warning: Failed to send notifications: {notif_e}")
                         
                     return {"success": True, "lead": new_lead}
                 if attempt == max_retries - 1:

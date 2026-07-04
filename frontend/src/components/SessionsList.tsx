@@ -208,7 +208,7 @@ export function SessionsList({ sessions, searchQuery, setSearchQuery, onStatusCh
               {paginated.map(session => (
                 <tr 
                   key={session.id} 
-                  className={`border-b border-neutral-100 dark:border-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-800/30 transition-colors cursor-pointer ${selectedIds.has(session.id) ? 'bg-violet-50/50 dark:bg-violet-900/10' : ''}`}
+                  className={`border-b border-neutral-100 dark:border-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-800/30 transition-colors cursor-pointer ${selectedIds.has(session.id) ? 'bg-violet-50/50 dark:bg-violet-900/10' : session.status === 'new' ? 'bg-emerald-50/50 dark:bg-emerald-900/10 border-l-2 border-l-emerald-500' : ''}`}
                   onClick={(e) => {
                     // Prevent opening modal if clicking checkbox or select
                     if ((e.target as HTMLElement).tagName !== 'INPUT' && (e.target as HTMLElement).tagName !== 'SELECT' && (e.target as HTMLElement).tagName !== 'BUTTON') {

@@ -9,7 +9,7 @@ import re
 import httpx
 import logging
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 from app.config import get_settings
 from app.database import get_supabase_client
 
@@ -665,6 +665,55 @@ def check_lead_emails(loop: asyncio.AbstractEventLoop):
     except Exception as e:
         logger.error(f"IMAP Exception in Lead Agent: {e}")
 
+async def check_abandoned_leads_async():
+    """Checks for leads that have been in 'new' status for > 2 hours and sends a reminder email."""
+    try:
+        supabase = get_supabase_client()
+        two_hours_ago = (datetime.utcnow() - timedelta(hours=2)).isoformat()
+        
+        # We need to find master_sessions where status = 'new' AND created_at < two_hours_ago AND is_email_notified = false
+        res = supabase.table("master_sessions").select("*, master:users!master_id(email, display_name), client:clients!client_id(name)").eq("status", "new").eq("is_email_notified", False).lt("created_at", two_hours_ago).execute()
+        
+        if not res.data:
+            return
+            
+        settings = get_settings()
+        frontend_url = getattr(settings, 'NEXT_PUBLIC_SITE_URL', 'https://tattoo-hub.xyz')
+        
+        for session in res.data:
+            master = session.get("master")
+            client = session.get("client")
+            if not master or not master.get("email"):
+                continue
+                
+            master_email = master["email"]
+            master_name = master.get("display_name") or "Мастер"
+            client_name = client.get("name") if client else "Клиент"
+            
+            subject = "Необработанная заявка от клиента!"
+            body_html = f\"\"\"
+            <html>
+              <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+                <h2 style="color: #4f46e5;">Привет, {master_name}!</h2>
+                <p>У вас висит необработанная заявка от клиента <strong>{client_name}</strong> уже более 2 часов.</p>
+                <p>Пожалуйста, примите ее в работу или отклоните, чтобы клиент не ждал слишком долго.</p>
+                <br>
+                <a href="{frontend_url}/dashboard" 
+                   style="display: inline-block; padding: 12px 24px; background-color: #4f46e5; color: white; text-decoration: none; border-radius: 6px; font-weight: bold;">
+                   Перейти к заявке
+                </a>
+              </body>
+            </html>
+            \"\"\"
+            
+            sent = send_smtp_reply(master_email, subject, body_html)
+            if sent:
+                supabase.table("master_sessions").update({"is_email_notified": True}).eq("id", session["id"]).execute()
+                logger.info(f"Sent 2-hour reminder to {master_email} for session {session['id']}")
+                
+    except Exception as e:
+        logger.error(f"Error checking abandoned leads: {e}")
+
 async def start_email_lead_agent():
     """Background loop that polls new emails for the lead interceptor dialogue agent."""
     settings = get_settings()
@@ -675,6 +724,7 @@ async def start_email_lead_agent():
             # Execute the synchronous polling block in a threadpool executor to avoid blocking the async event loop
             loop = asyncio.get_event_loop()
             await loop.run_in_executor(None, check_lead_emails, loop)
+            await check_abandoned_leads_async()
         except Exception as err:
             logger.error(f"Lead Interceptor Loop Error: {err}")
             

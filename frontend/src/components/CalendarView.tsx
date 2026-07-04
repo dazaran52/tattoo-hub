@@ -256,7 +256,7 @@ export function CalendarView({ sessions, onUpdate }: CalendarViewProps) {
                 {daySessions.length > 0 && !dayOff && (
                   <div className="w-full mt-auto space-y-1">
                     {daySessions.slice(0, 2).map((s, idx) => (
-                      <div key={idx} className="flex items-center gap-1 text-[10px] sm:text-xs bg-violet-50 dark:bg-violet-900/30 text-violet-700 dark:text-violet-400 px-1 sm:px-2 py-0.5 sm:py-1 rounded-md font-medium truncate w-full">
+                      <div key={idx} className={`flex items-center gap-1 text-[10px] sm:text-xs px-1 sm:px-2 py-0.5 sm:py-1 rounded-md font-medium truncate w-full ${s.status === 'new' ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400' : 'bg-violet-50 dark:bg-violet-900/30 text-violet-700 dark:text-violet-400'}`}>
                         <Clock className="w-3 h-3 shrink-0" />
                         <span className="truncate">{s.start_time ? s.start_time.substring(0,5) : 'Без времени'}</span>
                       </div>
@@ -313,7 +313,7 @@ export function CalendarView({ sessions, onUpdate }: CalendarViewProps) {
                 ) : (
                   <div className={isSidebarExpanded ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" : "flex flex-col gap-4"}>
                     {selectedDateSessions.map(s => (
-                      <div key={s.id} className="bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-2xl p-4 shadow-sm h-full flex flex-col">
+                      <div key={s.id} className={`bg-white dark:bg-neutral-800 border rounded-2xl p-4 shadow-sm h-full flex flex-col ${s.status === 'new' ? 'border-emerald-500/50 bg-emerald-50/30 dark:bg-emerald-900/10' : 'border-neutral-200 dark:border-neutral-700'}`}>
                       <div className="flex justify-between items-start mb-3">
                         <div>
                           <div className="font-bold text-neutral-900 dark:text-white text-lg">
