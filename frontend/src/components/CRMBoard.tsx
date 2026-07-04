@@ -448,7 +448,7 @@ export function CRMBoard() {
                                   
                                   {item.master_clients?.telegram && (
                                     <button
-                                      onClick={(e) => { e.stopPropagation(); window.open(`https://t.me/${item.master_clients?.telegram.replace('@', '')}`, '_blank'); }}
+                                      onClick={(e) => { e.stopPropagation(); window.open(`https://t.me/${item.master_clients!.telegram!.replace('@', '')}`, '_blank'); }}
                                       className="p-1.5 text-neutral-400 hover:text-sky-500 hover:bg-sky-50 dark:hover:bg-sky-500/20 rounded-lg transition-colors flex-1 flex justify-center"
                                       title="Telegram"
                                     >
@@ -458,7 +458,7 @@ export function CRMBoard() {
 
                                   {item.master_clients?.phone && !item.master_clients?.telegram && (
                                     <button
-                                      onClick={(e) => { e.stopPropagation(); window.open(`https://wa.me/${item.master_clients?.phone.replace(/[^0-9]/g, '')}`, '_blank'); }}
+                                      onClick={(e) => { e.stopPropagation(); window.open(`https://wa.me/${item.master_clients!.phone!.replace(/[^0-9]/g, '')}`, '_blank'); }}
                                       className="p-1.5 text-neutral-400 hover:text-green-500 hover:bg-green-50 dark:hover:bg-green-500/20 rounded-lg transition-colors flex-1 flex justify-center"
                                       title="WhatsApp"
                                     >
