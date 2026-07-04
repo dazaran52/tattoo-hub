@@ -8,6 +8,7 @@ import { CalendarView } from '@/components/CalendarView'
 import { ClientsDatabase } from '@/components/ClientsDatabase'
 import { CompleteSessionModal } from '@/components/CompleteSessionModal'
 import { SessionsList } from '@/components/SessionsList'
+import { LeadAcceptWizardModal } from '@/components/LeadAcceptWizardModal'
 
 export interface CRMSession {
   id: string
@@ -28,6 +29,7 @@ export interface CRMSession {
     phone?: string
     telegram?: string
     email?: string
+    is_deleted?: boolean
     leads?: {
       title: string
       image_urls: string[]
@@ -50,12 +52,13 @@ export function CRMBoard() {
   
   const [mainTab, setMainTab] = useState<'sessions' | 'clients'>('sessions')
   const [sessionView, setSessionView] = useState<'kanban' | 'list' | 'calendar'>('kanban')
-  const [cardView, setCardView] = useState<'normal' | 'expanded'>('normal')
+  const [cardView, setCardView] = useState<'normal' | 'expanded'>('expanded')
   
   // Modals
   const [isSessionModalOpen, setIsSessionModalOpen] = useState(false)
   const [sessionToComplete, setSessionToComplete] = useState<string | null>(null)
   const [sessionToEdit, setSessionToEdit] = useState<CRMSession | null>(null)
+  const [sessionToAccept, setSessionToAccept] = useState<CRMSession | null>(null)
   const [clientsForModal, setClientsForModal] = useState([])
   
   // Filters
@@ -109,9 +112,6 @@ export function CRMBoard() {
 
   const updateSessionStatus = async (sessionId: string, newStatus: string) => {
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
-      const { data: { session } } = await supabase.auth.getSession()
-      const token = session?.access_token
       const { error } = await supabase.from('master_sessions')
         .update({ status: newStatus })
         .eq('id', sessionId)
@@ -349,14 +349,22 @@ export function CRMBoard() {
                           Перетащите сюда
                         </div>
                       ) : (
-                        colItems.map(item => (
+                        colItems.map(item => {
+                          const isNewLead = item.status === 'new'
+                          return (
                           <motion.div
                             key={item.id}
                             draggable
                             onDragStart={(e) => handleDragStart(e as any, item.id)}
-                            onClick={() => setSessionToEdit(item)}
-                            className={`bg-white dark:bg-neutral-800 p-4 rounded-2xl shadow-sm border ${selectedKanbanIds.has(item.id) ? 'border-violet-500 ring-2 ring-violet-500' : 'border-neutral-200 dark:border-white/5'} cursor-pointer hover:shadow-md transition-shadow relative`}
+                            onClick={() => !isNewLead && setSessionToEdit(item)}
+                            className={`bg-white dark:bg-neutral-800 p-4 rounded-2xl shadow-sm border ${selectedKanbanIds.has(item.id) ? 'border-violet-500 ring-2 ring-violet-500' : isNewLead ? 'border-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.15)] ring-1 ring-emerald-500/50' : 'border-neutral-200 dark:border-white/5'} ${!isNewLead ? 'cursor-pointer hover:shadow-md transition-shadow' : ''} relative`}
                           >
+                            {isNewLead && (
+                              <div className="absolute -top-3 left-4 bg-emerald-500 text-white text-[10px] font-bold px-2 py-1 rounded-full flex items-center gap-1 shadow-sm">
+                                <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                                НОВАЯ ЗАЯВКА
+                              </div>
+                            )}
                             <input 
                               type="checkbox"
                               checked={selectedKanbanIds.has(item.id)}
@@ -468,8 +476,25 @@ export function CRMBoard() {
                                 </div>
                               )}
                             </div>
+
+                            {isNewLead && (
+                              <div className="mt-4 pt-4 border-t border-emerald-100 dark:border-emerald-900/30 flex gap-2">
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); updateSessionStatus(item.id, 'cancelled'); }}
+                                  className="px-3 py-2 text-xs font-bold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-500/10 hover:bg-red-100 dark:hover:bg-red-500/20 rounded-xl transition-colors"
+                                >
+                                  Отклонить
+                                </button>
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); setSessionToAccept(item); }}
+                                  className="flex-1 py-2 text-xs font-bold text-white bg-emerald-500 hover:bg-emerald-600 rounded-xl shadow-md transition-colors text-center"
+                                >
+                                  Принять в работу
+                                </button>
+                              </div>
+                            )}
                           </motion.div>
-                        ))
+                        )})
                       )}
                     </div>
                   </div>
@@ -573,6 +598,17 @@ export function CRMBoard() {
             <X className="w-5 h-5" />
           </button>
         </div>
+      )}
+      {sessionToAccept && (
+        <LeadAcceptWizardModal
+          isOpen={!!sessionToAccept}
+          onClose={() => setSessionToAccept(null)}
+          onSuccess={() => {
+            fetchData()
+            setSessionToAccept(null)
+          }}
+          session={sessionToAccept}
+        />
       )}
     </div>
   )

@@ -1,0 +1,222 @@
+import React, { useState } from 'react'
+import { X, Calendar as CalendarIcon, CheckCircle, MessageCircle, DollarSign, Clock } from 'lucide-react'
+import toast from 'react-hot-toast'
+import { supabase } from '@/lib/supabase'
+import { CRMSession } from './CRMBoard'
+
+interface LeadAcceptWizardModalProps {
+  isOpen: boolean
+  onClose: () => void
+  onSuccess: () => void
+  session: CRMSession
+}
+
+export function LeadAcceptWizardModal({ isOpen, onClose, onSuccess, session }: LeadAcceptWizardModalProps) {
+  const [step, setStep] = useState(1)
+  const [loading, setLoading] = useState(false)
+  const [price, setPrice] = useState(session.price?.toString() || '')
+  const [startTime, setStartTime] = useState(session.start_time || '10:00')
+  const [endTime, setEndTime] = useState(session.end_time || '14:00')
+  const [sendMessage, setSendMessage] = useState(true)
+
+  if (!isOpen) return null
+
+  const handleNext = () => setStep(s => s + 1)
+  const handlePrev = () => setStep(s => s - 1)
+
+  const handleAccept = async () => {
+    setLoading(true)
+    try {
+      // 1. Update session in CRM
+      const { error: sessionError } = await supabase.from('master_sessions')
+        .update({
+          status: 'booked',
+          price: price ? parseFloat(price) : null,
+          start_time: startTime,
+          end_time: endTime
+        })
+        .eq('id', session.id)
+
+      if (sessionError) throw sessionError
+
+      // 2. Optionally send automated message
+      if (sendMessage && session.master_clients?.leads) {
+        // Need to find lead_id to get the chat
+        const { data: clientData } = await supabase.from('master_clients')
+          .select('lead_id')
+          .eq('id', session.master_clients?.id)
+          .single()
+
+        if (clientData?.lead_id) {
+          const { data: chatData } = await supabase.from('lead_chats')
+            .select('id')
+            .eq('lead_id', clientData.lead_id)
+            .single()
+
+          if (chatData?.id) {
+            const { data: userData } = await supabase.auth.getUser()
+            if (userData.user) {
+              const msg = `Привет! Я готов взять твою заявку в работу. \nПредварительная стоимость: ${price ? price + ' Kč' : 'договорная'}.\nВремя сеанса: ${startTime} - ${endTime}.\nЕсли есть вопросы — пиши!`
+              await supabase.from('chat_messages').insert({
+                chat_id: chatData.id,
+                sender_id: userData.user.id,
+                content: msg
+              })
+            }
+          }
+        }
+      }
+
+      toast.success('Заявка принята в работу!')
+      onSuccess()
+      onClose()
+    } catch (e: any) {
+      toast.error(e.message || 'Ошибка принятия заявки')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const clientBudget = (session.master_clients?.leads as any)?.description?.match(/Бюджет:\s*(.+)/)?.[1] || 'Договорная/не указан'
+  const clientPrefTime = (session.master_clients?.leads as any)?.description?.match(/Желаемое время:\s*(.+)/)?.[1] || 'Не указано'
+
+  return (
+    <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
+      <div className="bg-white dark:bg-neutral-900 rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden my-8 transform transition-all">
+        {/* Header */}
+        <div className="flex justify-between items-center p-6 border-b border-neutral-200 dark:border-neutral-800">
+          <h2 className="text-xl font-bold flex items-center gap-2 text-neutral-900 dark:text-white">
+            <CheckCircle className="w-5 h-5 text-emerald-500" />
+            Принятие новой заявки
+          </h2>
+          <button onClick={onClose} className="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-full transition-colors text-neutral-500">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Wizard Progress */}
+        <div className="px-6 pt-6">
+          <div className="flex items-center gap-2 mb-6">
+            <div className={`h-1.5 flex-1 rounded-full ${step >= 1 ? 'bg-emerald-500' : 'bg-neutral-200 dark:bg-neutral-800'}`} />
+            <div className={`h-1.5 flex-1 rounded-full ${step >= 2 ? 'bg-emerald-500' : 'bg-neutral-200 dark:bg-neutral-800'}`} />
+          </div>
+        </div>
+
+        {/* Wizard Steps */}
+        <div className="px-6 pb-6 space-y-6">
+          {step === 1 && (
+            <div className="animate-in fade-in slide-in-from-right-4 duration-300">
+              <h3 className="text-lg font-bold mb-4 flex items-center gap-2 text-neutral-900 dark:text-white">
+                <DollarSign className="w-5 h-5 text-emerald-500" />
+                Оценка стоимости
+              </h3>
+              
+              <div className="bg-neutral-50 dark:bg-neutral-800/50 p-4 rounded-2xl mb-6">
+                <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-1">Желаемый бюджет клиента:</p>
+                <p className="font-medium text-neutral-900 dark:text-white">{clientBudget}</p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-2">Точная стоимость сеанса (Kč)</label>
+                <input
+                  type="number"
+                  value={price}
+                  onChange={(e) => setPrice(e.target.value)}
+                  placeholder="0.00"
+                  className="w-full bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
+                />
+                <p className="text-xs text-neutral-500 mt-2">Оставьте пустым, если цена еще не определена.</p>
+              </div>
+            </div>
+          )}
+
+          {step === 2 && (
+            <div className="animate-in fade-in slide-in-from-right-4 duration-300">
+              <h3 className="text-lg font-bold mb-4 flex items-center gap-2 text-neutral-900 dark:text-white">
+                <Clock className="w-5 h-5 text-emerald-500" />
+                Назначение времени
+              </h3>
+              
+              <div className="bg-neutral-50 dark:bg-neutral-800/50 p-4 rounded-2xl mb-6">
+                <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-1">Пожелания клиента по времени:</p>
+                <p className="font-medium text-neutral-900 dark:text-white">{clientPrefTime}</p>
+                <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-3 mb-1">Выбранная дата:</p>
+                <p className="font-medium text-neutral-900 dark:text-white flex items-center gap-1.5">
+                  <CalendarIcon className="w-4 h-4 text-emerald-500" />
+                  {new Date(session.session_date).toLocaleDateString('ru-RU')}
+                </p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 mb-6">
+                <div>
+                  <label className="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-2">Начало</label>
+                  <input
+                    type="time"
+                    value={startTime}
+                    onChange={(e) => setStartTime(e.target.value)}
+                    className="w-full bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-2">Конец</label>
+                  <input
+                    type="time"
+                    value={endTime}
+                    onChange={(e) => setEndTime(e.target.value)}
+                    className="w-full bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
+                  />
+                </div>
+              </div>
+
+              <label className="flex items-start gap-3 p-4 bg-emerald-50 dark:bg-emerald-900/10 rounded-2xl cursor-pointer hover:bg-emerald-100 dark:hover:bg-emerald-900/20 transition-colors border border-emerald-100 dark:border-emerald-900/30">
+                <input
+                  type="checkbox"
+                  checked={sendMessage}
+                  onChange={(e) => setSendMessage(e.target.checked)}
+                  className="mt-1 w-5 h-5 rounded border-emerald-300 text-emerald-500 focus:ring-emerald-500 bg-white"
+                />
+                <div>
+                  <p className="text-sm font-bold text-emerald-900 dark:text-emerald-400 flex items-center gap-1.5">
+                    <MessageCircle className="w-4 h-4" />
+                    Автоматическое сообщение
+                  </p>
+                  <p className="text-xs text-emerald-700 dark:text-emerald-600 mt-1">Отправить клиенту приветственное сообщение со стоимостью и временем в чат платформы.</p>
+                </div>
+              </label>
+            </div>
+          )}
+        </div>
+
+        {/* Footer Actions */}
+        <div className="p-6 border-t border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900/50 flex gap-3">
+          {step > 1 && (
+            <button
+              onClick={handlePrev}
+              disabled={loading}
+              className="px-6 py-3 font-bold rounded-xl text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-800 transition-colors disabled:opacity-50"
+            >
+              Назад
+            </button>
+          )}
+          <div className="flex-1" />
+          {step < 2 ? (
+            <button
+              onClick={handleNext}
+              className="px-8 py-3 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 font-bold rounded-xl hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-all shadow-md"
+            >
+              Далее
+            </button>
+          ) : (
+            <button
+              onClick={handleAccept}
+              disabled={loading}
+              className="px-8 py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-xl transition-all shadow-md hover:shadow-lg disabled:opacity-50 flex items-center gap-2"
+            >
+              {loading ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : 'Всё готово!'}
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
