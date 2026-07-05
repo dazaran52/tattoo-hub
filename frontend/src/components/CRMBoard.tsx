@@ -167,7 +167,11 @@ export function CRMBoard() {
   }
 
   const handleDragStart = (e: React.DragEvent, sessionId: string) => {
-    e.dataTransfer.setData('sessionId', sessionId)
+    if (selectedKanbanIds.has(sessionId)) {
+      e.dataTransfer.setData('sessionIds', JSON.stringify(Array.from(selectedKanbanIds)))
+    } else {
+      e.dataTransfer.setData('sessionIds', JSON.stringify([sessionId]))
+    }
   }
 
   const handleDragOver = (e: React.DragEvent, direction: 'left' | 'right' | 'none') => {
@@ -180,16 +184,27 @@ export function CRMBoard() {
 
   const handleDrop = (e: React.DragEvent, colId: string) => {
     e.preventDefault()
-    const sessionId = e.dataTransfer.getData('sessionId')
-    const item = sessions.find(i => i.id === sessionId)
-    // Avoid double trigger if it's already in the same column
-    if (item && item.status !== colId) {
-      if (item.status === 'new' && colId !== 'cancelled') {
-        setSessionToAccept(item)
-      } else {
-        updateSessionStatus(sessionId, colId)
-      }
+    const rawIds = e.dataTransfer.getData('sessionIds')
+    if (!rawIds) return
+    let sessionIds: string[] = []
+    try {
+      sessionIds = JSON.parse(rawIds)
+    } catch {
+      sessionIds = [rawIds]
     }
+
+    sessionIds.forEach(sessionId => {
+      const item = sessions.find(i => i.id === sessionId)
+      if (item && item.status !== colId) {
+        if (item.status === 'new' && colId !== 'cancelled') {
+          // If moving multiple new leads, we can only safely accept one via modal right now
+          if (sessionIds.length === 1) setSessionToAccept(item)
+        } else {
+          updateSessionStatus(sessionId, colId)
+        }
+      }
+    })
+    setSelectedKanbanIds(new Set())
   }
 
   const saveColumns = async (newCols: KanbanColumn[]) => {
@@ -440,22 +455,43 @@ export function CRMBoard() {
                             key={item.id}
                             draggable
                             onDragStart={(e) => handleDragStart(e as any, item.id)}
-                            onClick={() => !isNewLead && setSessionToEdit(item)}
-                            className={`p-4 rounded-2xl border-y border-r border-l-4 ${styles.leftBorder} ${isNewLead ? 'bg-emerald-50/70 dark:bg-emerald-900/20' : 'bg-white dark:bg-neutral-800'} ${isNewLead ? 'border-y-emerald-400/50 border-r-emerald-400/50' : 'border-y-neutral-200 border-r-neutral-200 dark:border-y-white/5 dark:border-r-white/5'} ${isSelected ? `ring-2 ring-neutral-900 dark:ring-white shadow-xl scale-[1.02] z-20` : isNewLead ? 'ring-1 ring-emerald-500/30 hover:scale-[1.01] shadow-sm' : 'hover:scale-[1.01] shadow-sm'} ${!isNewLead ? 'cursor-pointer hover:shadow-md transition-all duration-300' : 'transition-all duration-300'} relative group`}
+                            onClick={(e) => {
+                              const target = e.target as HTMLElement
+                              if (target.closest('button') || target.closest('.no-select-click')) return
+                              const newSet = new Set(selectedKanbanIds)
+                              if (newSet.has(item.id)) newSet.delete(item.id)
+                              else newSet.add(item.id)
+                              setSelectedKanbanIds(newSet)
+                            }}
+                            className={`p-4 rounded-2xl border-y border-r border-l-4 ${styles.leftBorder} ${isNewLead ? 'bg-emerald-50/70 dark:bg-emerald-900/20' : 'bg-white dark:bg-neutral-800'} ${isNewLead ? 'border-y-emerald-400/50 border-r-emerald-400/50' : 'border-y-neutral-200 border-r-neutral-200 dark:border-y-white/5 dark:border-r-white/5'} ${isSelected ? `!bg-neutral-100 dark:!bg-neutral-700 shadow-inner scale-[1.01] z-10` : isNewLead ? 'hover:scale-[1.01] shadow-sm' : 'hover:scale-[1.01] shadow-sm'} ${!isNewLead ? 'cursor-pointer transition-all duration-300' : 'transition-all duration-300'} relative group`}
                           >
-                            <div
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                const newSet = new Set(selectedKanbanIds)
-                                if (newSet.has(item.id)) newSet.delete(item.id)
-                                else newSet.add(item.id)
-                                setSelectedKanbanIds(newSet)
-                              }}
-                              className={`absolute top-3 right-3 w-5 h-5 rounded flex items-center justify-center cursor-pointer transition-colors z-10 ${isSelected ? `${styles.checkboxBg} text-white shadow-sm` : `border-2 border-neutral-300 dark:border-neutral-600 ${styles.checkboxHover} bg-white/50 dark:bg-neutral-800/50`}`}
-                            >
-                              {isSelected && <Icons.Check className="w-3.5 h-3.5 stroke-[3]" />}
+                            <div className="absolute top-3 right-3 flex items-center gap-2 z-10 no-select-click">
+                              {!isNewLead && (
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    setSessionToEdit(item)
+                                  }}
+                                  className="w-6 h-6 flex items-center justify-center rounded text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-200 dark:hover:bg-neutral-600 transition-colors"
+                                  title="Редактировать"
+                                >
+                                  <Icons.Edit2 className="w-3.5 h-3.5" />
+                                </button>
+                              )}
+                              <div
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  const newSet = new Set(selectedKanbanIds)
+                                  if (newSet.has(item.id)) newSet.delete(item.id)
+                                  else newSet.add(item.id)
+                                  setSelectedKanbanIds(newSet)
+                                }}
+                                className={`w-5 h-5 rounded flex items-center justify-center cursor-pointer transition-colors ${isSelected ? `${styles.checkboxBg} text-white shadow-sm` : `border-2 border-neutral-300 dark:border-neutral-600 ${styles.checkboxHover} bg-white/50 dark:bg-neutral-800/50`}`}
+                              >
+                                {isSelected && <Icons.Check className="w-3.5 h-3.5 stroke-[3]" />}
+                              </div>
                             </div>
-                            <div className="flex gap-3 mb-3 pr-6">
+                            <div className="flex gap-3 mb-3 pr-14">
                               {item.reference_images && item.reference_images.length > 0 ? (
                                 <img src={item.reference_images[0]} alt="" className="w-12 h-12 rounded-xl object-cover" />
                               ) : item.master_clients?.leads?.image_urls && item.master_clients.leads.image_urls.length > 0 ? (

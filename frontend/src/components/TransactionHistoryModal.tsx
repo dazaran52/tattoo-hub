@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { X, Loader2, ArrowDownToLine, Gem, Calendar } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { getTranslation, Language } from '@/lib/i18n'
+import { createPortal } from 'react-dom'
 import { WithdrawalModal } from './WithdrawalModal'
 
 interface Transaction {
@@ -89,7 +90,7 @@ export function TransactionHistoryModal({ isOpen, onClose, withdrawableBalance =
 
   if (!isOpen) return null
 
-  return (
+  const content = (
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in-up" onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
       <div className="bg-white dark:bg-neutral-900 rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl relative border border-neutral-200 dark:border-neutral-800 flex flex-col max-h-[80vh]">
         <button 
@@ -205,4 +206,7 @@ export function TransactionHistoryModal({ isOpen, onClose, withdrawableBalance =
       />
     </div>
   )
+
+  if (typeof document === 'undefined') return null
+  return createPortal(content, document.body)
 }
