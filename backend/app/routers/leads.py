@@ -446,6 +446,7 @@ def create_master_lead(
 
 class ClientLeadCreate(BaseModel):
     description: str
+    email: str
     style: str | None = None
     location: str | None = None
     body_place: str | None = None
@@ -458,7 +459,6 @@ class ClientLeadCreate(BaseModel):
     country_id: str | None = None
     name: str | None = None
     contact: str | None = None
-    email: str
     instagram: str | None = None
     is_negotiable_budget: bool = False
     image_urls: list[str] | None = None
