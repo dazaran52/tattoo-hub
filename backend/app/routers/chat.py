@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Header, BackgroundTasks
 from pydantic import BaseModel
-from app.middleware.auth import get_current_user, AuthUser
+from app.middleware.auth import get_current_user, AuthUser, get_optional_user
 from app.database import get_supabase_client
 from supabase import Client
 import re
