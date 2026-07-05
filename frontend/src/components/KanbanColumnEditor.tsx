@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Plus, Trash2, GripVertical, Check, X } from 'lucide-react'
+import { Plus, Trash2, Check, ChevronUp, ChevronDown } from 'lucide-react'
 import { KanbanColumn } from './CRMBoard'
 import * as Icons from 'lucide-react'
 
@@ -10,16 +10,16 @@ interface Props {
 }
 
 const AVAILABLE_COLORS = [
-  { value: 'emerald', label: 'Изумрудный' },
-  { value: 'violet', label: 'Фиолетовый' },
-  { value: 'blue', label: 'Синий' },
-  { value: 'yellow', label: 'Желтый' },
-  { value: 'green', label: 'Зеленый' },
-  { value: 'red', label: 'Красный' },
-  { value: 'pink', label: 'Розовый' },
-  { value: 'orange', label: 'Оранжевый' },
-  { value: 'cyan', label: 'Бирюзовый' },
-  { value: 'slate', label: 'Серый' }
+  { value: 'emerald', hex: '#10b981', label: 'Изумрудный' },
+  { value: 'violet', hex: '#8b5cf6', label: 'Фиолетовый' },
+  { value: 'blue', hex: '#3b82f6', label: 'Синий' },
+  { value: 'yellow', hex: '#eab308', label: 'Желтый' },
+  { value: 'green', hex: '#22c55e', label: 'Зеленый' },
+  { value: 'red', hex: '#ef4444', label: 'Красный' },
+  { value: 'pink', hex: '#ec4899', label: 'Розовый' },
+  { value: 'orange', hex: '#f97316', label: 'Оранжевый' },
+  { value: 'cyan', hex: '#06b6d4', label: 'Бирюзовый' },
+  { value: 'slate', hex: '#64748b', label: 'Серый' }
 ]
 
 const AVAILABLE_ICONS = [
@@ -78,83 +78,103 @@ export function KanbanColumnEditor({ columns, onSave, onCancel }: Props) {
   }
 
   return (
-    <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 shadow-sm">
-      <div className="flex justify-between items-center mb-6">
-        <h3 className="text-xl font-bold text-neutral-900 dark:text-white">Настройка колонок</h3>
-        <div className="flex gap-2">
-          <button onClick={onCancel} className="px-4 py-2 text-sm font-bold text-neutral-500 hover:text-neutral-700 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded-xl transition-colors">
+    <div className="bg-white dark:bg-[#0a0a0a] border border-neutral-200 dark:border-white/10 rounded-3xl p-4 sm:p-8 shadow-xl max-w-4xl mx-auto">
+      <div className="flex justify-between items-center mb-8 pb-6 border-b border-neutral-100 dark:border-white/5">
+        <h3 className="text-2xl font-black text-neutral-900 dark:text-white tracking-tight">Настройка колонок</h3>
+        <div className="flex gap-3">
+          <button onClick={onCancel} className="px-5 py-2.5 text-sm font-bold text-neutral-500 hover:text-neutral-700 bg-neutral-100 dark:bg-white/5 hover:bg-neutral-200 dark:hover:bg-white/10 rounded-xl transition-colors">
             Отмена
           </button>
-          <button onClick={() => onSave(cols)} className="px-4 py-2 text-sm font-bold text-white bg-violet-600 hover:bg-violet-700 rounded-xl transition-colors flex items-center gap-2 shadow-md hover:shadow-lg">
+          <button onClick={() => onSave(cols)} className="px-5 py-2.5 text-sm font-bold text-white bg-violet-600 hover:bg-violet-700 rounded-xl transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5 flex items-center gap-2">
             <Check className="w-4 h-4" />
             Сохранить
           </button>
         </div>
       </div>
 
-      <div className="space-y-3 mb-6">
+      <div className="space-y-6 mb-8">
         {cols.map((c, index) => {
-          const Icon = (Icons as any)[c.iconName] || Icons.Star
+          const SelectedIcon = (Icons as any)[c.iconName] || Icons.Star
           const isSystem = c.id === 'new' || c.id === 'cancelled'
+          
           return (
-            <div key={c.id} className="flex items-center gap-3 bg-neutral-50 dark:bg-neutral-800/50 p-3 rounded-xl border border-neutral-200 dark:border-neutral-700/50">
-              <div className="flex flex-col gap-1">
-                <button onClick={() => moveUp(index)} disabled={index === 0} className="text-neutral-400 hover:text-neutral-600 disabled:opacity-30">
-                  <GripVertical className="w-4 h-4" />
+            <div key={c.id} className="relative group bg-neutral-50/50 dark:bg-white/[0.02] border border-neutral-200/50 dark:border-white/5 rounded-2xl p-6 transition-all hover:border-violet-500/30 hover:shadow-md">
+              <div className="absolute right-4 top-1/2 -translate-y-1/2 flex flex-col gap-1 z-10">
+                <button onClick={() => moveUp(index)} disabled={index === 0} className="p-1.5 rounded-lg text-neutral-400 hover:text-neutral-900 hover:bg-white dark:hover:bg-neutral-800 dark:hover:text-white shadow-sm opacity-50 hover:opacity-100 disabled:opacity-20 disabled:hover:bg-transparent transition-all">
+                  <ChevronUp className="w-5 h-5" />
                 </button>
-                <button onClick={() => moveDown(index)} disabled={index === cols.length - 1} className="text-neutral-400 hover:text-neutral-600 disabled:opacity-30">
-                  <GripVertical className="w-4 h-4" />
+                <button onClick={() => moveDown(index)} disabled={index === cols.length - 1} className="p-1.5 rounded-lg text-neutral-400 hover:text-neutral-900 hover:bg-white dark:hover:bg-neutral-800 dark:hover:text-white shadow-sm opacity-50 hover:opacity-100 disabled:opacity-20 disabled:hover:bg-transparent transition-all">
+                  <ChevronDown className="w-5 h-5" />
                 </button>
-              </div>
-              
-              <div className={`p-2 rounded-lg bg-${c.color}-100 dark:bg-${c.color}-900/30 text-${c.color}-700 dark:text-${c.color}-400`}>
-                <Icon className="w-5 h-5" />
-              </div>
-              
-              <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-3">
-                <input
-                  type="text"
-                  value={c.title}
-                  onChange={(e) => updateCol(c.id, { title: e.target.value })}
-                  className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-violet-500"
-                  placeholder="Название колонки"
-                />
-                
-                <div className="relative">
-                  <select
-                    value={c.iconName}
-                    onChange={(e) => updateCol(c.id, { iconName: e.target.value })}
-                    className="w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-lg px-3 py-2 text-sm outline-none appearance-none cursor-pointer hover:border-neutral-300 dark:hover:border-neutral-600 transition-colors"
-                  >
-                    {AVAILABLE_ICONS.map(i => <option key={i.value} value={i.value}>{i.label}</option>)}
-                  </select>
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-neutral-400">
-                    <Icons.ChevronDown className="w-4 h-4" />
-                  </div>
-                </div>
-
-                <div className="relative">
-                  <select
-                    value={c.color}
-                    onChange={(e) => updateCol(c.id, { color: e.target.value })}
-                    className="w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-lg px-3 py-2 text-sm outline-none appearance-none cursor-pointer hover:border-neutral-300 dark:hover:border-neutral-600 transition-colors"
-                  >
-                    {AVAILABLE_COLORS.map(color => <option key={color.value} value={color.value}>{color.label}</option>)}
-                  </select>
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-neutral-400">
-                    <Icons.ChevronDown className="w-4 h-4" />
-                  </div>
-                </div>
               </div>
 
-              {!isSystem && (
-                <button
-                  onClick={() => handleRemove(c.id)}
-                  className="p-2 text-neutral-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-                >
-                  <Trash2 className="w-5 h-5" />
-                </button>
-              )}
+              <div className="pr-14 flex flex-col gap-6">
+                <div className="flex items-center gap-4">
+                  <div className={`p-3 rounded-xl bg-${c.color}-100 dark:bg-${c.color}-500/20 text-${c.color}-600 dark:text-${c.color}-400 shadow-inner`}>
+                    <SelectedIcon className="w-6 h-6" />
+                  </div>
+                  <input
+                    type="text"
+                    value={c.title}
+                    onChange={(e) => updateCol(c.id, { title: e.target.value })}
+                    className="flex-1 bg-white dark:bg-[#111] border border-neutral-200 dark:border-white/10 rounded-xl px-4 py-3 text-base font-bold outline-none focus:ring-2 focus:ring-violet-500 transition-all placeholder:font-normal"
+                    placeholder="Название колонки"
+                  />
+                  {!isSystem && (
+                    <button
+                      onClick={() => handleRemove(c.id)}
+                      title="Удалить колонку"
+                      className="p-3 text-neutral-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-xl transition-colors ml-2"
+                    >
+                      <Trash2 className="w-5 h-5" />
+                    </button>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                  <div>
+                    <span className="text-xs font-bold uppercase tracking-wider text-neutral-500 mb-3 block">Иконка</span>
+                    <div className="flex flex-wrap gap-2">
+                      {AVAILABLE_ICONS.map(i => {
+                        const IconComponent = (Icons as any)[i.value]
+                        const isSelected = c.iconName === i.value
+                        return (
+                          <button
+                            key={i.value}
+                            onClick={() => updateCol(c.id, { iconName: i.value })}
+                            title={i.label}
+                            className={`p-2 rounded-lg transition-all ${isSelected ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 shadow-md scale-110' : 'bg-white dark:bg-neutral-800 text-neutral-500 hover:text-neutral-900 dark:hover:text-white border border-neutral-200 dark:border-neutral-700 hover:border-neutral-400 dark:hover:border-neutral-500'}`}
+                          >
+                            <IconComponent className="w-5 h-5" />
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
+
+                  <div>
+                    <span className="text-xs font-bold uppercase tracking-wider text-neutral-500 mb-3 block">Цвет</span>
+                    <div className="flex flex-wrap gap-2">
+                      {AVAILABLE_COLORS.map(color => {
+                        const isSelected = c.color === color.value
+                        return (
+                          <button
+                            key={color.value}
+                            onClick={() => updateCol(c.id, { color: color.value })}
+                            title={color.label}
+                            style={{ backgroundColor: color.hex }}
+                            className={`w-9 h-9 rounded-full transition-all relative ${isSelected ? 'ring-2 ring-offset-2 ring-offset-neutral-50 dark:ring-offset-neutral-900 ring-violet-500 scale-110' : 'opacity-80 hover:opacity-100 hover:scale-110'}`}
+                          >
+                            {isSelected && (
+                              <Check className="absolute inset-0 m-auto w-4 h-4 text-white drop-shadow-md" />
+                            )}
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           )
         })}
@@ -162,7 +182,7 @@ export function KanbanColumnEditor({ columns, onSave, onCancel }: Props) {
 
       <button
         onClick={handleAdd}
-        className="w-full py-3 border-2 border-dashed border-neutral-300 dark:border-neutral-700 hover:border-violet-500 hover:text-violet-500 dark:hover:border-violet-500 dark:hover:text-violet-400 text-neutral-500 rounded-xl font-bold flex items-center justify-center gap-2 transition-colors"
+        className="w-full py-4 border-2 border-dashed border-neutral-300 dark:border-white/10 hover:border-violet-500 hover:bg-violet-50 dark:hover:bg-violet-500/10 text-neutral-500 dark:text-neutral-400 dark:hover:text-violet-300 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all hover:shadow-sm"
       >
         <Plus className="w-5 h-5" />
         Добавить колонку

@@ -86,7 +86,7 @@ export function Header({ profile, onLogout, maxWidthClass = 'max-w-7xl' }: Heade
   }
   
   return (
-    <header className="bg-white/80 dark:bg-neutral-900/80 backdrop-blur-xl border-b border-neutral-200/50 dark:border-neutral-800/50 sticky top-0 z-50 transition-colors duration-200">
+    <header className="bg-white/60 dark:bg-[#050505]/60 backdrop-blur-2xl border-b border-neutral-200/50 dark:border-white/5 sticky top-0 z-50 transition-colors duration-200">
       <div className={`${maxWidthClass} mx-auto px-4 sm:px-6 lg:px-8 transition-all duration-300`}>
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
