@@ -362,7 +362,7 @@ export function CRMBoard() {
           onCancel={() => setIsEditingColumns(false)} 
         />
       ) : (
-        <div className="relative">
+        <div className="relative w-[100vw] left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] px-4 sm:px-6 lg:px-8">
           {/* Scroll zones for dragging */}
           <div 
             className="absolute left-0 top-0 w-16 h-full z-10" 
@@ -434,13 +434,14 @@ export function CRMBoard() {
                       ) : (
                         colItems.map(item => {
                           const isNewLead = item.status === 'new'
+                          const isSelected = selectedKanbanIds.has(item.id)
                           return (
                           <motion.div
                             key={item.id}
                             draggable
                             onDragStart={(e) => handleDragStart(e as any, item.id)}
                             onClick={() => !isNewLead && setSessionToEdit(item)}
-                            className={`p-4 rounded-2xl shadow-sm border-y border-r border-l-4 ${styles.leftBorder} ${selectedKanbanIds.has(item.id) ? 'ring-2 ring-violet-500 bg-white dark:bg-neutral-800' : isNewLead ? 'border-y-emerald-400/50 border-r-emerald-400/50 bg-emerald-50/70 dark:bg-emerald-900/20 ring-1 ring-emerald-500/30' : 'bg-white dark:bg-neutral-800 border-y-neutral-200 border-r-neutral-200 dark:border-y-white/5 dark:border-r-white/5'} ${!isNewLead ? 'cursor-pointer hover:shadow-md transition-shadow' : ''} relative overflow-hidden`}
+                            className={`p-4 rounded-2xl shadow-sm border-y border-r border-l-4 ${styles.leftBorder} ${isSelected ? 'ring-2 ring-violet-500 bg-violet-50 dark:bg-violet-900/20 border-y-neutral-200 border-r-neutral-200 dark:border-y-white/5 dark:border-r-white/5' : isNewLead ? 'border-y-emerald-400/50 border-r-emerald-400/50 bg-emerald-50/70 dark:bg-emerald-900/20 ring-1 ring-emerald-500/30' : 'bg-white dark:bg-neutral-800 border-y-neutral-200 border-r-neutral-200 dark:border-y-white/5 dark:border-r-white/5'} ${!isNewLead ? 'cursor-pointer hover:shadow-md transition-shadow' : ''} relative overflow-hidden`}
                           >
                             <input 
                               type="checkbox"
