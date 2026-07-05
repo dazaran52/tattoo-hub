@@ -36,7 +36,7 @@ def apply_anti_bypass_filter(content: str) -> str:
 async def get_messages(
     chat_id: str,
     client_token: Optional[str] = Header(None),
-    current_user: Optional[AuthUser] = Depends(lambda: None), # allow optional for client
+    current_user: Optional[AuthUser] = Depends(get_optional_user),
     supabase: Client = Depends(get_supabase_client)
 ):
     """
@@ -54,11 +54,7 @@ async def get_messages(
         pass # Client authorized
     else:
         # Check master auth
-        try:
-            user = await get_current_user()
-            if chat["master_id"] != user.user_id:
-                raise HTTPException(status_code=403, detail="Forbidden")
-        except Exception:
+        if not current_user or chat["master_id"] != current_user.user_id:
             raise HTTPException(status_code=403, detail="Forbidden")
 
     msgs_res = supabase.table("chat_messages").select("*").eq("chat_id", chat_id).order("created_at", desc=False).execute()
@@ -103,6 +99,7 @@ async def send_message(
     chat_id: str,
     message: MessageCreate,
     client_token: Optional[str] = Header(None),
+    current_user: Optional[AuthUser] = Depends(get_optional_user),
     supabase: Client = Depends(get_supabase_client)
 ):
     chat_res = supabase.table("lead_chats").select("*").eq("id", chat_id).execute()
@@ -118,13 +115,9 @@ async def send_message(
     if client_token and chat["client_session_id"] == client_token:
         sender_type = "client"
     else:
-        try:
-            user = await get_current_user()
-            if chat["master_id"] == user.user_id:
-                sender_type = "master"
-            else:
-                raise HTTPException(status_code=403, detail="Forbidden")
-        except Exception:
+        if current_user and chat["master_id"] == current_user.user_id:
+            sender_type = "master"
+        else:
             raise HTTPException(status_code=403, detail="Forbidden")
 
     # Check if proposal is accepted
