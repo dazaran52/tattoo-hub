@@ -20,19 +20,13 @@ interface InstagramImportModalProps {
   initialCode?: string | null
 }
 
-export function InstagramImportModal({ isOpen, onClose, onImported, initialCode }: InstagramImportModalProps) {
-  const [url, setUrl] = useState('')
+export function InstagramImportModal({ isOpen, onClose, onImported }: InstagramImportModalProps) {
+  const [username, setUsername] = useState('')
   const [isImporting, setIsImporting] = useState(false)
-  const [isExchanging, setIsExchanging] = useState(false)
+  const [isFetching, setIsFetching] = useState(false)
   const [mediaList, setMediaList] = useState<InstagramMedia[]>([])
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const { lang: language } = useLanguage()
-
-  useEffect(() => {
-    if (isOpen && initialCode && mediaList.length === 0) {
-      exchangeToken(initialCode)
-    }
-  }, [isOpen, initialCode])
 
   const getApiUrl = () => process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
   
@@ -41,43 +35,34 @@ export function InstagramImportModal({ isOpen, onClose, onImported, initialCode 
     return `Bearer ${data.session?.access_token}`
   }
 
-  const connectInstagram = async () => {
-    try {
-      const res = await fetch(`${getApiUrl()}/api/instagram/auth-url`)
-      const data = await res.json()
-      if (data.url) {
-        window.location.href = data.url
-      } else {
-        toast.error('Instagram integration not fully configured yet.')
-      }
-    } catch (err) {
-      toast.error('Failed to get auth URL')
+  const fetchPosts = async () => {
+    if (!username.trim()) {
+      toast.error(language === 'ru' ? 'Введите никнейм' : 'Enter username')
+      return
     }
-  }
-
-  const exchangeToken = async (code: string) => {
-    setIsExchanging(true)
+    
+    setIsFetching(true)
     try {
-      const res = await fetch(`${getApiUrl()}/api/instagram/exchange-token`, {
+      const res = await fetch(`${getApiUrl()}/api/instagram/fetch-user-posts`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': await getAuthHeader()
         },
-        body: JSON.stringify({ code })
+        body: JSON.stringify({ username: username.trim() })
       })
 
-      if (!res.ok) throw new Error('Failed to exchange token')
+      if (!res.ok) throw new Error('Failed to fetch posts')
       
       const data = await res.json()
       // Filter out videos, we only want IMAGE or CAROUSEL_ALBUM
       const images = data.media.filter((m: any) => m.media_type === 'IMAGE' || m.media_type === 'CAROUSEL_ALBUM')
       setMediaList(images)
     } catch (err) {
-      toast.error(language === 'ru' ? 'Ошибка авторизации' : 'Auth error')
+      toast.error(language === 'ru' ? 'Ошибка загрузки постов' : 'Error fetching posts')
       console.error(err)
     } finally {
-      setIsExchanging(false)
+      setIsFetching(false)
     }
   }
 
@@ -169,7 +154,7 @@ export function InstagramImportModal({ isOpen, onClose, onImported, initialCode 
           </div>
           
           <div className="p-6 flex-1 overflow-y-auto">
-            {isExchanging ? (
+            {isFetching ? (
               <div className="flex flex-col items-center justify-center py-12 space-y-4">
                 <div className="w-10 h-10 border-4 border-pink-500/30 border-t-pink-500 rounded-full animate-spin" />
                 <p className="text-neutral-500 font-medium">Загружаем ваши публикации...</p>
@@ -206,15 +191,31 @@ export function InstagramImportModal({ isOpen, onClose, onImported, initialCode 
                   <div className="w-16 h-16 bg-pink-100 dark:bg-pink-900/30 text-pink-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
                     <Instagram className="w-8 h-8" />
                   </div>
-                  <h3 className="text-lg font-bold mb-2">Автоматический импорт</h3>
+                  <h3 className="text-lg font-bold mb-2">Импорт по никнейму</h3>
                   <p className="text-neutral-500 text-sm max-w-md mx-auto mb-6">
-                    Подключите свой профиль Instagram, чтобы выбирать фотографии прямо из ваших публикаций.
+                    Введите ваш открытый никнейм в Instagram, чтобы мы могли подгрузить ваши последние работы.
                   </p>
+                  
+                  <div className="flex max-w-sm mx-auto">
+                    <div className="flex-1 flex items-center bg-neutral-100 dark:bg-neutral-800 rounded-xl overflow-hidden border border-neutral-200 dark:border-white/10 focus-within:border-pink-500 dark:focus-within:border-pink-500 transition-colors">
+                      <span className="pl-4 text-neutral-400 font-bold">@</span>
+                      <input 
+                        type="text" 
+                        placeholder="username"
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && fetchPosts()}
+                        className="w-full bg-transparent border-none py-3 px-2 text-neutral-900 dark:text-white focus:ring-0 outline-none placeholder:text-neutral-400"
+                      />
+                    </div>
+                  </div>
+                  
                   <button
-                    onClick={connectInstagram}
-                    className="px-6 py-3 bg-gradient-to-r from-pink-500 to-violet-500 hover:from-pink-600 hover:to-violet-600 text-white rounded-xl font-bold shadow-lg shadow-pink-500/25 transition-all"
+                    onClick={fetchPosts}
+                    disabled={!username.trim() || isFetching}
+                    className="mt-4 px-6 py-3 bg-gradient-to-r from-pink-500 to-violet-500 hover:from-pink-600 hover:to-violet-600 text-white rounded-xl font-bold shadow-lg shadow-pink-500/25 transition-all disabled:opacity-50"
                   >
-                    Подключить Instagram
+                    Загрузить посты
                   </button>
                 </div>
               </div>

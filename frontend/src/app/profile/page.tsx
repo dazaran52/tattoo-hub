@@ -20,8 +20,6 @@ import { QrCode } from 'lucide-react'
 export default function ProfilePage() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const igCodeRaw = searchParams.get('code')
-  const igCode = igCodeRaw ? igCodeRaw.replace('#_', '') : null
   const { t, lang: language } = useLanguage()
   const [profile, setProfile] = useState<Profile | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -53,13 +51,7 @@ export default function ProfilePage() {
   useEffect(() => {
     fetchProfile()
     fetchCountries()
-    
-    if (igCode) {
-      setIsIgModalOpen(true)
-      // Clean up URL without reloading
-      window.history.replaceState({}, document.title, window.location.pathname)
-    }
-  }, [igCode])
+  }, [])
 
   useEffect(() => {
     if (selectedCountry) {
@@ -637,7 +629,6 @@ export default function ProfilePage() {
       <InstagramImportModal
         isOpen={isIgModalOpen}
         onClose={() => setIsIgModalOpen(false)}
-        initialCode={igCode}
         onImported={async (urls) => {
           const currentUrls = profile.portfolio_image_urls || []
           const updatedUrls = [...currentUrls, ...urls]

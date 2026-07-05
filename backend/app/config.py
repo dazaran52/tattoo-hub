@@ -46,6 +46,9 @@ class Settings(BaseSettings):
     INSTAGRAM_CLIENT_SECRET: str | None = None
     INSTAGRAM_REDIRECT_URI: str | None = None
     
+    # RapidAPI Scraper
+    RAPIDAPI_KEY: str | None = None
+    
     # Lead Reply SMTP (Second Studio Box - VK WorkSpace)
     LEAD_REPLY_SMTP_SERVER: str | None = "smtp.mail.ru"
     LEAD_REPLY_SMTP_PORT: int = 465

@@ -69,6 +69,76 @@ async def exchange_token_and_get_media(
             
         return {"media": media_res.json().get("data", [])}
 
+class FetchUserPostsRequest(BaseModel):
+    username: str
+
+@router.post("/fetch-user-posts")
+async def fetch_user_posts(
+    req: FetchUserPostsRequest,
+    current_user: AuthUser = Depends(get_current_user)
+):
+    """Fetches public posts for a given Instagram username using RapidAPI"""
+    settings = get_settings()
+    if not settings.RAPIDAPI_KEY:
+        raise HTTPException(status_code=500, detail="RapidAPI key not configured in settings")
+
+    async with httpx.AsyncClient() as client:
+        # Using instagram-scraper-api2 from RapidAPI
+        url = "https://instagram-scraper-api2.p.rapidapi.com/v1.2/posts"
+        querystring = {"username_or_id_or_url": req.username}
+        headers = {
+            "x-rapidapi-key": settings.RAPIDAPI_KEY,
+            "x-rapidapi-host": "instagram-scraper-api2.p.rapidapi.com"
+        }
+        
+        res = await client.get(url, headers=headers, params=querystring)
+        
+        if res.status_code != 200:
+            raise HTTPException(status_code=400, detail=f"Failed to fetch posts from RapidAPI: {res.text}")
+            
+        data = res.json()
+        items = data.get("data", {}).get("items", [])
+        
+        # Transform the response to match what the frontend expects
+        # Our frontend expects: id, media_type, media_url, thumbnail_url, permalink
+        media_list = []
+        for item in items:
+            media_type = "IMAGE"
+            # RapidAPI returns media_type: 1 (photo), 2 (video), 8 (carousel)
+            raw_type = item.get("media_type")
+            if raw_type == 8:
+                media_type = "CAROUSEL_ALBUM"
+            elif raw_type == 2:
+                media_type = "VIDEO"
+                
+            code = item.get("code")
+            permalink = f"https://www.instagram.com/p/{code}/" if code else ""
+            
+            # Find the best image resolution
+            image_versions = item.get("image_versions2", {}).get("candidates", [])
+            media_url = ""
+            if image_versions:
+                media_url = image_versions[0].get("url", "")
+                
+            # If carousel, get the first image
+            if not media_url and media_type == "CAROUSEL_ALBUM":
+                carousel_media = item.get("carousel_media", [])
+                if carousel_media:
+                    first_item_images = carousel_media[0].get("image_versions2", {}).get("candidates", [])
+                    if first_item_images:
+                        media_url = first_item_images[0].get("url", "")
+            
+            if media_url:
+                media_list.append({
+                    "id": item.get("id"),
+                    "media_type": media_type,
+                    "media_url": media_url,
+                    "thumbnail_url": media_url,
+                    "permalink": permalink,
+                    "caption": item.get("caption", {}).get("text", "") if item.get("caption") else ""
+                })
+                
+        return {"media": media_list}
 
 @router.post("/import-batch")
 async def import_batch_media(
