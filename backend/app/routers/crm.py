@@ -51,6 +51,8 @@ class SessionUpdate(BaseModel):
 
 class CompleteSessionData(BaseModel):
     result_image_urls: Optional[List[str]] = []
+    portfolio_media: Optional[List[dict]] = []
+    description: Optional[str] = ""
     publish_to_portfolio: bool = False
     end_time: Optional[str] = None
 
@@ -332,13 +334,16 @@ async def complete_session(
             raise HTTPException(status_code=404, detail="Session not found")
             
         # Add to portfolio if requested
-        if data.publish_to_portfolio and data.result_image_urls:
-            user_res = await supabase.table("users").select("portfolio_image_urls").eq("id", current_user.user_id).execute()
-            if user_res.data:
-                existing = user_res.data[0].get("portfolio_image_urls") or []
-                # append new urls
-                existing.extend(data.result_image_urls)
-                await supabase.table("users").update({"portfolio_image_urls": existing}).eq("id", current_user.user_id).execute()
+        if data.publish_to_portfolio and (data.portfolio_media or data.result_image_urls):
+            media = data.portfolio_media
+            if not media and data.result_image_urls:
+                media = [{"url": url, "type": "image"} for url in data.result_image_urls]
+            
+            await supabase.table("portfolio_posts").insert({
+                "master_id": current_user.user_id,
+                "media": media,
+                "description": data.description or ""
+            }).execute()
                 
         return res.data[0]
     except Exception as e:

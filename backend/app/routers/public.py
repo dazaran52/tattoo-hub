@@ -14,7 +14,7 @@ class PublicMasterResponse(BaseModel):
     portfolio_url: str | None = None
     city_ids: list[str] | None = None
     is_verified_master: bool = False
-    portfolio_image_urls: list[str] | None = None
+    portfolio_posts: list[dict] = []
     theme: str = "system"
     avatar_url: str | None = None
 
@@ -36,7 +36,9 @@ async def get_public_master(
         except ValueError:
             pass
 
-        query = supabase.table("users").select("id, username, display_name, bio, portfolio_url, city_ids, is_verified_master, status, role, portfolio_image_urls, theme, avatar_url")
+        query = supabase.table("users").select(
+            "id, username, display_name, bio, portfolio_url, city_ids, is_verified_master, status, role, theme, avatar_url, portfolio_posts(id, media, description, created_at)"
+        )
         
         if is_uuid:
             query = query.eq("id", username_or_id)
@@ -54,6 +56,10 @@ async def get_public_master(
         if data.get("role") != "master":
             raise HTTPException(status_code=404, detail="Мастер не найден")
 
+        # Sort posts by created_at desc
+        posts = data.get("portfolio_posts") or []
+        posts.sort(key=lambda x: x.get("created_at", ""), reverse=True)
+
         return PublicMasterResponse(
             id=data["id"],
             username=data.get("username"),
@@ -62,7 +68,7 @@ async def get_public_master(
             portfolio_url=data.get("portfolio_url"),
             city_ids=data.get("city_ids", []),
             is_verified_master=data.get("is_verified_master", False),
-            portfolio_image_urls=data.get("portfolio_image_urls", []),
+            portfolio_posts=posts,
             theme=data.get("theme", "system"),
             avatar_url=data.get("avatar_url")
         )

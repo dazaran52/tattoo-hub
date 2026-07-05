@@ -14,7 +14,6 @@ import {
 import { toast } from 'react-hot-toast'
 import { ImageViewerModal } from '@/components/ImageViewerModal'
 import { QRCodeModal } from '@/components/QRCodeModal'
-import { InstagramImportModal } from '@/components/InstagramImportModal'
 import { QrCode } from 'lucide-react'
 
 export default function ProfilePage() {
@@ -28,9 +27,7 @@ export default function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
-  const [viewerImage, setViewerImage] = useState<string | null>(null)
   const [isQRModalOpen, setIsQRModalOpen] = useState(false)
-  const [isIgModalOpen, setIsIgModalOpen] = useState(false)
 
   // Form State
   const [displayName, setDisplayName] = useState('')
@@ -46,7 +43,6 @@ export default function ProfilePage() {
   const [cities, setCities] = useState<any[]>([])
 
   const avatarInputRef = useRef<HTMLInputElement>(null)
-  const portfolioInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     fetchProfile()
@@ -174,61 +170,6 @@ export default function ProfilePage() {
     }
   }
 
-  const handlePortfolioUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    try {
-      if (!e.target.files || e.target.files.length === 0) return
-      setIsUploading(true)
-      
-      const compressionOptions = {
-        maxSizeMB: 1.5,
-        maxWidthOrHeight: 1920,
-        useWebWorker: true,
-      }
-      
-      const newUrls: string[] = []
-      
-      for (let i = 0; i < e.target.files.length; i++) {
-        const file = e.target.files[i]
-        const fileExt = file.name.split('.').pop()
-        const fileName = `${profile?.id}-${Math.random()}-${i}.${fileExt}`
-        const filePath = `portfolio/${fileName}`
-
-        const compressedFile = await imageCompression(file, compressionOptions)
-        const { error: uploadError } = await supabase.storage.from('portfolio').upload(filePath, compressedFile)
-        if (uploadError) throw uploadError
-
-        const { data } = supabase.storage.from('portfolio').getPublicUrl(filePath)
-        newUrls.push(data.publicUrl)
-      }
-      
-      const currentUrls = profile?.portfolio_image_urls || []
-      const updatedUrls = [...currentUrls, ...newUrls]
-      
-      const updated = await api.updateProfile({ portfolio_image_urls: updatedUrls })
-      setProfile(updated)
-      toast.success(language === 'ru' ? 'Портфолио обновлено' : 'Portfolio updated')
-    } catch (error: any) {
-      toast.error(language === 'ru' ? 'Ошибка загрузки фото' : 'Upload error')
-      console.error(error)
-    } finally {
-      setIsUploading(false)
-    }
-  }
-
-  const removePortfolioImage = async (urlToRemove: string) => {
-    if (!profile?.portfolio_image_urls) return
-    try {
-      setIsUploading(true)
-      const updatedUrls = profile.portfolio_image_urls.filter(url => url !== urlToRemove)
-      const updated = await api.updateProfile({ portfolio_image_urls: updatedUrls })
-      setProfile(updated)
-      toast.success(language === 'ru' ? 'Фото удалено' : 'Photo removed')
-    } catch (error: any) {
-      toast.error(language === 'ru' ? 'Ошибка' : 'Error')
-    } finally {
-      setIsUploading(false)
-    }
-  }
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
@@ -544,98 +485,11 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            {/* Portfolio Gallery */}
-            <div className="bg-white/60 dark:bg-neutral-900/60 backdrop-blur-xl border border-white/40 dark:border-white/5 rounded-3xl p-6 md:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.2)]">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xl font-bold flex items-center gap-2">
-                  <ImageIcon className="w-5 h-5 text-cyan-500" />
-                  Галерея работ
-                </h3>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => setIsIgModalOpen(true)}
-                    className="flex items-center gap-2 bg-pink-500/10 hover:bg-pink-500/20 text-pink-600 dark:text-pink-400 px-4 py-2 rounded-xl font-bold transition-colors text-sm"
-                  >
-                    <Instagram className="w-4 h-4" />
-                    Импорт инсты
-                  </button>
-                  <button
-                    onClick={() => portfolioInputRef.current?.click()}
-                    disabled={isUploading}
-                    className="flex items-center gap-2 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 px-4 py-2 rounded-xl font-bold transition-colors text-sm"
-                  >
-                    <Upload className="w-4 h-4" />
-                    Загрузить фото
-                  </button>
-                </div>
-                <input
-                  type="file"
-                  multiple
-                  accept="image/*"
-                  ref={portfolioInputRef}
-                  onChange={handlePortfolioUpload}
-                  className="hidden"
-                />
-              </div>
-
-              {profile.portfolio_image_urls && profile.portfolio_image_urls.length > 0 ? (
-                <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
-                  {profile.portfolio_image_urls.map((url, i) => (
-                    <div key={i} className="group relative aspect-square rounded-2xl overflow-hidden border border-neutral-200 dark:border-neutral-800">
-                      <img 
-                        src={url} 
-                        alt={`Portfolio ${i}`} 
-                        onClick={() => setViewerImage(url)}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 cursor-pointer" 
-                      />
-                      {isEditing ? (
-                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                          <button
-                            onClick={(e) => { e.stopPropagation(); removePortfolioImage(url); }}
-                            className="bg-red-500 hover:bg-red-600 text-white p-3 rounded-full shadow-lg transition-transform hover:scale-110"
-                          >
-                            <Trash2 className="w-5 h-5" />
-                          </button>
-                        </div>
-                      ) : (
-                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
-                          <div className="bg-white/20 backdrop-blur-sm text-white p-3 rounded-full shadow-lg">
-                            <ImageIcon className="w-5 h-5" />
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="bg-neutral-100/50 dark:bg-black/30 border-2 border-dashed border-neutral-300 dark:border-neutral-800 rounded-3xl p-12 text-center">
-                  <ImageIcon className="w-12 h-12 text-neutral-400 mx-auto mb-4" />
-                  <p className="text-neutral-500 dark:text-neutral-400 font-medium mb-2">У вас еще нет добавленных работ</p>
-                  <p className="text-sm text-neutral-400">Нажмите "Загрузить фото", чтобы пополнить портфолио.</p>
-                </div>
-              )}
-            </div>
 
           </div>
         </div>
       </main>
 
-      <ImageViewerModal
-        isOpen={!!viewerImage}
-        imageUrl={viewerImage}
-        onClose={() => setViewerImage(null)}
-        showActions={false}
-      />
-      <InstagramImportModal
-        isOpen={isIgModalOpen}
-        onClose={() => setIsIgModalOpen(false)}
-        onImported={async (urls) => {
-          const currentUrls = profile.portfolio_image_urls || []
-          const updatedUrls = [...currentUrls, ...urls]
-          const updated = await api.updateProfile({ portfolio_image_urls: updatedUrls })
-          setProfile(updated)
-        }}
-      />
     </div>
   )
 }

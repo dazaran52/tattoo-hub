@@ -2,13 +2,13 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Calendar as CalendarIcon, User, MapPin, FileText, CheckCircle, ArrowLeft, Send, Link as LinkIcon, Instagram, Upload, Loader2, X, Image as ImageIcon, ChevronRight, Phone } from 'lucide-react'
+import { Calendar as CalendarIcon, User, MapPin, FileText, CheckCircle, ArrowLeft, Send, Link as LinkIcon, Instagram, Upload, Loader2, X, Image as ImageIcon, ChevronRight, Phone, Video } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { DayPicker } from 'react-day-picker'
 import 'react-day-picker/dist/style.css'
 import { format, parseISO } from 'date-fns'
 import { cs, ru, enUS } from 'date-fns/locale'
-import { ImageViewerModal } from '@/components/ImageViewerModal'
+import { PostModal, PortfolioPost } from '@/components/PostModal'
 import { TATTOO_STYLES, BODY_PLACES, TATTOO_SIZES } from '@/lib/constants'
 
 const getThemeClasses = (theme: string) => {
@@ -76,7 +76,7 @@ export default function BookMasterPage({ params }: { params: { username: string 
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
   const [activeTab, setActiveTab] = useState<'booking' | 'portfolio'>('booking')
-  const [selectedPortfolioImage, setSelectedPortfolioImage] = useState<string | null>(null)
+  const [selectedPost, setSelectedPost] = useState<PortfolioPost | null>(null)
 
   // Form State
   const [name, setName] = useState('')
@@ -629,22 +629,32 @@ export default function BookMasterPage({ params }: { params: { username: string 
         ) : (
           <div className={`rounded-3xl p-8 transition-colors duration-500 ${tClasses.card}`}>
             <h2 className="text-2xl font-bold mb-6 text-center">Портфолио</h2>
-            {master.portfolio_image_urls && master.portfolio_image_urls.length > 0 ? (
+            {master.portfolio_posts && master.portfolio_posts.length > 0 ? (
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                {master.portfolio_image_urls.map((url: string, idx: number) => (
-                  <div 
-                    key={`port-${idx}`} 
-                    onClick={() => setSelectedPortfolioImage(url)}
-                    className="group relative aspect-square rounded-2xl overflow-hidden bg-neutral-100 dark:bg-neutral-800 shadow-md cursor-pointer"
-                  >
-                    <img src={url} alt={`Portfolio ${idx}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
-                      <div className="bg-white/20 backdrop-blur-sm text-white p-3 rounded-full shadow-lg">
-                        <ImageIcon className="w-5 h-5" />
+                {master.portfolio_posts.map((post: PortfolioPost) => {
+                  const firstMedia = post.media[0]
+                  const hasMultiple = post.media.length > 1
+                  const hasVideo = post.media.some(m => m.type === 'video')
+
+                  return (
+                    <div 
+                      key={post.id} 
+                      onClick={() => setSelectedPost(post)}
+                      className="group relative aspect-square rounded-2xl overflow-hidden bg-black shadow-md cursor-pointer"
+                    >
+                      {firstMedia?.type === 'video' ? (
+                        <video src={firstMedia.url} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
+                      ) : (
+                        <img src={firstMedia?.url} alt="Portfolio item" className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500" />
+                      )}
+                      
+                      <div className="absolute top-2 right-2 flex gap-1">
+                        {hasVideo && <div className="p-1.5 bg-black/50 backdrop-blur-md rounded-lg text-white"><Video className="w-4 h-4" /></div>}
+                        {hasMultiple && <div className="p-1.5 bg-black/50 backdrop-blur-md rounded-lg text-white"><ImageIcon className="w-4 h-4" /></div>}
                       </div>
                     </div>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             ) : (
               <div className="text-center py-12 text-neutral-500 dark:text-neutral-400">
@@ -656,11 +666,11 @@ export default function BookMasterPage({ params }: { params: { username: string 
         )}
       </div>
 
-      <ImageViewerModal
-        isOpen={!!selectedPortfolioImage}
-        imageUrl={selectedPortfolioImage}
-        onClose={() => setSelectedPortfolioImage(null)}
-        showActions={false}
+      <PostModal
+        isOpen={!!selectedPost}
+        post={selectedPost}
+        onClose={() => setSelectedPost(null)}
+        isEditable={false}
       />
     </div>
   )

@@ -14,11 +14,23 @@ interface CompleteSessionModalProps {
 export function CompleteSessionModal({ isOpen, onClose, sessionId, onSuccess }: CompleteSessionModalProps) {
   const [loading, setLoading] = useState(false)
   const [images, setImages] = useState<File[]>([])
+  const [description, setDescription] = useState('')
   const [publishToPortfolio, setPublishToPortfolio] = useState(true)
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
-      setImages(prev => [...prev, ...Array.from(e.target.files!)])
+      const filesArray = Array.from(e.target.files)
+      if (images.length + filesArray.length > 5) {
+        toast.error('Максимум 5 файлов')
+        return
+      }
+      // Check sizes
+      const oversized = filesArray.find(f => f.size > 50 * 1024 * 1024)
+      if (oversized) {
+        toast.error(`Файл ${oversized.name} превышает 50 МБ`)
+        return
+      }
+      setImages(prev => [...prev, ...filesArray])
     }
   }
 
@@ -32,14 +44,16 @@ export function CompleteSessionModal({ isOpen, onClose, sessionId, onSuccess }: 
       const { data: { session } } = await supabase.auth.getSession()
       const token = session?.access_token
 
-      // 1. Upload images
+      // 1. Upload media
+      const portfolioMedia: { url: string, type: string }[] = []
       const imageUrls: string[] = []
       for (const file of images) {
         const fileExt = file.name.split('.').pop()
+        const isVideo = file.type.startsWith('video/')
         const fileName = `${Math.random()}.${fileExt}`
         const filePath = `${session?.user.id}/${fileName}`
 
-        const { error: uploadError, data } = await supabase.storage
+        const { error: uploadError } = await supabase.storage
           .from('portfolio')
           .upload(filePath, file)
 
@@ -50,7 +64,13 @@ export function CompleteSessionModal({ isOpen, onClose, sessionId, onSuccess }: 
           .getPublicUrl(filePath)
 
         if (publicUrlData) {
-          imageUrls.push(publicUrlData.publicUrl)
+          portfolioMedia.push({
+            url: publicUrlData.publicUrl,
+            type: isVideo ? 'video' : 'image'
+          })
+          if (!isVideo) {
+             imageUrls.push(publicUrlData.publicUrl)
+          }
         }
       }
 
@@ -63,6 +83,8 @@ export function CompleteSessionModal({ isOpen, onClose, sessionId, onSuccess }: 
         },
         body: JSON.stringify({
           result_image_urls: imageUrls,
+          portfolio_media: portfolioMedia,
+          description: description,
           publish_to_portfolio: publishToPortfolio,
           end_time: new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })
         })
@@ -113,39 +135,63 @@ export function CompleteSessionModal({ isOpen, onClose, sessionId, onSuccess }: 
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-bold text-neutral-700 dark:text-neutral-300 mb-2">
-                  Фотографии результата
+                  Медиа результата (до 5 файлов)
                 </label>
-                <div className="border-2 border-dashed border-neutral-200 dark:border-neutral-800 rounded-xl p-4 text-center hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors">
-                  <input
-                    type="file"
-                    multiple
-                    accept="image/*"
-                    onChange={handleFileChange}
-                    className="hidden"
-                    id="portfolio-upload"
-                  />
-                  <label htmlFor="portfolio-upload" className="cursor-pointer flex flex-col items-center gap-2 text-neutral-500">
-                    <Upload className="w-8 h-8" />
-                    <span className="text-sm font-semibold">Нажмите для выбора файлов</span>
-                  </label>
-                </div>
+                {images.length < 5 && (
+                  <div className="border-2 border-dashed border-neutral-200 dark:border-neutral-800 rounded-xl p-4 text-center hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors">
+                    <input
+                      type="file"
+                      multiple
+                      accept="image/*,video/*"
+                      onChange={handleFileChange}
+                      className="hidden"
+                      id="portfolio-upload"
+                    />
+                    <label htmlFor="portfolio-upload" className="cursor-pointer flex flex-col items-center gap-2 text-neutral-500">
+                      <Upload className="w-8 h-8" />
+                      <span className="text-sm font-semibold">Нажмите для выбора файлов</span>
+                    </label>
+                  </div>
+                )}
                 
                 {images.length > 0 && (
                   <div className="mt-4 grid grid-cols-3 gap-2">
-                    {images.map((img, i) => (
-                      <div key={i} className="relative aspect-square rounded-lg overflow-hidden group">
-                        <img src={URL.createObjectURL(img)} alt="" className="w-full h-full object-cover" />
-                        <button 
-                          onClick={() => removeImage(i)}
-                          className="absolute top-1 right-1 bg-black/50 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
-                          <X className="w-3 h-3" />
-                        </button>
-                      </div>
-                    ))}
+                    {images.map((file, i) => {
+                      const isVid = file.type.startsWith('video/')
+                      const url = URL.createObjectURL(file)
+                      return (
+                        <div key={i} className="relative aspect-square rounded-lg overflow-hidden group">
+                          {isVid ? (
+                            <video src={url} className="w-full h-full object-cover" />
+                          ) : (
+                            <img src={url} alt="" className="w-full h-full object-cover" />
+                          )}
+                          <button 
+                            onClick={() => removeImage(i)}
+                            className="absolute top-1 right-1 bg-black/50 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </div>
+                      )
+                    })}
                   </div>
                 )}
               </div>
+
+              {publishToPortfolio && (
+                <div>
+                  <label className="block text-sm font-bold text-neutral-700 dark:text-neutral-300 mb-2">
+                    Описание для поста
+                  </label>
+                  <textarea
+                    value={description}
+                    onChange={e => setDescription(e.target.value)}
+                    placeholder="Например: Зажившая работа, 1 сеанс..."
+                    className="w-full h-24 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl p-3 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500 resize-none text-sm"
+                  />
+                </div>
+              )}
 
               <label className="flex items-center gap-3 p-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-xl cursor-pointer">
                 <input 

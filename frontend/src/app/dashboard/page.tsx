@@ -11,8 +11,9 @@ import { CRMBoard } from '@/components/CRMBoard'
 import { MessagesList } from '@/components/MessagesList'
 import { toast } from 'react-hot-toast'
 import { ClientDashboard } from '@/components/ClientDashboard'
+import { PortfolioTab } from '@/components/PortfolioTab'
 import { useLanguage } from '@/i18n/LanguageContext'
-import { MessageCircle, LayoutDashboard, Share2, Link as LinkIcon } from 'lucide-react'
+import { MessageCircle, LayoutDashboard, Share2, Link as LinkIcon, Image as ImageIcon } from 'lucide-react'
 
 export default function DashboardPage() {
   const router = useRouter()
@@ -20,7 +21,7 @@ export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true)
   const { t, lang: language } = useLanguage()
   const [currentSession, setCurrentSession] = useState<any>(null)
-  const [activeTab, setActiveTab] = useState<'feed' | 'my-leads' | 'auctions' | 'crm' | 'messages'>('crm')
+  const [activeTab, setActiveTab] = useState<'feed' | 'my-leads' | 'auctions' | 'crm' | 'messages' | 'portfolio'>('crm')
 
   useEffect(() => {
     fetchProfile()
@@ -254,6 +255,17 @@ export default function DashboardPage() {
                     {t('myCrm')}
                   </button>
                   <button
+                    onClick={() => setActiveTab('portfolio')}
+                    className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all whitespace-nowrap flex items-center gap-2 ${
+                      activeTab === 'portfolio'
+                        ? 'bg-violet-600 text-white shadow-md scale-[1.02]'
+                        : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200 hover:bg-white/50 dark:hover:bg-neutral-800/50'
+                    }`}
+                  >
+                    <ImageIcon className="w-4 h-4" />
+                    {language === 'ru' ? 'Портфолио' : 'Portfolio'}
+                  </button>
+                  <button
                     onClick={() => setActiveTab('messages')}
                     className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all whitespace-nowrap flex items-center gap-2 ${
                       activeTab === 'messages'
@@ -340,6 +352,7 @@ export default function DashboardPage() {
           ) : null}
 
           {activeTab === 'crm' && <CRMBoard />}
+          {activeTab === 'portfolio' && <PortfolioTab profile={profile} />}
           {activeTab === 'messages' && <MessagesList />}
         </>
         )}
