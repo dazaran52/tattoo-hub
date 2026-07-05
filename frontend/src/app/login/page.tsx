@@ -141,7 +141,23 @@ function LoginContent() {
             }
           }
         })
-        if (signUpError) throw signUpError
+        if (signUpError) {
+          if (signUpError.message?.toLowerCase().includes('already registered')) {
+            setAuthMode('magic_link')
+            const { error: magicLinkError } = await supabase.auth.signInWithOtp({ 
+              email,
+              options: {
+                shouldCreateUser: false,
+                emailRedirectTo: `${window.location.origin}/auth/callback?next=/dashboard`
+              }
+            })
+            if (magicLinkError) throw magicLinkError
+            setSuccessMsg(t('codeSent')) // Text can be repurposed for 'link sent'
+            setIsLoading(false)
+            return
+          }
+          throw signUpError
+        }
         if (data.session) {
           handleAuthSuccess(data.session)
         } else {
