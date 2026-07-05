@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { createPortal } from 'react-dom'
+import { motion, AnimatePresence, useMotionValue } from 'framer-motion'
 import { toast } from 'react-hot-toast'
 import { Clock, CheckCircle, Calendar, Flag, MessageCircle, UserPlus, LayoutGrid, CalendarDays, Search, Users, PlayCircle, Palette, Trash2, X, Pencil, Send, Phone, Settings2 } from 'lucide-react'
 import * as Icons from 'lucide-react'
@@ -75,6 +76,10 @@ export function CRMBoard() {
   const [mainTab, setMainTab] = useState<'sessions' | 'clients'>('sessions')
   const [sessionView, setSessionView] = useState<'kanban' | 'list' | 'calendar'>('kanban')
   const [draggingGroupId, setDraggingGroupId] = useState<string | null>(null)
+  
+  // Custom drag ghost position tracking
+  const dragGhostX = useMotionValue(0)
+  const dragGhostY = useMotionValue(0)
   const [cardView, setCardView] = useState<'normal' | 'expanded'>('normal')
   
   // Modals
@@ -172,31 +177,14 @@ export function CRMBoard() {
       setDraggingGroupId(sessionId)
       e.dataTransfer.setData('sessionIds', JSON.stringify(Array.from(selectedKanbanIds)))
       
-      // Custom visual for multiple dragging
-      const dragGhost = document.createElement('div')
-      dragGhost.style.width = '200px'
-      dragGhost.style.height = '60px'
-      dragGhost.style.position = 'absolute'
-      dragGhost.style.top = '-1000px'
-      dragGhost.style.left = '-1000px'
+      // Update our custom drag layer coordinates
+      dragGhostX.set(e.clientX)
+      dragGhostY.set(e.clientY)
       
-      const isDark = document.documentElement.classList.contains('dark')
-      const bg = isDark ? '#262626' : '#ffffff'
-      const border = isDark ? '#404040' : '#e5e5e5'
-      
-      dragGhost.innerHTML = `
-        <div style="position:absolute; width:100%; height:100%; background:${bg}; border-radius:12px; top:12px; left:12px; border:1px solid ${border}; z-index:0; box-shadow:0 10px 15px -3px rgba(0,0,0,0.1);"></div>
-        <div style="position:absolute; width:100%; height:100%; background:${bg}; border-radius:12px; top:6px; left:6px; border:1px solid ${border}; z-index:1; box-shadow:0 10px 15px -3px rgba(0,0,0,0.1);"></div>
-        <div style="position:relative; width:100%; height:100%; background:${bg}; border-radius:12px; border:2px solid #10b981; z-index:2; display:flex; align-items:center; justify-content:center; color:#10b981; font-weight:bold; font-size:14px; box-shadow:0 10px 15px -3px rgba(0,0,0,0.1); font-family:sans-serif;">
-          Заявок: ${selectedKanbanIds.size}
-        </div>
-      `
-      document.body.appendChild(dragGhost)
-      e.dataTransfer.setDragImage(dragGhost, 100, 30)
-      
-      setTimeout(() => {
-        if (document.body.contains(dragGhost)) document.body.removeChild(dragGhost)
-      }, 0)
+      // Hide the default browser drag image
+      const emptyImage = new Image()
+      emptyImage.src = 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs='
+      e.dataTransfer.setDragImage(emptyImage, 0, 0)
     } else {
       e.dataTransfer.setData('sessionIds', JSON.stringify([sessionId]))
     }
@@ -494,6 +482,14 @@ export function CRMBoard() {
                             key={item.id}
                             draggable
                             onDragStart={(e) => handleDragStart(e as any, item.id)}
+                            onDrag={(e: any) => {
+                              if (isDraggedGroupItem || item.id === draggingGroupId) {
+                                if (e.clientX !== 0 && e.clientY !== 0) {
+                                  dragGhostX.set(e.clientX)
+                                  dragGhostY.set(e.clientY)
+                                }
+                              }
+                            }}
                             onDragEnd={handleDragEnd}
                             onClick={(e) => {
                               const target = e.target as HTMLElement
@@ -669,6 +665,37 @@ export function CRMBoard() {
           }}
           existingClients={clientsForModal}
         />
+      )}
+
+      {/* Animated Custom Drag Ghost for Groups */}
+      {draggingGroupId && typeof document !== 'undefined' && createPortal(
+        <motion.div
+          initial={{ scale: 0.3, opacity: 0, rotate: -15 }}
+          animate={{ scale: 1, opacity: 1, rotate: 0 }}
+          transition={{ type: 'spring', stiffness: 500, damping: 25 }}
+          style={{
+            position: 'fixed',
+            left: 0,
+            top: 0,
+            x: dragGhostX,
+            y: dragGhostY,
+            translateX: '-50%',
+            translateY: '-50%',
+            pointerEvents: 'none',
+            zIndex: 9999999,
+            width: 200,
+            height: 60
+          }}
+        >
+          <div className="relative w-full h-full drop-shadow-2xl">
+            <div className="absolute w-full h-full bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 top-3 left-3 -z-20"></div>
+            <div className="absolute w-full h-full bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 top-1.5 left-1.5 -z-10"></div>
+            <div className="absolute w-full h-full bg-white dark:bg-neutral-800 rounded-xl border-2 border-emerald-500 z-10 flex items-center justify-center font-bold text-emerald-600 dark:text-emerald-400">
+              Заявок: {selectedKanbanIds.size}
+            </div>
+          </div>
+        </motion.div>,
+        document.body
       )}
 
       {sessionToEdit && (
