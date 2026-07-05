@@ -130,7 +130,7 @@ export default function BookMasterPage({ params }: { params: { username: string 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!name || !contact || !description) {
+    if (!name || !email || !description) {
       alert('Пожалуйста, заполните обязательные поля')
       return
     }
