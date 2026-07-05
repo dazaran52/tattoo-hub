@@ -567,7 +567,7 @@ export function CRMBoard() {
                                   onClick={(e) => { e.stopPropagation(); setSessionToAccept(item); }}
                                   className="flex-1 py-2 text-xs font-bold text-white bg-emerald-500 hover:bg-emerald-600 rounded-xl shadow-md transition-colors text-center"
                                 >
-                                  Принять в работу
+                                  Принять
                                 </button>
                               </div>
                             )}

@@ -184,7 +184,7 @@ export default function DashboardPage() {
         )}
       </div>
 
-      <Header profile={profile} onLogout={handleLogout} />
+      <Header profile={profile} onLogout={handleLogout} maxWidthClass={activeTab === 'crm' ? 'max-w-[1600px]' : 'max-w-7xl'} />
 
       <main className={`mx-auto px-4 sm:px-6 lg:px-8 py-8 relative ${activeTab === 'crm' ? 'max-w-[1600px]' : 'max-w-7xl'}`}>
         {profile.role === 'client' ? (

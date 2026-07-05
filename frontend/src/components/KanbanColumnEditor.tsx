@@ -9,8 +9,31 @@ interface Props {
   onCancel: () => void
 }
 
-const AVAILABLE_COLORS = ['emerald', 'violet', 'blue', 'yellow', 'green', 'red', 'pink', 'orange', 'cyan', 'slate']
-const AVAILABLE_ICONS = ['UserPlus', 'MessageCircle', 'Calendar', 'PlayCircle', 'CheckCircle', 'Flag', 'Clock', 'Star', 'Heart', 'Zap']
+const AVAILABLE_COLORS = [
+  { value: 'emerald', label: 'Изумрудный' },
+  { value: 'violet', label: 'Фиолетовый' },
+  { value: 'blue', label: 'Синий' },
+  { value: 'yellow', label: 'Желтый' },
+  { value: 'green', label: 'Зеленый' },
+  { value: 'red', label: 'Красный' },
+  { value: 'pink', label: 'Розовый' },
+  { value: 'orange', label: 'Оранжевый' },
+  { value: 'cyan', label: 'Бирюзовый' },
+  { value: 'slate', label: 'Серый' }
+]
+
+const AVAILABLE_ICONS = [
+  { value: 'UserPlus', label: 'Добавление' },
+  { value: 'MessageCircle', label: 'Диалог' },
+  { value: 'Calendar', label: 'Календарь' },
+  { value: 'PlayCircle', label: 'В процессе' },
+  { value: 'CheckCircle', label: 'Готово' },
+  { value: 'Flag', label: 'Флаг' },
+  { value: 'Clock', label: 'Ожидание' },
+  { value: 'Star', label: 'Звезда' },
+  { value: 'Heart', label: 'Сердце' },
+  { value: 'Zap', label: 'Молния' }
+]
 
 export function KanbanColumnEditor({ columns, onSave, onCancel }: Props) {
   const [cols, setCols] = useState<KanbanColumn[]>(columns)
@@ -97,21 +120,31 @@ export function KanbanColumnEditor({ columns, onSave, onCancel }: Props) {
                   placeholder="Название колонки"
                 />
                 
-                <select
-                  value={c.iconName}
-                  onChange={(e) => updateCol(c.id, { iconName: e.target.value })}
-                  className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-lg px-3 py-2 text-sm outline-none"
-                >
-                  {AVAILABLE_ICONS.map(i => <option key={i} value={i}>{i}</option>)}
-                </select>
+                <div className="relative">
+                  <select
+                    value={c.iconName}
+                    onChange={(e) => updateCol(c.id, { iconName: e.target.value })}
+                    className="w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-lg px-3 py-2 text-sm outline-none appearance-none cursor-pointer hover:border-neutral-300 dark:hover:border-neutral-600 transition-colors"
+                  >
+                    {AVAILABLE_ICONS.map(i => <option key={i.value} value={i.value}>{i.label}</option>)}
+                  </select>
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-neutral-400">
+                    <Icons.ChevronDown className="w-4 h-4" />
+                  </div>
+                </div>
 
-                <select
-                  value={c.color}
-                  onChange={(e) => updateCol(c.id, { color: e.target.value })}
-                  className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-lg px-3 py-2 text-sm outline-none"
-                >
-                  {AVAILABLE_COLORS.map(color => <option key={color} value={color}>{color}</option>)}
-                </select>
+                <div className="relative">
+                  <select
+                    value={c.color}
+                    onChange={(e) => updateCol(c.id, { color: e.target.value })}
+                    className="w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-lg px-3 py-2 text-sm outline-none appearance-none cursor-pointer hover:border-neutral-300 dark:hover:border-neutral-600 transition-colors"
+                  >
+                    {AVAILABLE_COLORS.map(color => <option key={color.value} value={color.value}>{color.label}</option>)}
+                  </select>
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-neutral-400">
+                    <Icons.ChevronDown className="w-4 h-4" />
+                  </div>
+                </div>
               </div>
 
               {!isSystem && (

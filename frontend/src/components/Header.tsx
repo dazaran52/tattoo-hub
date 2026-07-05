@@ -15,9 +15,10 @@ import { Logo } from '@/components/Logo'
 interface HeaderProps {
   profile: Profile
   onLogout: () => void
+  maxWidthClass?: string
 }
 
-export function Header({ profile, onLogout }: HeaderProps) {
+export function Header({ profile, onLogout, maxWidthClass = 'max-w-7xl' }: HeaderProps) {
   const [menuOpen, setMenuOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
   
@@ -85,8 +86,8 @@ export function Header({ profile, onLogout }: HeaderProps) {
   }
   
   return (
-    <header className="bg-white dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800 sticky top-0 z-50 transition-colors duration-200">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <header className="bg-white/80 dark:bg-neutral-900/80 backdrop-blur-xl border-b border-neutral-200/50 dark:border-neutral-800/50 sticky top-0 z-50 transition-colors duration-200">
+      <div className={`${maxWidthClass} mx-auto px-4 sm:px-6 lg:px-8 transition-all duration-300`}>
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <button 

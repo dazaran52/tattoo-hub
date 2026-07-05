@@ -6,12 +6,12 @@ interface LogoProps {
 
 export function Logo({ className = '' }: LogoProps) {
   return (
-    <div className={`flex items-center gap-[0.2em] ${className}`}>
-      <span className="font-black tracking-tight leading-none" style={{ fontSize: '1em' }}>
+    <div className={`flex items-center gap-1.5 ${className}`}>
+      <span className="font-extrabold tracking-tight text-xl md:text-2xl text-neutral-900 dark:text-white">
         Tattoo
       </span>
-      <div className="bg-neutral-900 dark:bg-neutral-100 rounded-[0.25em] px-[0.3em] py-[0.1em] flex items-center justify-center shadow-sm">
-        <span className="text-white dark:text-neutral-950 font-bold leading-none tracking-widest" style={{ fontSize: '0.55em' }}>
+      <div className="bg-neutral-900 dark:bg-white rounded-md px-1.5 py-0.5 flex items-center justify-center shadow-sm">
+        <span className="text-white dark:text-neutral-900 font-bold text-[10px] md:text-xs tracking-widest leading-none">
           HUB
         </span>
       </div>
