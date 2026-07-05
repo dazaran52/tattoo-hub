@@ -362,7 +362,7 @@ export function CRMBoard() {
           onCancel={() => setIsEditingColumns(false)} 
         />
       ) : (
-        <div className="relative w-[100vw] left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] px-4 sm:px-6 lg:px-8">
+        <div className="relative">
           {/* Scroll zones for dragging */}
           <div 
             className="absolute left-0 top-0 w-16 h-full z-10" 
@@ -441,20 +441,20 @@ export function CRMBoard() {
                             draggable
                             onDragStart={(e) => handleDragStart(e as any, item.id)}
                             onClick={() => !isNewLead && setSessionToEdit(item)}
-                            className={`p-4 rounded-2xl shadow-sm border-y border-r border-l-4 ${styles.leftBorder} ${isSelected ? 'ring-2 ring-violet-500 bg-violet-50 dark:bg-violet-900/20 border-y-neutral-200 border-r-neutral-200 dark:border-y-white/5 dark:border-r-white/5' : isNewLead ? 'border-y-emerald-400/50 border-r-emerald-400/50 bg-emerald-50/70 dark:bg-emerald-900/20 ring-1 ring-emerald-500/30' : 'bg-white dark:bg-neutral-800 border-y-neutral-200 border-r-neutral-200 dark:border-y-white/5 dark:border-r-white/5'} ${!isNewLead ? 'cursor-pointer hover:shadow-md transition-shadow' : ''} relative overflow-hidden`}
+                            className={`p-4 rounded-2xl shadow-sm border-y border-r border-l-4 ${styles.leftBorder} ${isNewLead ? 'bg-emerald-50/70 dark:bg-emerald-900/20' : 'bg-white dark:bg-neutral-800'} ${isNewLead ? 'border-y-emerald-400/50 border-r-emerald-400/50' : 'border-y-neutral-200 border-r-neutral-200 dark:border-y-white/5 dark:border-r-white/5'} ${isSelected ? 'ring-2 ring-violet-500' : isNewLead ? 'ring-1 ring-emerald-500/30' : ''} ${!isNewLead ? 'cursor-pointer hover:shadow-md transition-shadow' : ''} relative overflow-hidden group`}
                           >
-                            <input 
-                              type="checkbox"
-                              checked={selectedKanbanIds.has(item.id)}
-                              onChange={(e) => {
+                            <div
+                              onClick={(e) => {
+                                e.stopPropagation()
                                 const newSet = new Set(selectedKanbanIds)
                                 if (newSet.has(item.id)) newSet.delete(item.id)
                                 else newSet.add(item.id)
                                 setSelectedKanbanIds(newSet)
                               }}
-                              onClick={(e) => e.stopPropagation()}
-                              className="absolute top-3 right-3 w-4 h-4 rounded border-neutral-300 text-violet-600 focus:ring-violet-500 z-10"
-                            />
+                              className={`absolute top-3 right-3 w-5 h-5 rounded flex items-center justify-center cursor-pointer transition-colors z-10 ${isSelected ? 'bg-violet-500 text-white shadow-sm' : 'border-2 border-neutral-300 dark:border-neutral-600 hover:border-violet-400 bg-white/50 dark:bg-neutral-800/50'}`}
+                            >
+                              {isSelected && <Icons.Check className="w-3.5 h-3.5 stroke-[3]" />}
+                            </div>
                             <div className="flex gap-3 mb-3 pr-6">
                               {item.reference_images && item.reference_images.length > 0 ? (
                                 <img src={item.reference_images[0]} alt="" className="w-12 h-12 rounded-xl object-cover" />

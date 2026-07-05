@@ -186,7 +186,7 @@ export default function DashboardPage() {
 
       <Header profile={profile} onLogout={handleLogout} />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative">
+      <main className={`mx-auto px-4 sm:px-6 lg:px-8 py-8 relative ${activeTab === 'crm' ? 'max-w-[1600px]' : 'max-w-7xl'}`}>
         {profile.role === 'client' ? (
           <ClientDashboard profile={profile} />
         ) : (
