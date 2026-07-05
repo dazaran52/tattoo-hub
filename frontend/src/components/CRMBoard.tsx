@@ -441,7 +441,7 @@ export function CRMBoard() {
                             draggable
                             onDragStart={(e) => handleDragStart(e as any, item.id)}
                             onClick={() => !isNewLead && setSessionToEdit(item)}
-                            className={`p-4 rounded-2xl shadow-sm border-y border-r border-l-4 ${styles.leftBorder} ${isNewLead ? 'bg-emerald-50/70 dark:bg-emerald-900/20' : 'bg-white dark:bg-neutral-800'} ${isNewLead ? 'border-y-emerald-400/50 border-r-emerald-400/50' : 'border-y-neutral-200 border-r-neutral-200 dark:border-y-white/5 dark:border-r-white/5'} ${isSelected ? `ring-2 ${styles.ring}` : isNewLead ? 'ring-1 ring-emerald-500/30' : ''} ${!isNewLead ? 'cursor-pointer hover:shadow-md transition-shadow' : ''} relative overflow-hidden group`}
+                            className={`p-4 rounded-2xl border-y border-r border-l-4 ${styles.leftBorder} ${isNewLead ? 'bg-emerald-50/70 dark:bg-emerald-900/20' : 'bg-white dark:bg-neutral-800'} ${isNewLead ? 'border-y-emerald-400/50 border-r-emerald-400/50' : 'border-y-neutral-200 border-r-neutral-200 dark:border-y-white/5 dark:border-r-white/5'} ${isSelected ? `ring-2 ring-neutral-900 dark:ring-white shadow-xl scale-[1.02] z-20` : isNewLead ? 'ring-1 ring-emerald-500/30 hover:scale-[1.01] shadow-sm' : 'hover:scale-[1.01] shadow-sm'} ${!isNewLead ? 'cursor-pointer hover:shadow-md transition-all duration-300' : 'transition-all duration-300'} relative group`}
                           >
                             <div
                               onClick={(e) => {
