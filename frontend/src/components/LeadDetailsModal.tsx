@@ -1,7 +1,8 @@
-import { X, Calendar, Palette, User, MessageCircle } from 'lucide-react'
+import { X, Calendar, Palette, User, MessageCircle, Send, Phone } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useState } from 'react'
 import { ImageViewerModal } from './ImageViewerModal'
+import { ClientDetailsModal } from './ClientDetailsModal'
 
 interface LeadDetailsModalProps {
   isOpen: boolean
@@ -13,6 +14,7 @@ interface LeadDetailsModalProps {
 
 export function LeadDetailsModal({ isOpen, onClose, session, onAccept, onReject }: LeadDetailsModalProps) {
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
+  const [isClientModalOpen, setIsClientModalOpen] = useState(false)
 
   if (!isOpen || !session) return null
 
@@ -45,15 +47,34 @@ export function LeadDetailsModal({ isOpen, onClose, session, onAccept, onReject 
             
             {/* Client Info */}
             <div className="flex items-center gap-4">
-              <div className="w-16 h-16 bg-violet-100 dark:bg-violet-900/30 rounded-2xl flex items-center justify-center shrink-0">
+              <div 
+                onClick={() => setIsClientModalOpen(true)}
+                className="w-16 h-16 bg-violet-100 dark:bg-violet-900/30 rounded-2xl flex items-center justify-center shrink-0 cursor-pointer hover:ring-2 hover:ring-violet-500 transition-all"
+                title="Посмотреть профиль клиента"
+              >
                 <User className="w-8 h-8 text-violet-500" />
               </div>
               <div>
-                <h3 className="text-xl font-bold text-neutral-900 dark:text-white mb-1">{clientName}</h3>
-                <p className="text-neutral-500 text-sm flex items-center gap-1.5">
+                <h3 
+                  onClick={() => setIsClientModalOpen(true)}
+                  className="text-xl font-bold text-neutral-900 dark:text-white mb-1 cursor-pointer hover:text-violet-600 transition-colors"
+                >
+                  {clientName}
+                </h3>
+                <div className="text-neutral-500 text-sm flex items-center gap-2">
                   <MessageCircle className="w-4 h-4" />
                   {clientContact}
-                </p>
+                  {session.master_clients?.telegram && (
+                    <a href={`https://t.me/${session.master_clients.telegram.replace('@', '')}`} target="_blank" rel="noopener noreferrer" className="ml-2 text-sky-500 hover:text-sky-600 bg-sky-50 dark:bg-sky-500/10 p-1.5 rounded-lg transition-colors">
+                      <Send className="w-4 h-4" />
+                    </a>
+                  )}
+                  {session.master_clients?.phone && !session.master_clients?.telegram && (
+                    <a href={`https://wa.me/${session.master_clients.phone.replace(/[^0-9]/g, '')}`} target="_blank" rel="noopener noreferrer" className="ml-2 text-green-500 hover:text-green-600 bg-green-50 dark:bg-green-500/10 p-1.5 rounded-lg transition-colors">
+                      <Phone className="w-4 h-4" />
+                    </a>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -92,21 +113,32 @@ export function LeadDetailsModal({ isOpen, onClose, session, onAccept, onReject 
             )}
 
             {/* Preferences */}
-            <div className="flex gap-4">
-              <div className="bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 px-4 py-3 rounded-2xl flex-1 flex items-center gap-3 border border-emerald-100 dark:border-emerald-500/20">
+            <div className="flex gap-4 flex-wrap">
+              <div className="bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 px-4 py-3 rounded-2xl flex-1 min-w-[120px] flex items-center gap-3 border border-emerald-100 dark:border-emerald-500/20">
                 <Calendar className="w-5 h-5 shrink-0" />
                 <div className="text-sm">
                   <span className="font-bold block">Желаемая дата</span>
-                  {new Date(session.session_date).toLocaleDateString('ru-RU')}
+                  {new Date(session.session_date).toLocaleDateString('ru-RU')}{session.start_time ? ` ${session.start_time.slice(0, 5)}` : ''}
                 </div>
               </div>
-              <div className="bg-violet-50 dark:bg-violet-900/20 text-violet-700 dark:text-violet-400 px-4 py-3 rounded-2xl flex-1 flex items-center gap-3 border border-violet-100 dark:border-violet-500/20">
-                <div className="text-lg font-bold">₽</div>
-                <div className="text-sm">
-                  <span className="font-bold block">Бюджет</span>
-                  {leadData.budget || 'Не указан'}
+              {leadData.body_place && (
+                <div className="bg-sky-50 dark:bg-sky-900/20 text-sky-700 dark:text-sky-400 px-4 py-3 rounded-2xl flex-1 min-w-[120px] flex items-center gap-3 border border-sky-100 dark:border-sky-500/20">
+                  <User className="w-5 h-5 shrink-0" />
+                  <div className="text-sm">
+                    <span className="font-bold block">Место</span>
+                    {leadData.body_place}
+                  </div>
                 </div>
-              </div>
+              )}
+              {leadData.size && (
+                <div className="bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 px-4 py-3 rounded-2xl flex-1 min-w-[120px] flex items-center gap-3 border border-amber-100 dark:border-amber-500/20">
+                  <div className="text-lg font-bold">cm</div>
+                  <div className="text-sm">
+                    <span className="font-bold block">Размер</span>
+                    {leadData.size}
+                  </div>
+                </div>
+              )}
             </div>
 
           </div>
@@ -133,6 +165,16 @@ export function LeadDetailsModal({ isOpen, onClose, session, onAccept, onReject 
         onClose={() => setSelectedImage(null)}
         imageUrl={selectedImage || ''}
       />
+
+      {isClientModalOpen && session.master_clients && (
+        <ClientDetailsModal
+          isOpen={isClientModalOpen}
+          onClose={() => setIsClientModalOpen(false)}
+          client={session.master_clients as any}
+          onUpdate={() => {}}
+          chatId={null}
+        />
+      )}
     </AnimatePresence>
   )
 }

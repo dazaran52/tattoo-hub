@@ -217,35 +217,6 @@ export function InstagramImportModal({ isOpen, onClose, onImported, initialCode 
                     Подключить Instagram
                   </button>
                 </div>
-
-                <div className="relative">
-                  <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-neutral-200 dark:border-neutral-800"></div>
-                  </div>
-                  <div className="relative flex justify-center text-sm">
-                    <span className="px-2 bg-white dark:bg-neutral-900 text-neutral-500">ИЛИ ВРУЧНУЮ</span>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-bold text-neutral-700 dark:text-neutral-300 mb-2">Ссылка на фото/пост (CDN)</label>
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      value={url}
-                      onChange={e => setUrl(e.target.value)}
-                      placeholder="https://scontent-prg1-1.cdninstagram.com/v/t51..."
-                      className="flex-1 bg-neutral-100 dark:bg-black/50 border border-transparent focus:border-pink-500 focus:bg-white dark:focus:bg-neutral-900 rounded-xl px-4 py-3 text-neutral-900 dark:text-white outline-none transition-all text-sm"
-                    />
-                    <button 
-                      onClick={handleImportSingle}
-                      disabled={isImporting || !url.trim()}
-                      className="py-3 px-6 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rounded-xl font-bold flex justify-center items-center gap-2 transition-all disabled:opacity-50"
-                    >
-                      {isImporting ? <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" /> : <Download className="w-4 h-4" />}
-                    </button>
-                  </div>
-                </div>
               </div>
             )}
           </div>

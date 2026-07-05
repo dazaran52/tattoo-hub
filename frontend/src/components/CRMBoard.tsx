@@ -81,7 +81,7 @@ export function CRMBoard() {
   // Custom drag ghost position tracking
   const dragGhostX = useMotionValue(0)
   const dragGhostY = useMotionValue(0)
-  const [cardView, setCardView] = useState<'normal' | 'expanded'>('normal')
+
   
   // Modals
   const [isSessionModalOpen, setIsSessionModalOpen] = useState(false)
@@ -334,22 +334,7 @@ export function CRMBoard() {
                   <option value="this_month">Этот месяц</option>
                 </select>
               )}
-              {(sessionView === 'kanban' || sessionView === 'list') && (
-                <div className="flex items-center bg-neutral-200/50 dark:bg-neutral-800/50 p-1 rounded-xl">
-                  <button
-                    onClick={() => setCardView('normal')}
-                    className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${cardView === 'normal' ? 'bg-white dark:bg-neutral-900 shadow-sm text-neutral-900 dark:text-white' : 'text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'}`}
-                  >
-                    Обычный
-                  </button>
-                  <button
-                    onClick={() => setCardView('expanded')}
-                    className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${cardView === 'expanded' ? 'bg-white dark:bg-neutral-900 shadow-sm text-neutral-900 dark:text-white' : 'text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'}`}
-                  >
-                    Расширенный
-                  </button>
-                </div>
-              )}
+
               {sessionView === 'kanban' && !isEditingColumns && (
                 <button
                   onClick={() => setIsEditingColumns(true)}
@@ -391,7 +376,6 @@ export function CRMBoard() {
           onStatusChange={updateSessionStatus}
           onSessionClick={setSessionToEdit}
           onUpdate={fetchData}
-          cardView={cardView}
         />
       ) : isEditingColumns ? (
         <KanbanColumnEditor 
@@ -498,12 +482,9 @@ export function CRMBoard() {
                               if (target.closest('button') || target.closest('.no-select-click')) return
                               if (isNewLead) {
                                 setSessionDetails(item)
-                                return
+                              } else {
+                                setSessionToEdit(item)
                               }
-                              const newSet = new Set(selectedKanbanIds)
-                              if (newSet.has(item.id)) newSet.delete(item.id)
-                              else newSet.add(item.id)
-                              setSelectedKanbanIds(newSet)
                             }}
                             className={`rounded-2xl border-y border-r border-l-4 ${styles.leftBorder} ${isNewLead ? 'bg-emerald-50/70 dark:bg-emerald-900/20' : 'bg-white dark:bg-neutral-800'} ${isNewLead ? 'border-y-emerald-400/50 border-r-emerald-400/50' : 'border-y-neutral-200 border-r-neutral-200 dark:border-y-white/5 dark:border-r-white/5'} ${isSelected ? `!bg-neutral-100 dark:!bg-neutral-700 shadow-inner scale-[1.01] z-10` : isNewLead ? 'hover:scale-[1.01] shadow-sm' : 'hover:scale-[1.01] shadow-sm'} ${!isNewLead ? 'cursor-pointer transition-all duration-300' : 'transition-all duration-300'} relative group`}
                           >
@@ -559,7 +540,7 @@ export function CRMBoard() {
                                   <div className="flex items-center gap-1.5 text-xs font-bold text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-900/20 px-2 py-1.5 rounded-lg w-fit">
                                     <Calendar className="w-3.5 h-3.5 shrink-0" />
                                     {new Date(item.session_date).toLocaleDateString('ru-RU')}
-                                    {cardView === 'expanded' && (item.start_time || item.end_time) && (
+                                    {(item.start_time || item.end_time) && (
                                       <span className="opacity-75 whitespace-nowrap">
                                         • {item.start_time?.slice(0, 5)} {item.end_time ? `- ${item.end_time.slice(0, 5)}` : ''}
                                       </span>
@@ -574,7 +555,7 @@ export function CRMBoard() {
                                 </div>
                               </div>
                               
-                              {cardView === 'expanded' && (item.style || item.notes) && (
+                              {(item.style || item.notes) && (
                                 <div className="flex flex-col gap-1.5 mt-1 border-t border-dashed border-neutral-100 dark:border-white/5 pt-2">
                                   {item.style && (
                                     <div className="text-xs font-medium text-neutral-700 dark:text-neutral-300 flex items-center gap-1.5">
@@ -590,7 +571,7 @@ export function CRMBoard() {
                                 </div>
                               )}
 
-                              {cardView === 'expanded' && (
+                              {true && (
                                 <div className="flex items-center gap-1 mt-3 pt-3 border-t border-neutral-100 dark:border-white/5 transition-opacity">
                                   <button
                                     onClick={(e) => { e.stopPropagation(); setSessionToEdit(item); }}
@@ -634,18 +615,12 @@ export function CRMBoard() {
                             </div>
 
                             {isNewLead && (
-                              <div className="mt-4 pt-4 border-t border-emerald-100 dark:border-emerald-900/30 flex gap-2">
+                              <div className="mt-4 pt-4 border-t border-emerald-100 dark:border-emerald-900/30 flex justify-end">
                                 <button
-                                  onClick={(e) => { e.stopPropagation(); updateSessionStatus(item.id, 'cancelled'); }}
-                                  className="px-3 py-2 text-xs font-bold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-500/10 hover:bg-red-100 dark:hover:bg-red-500/20 rounded-xl transition-colors"
+                                  onClick={(e) => { e.stopPropagation(); setSessionDetails(item); }}
+                                  className="px-4 py-2 text-xs font-bold text-white bg-emerald-500 hover:bg-emerald-600 rounded-xl shadow-md transition-colors"
                                 >
-                                  Отклонить
-                                </button>
-                                <button
-                                  onClick={(e) => { e.stopPropagation(); setSessionToAccept(item); }}
-                                  className="flex-1 py-2 text-xs font-bold text-white bg-emerald-500 hover:bg-emerald-600 rounded-xl shadow-md transition-colors text-center"
-                                >
-                                  Принять
+                                  Посмотреть
                                 </button>
                               </div>
                             )}

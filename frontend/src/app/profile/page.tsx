@@ -558,25 +558,23 @@ export default function ProfilePage() {
                   <ImageIcon className="w-5 h-5 text-cyan-500" />
                   Галерея работ
                 </h3>
-                {isEditing && (
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => setIsIgModalOpen(true)}
-                      className="flex items-center gap-2 bg-pink-500/10 hover:bg-pink-500/20 text-pink-600 dark:text-pink-400 px-4 py-2 rounded-xl font-bold transition-colors text-sm"
-                    >
-                      <Instagram className="w-4 h-4" />
-                      Импорт инсты
-                    </button>
-                    <button
-                      onClick={() => portfolioInputRef.current?.click()}
-                      disabled={isUploading}
-                      className="flex items-center gap-2 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 px-4 py-2 rounded-xl font-bold transition-colors text-sm"
-                    >
-                      <Upload className="w-4 h-4" />
-                      Загрузить фото
-                    </button>
-                  </div>
-                )}
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setIsIgModalOpen(true)}
+                    className="flex items-center gap-2 bg-pink-500/10 hover:bg-pink-500/20 text-pink-600 dark:text-pink-400 px-4 py-2 rounded-xl font-bold transition-colors text-sm"
+                  >
+                    <Instagram className="w-4 h-4" />
+                    Импорт инсты
+                  </button>
+                  <button
+                    onClick={() => portfolioInputRef.current?.click()}
+                    disabled={isUploading}
+                    className="flex items-center gap-2 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 px-4 py-2 rounded-xl font-bold transition-colors text-sm"
+                  >
+                    <Upload className="w-4 h-4" />
+                    Загрузить фото
+                  </button>
+                </div>
                 <input
                   type="file"
                   multiple
@@ -620,9 +618,7 @@ export default function ProfilePage() {
                 <div className="bg-neutral-100/50 dark:bg-black/30 border-2 border-dashed border-neutral-300 dark:border-neutral-800 rounded-3xl p-12 text-center">
                   <ImageIcon className="w-12 h-12 text-neutral-400 mx-auto mb-4" />
                   <p className="text-neutral-500 dark:text-neutral-400 font-medium mb-2">У вас еще нет добавленных работ</p>
-                  {isEditing && (
-                    <p className="text-sm text-neutral-400">Нажмите "Загрузить фото", чтобы пополнить портфолио.</p>
-                  )}
+                  <p className="text-sm text-neutral-400">Нажмите "Загрузить фото", чтобы пополнить портфолио.</p>
                 </div>
               )}
             </div>
