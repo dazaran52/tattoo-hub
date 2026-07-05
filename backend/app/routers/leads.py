@@ -457,8 +457,8 @@ class ClientLeadCreate(BaseModel):
     city: str | None = None
     country_id: str | None = None
     name: str | None = None
-    contact: str
-    email: str | None = None
+    contact: str | None = None
+    email: str
     instagram: str | None = None
     is_negotiable_budget: bool = False
     image_urls: list[str] | None = None

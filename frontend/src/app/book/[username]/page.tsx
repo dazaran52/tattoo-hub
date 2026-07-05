@@ -166,8 +166,8 @@ export default function BookMasterPage({ params }: { params: { username: string 
 
       const payload = {
         name,
-        contact,
-        email: email || null,
+        contact: contact || null,
+        email: email,
         instagram: instagram || null,
         description,
         style,
@@ -371,13 +371,12 @@ export default function BookMasterPage({ params }: { params: { username: string 
               </div>
               <div>
                 <label className="block text-sm font-semibold opacity-90 mb-2">
-                  Телефон или Telegram *
+                  Телефон или Telegram (Необязательно)
                 </label>
                 <div className="relative">
-                  <Send className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 opacity-50" />
+                  <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 opacity-50" />
                   <input
                     type="text"
-                    required
                     value={contact}
                     onChange={(e) => setContact(e.target.value)}
                     placeholder="+420... или @username"
@@ -390,11 +389,12 @@ export default function BookMasterPage({ params }: { params: { username: string 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-semibold opacity-90 mb-2">
-                  Email (Необязательно)
+                  Email <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
                   <input
                     type="email"
+                    required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="example@mail.com"
