@@ -119,7 +119,7 @@ export function CRMBoard() {
       const { data: { user } } = await supabase.auth.getUser()
       if (user) {
         const { data } = await supabase.from('master_sessions')
-          .select('*, master_clients(*, leads(title, description, image_urls, client_priority))')
+          .select('*, master_clients(*, leads(title, description, image_urls, client_priority, body_place, size))')
           .eq('master_id', user.id)
           .eq('is_deleted', false)
           .order('created_at', { ascending: false })
@@ -561,9 +561,9 @@ export function CRMBoard() {
                                     </div>
                                   )}
                                   {item.size && (
-                                    <div className="text-xs font-medium text-neutral-700 dark:text-neutral-300">
-                                      Размер: {item.size} см
-                                    </div>
+                                    <span className="text-neutral-500 dark:text-neutral-400">
+                                      Размер: {item.size}
+                                    </span>
                                   )}
                                   {item.notes && (
                                     <div className="text-xs text-neutral-500 italic line-clamp-3 leading-relaxed mt-0.5">

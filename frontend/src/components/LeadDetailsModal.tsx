@@ -69,11 +69,6 @@ export function LeadDetailsModal({ isOpen, onClose, session, onAccept, onReject 
                       <Send className="w-4 h-4" />
                     </a>
                   )}
-                  {session.master_clients?.phone && !session.master_clients?.telegram && (
-                    <a href={`https://wa.me/${session.master_clients.phone.replace(/[^0-9]/g, '')}`} target="_blank" rel="noopener noreferrer" className="ml-2 text-green-500 hover:text-green-600 bg-green-50 dark:bg-green-500/10 p-1.5 rounded-lg transition-colors">
-                      <Phone className="w-4 h-4" />
-                    </a>
-                  )}
                 </div>
               </div>
             </div>
