@@ -20,7 +20,8 @@ import { QrCode } from 'lucide-react'
 export default function ProfilePage() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const igCode = searchParams.get('code')
+  const igCodeRaw = searchParams.get('code')
+  const igCode = igCodeRaw ? igCodeRaw.replace('#_', '') : null
   const { t, lang: language } = useLanguage()
   const [profile, setProfile] = useState<Profile | null>(null)
   const [isLoading, setIsLoading] = useState(true)

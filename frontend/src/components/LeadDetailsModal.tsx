@@ -90,7 +90,7 @@ export function LeadDetailsModal({ isOpen, onClose, session, onAccept, onReject 
                 </span>
               </div>
               <p className="text-neutral-600 dark:text-neutral-300 text-sm leading-relaxed whitespace-pre-wrap">
-                {session.notes || leadData.description || 'Клиент не оставил подробного описания.'}
+                {(session.notes || leadData.description || 'Клиент не оставил подробного описания.').replace(/Желаемое время:.*\n?/g, '')}
               </p>
             </div>
 

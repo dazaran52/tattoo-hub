@@ -212,8 +212,8 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId }
                     {client.leads?.title || 'Запрос не привязан к маркетплейсу'}
                   </div>
                   {client.leads?.description && (
-                    <p className="text-sm mt-2 p-3 bg-neutral-50 dark:bg-neutral-800 rounded-xl">
-                      {client.leads.description}
+                    <p className="text-sm mt-2 p-3 bg-neutral-50 dark:bg-neutral-800 rounded-xl whitespace-pre-wrap">
+                      {client.leads.description.replace(/Желаемое время:.*\n?/g, '')}
                     </p>
                   )}
                 </div>

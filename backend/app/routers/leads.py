@@ -576,7 +576,7 @@ async def create_client_lead(
                                 "phone": lead_data.contact if not lead_data.email and not lead_data.instagram else None,
                                 "instagram": lead_data.instagram,
                                 "email": lead_data.email,
-                                "notes": lead_data.description,
+                                "notes": "",
                                 "source": "lead",
                                 "kanban_status": "new"
                             }
