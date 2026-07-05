@@ -167,8 +167,34 @@ export function CRMBoard() {
   }
 
   const handleDragStart = (e: React.DragEvent, sessionId: string) => {
-    if (selectedKanbanIds.has(sessionId)) {
+    if (selectedKanbanIds.has(sessionId) && selectedKanbanIds.size > 1) {
       e.dataTransfer.setData('sessionIds', JSON.stringify(Array.from(selectedKanbanIds)))
+      
+      // Custom visual for multiple dragging
+      const dragGhost = document.createElement('div')
+      dragGhost.style.width = '200px'
+      dragGhost.style.height = '60px'
+      dragGhost.style.position = 'absolute'
+      dragGhost.style.top = '-1000px'
+      dragGhost.style.left = '-1000px'
+      
+      const isDark = document.documentElement.classList.contains('dark')
+      const bg = isDark ? '#262626' : '#ffffff'
+      const border = isDark ? '#404040' : '#e5e5e5'
+      
+      dragGhost.innerHTML = `
+        <div style="position:absolute; width:100%; height:100%; background:${bg}; border-radius:12px; top:12px; left:12px; border:1px solid ${border}; z-index:0; box-shadow:0 10px 15px -3px rgba(0,0,0,0.1);"></div>
+        <div style="position:absolute; width:100%; height:100%; background:${bg}; border-radius:12px; top:6px; left:6px; border:1px solid ${border}; z-index:1; box-shadow:0 10px 15px -3px rgba(0,0,0,0.1);"></div>
+        <div style="position:relative; width:100%; height:100%; background:${bg}; border-radius:12px; border:2px solid #10b981; z-index:2; display:flex; align-items:center; justify-content:center; color:#10b981; font-weight:bold; font-size:14px; box-shadow:0 10px 15px -3px rgba(0,0,0,0.1); font-family:sans-serif;">
+          Заявок: ${selectedKanbanIds.size}
+        </div>
+      `
+      document.body.appendChild(dragGhost)
+      e.dataTransfer.setDragImage(dragGhost, 100, 30)
+      
+      setTimeout(() => {
+        if (document.body.contains(dragGhost)) document.body.removeChild(dragGhost)
+      }, 0)
     } else {
       e.dataTransfer.setData('sessionIds', JSON.stringify([sessionId]))
     }

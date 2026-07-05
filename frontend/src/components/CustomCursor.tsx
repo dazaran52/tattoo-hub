@@ -15,12 +15,10 @@ export function CustomCursor() {
   const dotMouseY = useMotionValue(-100)
   
   // Быстрые пружины для внешнего кольца (чуть-чуть плавности)
-  const ringX = useSpring(mouseX, { stiffness: 1500, damping: 50, mass: 0.1 })
-  const ringY = useSpring(mouseY, { stiffness: 1500, damping: 50, mass: 0.1 })
+  const ringX = useSpring(mouseX, { stiffness: 2000, damping: 40, mass: 0.05 })
+  const ringY = useSpring(mouseY, { stiffness: 2000, damping: 40, mass: 0.05 })
   
-  // Мгновенные пружины для внутренней точки (следует 1 в 1 за системным курсором)
-  const dotX = useSpring(dotMouseX, { stiffness: 3000, damping: 60, mass: 0.05 })
-  const dotY = useSpring(dotMouseY, { stiffness: 3000, damping: 60, mass: 0.05 })
+  // Внутренняя точка теперь использует напрямую motion value без пружин для нулевой задержки
 
   useEffect(() => {
     // Только для не-touch устройств
@@ -83,8 +81,8 @@ export function CustomCursor() {
       <motion.div
         className="fixed top-0 left-0 w-2 h-2 bg-white rounded-full mix-blend-difference pointer-events-none z-[2147483647]"
         style={{
-          x: dotX,
-          y: dotY
+          x: dotMouseX,
+          y: dotMouseY
         }}
         animate={{
           scale: isHovering ? 0 : 1,
