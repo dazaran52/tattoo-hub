@@ -74,6 +74,7 @@ export function CRMBoard() {
   
   const [mainTab, setMainTab] = useState<'sessions' | 'clients'>('sessions')
   const [sessionView, setSessionView] = useState<'kanban' | 'list' | 'calendar'>('kanban')
+  const [draggingGroupId, setDraggingGroupId] = useState<string | null>(null)
   const [cardView, setCardView] = useState<'normal' | 'expanded'>('normal')
   
   // Modals
@@ -168,6 +169,7 @@ export function CRMBoard() {
 
   const handleDragStart = (e: React.DragEvent, sessionId: string) => {
     if (selectedKanbanIds.has(sessionId) && selectedKanbanIds.size > 1) {
+      setDraggingGroupId(sessionId)
       e.dataTransfer.setData('sessionIds', JSON.stringify(Array.from(selectedKanbanIds)))
       
       // Custom visual for multiple dragging
@@ -231,6 +233,11 @@ export function CRMBoard() {
       }
     })
     setSelectedKanbanIds(new Set())
+    setDraggingGroupId(null)
+  }
+
+  const handleDragEnd = () => {
+    setDraggingGroupId(null)
   }
 
   const saveColumns = async (newCols: KanbanColumn[]) => {
@@ -476,11 +483,18 @@ export function CRMBoard() {
                         colItems.map(item => {
                           const isNewLead = item.status === 'new'
                           const isSelected = selectedKanbanIds.has(item.id)
+                          const isDraggedGroupItem = draggingGroupId && selectedKanbanIds.has(item.id) && draggingGroupId !== item.id
                           return (
                           <motion.div
+                            layout
+                            initial={false}
+                            animate={isDraggedGroupItem ? { scale: 0.5, opacity: 0, height: 0, marginTop: 0, marginBottom: 0, padding: 0, borderWidth: 0 } : { opacity: 1, scale: 1, height: 'auto', marginBottom: 12, padding: 16 }}
+                            transition={{ duration: 0.25, ease: 'easeInOut' }}
+                            style={{ overflow: isDraggedGroupItem ? 'hidden' : 'visible' }}
                             key={item.id}
                             draggable
                             onDragStart={(e) => handleDragStart(e as any, item.id)}
+                            onDragEnd={handleDragEnd}
                             onClick={(e) => {
                               const target = e.target as HTMLElement
                               if (target.closest('button') || target.closest('.no-select-click')) return
@@ -489,7 +503,7 @@ export function CRMBoard() {
                               else newSet.add(item.id)
                               setSelectedKanbanIds(newSet)
                             }}
-                            className={`p-4 rounded-2xl border-y border-r border-l-4 ${styles.leftBorder} ${isNewLead ? 'bg-emerald-50/70 dark:bg-emerald-900/20' : 'bg-white dark:bg-neutral-800'} ${isNewLead ? 'border-y-emerald-400/50 border-r-emerald-400/50' : 'border-y-neutral-200 border-r-neutral-200 dark:border-y-white/5 dark:border-r-white/5'} ${isSelected ? `!bg-neutral-100 dark:!bg-neutral-700 shadow-inner scale-[1.01] z-10` : isNewLead ? 'hover:scale-[1.01] shadow-sm' : 'hover:scale-[1.01] shadow-sm'} ${!isNewLead ? 'cursor-pointer transition-all duration-300' : 'transition-all duration-300'} relative group`}
+                            className={`rounded-2xl border-y border-r border-l-4 ${styles.leftBorder} ${isNewLead ? 'bg-emerald-50/70 dark:bg-emerald-900/20' : 'bg-white dark:bg-neutral-800'} ${isNewLead ? 'border-y-emerald-400/50 border-r-emerald-400/50' : 'border-y-neutral-200 border-r-neutral-200 dark:border-y-white/5 dark:border-r-white/5'} ${isSelected ? `!bg-neutral-100 dark:!bg-neutral-700 shadow-inner scale-[1.01] z-10` : isNewLead ? 'hover:scale-[1.01] shadow-sm' : 'hover:scale-[1.01] shadow-sm'} ${!isNewLead ? 'cursor-pointer transition-all duration-300' : 'transition-all duration-300'} relative group`}
                           >
                             <div className="absolute top-3 right-3 flex items-center gap-2 z-10 no-select-click">
                               {!isNewLead && (
