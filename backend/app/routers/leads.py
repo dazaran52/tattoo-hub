@@ -587,7 +587,7 @@ async def create_client_lead(
                         if existing_client:
                             # Create a master_sessions for this new request
                             session_date = lead_data.session_date.isoformat()[:10] if lead_data.session_date else datetime.datetime.utcnow().date().isoformat()
-                            res = supabase.table("master_sessions").insert({
+                            res = await supabase.table("master_sessions").insert({
                                 "master_id": lead_data.assigned_master_id,
                                 "client_id": existing_client["id"],
                                 "session_date": session_date,
@@ -601,7 +601,7 @@ async def create_client_lead(
                             
                             # Create in-app and push notifications for new lead
                             try:
-                                supabase.table("notifications").insert({
+                                await supabase.table("notifications").insert({
                                     "user_id": lead_data.assigned_master_id,
                                     "title": "Новая персональная заявка!",
                                     "message": f"У вас новая персональная заявка от клиента {lead_data.client_name}.",
