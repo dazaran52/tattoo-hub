@@ -55,17 +55,17 @@ const DEFAULT_COLUMNS: KanbanColumn[] = [
   { id: 'cancelled', title: 'Отмена', iconName: 'Flag', color: 'red' },
 ]
 
-const COLOR_STYLES: Record<string, { bg: string, border: string, leftBorder: string }> = {
-  emerald: { bg: 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border-emerald-200', border: 'border-emerald-500/50', leftBorder: 'border-l-emerald-500' },
-  violet: { bg: 'bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-400 border-violet-200', border: 'border-violet-500/50', leftBorder: 'border-l-violet-500' },
-  blue: { bg: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border-blue-200', border: 'border-blue-500/50', leftBorder: 'border-l-blue-500' },
-  yellow: { bg: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 border-yellow-200', border: 'border-yellow-500/50', leftBorder: 'border-l-yellow-500' },
-  green: { bg: 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-green-200', border: 'border-green-500/50', leftBorder: 'border-l-green-500' },
-  red: { bg: 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border-red-200', border: 'border-red-500/50', leftBorder: 'border-l-red-500' },
-  pink: { bg: 'bg-pink-100 dark:bg-pink-900/30 text-pink-700 dark:text-pink-400 border-pink-200', border: 'border-pink-500/50', leftBorder: 'border-l-pink-500' },
-  orange: { bg: 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 border-orange-200', border: 'border-orange-500/50', leftBorder: 'border-l-orange-500' },
-  cyan: { bg: 'bg-cyan-100 dark:bg-cyan-900/30 text-cyan-700 dark:text-cyan-400 border-cyan-200', border: 'border-cyan-500/50', leftBorder: 'border-l-cyan-500' },
-  slate: { bg: 'bg-slate-100 dark:bg-slate-900/30 text-slate-700 dark:text-slate-400 border-slate-200', border: 'border-slate-500/50', leftBorder: 'border-l-slate-500' },
+const COLOR_STYLES: Record<string, { bg: string, border: string, leftBorder: string, ring: string, checkboxBg: string, checkboxHover: string }> = {
+  emerald: { bg: 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border-emerald-200', border: 'border-emerald-500/50', leftBorder: 'border-l-emerald-500', ring: 'ring-emerald-500', checkboxBg: 'bg-emerald-500', checkboxHover: 'hover:border-emerald-400' },
+  violet: { bg: 'bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-400 border-violet-200', border: 'border-violet-500/50', leftBorder: 'border-l-violet-500', ring: 'ring-violet-500', checkboxBg: 'bg-violet-500', checkboxHover: 'hover:border-violet-400' },
+  blue: { bg: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border-blue-200', border: 'border-blue-500/50', leftBorder: 'border-l-blue-500', ring: 'ring-blue-500', checkboxBg: 'bg-blue-500', checkboxHover: 'hover:border-blue-400' },
+  yellow: { bg: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 border-yellow-200', border: 'border-yellow-500/50', leftBorder: 'border-l-yellow-500', ring: 'ring-yellow-500', checkboxBg: 'bg-yellow-500', checkboxHover: 'hover:border-yellow-400' },
+  green: { bg: 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-green-200', border: 'border-green-500/50', leftBorder: 'border-l-green-500', ring: 'ring-green-500', checkboxBg: 'bg-green-500', checkboxHover: 'hover:border-green-400' },
+  red: { bg: 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border-red-200', border: 'border-red-500/50', leftBorder: 'border-l-red-500', ring: 'ring-red-500', checkboxBg: 'bg-red-500', checkboxHover: 'hover:border-red-400' },
+  pink: { bg: 'bg-pink-100 dark:bg-pink-900/30 text-pink-700 dark:text-pink-400 border-pink-200', border: 'border-pink-500/50', leftBorder: 'border-l-pink-500', ring: 'ring-pink-500', checkboxBg: 'bg-pink-500', checkboxHover: 'hover:border-pink-400' },
+  orange: { bg: 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 border-orange-200', border: 'border-orange-500/50', leftBorder: 'border-l-orange-500', ring: 'ring-orange-500', checkboxBg: 'bg-orange-500', checkboxHover: 'hover:border-orange-400' },
+  cyan: { bg: 'bg-cyan-100 dark:bg-cyan-900/30 text-cyan-700 dark:text-cyan-400 border-cyan-200', border: 'border-cyan-500/50', leftBorder: 'border-l-cyan-500', ring: 'ring-cyan-500', checkboxBg: 'bg-cyan-500', checkboxHover: 'hover:border-cyan-400' },
+  slate: { bg: 'bg-slate-100 dark:bg-slate-900/30 text-slate-700 dark:text-slate-400 border-slate-200', border: 'border-slate-500/50', leftBorder: 'border-l-slate-500', ring: 'ring-slate-500', checkboxBg: 'bg-slate-500', checkboxHover: 'hover:border-slate-400' },
 }
 
 export function CRMBoard() {
@@ -441,7 +441,7 @@ export function CRMBoard() {
                             draggable
                             onDragStart={(e) => handleDragStart(e as any, item.id)}
                             onClick={() => !isNewLead && setSessionToEdit(item)}
-                            className={`p-4 rounded-2xl shadow-sm border-y border-r border-l-4 ${styles.leftBorder} ${isNewLead ? 'bg-emerald-50/70 dark:bg-emerald-900/20' : 'bg-white dark:bg-neutral-800'} ${isNewLead ? 'border-y-emerald-400/50 border-r-emerald-400/50' : 'border-y-neutral-200 border-r-neutral-200 dark:border-y-white/5 dark:border-r-white/5'} ${isSelected ? 'ring-2 ring-violet-500' : isNewLead ? 'ring-1 ring-emerald-500/30' : ''} ${!isNewLead ? 'cursor-pointer hover:shadow-md transition-shadow' : ''} relative overflow-hidden group`}
+                            className={`p-4 rounded-2xl shadow-sm border-y border-r border-l-4 ${styles.leftBorder} ${isNewLead ? 'bg-emerald-50/70 dark:bg-emerald-900/20' : 'bg-white dark:bg-neutral-800'} ${isNewLead ? 'border-y-emerald-400/50 border-r-emerald-400/50' : 'border-y-neutral-200 border-r-neutral-200 dark:border-y-white/5 dark:border-r-white/5'} ${isSelected ? `ring-2 ${styles.ring}` : isNewLead ? 'ring-1 ring-emerald-500/30' : ''} ${!isNewLead ? 'cursor-pointer hover:shadow-md transition-shadow' : ''} relative overflow-hidden group`}
                           >
                             <div
                               onClick={(e) => {
@@ -451,7 +451,7 @@ export function CRMBoard() {
                                 else newSet.add(item.id)
                                 setSelectedKanbanIds(newSet)
                               }}
-                              className={`absolute top-3 right-3 w-5 h-5 rounded flex items-center justify-center cursor-pointer transition-colors z-10 ${isSelected ? 'bg-violet-500 text-white shadow-sm' : 'border-2 border-neutral-300 dark:border-neutral-600 hover:border-violet-400 bg-white/50 dark:bg-neutral-800/50'}`}
+                              className={`absolute top-3 right-3 w-5 h-5 rounded flex items-center justify-center cursor-pointer transition-colors z-10 ${isSelected ? `${styles.checkboxBg} text-white shadow-sm` : `border-2 border-neutral-300 dark:border-neutral-600 ${styles.checkboxHover} bg-white/50 dark:bg-neutral-800/50`}`}
                             >
                               {isSelected && <Icons.Check className="w-3.5 h-3.5 stroke-[3]" />}
                             </div>
