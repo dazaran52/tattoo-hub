@@ -41,6 +41,11 @@ class Settings(BaseSettings):
     LEAD_CAPTURE_EMAIL: str | None = None
     LEAD_CAPTURE_PASSWORD: str | None = None
     
+    # Instagram Basic Display API
+    INSTAGRAM_CLIENT_ID: str | None = None
+    INSTAGRAM_CLIENT_SECRET: str | None = None
+    INSTAGRAM_REDIRECT_URI: str | None = None
+    
     # Lead Reply SMTP (Second Studio Box - VK WorkSpace)
     LEAD_REPLY_SMTP_SERVER: str | None = "smtp.mail.ru"
     LEAD_REPLY_SMTP_PORT: int = 465

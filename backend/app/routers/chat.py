@@ -69,7 +69,7 @@ async def get_my_chats(
     Get all chats for the current master with lead details and last message.
     """
     chats_res = supabase.table("lead_chats").select(
-        "id, lead_id, created_at, leads(title, description, image_urls)"
+        "id, lead_id, created_at, leads(title, description, image_urls, name, client_name)"
     ).eq("master_id", current_user.user_id).execute()
 
     chats = chats_res.data or []

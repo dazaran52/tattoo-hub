@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Header } from '@/components/Header'
 import { supabase } from '@/lib/supabase'
 import { api, Profile } from '@/lib/api'
@@ -14,10 +14,13 @@ import {
 import { toast } from 'react-hot-toast'
 import { ImageViewerModal } from '@/components/ImageViewerModal'
 import { QRCodeModal } from '@/components/QRCodeModal'
+import { InstagramImportModal } from '@/components/InstagramImportModal'
 import { QrCode } from 'lucide-react'
 
 export default function ProfilePage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const igCode = searchParams.get('code')
   const { t, lang: language } = useLanguage()
   const [profile, setProfile] = useState<Profile | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -28,6 +31,7 @@ export default function ProfilePage() {
   const [isUploading, setIsUploading] = useState(false)
   const [viewerImage, setViewerImage] = useState<string | null>(null)
   const [isQRModalOpen, setIsQRModalOpen] = useState(false)
+  const [isIgModalOpen, setIsIgModalOpen] = useState(false)
 
   // Form State
   const [displayName, setDisplayName] = useState('')
@@ -48,7 +52,13 @@ export default function ProfilePage() {
   useEffect(() => {
     fetchProfile()
     fetchCountries()
-  }, [])
+    
+    if (igCode) {
+      setIsIgModalOpen(true)
+      // Clean up URL without reloading
+      window.history.replaceState({}, document.title, window.location.pathname)
+    }
+  }, [igCode])
 
   useEffect(() => {
     if (selectedCountry) {
@@ -549,14 +559,23 @@ export default function ProfilePage() {
                   Галерея работ
                 </h3>
                 {isEditing && (
-                  <button
-                    onClick={() => portfolioInputRef.current?.click()}
-                    disabled={isUploading}
-                    className="flex items-center gap-2 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 px-4 py-2 rounded-xl font-bold transition-colors text-sm"
-                  >
-                    <Upload className="w-4 h-4" />
-                    Загрузить фото
-                  </button>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setIsIgModalOpen(true)}
+                      className="flex items-center gap-2 bg-pink-500/10 hover:bg-pink-500/20 text-pink-600 dark:text-pink-400 px-4 py-2 rounded-xl font-bold transition-colors text-sm"
+                    >
+                      <Instagram className="w-4 h-4" />
+                      Импорт инсты
+                    </button>
+                    <button
+                      onClick={() => portfolioInputRef.current?.click()}
+                      disabled={isUploading}
+                      className="flex items-center gap-2 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 px-4 py-2 rounded-xl font-bold transition-colors text-sm"
+                    >
+                      <Upload className="w-4 h-4" />
+                      Загрузить фото
+                    </button>
+                  </div>
                 )}
                 <input
                   type="file"
@@ -617,6 +636,17 @@ export default function ProfilePage() {
         imageUrl={viewerImage}
         onClose={() => setViewerImage(null)}
         showActions={false}
+      />
+      <InstagramImportModal
+        isOpen={isIgModalOpen}
+        onClose={() => setIsIgModalOpen(false)}
+        initialCode={igCode}
+        onImported={async (urls) => {
+          const currentUrls = profile.portfolio_image_urls || []
+          const updatedUrls = [...currentUrls, ...urls]
+          const updated = await api.updateProfile({ portfolio_image_urls: updatedUrls })
+          setProfile(updated)
+        }}
       />
     </div>
   )

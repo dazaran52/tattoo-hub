@@ -12,6 +12,7 @@ import { CompleteSessionModal } from '@/components/CompleteSessionModal'
 import { SessionsList } from '@/components/SessionsList'
 import { LeadAcceptWizardModal } from '@/components/LeadAcceptWizardModal'
 import { KanbanColumnEditor } from '@/components/KanbanColumnEditor'
+import { LeadDetailsModal } from '@/components/LeadDetailsModal'
 
 export interface CRMSession {
   id: string
@@ -87,6 +88,7 @@ export function CRMBoard() {
   const [sessionToComplete, setSessionToComplete] = useState<string | null>(null)
   const [sessionToEdit, setSessionToEdit] = useState<CRMSession | null>(null)
   const [sessionToAccept, setSessionToAccept] = useState<CRMSession | null>(null)
+  const [sessionDetails, setSessionDetails] = useState<CRMSession | null>(null)
   const [clientsForModal, setClientsForModal] = useState([])
   
   // Filters
@@ -494,6 +496,10 @@ export function CRMBoard() {
                             onClick={(e) => {
                               const target = e.target as HTMLElement
                               if (target.closest('button') || target.closest('.no-select-click')) return
+                              if (isNewLead) {
+                                setSessionDetails(item)
+                                return
+                              }
                               const newSet = new Set(selectedKanbanIds)
                               if (newSet.has(item.id)) newSet.delete(item.id)
                               else newSet.add(item.id)
@@ -585,7 +591,7 @@ export function CRMBoard() {
                               )}
 
                               {cardView === 'expanded' && (
-                                <div className="flex items-center gap-1 mt-3 pt-3 border-t border-neutral-100 dark:border-white/5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <div className="flex items-center gap-1 mt-3 pt-3 border-t border-neutral-100 dark:border-white/5 transition-opacity">
                                   <button
                                     onClick={(e) => { e.stopPropagation(); setSessionToEdit(item); }}
                                     className="p-1.5 text-neutral-400 hover:text-violet-500 hover:bg-violet-50 dark:hover:bg-violet-500/20 rounded-lg transition-colors flex-1 flex justify-center"
@@ -791,6 +797,17 @@ export function CRMBoard() {
           session={sessionToAccept}
         />
       )}
+      <LeadDetailsModal
+        isOpen={!!sessionDetails}
+        onClose={() => setSessionDetails(null)}
+        session={sessionDetails}
+        onAccept={() => {
+          if (sessionDetails) setSessionToAccept(sessionDetails)
+        }}
+        onReject={() => {
+          if (sessionDetails) updateSessionStatus(sessionDetails.id, 'rejected')
+        }}
+      />
     </div>
   )
 }

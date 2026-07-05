@@ -604,14 +604,14 @@ async def create_client_lead(
                                 await supabase.table("notifications").insert({
                                     "user_id": lead_data.assigned_master_id,
                                     "title": "Новая персональная заявка!",
-                                    "message": f"У вас новая персональная заявка от клиента {lead_data.client_name}.",
+                                    "message": f"У вас новая персональная заявка от клиента {lead_data.name or 'Неизвестный'}.",
                                     "type": "system"
                                 }).execute()
                                 
                                 send_push_notification(
                                     user_id=lead_data.assigned_master_id,
                                     title="Новая заявка! 🔥",
-                                    body=f"Клиент {lead_data.client_name} хочет записаться к вам на сеанс.",
+                                    body=f"Клиент {lead_data.name or 'Неизвестный'} хочет записаться к вам на сеанс.",
                                     url="/dashboard"
                                 )
                             except Exception as notif_e:
