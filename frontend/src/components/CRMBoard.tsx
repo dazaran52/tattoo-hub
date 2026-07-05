@@ -24,6 +24,8 @@ export interface CRMSession {
   price?: number
   style?: string
   notes?: string
+  body_place?: string
+  size?: string
   reference_images?: string[]
   result_image_urls?: string[]
   status: string
