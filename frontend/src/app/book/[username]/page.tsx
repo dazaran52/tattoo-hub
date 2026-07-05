@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Calendar as CalendarIcon, User, MapPin, FileText, CheckCircle, ArrowLeft, Send, Link as LinkIcon, Instagram, Upload, Loader2, X, Image as ImageIcon, ChevronRight } from 'lucide-react'
+import { Calendar as CalendarIcon, User, MapPin, FileText, CheckCircle, ArrowLeft, Send, Link as LinkIcon, Instagram, Upload, Loader2, X, Image as ImageIcon, ChevronRight, Phone } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { DayPicker } from 'react-day-picker'
 import 'react-day-picker/dist/style.css'
