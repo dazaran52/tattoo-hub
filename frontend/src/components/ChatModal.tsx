@@ -16,9 +16,11 @@ interface ChatModalProps {
   onClose: () => void
   chatId: string | null
   leadTitle: string
+  currentUserRole?: 'client' | 'master'
+  recipientName?: string
 }
 
-export function ChatModal({ isOpen, onClose, chatId, leadTitle }: ChatModalProps) {
+export function ChatModal({ isOpen, onClose, chatId, leadTitle, currentUserRole = 'master', recipientName }: ChatModalProps) {
   const [messages, setMessages] = useState<Message[]>([])
   const [newMessage, setNewMessage] = useState('')
   const [loading, setLoading] = useState(false)
@@ -98,7 +100,7 @@ export function ChatModal({ isOpen, onClose, chatId, leadTitle }: ChatModalProps
           <div className="flex justify-between items-center p-4 lg:p-6 border-b border-neutral-100 dark:border-white/5 bg-neutral-50/50 dark:bg-neutral-900/50">
             <h2 className="text-xl font-bold text-neutral-900 dark:text-white flex items-center gap-2">
               <MessageCircle className="w-5 h-5 text-violet-500" />
-              Чат с клиентом
+              Чат с {recipientName || (currentUserRole === 'client' ? 'мастером' : 'клиентом')}
             </h2>
             <button onClick={onClose} className="p-2 text-neutral-500 hover:text-neutral-900 dark:hover:text-white rounded-full transition-colors bg-neutral-100 dark:bg-neutral-800">
               <X className="w-5 h-5" />
@@ -121,9 +123,9 @@ export function ChatModal({ isOpen, onClose, chatId, leadTitle }: ChatModalProps
               </div>
             ) : (
               messages.map(msg => (
-                <div key={msg.id} className={`flex ${msg.sender_type === 'master' ? 'justify-end' : 'justify-start'}`}>
+                <div key={msg.id} className={`flex ${msg.sender_type === currentUserRole ? 'justify-end' : 'justify-start'}`}>
                   <div className={`max-w-[80%] rounded-2xl px-4 py-2 ${
-                    msg.sender_type === 'master' 
+                    msg.sender_type === currentUserRole 
                       ? 'bg-violet-500 text-white rounded-br-sm' 
                       : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white rounded-bl-sm'
                   }`}>

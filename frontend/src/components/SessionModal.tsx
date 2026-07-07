@@ -36,12 +36,11 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
     start_time: '',
     end_time: '',
     price: '',
-    style: '',
+    style: [] as string[],
     body_place: '',
     size: '',
     notes: ''
   })
-  const [isCustomStyle, setIsCustomStyle] = useState(true)
   const [images, setImages] = useState<File[]>([])
   const [existingImages, setExistingImages] = useState<string[]>([])
   const [resultImages, setResultImages] = useState<File[]>([])
@@ -64,12 +63,11 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
           start_time: editSession.start_time || '',
           end_time: editSession.end_time || '',
           price: editSession.price ? editSession.price.toString() : '',
-          style: editSession.style || '',
+          style: editSession.style ? editSession.style.split(',').map(s => s.trim()).filter(s => s) : [],
           body_place: (editSession as any).body_place || '',
           size: (editSession as any).size || '',
           notes: ''
         })
-        setIsCustomStyle(!TATTOO_STYLES.includes(editSession.style || ''))
         setIsNewClient(false)
         setImages([])
         setResultImages([])
@@ -88,12 +86,11 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
           start_time: '',
           end_time: '',
           price: '',
-          style: '',
+          style: [],
           body_place: '',
           size: '',
           notes: ''
         })
-        setIsCustomStyle(true)
         setIsNewClient(false)
         setImages([])
         setResultImages([])
@@ -273,7 +270,7 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
         start_time: formData.start_time || null,
         end_time: formData.end_time || null,
         price: formData.price ? parseFloat(formData.price) : null,
-        style: formData.style,
+        style: formData.style.length > 0 ? formData.style.join(', ') : null,
         body_place: formData.body_place || null,
         size: formData.size || null,
         reference_images: imageUrls,
@@ -284,7 +281,7 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
         start_time: formData.start_time || null,
         end_time: formData.end_time || null,
         price: formData.price ? parseFloat(formData.price) : null,
-        style: formData.style,
+        style: formData.style.length > 0 ? formData.style.join(', ') : null,
         body_place: formData.body_place || null,
         size: formData.size || null,
         reference_images: imageUrls,
@@ -502,37 +499,39 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-semibold text-neutral-500 dark:text-neutral-400 mb-1.5 uppercase tracking-wider">Стиль татуировки</label>
-              <div className="flex flex-col gap-2">
-                <select
-                  value={isCustomStyle ? 'custom' : formData.style}
-                  onChange={(e) => {
-                    if (e.target.value === 'custom') {
-                      setIsCustomStyle(true)
-                      setFormData(p => ({ ...p, style: '' }))
-                    } else {
-                      setIsCustomStyle(false)
-                      setFormData(p => ({ ...p, style: e.target.value }))
-                    }
-                  }}
-                  className="w-full bg-neutral-100 dark:bg-neutral-800 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-cyan-500/20 outline-none"
-                >
-                  <option value="custom">Прочее (ввести вручную)</option>
+              <div className="flex flex-col gap-3">
+                <div className="flex flex-wrap gap-2">
                   {TATTOO_STYLES.map(s => (
-                    <option key={s} value={s}>{s}</option>
+                    <button
+                      key={s}
+                      type="button"
+                      onClick={() => {
+                        const newStyles = formData.style.includes(s)
+                          ? formData.style.filter(style => style !== s)
+                          : [...formData.style, s]
+                        setFormData(p => ({ ...p, style: newStyles }))
+                      }}
+                      className={`px-3 py-1.5 rounded-xl border text-xs font-semibold transition-all ${
+                        formData.style.includes(s)
+                          ? 'bg-cyan-500/10 border-cyan-500 text-cyan-600 dark:text-cyan-400'
+                          : 'bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800'
+                      }`}
+                    >
+                      {s}
+                    </button>
                   ))}
-                </select>
-                {isCustomStyle && (
-                  <div className="relative">
-                    <Tag className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
-                    <input
-                      type="text"
-                      value={formData.style}
-                      onChange={(e) => setFormData(p => ({ ...p, style: e.target.value }))}
-                      placeholder="Напр. Традишнл, Графика"
-                      className="w-full bg-neutral-100 dark:bg-neutral-800 border-none rounded-xl pl-9 pr-4 py-2.5 text-sm focus:ring-2 focus:ring-cyan-500/20 outline-none"
-                    />
-                  </div>
-                )}
+                </div>
+                <input
+                  type="text"
+                  value={formData.style.filter(s => !TATTOO_STYLES.includes(s)).join(', ')}
+                  onChange={(e) => {
+                     const customStyles = e.target.value.split(',').map(s => s.trim()).filter(s => s)
+                     const builtinStyles = formData.style.filter(s => TATTOO_STYLES.includes(s))
+                     setFormData(p => ({ ...p, style: [...builtinStyles, ...customStyles] }))
+                  }}
+                  placeholder="Или введите свой вариант..."
+                  className="w-full bg-neutral-100 dark:bg-neutral-800 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-cyan-500/20 outline-none"
+                />
               </div>
             </div>
             <div>

@@ -2,20 +2,9 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, Gem, Sparkles, CheckCircle2, ShieldCheck, Zap } from 'lucide-react'
+import { ArrowLeft, Gem, Sparkles, CheckCircle2, ShieldCheck, Zap, Loader2 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import Script from 'next/script'
-
-declare global {
-  interface Window {
-    createLemonSqueezy?: () => void;
-    LemonSqueezy?: {
-      Setup: (options: { eventHandler: (event: { event: string }) => void }) => void;
-      Url: { Close: () => void };
-    };
-  }
-}
-
 interface Package {
   id: string
   name: string
@@ -31,7 +20,8 @@ export default function TopUpPage() {
   const router = useRouter()
   const [userId, setUserId] = useState<string>('')
   const [userEmail, setUserEmail] = useState<string>('')
-
+  const [isLoadingPackage, setIsLoadingPackage] = useState<string | null>(null)
+  
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
@@ -40,30 +30,45 @@ export default function TopUpPage() {
       }
     })
   }, [])
-
-  // LemonSqueezy init
-  useEffect(() => {
-    if (window.createLemonSqueezy) {
-      window.createLemonSqueezy()
-      if (window.LemonSqueezy) {
-        window.LemonSqueezy.Setup({
-          eventHandler: (event) => {
-            if (event.event === 'Checkout.Success') {
-              // Wait 1.5s for the webhook to finish
-              setTimeout(() => {
-                // Close the LemonSqueezy iframe explicitly
-                if (window.LemonSqueezy?.Url?.Close) {
-                  window.LemonSqueezy.Url.Close()
-                }
-                // Force a full page reload to the dashboard to guarantee iframe destruction
-                window.location.href = '/dashboard?payment_success=true'
-              }, 1500)
-            }
-          }
-        })
+  
+  const handleBuyPackage = async (pkgId: string) => {
+    if (!userId) return
+    
+    try {
+      setIsLoadingPackage(pkgId)
+      
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) throw new Error("No session")
+      
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/payments/stripe/create-checkout-session`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify({ package_id: pkgId })
+      })
+      
+      if (!response.ok) {
+        throw new Error('Failed to create checkout session')
       }
+      
+      const data = await response.json()
+      
+      if (data.checkout_url) {
+        window.location.href = data.checkout_url
+      } else {
+        throw new Error('No checkout URL returned')
+      }
+    } catch (error) {
+      console.error("Payment error:", error)
+      alert("Произошла ошибка при создании платежа. Попробуйте позже.")
+    } finally {
+      setIsLoadingPackage(null)
     }
-  }, [userId, router])
+  }
+
+
 
   const packages: Package[] = [
     {
@@ -71,7 +76,7 @@ export default function TopUpPage() {
       name: 'Starter Pack',
       priceCZK: 300,
       amountCredits: 300,
-      link: 'https://tattoo-hub.lemonsqueezy.com/checkout/buy/04c551b1-1959-4086-bb62-86ed320ff468',
+      link: 'https://checkout.revolut.com/pay/56cf8971-7682-44bb-a110-367adaaf4aa6',
       color: 'from-blue-500/10 to-blue-500/5 dark:from-blue-900/20 dark:to-blue-900/5',
       borderColor: 'border-blue-200 dark:border-blue-800'
     },
@@ -80,7 +85,7 @@ export default function TopUpPage() {
       name: 'Standard Pack',
       priceCZK: 500,
       amountCredits: 500,
-      link: 'https://tattoo-hub.lemonsqueezy.com/checkout/buy/369bcb4f-70c8-4b33-a128-4df3dd214f56',
+      link: 'https://checkout.revolut.com/pay/ee159515-1108-419a-bdc1-7449f085dc44',
       popular: true,
       color: 'from-cyan-500/10 to-purple-500/10 dark:from-cyan-900/20 dark:to-purple-900/20',
       borderColor: 'border-cyan-400 dark:border-cyan-500 shadow-lg shadow-cyan-500/20'
@@ -90,7 +95,7 @@ export default function TopUpPage() {
       name: 'Pro Pack',
       priceCZK: 1000,
       amountCredits: 1000,
-      link: 'https://tattoo-hub.lemonsqueezy.com/checkout/buy/6f17f898-31c3-4e74-8f8c-76be6991d146',
+      link: 'https://checkout.revolut.com/pay/de28e5ef-8085-47f8-b5c2-817046933b65',
       color: 'from-amber-500/10 to-amber-500/5 dark:from-amber-900/20 dark:to-amber-900/5',
       borderColor: 'border-amber-200 dark:border-amber-800'
     },
@@ -99,44 +104,16 @@ export default function TopUpPage() {
       name: 'VIP Pack',
       priceCZK: 2000,
       amountCredits: 2000,
-      link: 'https://tattoo-hub.lemonsqueezy.com/checkout/buy/d732c27f-85bf-4f1b-8286-ac67a33d4641',
+      link: 'https://checkout.revolut.com/pay/f1e0a061-5ec3-458c-b4ec-b5ae67bf4861',
       color: 'from-rose-500/10 to-rose-500/5 dark:from-rose-900/20 dark:to-rose-900/5',
       borderColor: 'border-rose-200 dark:border-rose-800'
     }
   ]
 
-  const getCheckoutLink = (baseLink: string) => {
-    if (!userId) return '#'
-    // Pass user_id to identify the webhook and email to pre-fill the form
-    return `${baseLink}?checkout[custom][user_id]=${userId}&checkout[email]=${userEmail}`
-  }
+  ]
 
   return (
     <div className="min-h-screen bg-neutral-50 dark:bg-[#050505] text-neutral-900 dark:text-white transition-colors duration-300 relative overflow-x-hidden pb-12">
-      <Script 
-        src="https://app.lemonsqueezy.com/js/lemon.js" 
-        strategy="afterInteractive" 
-        onLoad={() => {
-          if (window.createLemonSqueezy) {
-            window.createLemonSqueezy()
-            if (window.LemonSqueezy) {
-              window.LemonSqueezy.Setup({
-                eventHandler: (event) => {
-                  if (event.event === 'Checkout.Success') {
-                    setTimeout(() => {
-                      if (window.LemonSqueezy?.Url?.Close) {
-                        window.LemonSqueezy.Url.Close()
-                      }
-                      window.location.href = '/dashboard?payment_success=true'
-                    }, 1500)
-                  }
-                }
-              })
-            }
-          }
-        }} 
-      />
-
       {/* Premium ambient glows */}
       <div className="absolute top-0 left-0 w-full h-full pointer-events-none overflow-hidden z-0">
         <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-cyan-500/5 dark:bg-cyan-500/10 blur-[120px]" />
@@ -199,23 +176,28 @@ export default function TopUpPage() {
                 </li>
               </ul>
 
-              <a 
-                href={getCheckoutLink(pkg.link)}
-                className={`lemonsqueezy-button w-full py-4 px-4 font-bold rounded-2xl transition-all flex items-center justify-center gap-2 shadow-md ${
+              <button 
+                onClick={() => handleBuyPackage(pkg.id)}
+                disabled={isLoadingPackage === pkg.id}
+                className={`w-full py-4 px-4 font-bold rounded-2xl transition-all flex items-center justify-center gap-2 shadow-md ${
                   pkg.popular 
                     ? 'bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-400 hover:to-purple-400 text-white shadow-cyan-500/25' 
                     : 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 hover:opacity-90'
-                }`}
+                } ${isLoadingPackage === pkg.id ? 'opacity-70 cursor-not-allowed' : ''}`}
               >
-                Купить пакет
-              </a>
+                {isLoadingPackage === pkg.id ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : (
+                  "Купить пакет"
+                )}
+              </button>
             </div>
           ))}
         </div>
 
         <div className="max-w-3xl mx-auto bg-white/40 dark:bg-neutral-900/40 border border-neutral-200/50 dark:border-white/5 backdrop-blur-xl rounded-2xl p-6 text-center shadow-lg">
           <p className="text-sm text-neutral-500 dark:text-neutral-400 font-medium">
-            Платежи безопасно обрабатываются нашим партнером <strong>Lemon Squeezy</strong>.<br className="hidden sm:block" /> Мы не храним данные ваших карт. Нажимая кнопку оплаты, вы соглашаетесь с нашими правилами сервиса.
+            Платежи безопасно обрабатываются нашим партнером <strong>Stripe</strong>.<br className="hidden sm:block" /> Мы не храним данные ваших карт. Нажимая кнопку оплаты, вы соглашаетесь с нашими правилами сервиса.
           </p>
         </div>
       </main>

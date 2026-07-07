@@ -528,8 +528,62 @@ async def create_client_lead(
             "is_personal": lead_data.is_personal
         }
         
+        client_id = None
         if current_user:
-            db_lead["client_id"] = current_user.user_id
+            client_id = current_user.user_id
+        elif lead_data.email:
+            email = lead_data.email.strip().lower()
+            try:
+                # Check if user exists in public.users
+                res = await supabase.table("users").select("id").eq("email", email).execute()
+                if res.data:
+                    client_id = res.data[0]["id"]
+                else:
+                    # Create new auth user
+                    import secrets, string
+                    alphabet = string.ascii_letters + string.digits
+                    password = ''.join(secrets.choice(alphabet) for _ in range(16))
+                    user_resp = await supabase.auth.admin.create_user({
+                        "email": email,
+                        "password": password,
+                        "email_confirm": True,
+                        "user_metadata": {
+                            "name": lead_data.name or "Клиент",
+                            "role": "client"
+                        }
+                    })
+                    client_id = user_resp.user.id
+                    
+                    try:
+                        # Generate magic link
+                        link_resp = await supabase.auth.admin.generate_link({
+                            "type": "magiclink",
+                            "email": email
+                        })
+                        
+                        action_link = None
+                        if hasattr(link_resp, "properties") and hasattr(link_resp.properties, "action_link"):
+                            action_link = link_resp.properties.action_link
+                        elif isinstance(link_resp, dict) and "properties" in link_resp:
+                            action_link = link_resp["properties"].get("action_link")
+                            
+                        if action_link:
+                            from app.services.mail import send_transactional_email
+                            html = f"""
+                            <h2>Ваша заявка успешно отправлена!</h2>
+                            <p>Мы создали для вас личный кабинет, чтобы вы могли общаться с мастерами.</p>
+                            <p><a href="{action_link}" style="display:inline-block;padding:10px 20px;background:#8b5cf6;color:white;text-decoration:none;border-radius:5px;">Войти в кабинет</a></p>
+                            <p>Если кнопка не работает, скопируйте эту ссылку в браузер:</p>
+                            <p>{action_link}</p>
+                            """
+                            send_transactional_email(email, "Личный кабинет Tattoo Hub", html)
+                    except Exception as le:
+                        print(f"Failed to generate/send magic link: {le}")
+            except Exception as e:
+                print(f"Shadow auth failed: {e}")
+                
+        if client_id:
+            db_lead["client_id"] = client_id
 
         import asyncio
         max_retries = 3
@@ -643,40 +697,85 @@ async def get_client_leads(
     """Get leads created by the current client."""
     try:
         res = await supabase.table("leads") \
-            .select("*") \
+            .select("*, users!assigned_master_id(id, raw_user_meta_data, username)") \
             .eq("client_id", current_user.user_id) \
             .order("created_at", desc=True) \
             .execute()
         
-        # For each lead, fetch how many proposals/bids it has
         leads = res.data or []
         if not leads:
             return []
             
         lead_ids = [l["id"] for l in leads]
         
-        # Get count of proposals for each lead
+        # Get proposals
         props_res = await supabase.table("lead_proposals") \
-            .select("lead_id, status") \
+            .select("lead_id, status, user_id, users(id, raw_user_meta_data, username)") \
             .in_("lead_id", lead_ids) \
             .execute()
             
         proposals = props_res.data or []
         proposals_count = {}
+        accepted_masters = {}
         for p in proposals:
             lid = p["lead_id"]
             proposals_count[lid] = proposals_count.get(lid, 0) + 1
-            
+            if p["status"] == "accepted" and p.get("users"):
+                u = p["users"]
+                meta = u.get("raw_user_meta_data", {})
+                accepted_masters[lid] = {
+                    "id": u.get("id"),
+                    "username": u.get("username"),
+                    "name": meta.get("name") or meta.get("telegram_username") or "Мастер",
+                    "avatar_url": meta.get("avatar_url")
+                }
+
+        # Get chats
+        chats_res = await supabase.table("lead_chats").select("lead_id, id").in_("lead_id", lead_ids).execute()
+        chats_dict = {c["lead_id"]: c["id"] for c in (chats_res.data or [])}
+
+        # Get master clients & sessions
+        master_clients_res = await supabase.table("master_clients").select("id, lead_id").in_("lead_id", lead_ids).execute()
+        master_clients = master_clients_res.data or []
+        mc_dict = {mc["lead_id"]: mc["id"] for mc in master_clients}
+        
+        sessions_dict = {}
+        if master_clients:
+            mc_ids = [mc["id"] for mc in master_clients]
+            sessions_res = await supabase.table("master_sessions").select("*").in_("client_id", mc_ids).order("session_date", desc=True).execute()
+            for s in (sessions_res.data or []):
+                # Keep the latest session for each client
+                if s["client_id"] not in sessions_dict:
+                    sessions_dict[s["client_id"]] = s
+
         out = []
         for lead in leads:
+            mc_id = mc_dict.get(lead["id"])
+            session = sessions_dict.get(mc_id) if mc_id else None
+            
+            master_info = None
+            if lead.get("users"): # from assigned_master_id
+                u = lead["users"]
+                meta = u.get("raw_user_meta_data", {})
+                master_info = {
+                    "id": u.get("id"),
+                    "username": u.get("username"),
+                    "name": meta.get("name") or meta.get("telegram_username") or "Мастер",
+                    "avatar_url": meta.get("avatar_url")
+                }
+            elif lead["id"] in accepted_masters:
+                master_info = accepted_masters[lead["id"]]
+                lead["status"] = "accepted" # Ensure status is accepted if proposal is accepted
+
+            if session and session.get("status") in ["appointment_set", "completed"]:
+                 lead["status"] = session["status"]
+
             out.append({
-                "id": lead["id"],
-                "title": lead["title"],
-                "description": lead["description"],
-                "client_priority": lead.get("client_priority", "quality"),
-                "client_token": lead.get("client_token"),
-                "created_at": lead.get("created_at"),
-                "proposal_count": proposals_count.get(lead["id"], 0)
+                **lead,
+                "unlock_count": proposals_count.get(lead["id"], 0),
+                "chat_id": chats_dict.get(lead["id"]),
+                "master": master_info,
+                "session": session
             })
         return out
     except Exception as e:

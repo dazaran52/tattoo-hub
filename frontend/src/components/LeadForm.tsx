@@ -7,6 +7,7 @@ import toast from 'react-hot-toast'
 import { useLanguage } from '@/i18n/LanguageContext'
 import { api } from '@/lib/api'
 import { supabase } from '@/lib/supabase'
+import imageCompression from 'browser-image-compression'
 
 export function LeadForm() {
   const { t, lang } = useLanguage()
@@ -16,7 +17,7 @@ export function LeadForm() {
   
   const [formData, setFormData] = useState({
     description: '',
-    style: '',
+    style: [] as string[],
     body_place: '',
     size: '',
     budget: '5000 CZK',
@@ -132,7 +133,7 @@ export function LeadForm() {
         toast.error(t('errorDescShort') || 'Описание должно быть не менее 10 символов')
         return
       }
-      if (!formData.style) {
+      if (formData.style.length === 0) {
         toast.error(t('errorStyleReq') || 'Выберите стиль татуировки')
         return
       }
@@ -208,10 +209,16 @@ export function LeadForm() {
       const imageUrls: string[] = []
       if (formData.images.length > 0) {
         for (const file of formData.images) {
-          const fileExt = file.name.split('.').pop()
+          const compressionOptions = {
+            maxSizeMB: 1,
+            maxWidthOrHeight: 1920,
+            useWebWorker: true,
+          }
+          const compressedFile = await imageCompression(file, compressionOptions)
+          const fileExt = compressedFile.name.split('.').pop() || 'webp'
           const fileName = `${Math.random()}.${fileExt}`
           const filePath = `client_leads/${fileName}`
-          const { error: uploadError } = await supabase.storage.from('lead_images').upload(filePath, file)
+          const { error: uploadError } = await supabase.storage.from('lead_images').upload(filePath, compressedFile)
           if (uploadError) throw uploadError
           const { data } = supabase.storage.from('lead_images').getPublicUrl(filePath)
           imageUrls.push(data.publicUrl)
@@ -220,7 +227,7 @@ export function LeadForm() {
 
       const payload = {
         description: formData.description,
-        style: formData.style || null,
+        style: formData.style.length > 0 ? formData.style.join(', ') : null,
         body_place: formData.body_place || null,
         size: formData.size || null,
         budget: formData.is_negotiable ? 'Договорная цена' : formData.budget || null,
@@ -231,7 +238,8 @@ export function LeadForm() {
         country_id: selectedCountry || null,
         city: formData.city || null,
         name: formData.name || null,
-        contact: formData.contact_method === 'on_site' ? 'На сайте' : formData.contact,
+        email: formData.contact,
+        contact: formData.contact, // keep as fallback for contact info
         image_urls: imageUrls,
       }
 
@@ -323,7 +331,7 @@ export function LeadForm() {
             setIsSuccess(false)
             setFormData({
               description: '', 
-              style: '', 
+              style: [] as string[], 
               body_place: '', 
               size: '', 
               budget: '5000 CZK', 
@@ -435,9 +443,20 @@ export function LeadForm() {
                       <button
                         key={style.id}
                         type="button"
-                        onClick={() => setFormData({...formData, style: style.id})}
+                        onClick={() => {
+                          if (style.id === 'Не определился') {
+                            setFormData({...formData, style: ['Не определился']})
+                          } else {
+                            const newStyles = formData.style.includes('Не определился') 
+                              ? [style.id]
+                              : formData.style.includes(style.id) 
+                                ? formData.style.filter(s => s !== style.id)
+                                : [...formData.style, style.id]
+                            setFormData({...formData, style: newStyles})
+                          }
+                        }}
                         className={`p-4 rounded-2xl border flex flex-col items-center justify-center gap-2 transition-all backdrop-blur-md font-semibold ${
-                          formData.style === style.id
+                          formData.style.includes(style.id)
                             ? 'bg-violet-500/20 border-violet-500 text-violet-700 dark:text-violet-300 scale-[1.02] shadow-md'
                             : 'bg-white/20 dark:bg-neutral-900/20 border-neutral-200 dark:border-white/5 text-neutral-700 dark:text-neutral-300 hover:bg-white/40 dark:hover:bg-neutral-800/40'
                         }`}
@@ -749,76 +768,41 @@ export function LeadForm() {
                 className="space-y-6"
               >
                 <div>
-                  <label className={labelClasses}>Где мастерам отвечать на вашу заявку?</label>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                    {[
-                      { id: 'on_site', name: 'Здесь на сайте (Встроенный чат)', icon: '💬' },
-                      { id: 'off_site', name: 'Вне сайта (Мессенджеры / Телефон)', icon: '📱' }
-                    ].map(m => (
-                      <button
-                        key={m.id}
-                        type="button"
-                        onClick={() => setFormData({...formData, contact_method: m.id})}
-                        className={`p-4 rounded-2xl border flex items-center gap-3 transition-all font-semibold text-left ${
-                          formData.contact_method === m.id
-                            ? 'bg-violet-500/20 border-violet-500 text-violet-700 dark:text-violet-300 shadow-sm'
-                            : 'bg-white/20 dark:bg-neutral-900/20 border-neutral-200 dark:border-white/5 text-neutral-700 dark:text-neutral-300 hover:bg-white/40 dark:hover:bg-neutral-800/40'
-                        }`}
-                      >
-                        <span className="text-2xl">{m.icon}</span>
-                        <span>{m.name}</span>
-                      </button>
-                    ))}
-                  </div>
+                  <label className={labelClasses}>Как к вам обращаться?</label>
+                  <input 
+                    type="text"
+                    value={formData.name}
+                    onChange={e => setFormData({...formData, name: e.target.value})}
+                    placeholder="Имя"
+                    className={inputClasses}
+                    required
+                  />
                 </div>
 
-                <AnimatePresence>
-                  {formData.contact_method === 'off_site' && (
-                    <motion.div 
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: 'auto' }}
-                      exit={{ opacity: 0, height: 0 }}
-                      className="grid grid-cols-1 md:grid-cols-2 gap-6 overflow-hidden"
-                    >
-                      <div>
-                        <label className={labelClasses}>{t('howToAddressYou') || 'Как к вам обращаться?'}</label>
-                        <input 
-                          type="text"
-                          value={formData.name}
-                          onChange={e => setFormData({...formData, name: e.target.value})}
-                          placeholder={t('yourName') || "Имя"}
-                          className={inputClasses}
-                          required
-                        />
-                      </div>
-                      <div>
-                        <label className={labelClasses}>Куда писать? (Telegram, WhatsApp, Email)</label>
-                        <input 
-                          type="text"
-                          value={formData.contact}
-                          onChange={e => setFormData({...formData, contact: e.target.value})}
-                          placeholder={t('contactPlaceholder') || "@telegram, +420... или email@..."}
-                          className={inputClasses}
-                          required
-                        />
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                <div>
+                  <label className={labelClasses}>Ваш Email (Обязательно)</label>
+                  <p className="text-xs text-neutral-500 mb-2 ml-1">Мы создадим для вас личный кабинет, чтобы вы не потеряли связь с мастером.</p>
+                  <input 
+                    type="email"
+                    value={formData.contact}
+                    onChange={e => setFormData({...formData, contact: e.target.value})}
+                    placeholder="email@example.com"
+                    className={inputClasses}
+                    required
+                  />
+                </div>
 
                 <motion.div 
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.2 }}
-                  className="flex items-start gap-4 mt-6 bg-gradient-to-r from-amber-500/10 to-orange-500/10 dark:from-amber-500/5 dark:to-orange-500/5 backdrop-blur-md p-5 rounded-2xl border border-amber-500/20"
+                  className="flex items-start gap-4 mt-6 bg-gradient-to-r from-violet-500/10 to-fuchsia-500/10 dark:from-violet-500/5 dark:to-fuchsia-500/5 backdrop-blur-md p-5 rounded-2xl border border-violet-500/20"
                 >
-                  <div className="bg-amber-500/20 p-2 rounded-full flex-shrink-0">
-                    <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+                  <div className="bg-violet-500/20 p-2 rounded-full flex-shrink-0">
+                    <Sparkles className="w-5 h-5 text-violet-600 dark:text-violet-400" />
                   </div>
-                  <p className="text-sm text-neutral-700 dark:text-neutral-300 leading-relaxed">
-                    {formData.contact_method === 'on_site' 
-                      ? 'Уведомления о новых откликах придут вам в личный кабинет. Вы сможете общаться с мастерами во встроенном чате абсолютно безопасно.'
-                      : (t('contactPrivacyNotice') || 'Твои контакты будут скрыты и станут доступны только доверенным мастерам, которые захотят взять твою идею в работу.')}
+                  <p className="text-sm text-neutral-700 dark:text-neutral-300 leading-relaxed font-medium">
+                    После отправки мы автоматически создадим вам личный кабинет без паролей. Вы сможете безопасно общаться со своим мастером во встроенном чате платформы!
                   </p>
                 </motion.div>
               </motion.div>

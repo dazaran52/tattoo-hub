@@ -10,6 +10,7 @@ import { format, parseISO } from 'date-fns'
 import { cs, ru, enUS } from 'date-fns/locale'
 import { PostModal, PortfolioPost } from '@/components/PostModal'
 import { TATTOO_STYLES, BODY_PLACES, TATTOO_SIZES } from '@/lib/constants'
+import imageCompression from 'browser-image-compression'
 
 const getThemeClasses = (theme: string) => {
   switch (theme) {
@@ -84,7 +85,7 @@ export default function BookMasterPage({ params }: { params: { username: string 
   const [email, setEmail] = useState('')
   const [instagram, setInstagram] = useState('')
   const [description, setDescription] = useState('')
-  const [style, setStyle] = useState('')
+  const [styles, setStyles] = useState<string[]>([])
   const [bodyPlace, setBodyPlace] = useState('')
   const [size, setSize] = useState('')
   const [sessionDate, setSessionDate] = useState<Date | undefined>(undefined)
@@ -141,13 +142,19 @@ export default function BookMasterPage({ params }: { params: { username: string 
       
       let imageUrls: string[] = []
       for (const file of images) {
-        const fileExt = file.name.split('.').pop()
+        const compressionOptions = {
+          maxSizeMB: 1,
+          maxWidthOrHeight: 1920,
+          useWebWorker: true,
+        }
+        const compressedFile = await imageCompression(file, compressionOptions)
+        const fileExt = compressedFile.name.split('.').pop() || 'webp'
         const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`
         const filePath = `${fileName}`
         
         const { error: uploadError } = await supabase.storage
           .from('lead_images')
-          .upload(filePath, file)
+          .upload(filePath, compressedFile)
           
         if (uploadError) {
           console.error('Error uploading image', uploadError)
@@ -170,7 +177,7 @@ export default function BookMasterPage({ params }: { params: { username: string 
         email: email,
         instagram: instagram || null,
         description,
-        style,
+        style: styles.length > 0 ? styles.join(', ') : null,
         body_place: bodyPlace,
         size,
         image_urls: imageUrls,
@@ -429,9 +436,14 @@ export default function BookMasterPage({ params }: { params: { username: string 
                     <button
                       key={s}
                       type="button"
-                      onClick={() => setStyle(s)}
+                      onClick={() => {
+                        const newStyles = styles.includes(s)
+                          ? styles.filter(style => style !== s)
+                          : [...styles, s]
+                        setStyles(newStyles)
+                      }}
                       className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all border ${
-                        style === s 
+                        styles.includes(s) 
                           ? 'bg-cyan-500/20 border-cyan-500 text-cyan-600 dark:text-cyan-400 shadow-sm scale-[1.02]' 
                           : 'bg-white/50 dark:bg-neutral-900/50 border-neutral-200 dark:border-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-800 hover:scale-[1.01]'
                       }`}
@@ -443,8 +455,8 @@ export default function BookMasterPage({ params }: { params: { username: string 
                 <div className="relative">
                   <input
                     type="text"
-                    value={style}
-                    onChange={(e) => setStyle(e.target.value)}
+                    value={styles.join(', ')}
+                    onChange={(e) => setStyles(e.target.value.split(',').map(s => s.trim()).filter(s => s))}
                     placeholder="Или введите свой вариант..."
                     className={`w-full rounded-xl px-4 py-3 transition-all ${tClasses.input}`}
                   />

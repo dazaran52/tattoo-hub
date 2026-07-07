@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from 'react'
 import { Profile, supabase } from '@/lib/supabase'
-import { PlusCircle, Heart, Clock, X, MoreVertical, Edit2, Pause, Play, Trash2 } from 'lucide-react'
+import { PlusCircle, Heart, Clock, X, MoreVertical, Edit2, Pause, Play, Trash2, MessageCircle } from 'lucide-react'
 import { LeadForm } from '@/components/LeadForm'
+import { ChatModal } from '@/components/ChatModal'
 import { useLanguage } from '@/i18n/LanguageContext'
 
 export function ClientDashboard({ profile }: { profile: Profile }) {
@@ -14,6 +15,9 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
   const [isLoadingLeads, setIsLoadingLeads] = useState(true)
   const [editingLead, setEditingLead] = useState<any>(null)
   const [openMenuId, setOpenMenuId] = useState<string | null>(null)
+  const [selectedChatId, setSelectedChatId] = useState<string | null>(null)
+  const [selectedChatTitle, setSelectedChatTitle] = useState('')
+  const [selectedChatMaster, setSelectedChatMaster] = useState('')
 
   const handlePauseResume = async (leadId: string, currentStatus: string) => {
     try {
@@ -245,18 +249,67 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
               <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-5 line-clamp-3 leading-relaxed bg-neutral-50 dark:bg-neutral-950/50 p-3 rounded-xl border border-neutral-100 dark:border-neutral-800/50">
                 {lead.description || t('noDescription')}
               </p>
+
+              {lead.master && (
+                <div className="mb-5 p-4 rounded-xl border border-indigo-100 dark:border-indigo-900/30 bg-indigo-50/50 dark:bg-indigo-900/10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <img 
+                      src={lead.master.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(lead.master.name || 'Master')}`} 
+                      alt="Master" 
+                      className="w-12 h-12 rounded-full object-cover border-2 border-white dark:border-neutral-800 shadow-sm"
+                    />
+                    <div>
+                      <p className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 mb-0.5">{t('assignedMaster') || 'Ваш мастер'}</p>
+                      <h5 className="font-bold text-sm text-neutral-900 dark:text-white">{lead.master.name}</h5>
+                      <a href={`/book/${lead.master.username}`} target="_blank" rel="noopener noreferrer" className="text-xs text-neutral-500 hover:text-indigo-500 transition-colors">@{lead.master.username}</a>
+                    </div>
+                  </div>
+                  <div className="flex flex-col sm:flex-row items-end sm:items-center gap-3">
+                    {lead.session && lead.session.session_date ? (
+                      <div className="text-left sm:text-right bg-white dark:bg-neutral-900 px-3 py-2 rounded-lg border border-neutral-100 dark:border-neutral-800 shadow-sm">
+                        <p className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider mb-0.5">{t('sessionDate') || 'Сеанс'}</p>
+                        <p className="text-sm font-bold text-neutral-900 dark:text-white flex items-center gap-1.5">
+                          <Clock className="w-3.5 h-3.5 text-indigo-500" />
+                          {new Date(lead.session.session_date).toLocaleDateString()}
+                          {lead.session.start_time && ` ${lead.session.start_time}`}
+                        </p>
+                      </div>
+                    ) : lead.chat_id ? (
+                       <div className="text-left sm:text-right">
+                         <p className="text-xs text-neutral-500 font-medium whitespace-nowrap">Ожидает назначения даты</p>
+                       </div>
+                    ) : null}
+                    
+                    {lead.chat_id && (
+                      <button 
+                        onClick={() => {
+                          setSelectedChatId(lead.chat_id)
+                          setSelectedChatTitle(lead.title)
+                          setSelectedChatMaster(lead.master.name)
+                        }}
+                        className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-sm font-bold shadow-sm transition-colors flex items-center gap-2"
+                      >
+                        <MessageCircle className="w-4 h-4" />
+                        Чат
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
               
               <div className="flex justify-between items-center text-sm border-t border-neutral-100 dark:border-neutral-800 pt-4 mt-auto">
                 <span className="text-neutral-500 font-medium bg-neutral-100 dark:bg-neutral-800 px-3 py-1.5 rounded-lg">
                   {t('budgetLabel') || 'Бюджет:'} <strong className="text-neutral-900 dark:text-white ml-1">{lead.display_budget || lead.client_budget ? `${lead.client_budget} ${lead.client_currency || 'CZK'}` : t('negotiableBudget')}</strong>
                 </span>
-                <span className="text-indigo-600 dark:text-indigo-400 font-bold bg-indigo-50 dark:bg-indigo-900/20 px-3 py-1.5 rounded-lg">
-                  {lead.unlock_count || 0} {
-                    (lead.unlock_count || 0) === 1 ? (t('response_one') || 'отклик') :
-                    (lead.unlock_count || 0) >= 2 && (lead.unlock_count || 0) <= 4 ? (t('response_few') || 'отклика') :
-                    (t('response_many') || 'откликов')
-                  }
-                </span>
+                {!lead.master && (
+                  <span className="text-indigo-600 dark:text-indigo-400 font-bold bg-indigo-50 dark:bg-indigo-900/20 px-3 py-1.5 rounded-lg">
+                    {lead.unlock_count || 0} {
+                      (lead.unlock_count || 0) === 1 ? (t('response_one') || 'отклик') :
+                      (lead.unlock_count || 0) >= 2 && (lead.unlock_count || 0) <= 4 ? (t('response_few') || 'отклика') :
+                      (t('response_many') || 'откликов')
+                    }
+                  </span>
+                )}
               </div>
             </div>
           ))}
@@ -284,6 +337,15 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
           </div>
         </div>
       )}
+
+      <ChatModal 
+        isOpen={!!selectedChatId} 
+        onClose={() => setSelectedChatId(null)} 
+        chatId={selectedChatId} 
+        leadTitle={selectedChatTitle}
+        currentUserRole="client"
+        recipientName={selectedChatMaster}
+      />
     </div>
   )
 }

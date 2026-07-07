@@ -3,6 +3,7 @@ import { Plus, Image as ImageIcon, Video, Trash2, Edit2, Loader2, X } from 'luci
 import { supabase } from '@/lib/supabase'
 import { PostModal, PortfolioPost } from './PostModal'
 import { useLanguage } from '@/i18n/LanguageContext'
+import imageCompression from 'browser-image-compression'
 
 interface PortfolioTabProps {
   profile: any
@@ -60,14 +61,26 @@ export function PortfolioTab({ profile }: PortfolioTabProps) {
           return
         }
 
-        const fileExt = file.name.split('.').pop()
+        let fileToUpload = file
+        let fileExt = file.name.split('.').pop()
         const isVideo = file.type.startsWith('video/')
         const type = isVideo ? 'video' : 'image'
+
+        if (!isVideo) {
+          const compressionOptions = {
+            maxSizeMB: 1,
+            maxWidthOrHeight: 1920,
+            useWebWorker: true,
+          }
+          fileToUpload = await imageCompression(file, compressionOptions)
+          fileExt = fileToUpload.name.split('.').pop() || 'webp'
+        }
+
         const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`
         
         const { error: uploadError } = await supabase.storage
           .from('portfolio')
-          .upload(fileName, file)
+          .upload(fileName, fileToUpload)
 
         if (uploadError) throw uploadError
 

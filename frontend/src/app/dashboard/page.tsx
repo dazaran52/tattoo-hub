@@ -210,39 +210,7 @@ export default function DashboardPage() {
               </div>
               
               {/* Tabs */}
-              <div className="mt-4 md:mt-0 flex overflow-x-auto p-1 bg-white/40 dark:bg-neutral-900/40 backdrop-blur-md border border-neutral-200/50 dark:border-white/5 rounded-xl shadow-sm gap-1 no-scrollbar">
-                  <button
-                    id="tour-leads"
-                    onClick={() => setActiveTab('feed')}
-                    className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all whitespace-nowrap ${
-                      activeTab === 'feed'
-                        ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-950 shadow-md scale-[1.02]'
-                        : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200 hover:bg-white/50 dark:hover:bg-neutral-800/50'
-                    }`}
-                  >
-                    {t('allLeads')}
-                  </button>
-                  <button
-                    onClick={() => setActiveTab('my-leads')}
-                    className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all whitespace-nowrap ${
-                      activeTab === 'my-leads'
-                        ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-950 shadow-md scale-[1.02]'
-                        : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200 hover:bg-white/50 dark:hover:bg-neutral-800/50'
-                    }`}
-                  >
-                    {t('myLeads')}
-                  </button>
-                  <button
-                    onClick={() => setActiveTab('auctions')}
-                    className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all whitespace-nowrap ${
-                      activeTab === 'auctions'
-                        ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-950 shadow-md scale-[1.02]'
-                        : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200 hover:bg-white/50 dark:hover:bg-neutral-800/50'
-                    }`}
-                  >
-                    {t('auctions')}
-                  </button>
-                  <div className="w-px h-6 bg-neutral-200 dark:bg-white/10 self-center mx-1"></div>
+                <div className="mt-4 md:mt-0 flex overflow-x-auto p-1 bg-white/40 dark:bg-neutral-900/40 backdrop-blur-md border border-neutral-200/50 dark:border-white/5 rounded-xl shadow-sm gap-1 no-scrollbar">
                   <button
                     onClick={() => setActiveTab('crm')}
                     className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all whitespace-nowrap flex items-center gap-2 ${
