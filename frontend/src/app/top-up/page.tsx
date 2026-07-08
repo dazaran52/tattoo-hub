@@ -110,8 +110,6 @@ export default function TopUpPage() {
     }
   ]
 
-  ]
-
   return (
     <div className="min-h-screen bg-neutral-50 dark:bg-[#050505] text-neutral-900 dark:text-white transition-colors duration-300 relative overflow-x-hidden pb-12">
       {/* Premium ambient glows */}
