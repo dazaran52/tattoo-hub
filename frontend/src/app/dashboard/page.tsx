@@ -223,6 +223,17 @@ export default function DashboardPage() {
                     {t('myCrm')}
                   </button>
                   <button
+                    onClick={() => setActiveTab('feed')}
+                    className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all whitespace-nowrap flex items-center gap-2 ${
+                      activeTab === 'feed'
+                        ? 'bg-violet-600 text-white shadow-md scale-[1.02]'
+                        : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200 hover:bg-white/50 dark:hover:bg-neutral-800/50'
+                    }`}
+                  >
+                    <span className="w-4 h-4 flex items-center justify-center">🛍️</span>
+                    Маркетплейс
+                  </button>
+                  <button
                     onClick={() => setActiveTab('portfolio')}
                     className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all whitespace-nowrap flex items-center gap-2 ${
                       activeTab === 'portfolio'
