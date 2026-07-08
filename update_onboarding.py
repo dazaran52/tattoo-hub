@@ -1,4 +1,10 @@
-'use client'
+import re
+
+with open("frontend/src/app/onboarding/page.tsx", "r") as f:
+    content = f.read()
+
+# We will completely rewrite onboarding/page.tsx to have a 2-step wizard.
+new_content = """'use client'
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
@@ -308,3 +314,9 @@ export default function OnboardingPage() {
     </div>
   )
 }
+"""
+
+with open("frontend/src/app/onboarding/page.tsx", "w") as f:
+    f.write(new_content)
+
+print("Updated onboarding/page.tsx")
