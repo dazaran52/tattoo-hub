@@ -4,6 +4,7 @@ export interface Profile {
   id: string
   email: string
   balance: number
+  credits: number
   is_admin: boolean
   status: string
   display_name?: string

@@ -8,6 +8,7 @@ export interface Profile {
   username?: string
   email: string
   balance: number
+  credits: number
   is_admin: boolean
   status: string
   created_at: string
