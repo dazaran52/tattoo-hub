@@ -34,7 +34,11 @@ class Settings(BaseSettings):
 
     # Stripe
     STRIPE_SECRET_KEY: str | None = None
+    STRIPE_PUBLISHABLE_KEY: str | None = None
     STRIPE_WEBHOOK_SECRET: str | None = None
+    
+    # Legacy
+    LEMON_SQUEEZY_WEBHOOK_SECRET: str | None = None
 
     
     # Conversational AI
