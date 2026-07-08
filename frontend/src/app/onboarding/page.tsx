@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { motion, AnimatePresence } from 'framer-motion'
-import { MapPin, User, Loader2, ArrowRight, ArrowLeft, Link as LinkIcon, CheckCircle2 } from 'lucide-react'
+import { MapPin, User, Loader2, ArrowRight, ArrowLeft, Link as LinkIcon, CheckCircle2, Globe } from 'lucide-react'
 import { useLanguage } from '@/i18n/LanguageContext'
 import toast from 'react-hot-toast'
 
@@ -235,21 +235,41 @@ export default function OnboardingPage() {
                       </div>
                     </div>
 
-                    <div className="space-y-1.5">
-                      <label className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 ml-1">Город</label>
-                      <div className="relative group">
-                        <MapPin className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400 transition-colors ${profile?.role === 'master' ? 'group-focus-within:text-orange-500' : 'group-focus-within:text-indigo-500'}`} />
-                        <select
-                          required
-                          value={selectedCities[0] || ''}
-                          onChange={e => setSelectedCities([e.target.value])}
-                          className={`w-full pl-12 pr-4 py-4 bg-white/50 dark:bg-neutral-950/50 border border-neutral-200 dark:border-white/10 rounded-2xl focus:outline-none focus:ring-2 appearance-none cursor-pointer transition-all ${profile?.role === 'master' ? 'focus:ring-orange-500/20 focus:border-orange-500' : 'focus:ring-indigo-500/20 focus:border-indigo-500'}`}
-                        >
-                          <option value="" disabled>Выберите город</option>
-                          {cities.map(c => (
-                            <option key={c.id} value={c.id}>{c.name_ru}</option>
-                          ))}
-                        </select>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-1.5">
+                        <label className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 ml-1">Страна</label>
+                        <div className="relative group">
+                          <Globe className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400 transition-colors ${profile?.role === 'master' ? 'group-focus-within:text-orange-500' : 'group-focus-within:text-indigo-500'}`} />
+                          <select
+                            required
+                            value={selectedCountry}
+                            onChange={e => setSelectedCountry(e.target.value)}
+                            className={`w-full pl-12 pr-4 py-4 bg-white/50 dark:bg-neutral-950/50 border border-neutral-200 dark:border-white/10 rounded-2xl focus:outline-none focus:ring-2 appearance-none cursor-pointer transition-all ${profile?.role === 'master' ? 'focus:ring-orange-500/20 focus:border-orange-500' : 'focus:ring-indigo-500/20 focus:border-indigo-500'}`}
+                          >
+                            <option value="" disabled>Выберите страну</option>
+                            {countries.map(c => (
+                              <option key={c.id} value={c.id}>{c.name_ru}</option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <label className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 ml-1">Город</label>
+                        <div className="relative group">
+                          <MapPin className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400 transition-colors ${profile?.role === 'master' ? 'group-focus-within:text-orange-500' : 'group-focus-within:text-indigo-500'}`} />
+                          <select
+                            required
+                            value={selectedCities[0] || ''}
+                            onChange={e => setSelectedCities([e.target.value])}
+                            className={`w-full pl-12 pr-4 py-4 bg-white/50 dark:bg-neutral-950/50 border border-neutral-200 dark:border-white/10 rounded-2xl focus:outline-none focus:ring-2 appearance-none cursor-pointer transition-all ${profile?.role === 'master' ? 'focus:ring-orange-500/20 focus:border-orange-500' : 'focus:ring-indigo-500/20 focus:border-indigo-500'}`}
+                          >
+                            <option value="" disabled>Выберите город</option>
+                            {cities.map(c => (
+                              <option key={c.id} value={c.id}>{c.name_ru}</option>
+                            ))}
+                          </select>
+                        </div>
                       </div>
                     </div>
 
@@ -270,7 +290,7 @@ export default function OnboardingPage() {
                         <LinkIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400 transition-colors group-focus-within:text-orange-500" />
                         <input
                           required
-                          type="url"
+                          type="text"
                           value={portfolioUrl}
                           onChange={e => setPortfolioUrl(e.target.value)}
                           placeholder="https://instagram.com/..."

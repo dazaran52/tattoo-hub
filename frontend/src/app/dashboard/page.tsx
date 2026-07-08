@@ -13,7 +13,7 @@ import { toast } from 'react-hot-toast'
 import { ClientDashboard } from '@/components/ClientDashboard'
 import { PortfolioTab } from '@/components/PortfolioTab'
 import { useLanguage } from '@/i18n/LanguageContext'
-import { MessageCircle, LayoutDashboard, Share2, Link as LinkIcon, Image as ImageIcon } from 'lucide-react'
+import { MessageCircle, LayoutDashboard, Share2, Link as LinkIcon, Image as ImageIcon, ShoppingBag } from 'lucide-react'
 
 export default function DashboardPage() {
   const router = useRouter()
@@ -230,7 +230,7 @@ export default function DashboardPage() {
                         : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200 hover:bg-white/50 dark:hover:bg-neutral-800/50'
                     }`}
                   >
-                    <span className="w-4 h-4 flex items-center justify-center">🛍️</span>
+                    <ShoppingBag className="w-4 h-4" />
                     Маркетплейс
                   </button>
                   <button
@@ -279,26 +279,6 @@ export default function DashboardPage() {
                     {t('fillProfile')}
                   </button>
                 </div>
-              </div>
-            ) : profile.status === 'pending' ? (
-              <div className="text-center p-12 bg-white/60 dark:bg-neutral-900/60 backdrop-blur-xl rounded-3xl border border-amber-200 dark:border-amber-900/30 shadow-xl max-w-2xl mx-auto mt-8">
-                <div className="w-20 h-20 bg-amber-100/50 dark:bg-amber-900/30 rounded-full mx-auto mb-6 flex items-center justify-center border border-amber-500/20">
-                  <span className="text-3xl">⏳</span>
-                </div>
-                <h3 className="text-2xl font-bold text-neutral-900 dark:text-white mb-3 tracking-tight">{t('pendingReviewTitle')}</h3>
-                <p className="text-neutral-600 dark:text-neutral-400 max-w-md mx-auto font-medium">
-                  {t('pendingReviewDesc')}
-                </p>
-              </div>
-            ) : profile.status === 'rejected' ? (
-              <div className="text-center p-12 bg-white/60 dark:bg-neutral-900/60 backdrop-blur-xl rounded-3xl border border-red-200 dark:border-red-900/30 shadow-xl max-w-2xl mx-auto mt-8">
-                <div className="w-20 h-20 bg-red-100/50 dark:bg-red-900/30 rounded-full mx-auto mb-6 flex items-center justify-center border border-red-500/20">
-                  <span className="text-3xl text-red-600">❌</span>
-                </div>
-                <h3 className="text-2xl font-bold text-neutral-900 dark:text-white mb-3 tracking-tight">{t('rejectedTitle')}</h3>
-                <p className="text-neutral-600 dark:text-neutral-400 max-w-md mx-auto font-medium">
-                  {t('rejectedDesc')}
-                </p>
               </div>
             ) : (
               <>
