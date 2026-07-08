@@ -10,7 +10,6 @@ interface Package {
   name: string
   priceCZK: number
   amountCredits: number
-  link: string
   popular?: boolean
   color: string
   borderColor: string
@@ -76,7 +75,6 @@ export default function TopUpPage() {
       name: 'Starter Pack',
       priceCZK: 300,
       amountCredits: 300,
-      link: 'https://checkout.revolut.com/pay/56cf8971-7682-44bb-a110-367adaaf4aa6',
       color: 'from-blue-500/10 to-blue-500/5 dark:from-blue-900/20 dark:to-blue-900/5',
       borderColor: 'border-blue-200 dark:border-blue-800'
     },
@@ -85,7 +83,6 @@ export default function TopUpPage() {
       name: 'Standard Pack',
       priceCZK: 500,
       amountCredits: 500,
-      link: 'https://checkout.revolut.com/pay/ee159515-1108-419a-bdc1-7449f085dc44',
       popular: true,
       color: 'from-cyan-500/10 to-purple-500/10 dark:from-cyan-900/20 dark:to-purple-900/20',
       borderColor: 'border-cyan-400 dark:border-cyan-500 shadow-lg shadow-cyan-500/20'
@@ -95,7 +92,6 @@ export default function TopUpPage() {
       name: 'Pro Pack',
       priceCZK: 1000,
       amountCredits: 1000,
-      link: 'https://checkout.revolut.com/pay/de28e5ef-8085-47f8-b5c2-817046933b65',
       color: 'from-amber-500/10 to-amber-500/5 dark:from-amber-900/20 dark:to-amber-900/5',
       borderColor: 'border-amber-200 dark:border-amber-800'
     },
@@ -104,7 +100,6 @@ export default function TopUpPage() {
       name: 'VIP Pack',
       priceCZK: 2000,
       amountCredits: 2000,
-      link: 'https://checkout.revolut.com/pay/f1e0a061-5ec3-458c-b4ec-b5ae67bf4861',
       color: 'from-rose-500/10 to-rose-500/5 dark:from-rose-900/20 dark:to-rose-900/5',
       borderColor: 'border-rose-200 dark:border-rose-800'
     }

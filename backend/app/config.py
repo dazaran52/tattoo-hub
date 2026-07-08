@@ -30,7 +30,6 @@ class Settings(BaseSettings):
     APP_HOST: str = "0.0.0.0"
     APP_PORT: int = 8000
     APP_ENV: str = "development"
-    DONATELLO_X_KEY: str = "TATTOO_HUB_SECRET_123"
 
     # Stripe
     STRIPE_SECRET_KEY: str | None = None
