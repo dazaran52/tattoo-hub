@@ -294,7 +294,6 @@ async def create_stripe_checkout_session(
     
     try:
         checkout_session = stripe.checkout.Session.create(
-            payment_method_types=['card'],
             line_items=[
                 {
                     'price_data': {
