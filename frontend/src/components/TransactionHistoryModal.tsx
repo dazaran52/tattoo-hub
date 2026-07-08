@@ -161,8 +161,10 @@ export function TransactionHistoryModal({ isOpen, onClose, withdrawableBalance =
                   <div>
                     <div className="font-semibold text-neutral-900 dark:text-white flex items-center gap-2">
                       +{tx.credits_added} {t('credit_plural')}
-                      <span className={`text-xs font-normal px-2 py-0.5 rounded-md ${tx.type === 'request' ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400' : 'bg-neutral-200 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300'}`}>
-                        {tx.provider === 'donatello' ? 'Donatello' : tx.provider === 'cryptobot' ? 'Crypto' : tx.provider === 'revolut' ? 'Revolut' : 'Админ'}
+                      <div className="flex items-center gap-1.5 px-2 py-0.5 rounded text-xs font-medium bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400">
+                        {tx.provider === 'stripe' ? 'Stripe' : tx.provider === 'donatello' ? 'Donatello' : tx.provider === 'cryptobot' ? 'Crypto' : tx.provider === 'revolut' ? 'Revolut' : 'Админ'}
+                      </div>
+                      <span className={`text-xs font-normal px-2 py-0.5 rounded-md ${tx.type === 'request' ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400' : 'hidden'}`}>
                         {tx.type === 'request' ? ' (Заявка)' : ''}
                       </span>
                     </div>
