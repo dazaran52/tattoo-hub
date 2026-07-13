@@ -23,6 +23,7 @@ from app.routers.chat import router as chat_router
 from app.routers.client_portal import router as client_portal_router
 from app.routers.public import router as public_router
 from app.routers.instagram import router as instagram_router
+from app.routers.reviews import router as reviews_router
 from app.routers import crm
 
 
@@ -172,6 +173,7 @@ def create_application() -> FastAPI:
     app.include_router(client_portal_router)
     app.include_router(public_router)
     app.include_router(instagram_router)
+    app.include_router(reviews_router)
     app.include_router(crm.router, prefix="/api/crm", tags=["CRM"])
     
     @app.get("/health")

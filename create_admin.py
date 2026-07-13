@@ -1,41 +1,40 @@
-import os
 import asyncio
-from dotenv import load_dotenv
-from supabase._async.client import create_client, AsyncClient
+from supabase import create_client, Client
+import os
 
-load_dotenv("backend/.env")
+url = "https://swprcstdyskalatuvbqh.supabase.co"
+key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN3cHJjc3RkeXNrYWxhdHV2YnFoIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3OTgxMDE5OSwiZXhwIjoyMDk1Mzg2MTk5fQ.4SNfeqQH_B2TMhPOvXebQn2B-_R270Yh8qAO3al6AQw"
 
-url = os.environ.get("SUPABASE_URL")
-key = os.environ.get("SUPABASE_KEY")
+supabase: Client = create_client(url, key)
 
-async def create_admin():
-    supabase: AsyncClient = await create_client(url, key)
+def main():
+    email = "admin@admin.com"
+    password = "adminadmin"
+    
     try:
-        res = await supabase.table("users").select("id").eq("email", "admin@tattoohub.cz").execute()
-        if res.data:
-            user_id = res.data[0]['id']
-            await supabase.auth.admin.update_user_by_id(user_id, {"password": "admin123"})
-            await supabase.table("users").update({"is_admin": True, "status": "approved"}).eq("id", user_id).execute()
-            print("Updated existing admin user")
-        else:
-            user = await supabase.auth.admin.create_user({
-                "email": "admin@tattoohub.cz",
-                "password": "admin123",
-                "email_confirm": True,
-                "user_metadata": {"role": "admin"}
-            })
-            await supabase.table("users").upsert({
-                "id": user.user.id,
-                "email": "admin@tattoohub.cz",
-                "is_admin": True,
-                "status": "approved",
+        # Create user
+        res = supabase.auth.admin.create_user({
+            "email": email,
+            "password": password,
+            "email_confirm": True,
+            "user_metadata": {
                 "role": "admin",
-                "balance": 0.0,
-                "credits": 0,
-                "display_name": "Главный Админ"
-            }).execute()
-            print("Created new admin user")
+                "name": "Super Admin"
+            }
+        })
+        print(f"Created admin user: {res.user.id}")
+        
+        # Insert into public.users
+        supabase.table("users").upsert({
+            "id": res.user.id,
+            "email": email,
+            "role": "admin",
+            "display_name": "Super Admin"
+        }).execute()
+        print("Upserted into public.users")
+        
     except Exception as e:
-        print(f"Failed to update existing: {e}")
+        print(f"Error: {e}")
 
-asyncio.run(create_admin())
+if __name__ == "__main__":
+    main()

@@ -129,7 +129,7 @@ export default function DashboardPage() {
       toast.error(language === 'ru' ? 'Сначала установите username в профиле' : 'Set username in profile first')
       return
     }
-    const url = `${window.location.origin}/book/${profile.username}`
+    const url = `${window.location.origin}/master/${profile.username}`
     navigator.clipboard.writeText(url)
     toast.success(language === 'ru' ? 'Ссылка на визитку скопирована!' : 'Booking link copied!')
   }

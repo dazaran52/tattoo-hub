@@ -156,16 +156,18 @@ def send_smtp_reply(to_email: str, subject: str, body_html: str, original_msg_id
         
     msg.set_content(body_html, subtype='html')
     
-    try:
+    try:        # Use username if set, else fallback to email
+        smtp_user = settings.LEAD_REPLY_SMTP_USERNAME or settings.LEAD_REPLY_EMAIL
+        
         # Port 465 requires SMTP_SSL, 587 requires SMTP + starttls
         if settings.LEAD_REPLY_SMTP_PORT == 465:
             with smtplib.SMTP_SSL(settings.LEAD_REPLY_SMTP_SERVER, settings.LEAD_REPLY_SMTP_PORT) as server:
-                server.login(settings.LEAD_REPLY_EMAIL, settings.LEAD_REPLY_PASSWORD)
+                server.login(smtp_user, settings.LEAD_REPLY_PASSWORD)
                 server.send_message(msg)
         else:
             with smtplib.SMTP(settings.LEAD_REPLY_SMTP_SERVER, settings.LEAD_REPLY_SMTP_PORT) as server:
                 server.starttls()
-                server.login(settings.LEAD_REPLY_EMAIL, settings.LEAD_REPLY_PASSWORD)
+                server.login(smtp_user, settings.LEAD_REPLY_PASSWORD)
                 server.send_message(msg)
                 
         try:

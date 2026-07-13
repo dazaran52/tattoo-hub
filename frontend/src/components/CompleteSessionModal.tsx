@@ -16,6 +16,7 @@ export function CompleteSessionModal({ isOpen, onClose, sessionId, onSuccess }: 
   const [images, setImages] = useState<File[]>([])
   const [description, setDescription] = useState('')
   const [publishToPortfolio, setPublishToPortfolio] = useState(true)
+  const [sendReviewRequest, setSendReviewRequest] = useState(true)
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -86,6 +87,7 @@ export function CompleteSessionModal({ isOpen, onClose, sessionId, onSuccess }: 
           portfolio_media: portfolioMedia,
           description: description,
           publish_to_portfolio: publishToPortfolio,
+          send_review_request: sendReviewRequest,
           end_time: new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })
         })
       })
@@ -201,6 +203,16 @@ export function CompleteSessionModal({ isOpen, onClose, sessionId, onSuccess }: 
                   className="w-5 h-5 rounded border-neutral-300 text-violet-600 focus:ring-violet-500"
                 />
                 <span className="text-sm font-medium">Опубликовать фото в моем публичном портфолио</span>
+              </label>
+
+              <label className="flex items-center gap-3 p-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-xl cursor-pointer">
+                <input 
+                  type="checkbox" 
+                  checked={sendReviewRequest}
+                  onChange={e => setSendReviewRequest(e.target.checked)}
+                  className="w-5 h-5 rounded border-neutral-300 text-violet-600 focus:ring-violet-500"
+                />
+                <span className="text-sm font-medium">Отправить клиенту письмо с просьбой оставить отзыв</span>
               </label>
 
               <button

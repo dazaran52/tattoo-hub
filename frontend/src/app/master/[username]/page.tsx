@@ -580,8 +580,8 @@ export default function BookMasterPage({ params }: { params: { username: string 
                   .rdp-root { 
                     --rdp-day-height: 40px; 
                     --rdp-day-width: 40px;
-                    --rdp-accent-color: #8b5cf6; 
-                    --rdp-accent-background-color: rgba(139, 92, 246, 0.1);
+                    --rdp-accent-color: #8b5cf6 !important; 
+                    --rdp-accent-background-color: rgba(139, 92, 246, 0.1) !important;
                     margin: 0; 
                   }
                   .rdp-day_button:hover:not([disabled]):not(.rdp-selected) { background-color: rgba(139, 92, 246, 0.1); }

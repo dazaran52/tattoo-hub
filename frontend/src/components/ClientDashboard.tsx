@@ -261,7 +261,7 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
                     <div>
                       <p className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 mb-0.5">{t('assignedMaster') || 'Ваш мастер'}</p>
                       <h5 className="font-bold text-sm text-neutral-900 dark:text-white">{lead.master.name}</h5>
-                      <a href={`/book/${lead.master.username}`} target="_blank" rel="noopener noreferrer" className="text-xs text-neutral-500 hover:text-indigo-500 transition-colors">@{lead.master.username}</a>
+                      <a href={`/master/${lead.master.username}`} target="_blank" rel="noopener noreferrer" className="text-xs text-neutral-500 hover:text-indigo-500 transition-colors">@{lead.master.username}</a>
                     </div>
                   </div>
                   <div className="flex flex-col sm:flex-row items-end sm:items-center gap-3">

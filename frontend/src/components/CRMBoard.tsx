@@ -760,6 +760,7 @@ export function CRMBoard() {
           }}
           session={sessionToAccept}
           allSessions={sessions}
+          onSessionClick={(s) => setSessionDetails(s)}
         />
       )}
       <LeadDetailsModal

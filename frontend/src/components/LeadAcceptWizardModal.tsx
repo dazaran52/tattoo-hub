@@ -10,6 +10,7 @@ interface LeadAcceptWizardModalProps {
   onSuccess: () => void
   session: CRMSession
   allSessions: CRMSession[]
+  onSessionClick?: (session: CRMSession) => void
 }
 
 interface DayOff {
@@ -20,7 +21,7 @@ interface DayOff {
   end_time: string | null
 }
 
-export function LeadAcceptWizardModal({ isOpen, onClose, onSuccess, session, allSessions }: LeadAcceptWizardModalProps) {
+export function LeadAcceptWizardModal({ isOpen, onClose, onSuccess, session, allSessions, onSessionClick }: LeadAcceptWizardModalProps) {
   const [step, setStep] = useState(1)
   const [loading, setLoading] = useState(false)
   const [price, setPrice] = useState(session.price?.toString() || '')
@@ -97,30 +98,43 @@ export function LeadAcceptWizardModal({ isOpen, onClose, onSuccess, session, all
       if (sessionError) throw sessionError
 
       // 2. Optionally send automated message
-      if (sendMessage && session.master_clients?.leads) {
-        // Need to find lead_id to get the chat
-        const { data: clientData } = await supabase.from('master_clients')
-          .select('lead_id')
-          .eq('id', session.master_clients?.id)
-          .single()
-
-        if (clientData?.lead_id) {
-          const { data: chatData } = await supabase.from('lead_chats')
-            .select('id')
-            .eq('lead_id', clientData.lead_id)
-            .single()
-
-          if (chatData?.id) {
-            const { data: userData } = await supabase.auth.getUser()
-            if (userData.user) {
+      if (sendMessage) {
+        const { data: { session: authSession } } = await supabase.auth.getSession()
+        const token = authSession?.access_token
+        
+        try {
+          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/crm/sessions/${session.id}/send-accept-email`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+              price: price ? parseFloat(price) : null,
+              start_time: startTime,
+              end_time: endTime,
+              date: selectedDate
+            })
+          })
+          
+          if (!res.ok) {
+            console.error('Failed to send email', await res.text())
+            // Don't block the UI, just log it
+          } else {
+            const data = await res.json()
+            if (data.status === 'no_email') {
+              // Copy text to clipboard if no email
               const msg = `Привет! Я готов взять твою заявку в работу. \nПредварительная стоимость: ${price ? price + ' Kč' : 'договорная'}.\nВремя сеанса: ${startTime} - ${endTime}.\nЕсли есть вопросы — пиши!`
-              await supabase.from('chat_messages').insert({
-                chat_id: chatData.id,
-                sender_id: userData.user.id,
-                content: msg
-              })
+              navigator.clipboard.writeText(msg).catch(() => {})
+              toast.success('Клиент не оставил Email. Текст скопирован в буфер обмена!')
+            } else if (data.status === 'smtp_failed') {
+              toast.error('Ошибка отправки Email. Возможно, не настроена почта.')
+            } else {
+              toast.success('Уведомление успешно отправлено клиенту на почту!')
             }
           }
+        } catch (err) {
+          console.error('API call error', err)
         }
       }
 
@@ -281,8 +295,12 @@ export function LeadAcceptWizardModal({ isOpen, onClose, onSuccess, session, all
                   ) : (
                     <div className="space-y-2">
                       {selectedDateSessions.map(s => (
-                        <div key={s.id} className="flex justify-between items-center bg-neutral-50 dark:bg-neutral-800 p-2.5 rounded-lg text-sm border border-neutral-100 dark:border-neutral-800">
-                          <div className="flex flex-col gap-1">
+                        <button 
+                          key={s.id} 
+                          onClick={() => onSessionClick?.(s)}
+                          className="w-full flex justify-between items-center bg-neutral-50 dark:bg-neutral-800 p-2.5 rounded-lg text-sm border border-neutral-100 dark:border-neutral-800 hover:border-violet-500 hover:shadow-sm transition-all"
+                        >
+                          <div className="flex flex-col gap-1 items-start">
                             {s.start_time || s.end_time ? (
                               <span className="font-bold text-violet-600 dark:text-violet-400 bg-violet-100 dark:bg-violet-900/30 px-2 py-1 rounded w-fit">
                                 {s.start_time ? s.start_time.slice(0, 5) : '...'} - {s.end_time ? s.end_time.slice(0, 5) : '...'}
@@ -293,7 +311,7 @@ export function LeadAcceptWizardModal({ isOpen, onClose, onSuccess, session, all
                               </span>
                             )}
                           </div>
-                          <div className="flex flex-col items-end">
+                          <div className="flex flex-col items-end text-right">
                             <span className="text-neutral-900 dark:text-white font-bold">
                               {s.master_clients?.name || 'Клиент'}
                             </span>
@@ -342,7 +360,7 @@ export function LeadAcceptWizardModal({ isOpen, onClose, onSuccess, session, all
                     <MessageCircle className="w-4 h-4" />
                     Автоматическое сообщение
                   </p>
-                  <p className="text-xs text-emerald-700 dark:text-emerald-600 mt-1">Отправить клиенту приветственное сообщение со стоимостью и временем в чат платформы.</p>
+                  <p className="text-xs text-emerald-700 dark:text-emerald-600 mt-1">Отправить клиенту email-уведомление со стоимостью и временем.</p>
                 </div>
               </label>
             </div>

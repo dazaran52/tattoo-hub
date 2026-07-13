@@ -17,6 +17,8 @@ class PublicMasterResponse(BaseModel):
     portfolio_posts: list[dict] = []
     theme: str = "system"
     avatar_url: str | None = None
+    rating: float = 0.0
+    review_count: int = 0
 
 @router.get("/master/{username_or_id}", response_model=PublicMasterResponse)
 async def get_public_master(
@@ -37,7 +39,7 @@ async def get_public_master(
             pass
 
         query = supabase.table("users").select(
-            "id, username, display_name, bio, portfolio_url, city_ids, is_verified_master, status, role, theme, avatar_url, portfolio_posts(id, media, description, created_at)"
+            "id, username, display_name, bio, portfolio_url, city_ids, is_verified_master, status, role, theme, avatar_url, portfolio_posts(id, media, description, created_at), master_reviews(rating)"
         )
         
         if is_uuid:
@@ -60,6 +62,11 @@ async def get_public_master(
         posts = data.get("portfolio_posts") or []
         posts.sort(key=lambda x: x.get("created_at", ""), reverse=True)
 
+        # Calculate rating
+        reviews = data.get("master_reviews") or []
+        review_count = len(reviews)
+        rating = sum([r.get("rating", 0) for r in reviews]) / review_count if review_count > 0 else 0.0
+
         return PublicMasterResponse(
             id=data["id"],
             username=data.get("username"),
@@ -70,7 +77,9 @@ async def get_public_master(
             is_verified_master=data.get("is_verified_master", False),
             portfolio_posts=posts,
             theme=data.get("theme", "system"),
-            avatar_url=data.get("avatar_url")
+            avatar_url=data.get("avatar_url"),
+            rating=round(rating, 1),
+            review_count=review_count
         )
 
     except HTTPException:
@@ -82,3 +91,57 @@ async def get_public_master(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error fetching master profile: {str(e)}"
         )
+
+@router.get("/master/{username_or_id}/reviews")
+async def get_public_master_reviews(
+    username_or_id: str,
+    supabase: AsyncClient = Depends(get_async_supabase_client)
+):
+    """Get all reviews for a master."""
+    try:
+        # Check if it's a UUID
+        is_uuid = False
+        try:
+            uuid.UUID(username_or_id)
+            is_uuid = True
+        except ValueError:
+            pass
+
+        query = supabase.table("users").select("id").eq("role", "master")
+        if is_uuid:
+            query = query.eq("id", username_or_id)
+        else:
+            query = query.eq("username", username_or_id)
+            
+        master_res = await query.single().execute()
+        if not master_res.data:
+            raise HTTPException(status_code=404, detail="Мастер не найден")
+            
+        master_id = master_res.data["id"]
+
+        # Fetch reviews
+        reviews_res = await supabase.table("master_reviews") \
+            .select("*, users!client_id(display_name, username)") \
+            .eq("master_id", master_id) \
+            .order("created_at", desc=True) \
+            .execute()
+            
+        reviews = reviews_res.data or []
+        # Format the response
+        formatted = []
+        for r in reviews:
+            client_info = r.get("users") or {}
+            client_name = client_info.get("display_name") or client_info.get("username") or "Анонимный клиент"
+            formatted.append({
+                "id": r["id"],
+                "rating": r["rating"],
+                "text": r.get("text"),
+                "created_at": r["created_at"],
+                "client_name": client_name
+            })
+            
+        return formatted
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

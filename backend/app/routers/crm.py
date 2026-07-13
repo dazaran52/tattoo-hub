@@ -5,6 +5,8 @@ from datetime import date, time, datetime
 from app.middleware.auth import get_current_user, AuthUser
 from app.database import get_async_supabase_client
 from supabase._async.client import AsyncClient
+from app.services.mail import send_transactional_email
+import asyncio
 
 router = APIRouter()
 
@@ -54,7 +56,14 @@ class CompleteSessionData(BaseModel):
     portfolio_media: Optional[List[dict]] = []
     description: Optional[str] = ""
     publish_to_portfolio: bool = False
+    send_review_request: bool = False
     end_time: Optional[str] = None
+
+class SendAcceptEmailData(BaseModel):
+    price: Optional[float] = None
+    start_time: Optional[str] = None
+    end_time: Optional[str] = None
+    date: Optional[str] = None
 
 @router.get("/clients")
 async def get_clients(
@@ -328,10 +337,13 @@ async def complete_session(
             }) \
             .eq("id", session_id) \
             .eq("master_id", current_user.user_id) \
+            .select("*, master_clients(email, name)") \
             .execute()
             
         if not res.data:
             raise HTTPException(status_code=404, detail="Session not found")
+            
+        session_data = res.data[0]
             
         # Add to portfolio if requested
         if data.publish_to_portfolio and (data.portfolio_media or data.result_image_urls):
@@ -344,8 +356,117 @@ async def complete_session(
                 "media": media,
                 "description": data.description or ""
             }).execute()
+            
+        # Send review request
+        if data.send_review_request:
+            client_info = session_data.get("master_clients", {})
+            client_email = client_info.get("email")
+            client_name = client_info.get("name") or "клиент"
+            
+            if client_email:
+                master_res = await supabase.table("users").select("display_name, username").eq("id", current_user.user_id).single().execute()
+                master_name = master_res.data.get("display_name") or master_res.data.get("username") or "вашего мастера"
                 
-        return res.data[0]
+                review_url = f"https://tattoo-hub.xyz/review/{session_id}"
+                subject = f"Оставьте отзыв о сеансе у {master_name}"
+                html = f'''
+                <div style="font-family: sans-serif; max-w-[600px]; margin: 0 auto; color: #171717;">
+                    <h2>Здравствуйте, {client_name}!</h2>
+                    <p>Спасибо, что выбрали мастера <strong>{master_name}</strong> для вашей новой татуировки.</p>
+                    <p>Будем очень благодарны, если вы найдете пару минут и оставите отзыв о сеансе. Ваш фидбек помогает мастерам становиться лучше, а другим клиентам — делать правильный выбор.</p>
+                    <div style="margin: 30px 0;">
+                        <a href="{review_url}" style="background-color: #7c3aed; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold;">Оценить сеанс</a>
+                    </div>
+                    <p style="color: #666; font-size: 14px;">Если вы не посещали сеанс, просто проигнорируйте это письмо.</p>
+                </div>
+                '''
+                # Run in background
+                asyncio.create_task(asyncio.to_thread(send_transactional_email, client_email, subject, html))
+                
+        return session_data
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/sessions/{session_id}/send-accept-email")
+async def send_accept_email(
+    session_id: str,
+    data: SendAcceptEmailData,
+    current_user: AuthUser = Depends(get_current_user),
+    supabase: AsyncClient = Depends(get_async_supabase_client)
+):
+    try:
+        # Fetch session and client to get email
+        res = await supabase.table("master_sessions") \
+            .select("*, master_clients(email)") \
+            .eq("id", session_id) \
+            .eq("master_id", current_user.user_id) \
+            .execute()
+            
+        if not res.data:
+            raise HTTPException(status_code=404, detail="Session not found")
+            
+        session_data = res.data[0]
+        client_email = session_data.get("master_clients", {}).get("email")
+        
+        if not client_email:
+            # Client has no email, return special status
+            return {"status": "no_email"}
+            
+        master_res = await supabase.table("users").select("display_name, username").eq("id", current_user.user_id).single().execute()
+        master_name = master_res.data.get("display_name") or master_res.data.get("username") or "Мастер"
+        
+        price_text = f"{data.price} Kč" if data.price else "Стоимость обсудим индивидуально"
+        time_text = f"{data.start_time or '...'} - {data.end_time or '...'}"
+        date_text = data.date or session_data.get("session_date") or ""
+        
+        subject = f"Ваша заявка принята мастером {master_name}!"
+        
+        html = f'''
+        <div style="font-family: sans-serif; max-w-[600px]; margin: 0 auto; color: #171717;">
+            <h2>Отличные новости!</h2>
+            <p>Мастер <strong>{master_name}</strong> готов принять вашу заявку в работу.</p>
+            <div style="background-color: #f3f4f6; padding: 20px; border-radius: 12px; margin: 20px 0;">
+                <ul style="list-style: none; padding: 0; margin: 0; line-height: 1.8;">
+                    <li><strong>Дата сеанса:</strong> {date_text}</li>
+                    <li><strong>Время сеанса:</strong> {time_text}</li>
+                    <li><strong>Стоимость:</strong> {price_text}</li>
+                </ul>
+            </div>
+            <p>Для удобного общения с мастером и отслеживания статуса сеанса, рекомендуем войти на платформу:</p>
+            <div style="margin: 30px 0;">
+                <a href="https://tattoo-hub.xyz/login" style="background-color: #7c3aed; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold;">Перейти в личный кабинет</a>
+            </div>
+        </div>
+        '''
+        
+        from app.services.email_lead_agent import send_smtp_reply
+        import asyncio
+        # Run send_smtp_reply in background thread
+        def send_email_sync():
+            try:
+                # Dynamically set FROM name for this request by monkey-patching settings temporarily
+                from app.config import get_settings
+                settings = get_settings()
+                original_name = getattr(settings, 'LEAD_REPLY_FROM_NAME', 'Tattoo HUB')
+                settings.LEAD_REPLY_FROM_NAME = f"Tattoo HUB - {master_name}"
+                
+                success = send_smtp_reply(client_email, subject, html)
+                
+                settings.LEAD_REPLY_FROM_NAME = original_name
+                return success
+            except Exception as e:
+                print(f"Error sending email: {e}")
+                return False
+                
+        # Fire and forget or await, wait let's await to know if it succeeded
+        sent = await asyncio.to_thread(send_email_sync)
+        
+        if sent:
+            return {"status": "success", "email": client_email}
+        else:
+            # Maybe SMTP isn't configured, so we treat it as failure but don't throw 500
+            return {"status": "smtp_failed", "email": client_email}
+            
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

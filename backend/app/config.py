@@ -1,6 +1,7 @@
 from pydantic_settings import BaseSettings
 from functools import lru_cache
 import base64
+from typing import Optional
 
 
 class Settings(BaseSettings):
@@ -57,9 +58,10 @@ class Settings(BaseSettings):
     RAPIDAPI_KEY: str | None = None
     
     # Lead Reply SMTP (Second Studio Box - VK WorkSpace)
-    LEAD_REPLY_SMTP_SERVER: str | None = "smtp.mail.ru"
+    LEAD_REPLY_SMTP_SERVER: str = "smtp.mail.ru"
     LEAD_REPLY_SMTP_PORT: int = 465
-    LEAD_REPLY_EMAIL: str | None = None
+    LEAD_REPLY_SMTP_USERNAME: Optional[str] = None
+    LEAD_REPLY_EMAIL: str
     LEAD_REPLY_PASSWORD: str | None = None
     LEAD_REPLY_FROM_NAME: str = "Tattoo Booking Helper"
     
