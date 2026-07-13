@@ -60,17 +60,17 @@ const DEFAULT_COLUMNS: KanbanColumn[] = [
   { id: 'cancelled', title: 'Отмена', iconName: 'Flag', color: 'red' },
 ]
 
-const COLOR_STYLES: Record<string, { bg: string, border: string, leftBorder: string, ring: string, checkboxBg: string, checkboxHover: string }> = {
-  emerald: { bg: 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border-emerald-200', border: 'border-emerald-500/50', leftBorder: 'border-l-emerald-500', ring: 'ring-emerald-500', checkboxBg: 'bg-emerald-500', checkboxHover: 'hover:border-emerald-400' },
-  violet: { bg: 'bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-400 border-violet-200', border: 'border-violet-500/50', leftBorder: 'border-l-violet-500', ring: 'ring-violet-500', checkboxBg: 'bg-violet-500', checkboxHover: 'hover:border-violet-400' },
-  blue: { bg: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border-blue-200', border: 'border-blue-500/50', leftBorder: 'border-l-blue-500', ring: 'ring-blue-500', checkboxBg: 'bg-blue-500', checkboxHover: 'hover:border-blue-400' },
-  yellow: { bg: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 border-yellow-200', border: 'border-yellow-500/50', leftBorder: 'border-l-yellow-500', ring: 'ring-yellow-500', checkboxBg: 'bg-yellow-500', checkboxHover: 'hover:border-yellow-400' },
-  green: { bg: 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-green-200', border: 'border-green-500/50', leftBorder: 'border-l-green-500', ring: 'ring-green-500', checkboxBg: 'bg-green-500', checkboxHover: 'hover:border-green-400' },
-  red: { bg: 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border-red-200', border: 'border-red-500/50', leftBorder: 'border-l-red-500', ring: 'ring-red-500', checkboxBg: 'bg-red-500', checkboxHover: 'hover:border-red-400' },
-  pink: { bg: 'bg-pink-100 dark:bg-pink-900/30 text-pink-700 dark:text-pink-400 border-pink-200', border: 'border-pink-500/50', leftBorder: 'border-l-pink-500', ring: 'ring-pink-500', checkboxBg: 'bg-pink-500', checkboxHover: 'hover:border-pink-400' },
-  orange: { bg: 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 border-orange-200', border: 'border-orange-500/50', leftBorder: 'border-l-orange-500', ring: 'ring-orange-500', checkboxBg: 'bg-orange-500', checkboxHover: 'hover:border-orange-400' },
-  cyan: { bg: 'bg-cyan-100 dark:bg-cyan-900/30 text-cyan-700 dark:text-cyan-400 border-cyan-200', border: 'border-cyan-500/50', leftBorder: 'border-l-cyan-500', ring: 'ring-cyan-500', checkboxBg: 'bg-cyan-500', checkboxHover: 'hover:border-cyan-400' },
-  slate: { bg: 'bg-slate-100 dark:bg-slate-900/30 text-slate-700 dark:text-slate-400 border-slate-200', border: 'border-slate-500/50', leftBorder: 'border-l-slate-500', ring: 'ring-slate-500', checkboxBg: 'bg-slate-500', checkboxHover: 'hover:border-slate-400' },
+const COLOR_STYLES: Record<string, { bg: string, border: string, leftBorder: string, ring: string, checkboxBg: string, checkboxHover: string, cardBg: string }> = {
+  emerald: { bg: 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border-emerald-200', border: 'border-emerald-500/50', leftBorder: 'border-l-emerald-500', ring: 'ring-emerald-500', checkboxBg: 'bg-emerald-500', checkboxHover: 'hover:border-emerald-400', cardBg: 'bg-emerald-50/50 dark:bg-emerald-900/10' },
+  violet: { bg: 'bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-400 border-violet-200', border: 'border-violet-500/50', leftBorder: 'border-l-violet-500', ring: 'ring-violet-500', checkboxBg: 'bg-violet-500', checkboxHover: 'hover:border-violet-400', cardBg: 'bg-violet-50/50 dark:bg-violet-900/10' },
+  blue: { bg: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border-blue-200', border: 'border-blue-500/50', leftBorder: 'border-l-blue-500', ring: 'ring-blue-500', checkboxBg: 'bg-blue-500', checkboxHover: 'hover:border-blue-400', cardBg: 'bg-blue-50/50 dark:bg-blue-900/10' },
+  yellow: { bg: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 border-yellow-200', border: 'border-yellow-500/50', leftBorder: 'border-l-yellow-500', ring: 'ring-yellow-500', checkboxBg: 'bg-yellow-500', checkboxHover: 'hover:border-yellow-400', cardBg: 'bg-yellow-50/50 dark:bg-yellow-900/10' },
+  green: { bg: 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-green-200', border: 'border-green-500/50', leftBorder: 'border-l-green-500', ring: 'ring-green-500', checkboxBg: 'bg-green-500', checkboxHover: 'hover:border-green-400', cardBg: 'bg-green-50/50 dark:bg-green-900/10' },
+  red: { bg: 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border-red-200', border: 'border-red-500/50', leftBorder: 'border-l-red-500', ring: 'ring-red-500', checkboxBg: 'bg-red-500', checkboxHover: 'hover:border-red-400', cardBg: 'bg-red-50/50 dark:bg-red-900/10' },
+  pink: { bg: 'bg-pink-100 dark:bg-pink-900/30 text-pink-700 dark:text-pink-400 border-pink-200', border: 'border-pink-500/50', leftBorder: 'border-l-pink-500', ring: 'ring-pink-500', checkboxBg: 'bg-pink-500', checkboxHover: 'hover:border-pink-400', cardBg: 'bg-pink-50/50 dark:bg-pink-900/10' },
+  orange: { bg: 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 border-orange-200', border: 'border-orange-500/50', leftBorder: 'border-l-orange-500', ring: 'ring-orange-500', checkboxBg: 'bg-orange-500', checkboxHover: 'hover:border-orange-400', cardBg: 'bg-orange-50/50 dark:bg-orange-900/10' },
+  cyan: { bg: 'bg-cyan-100 dark:bg-cyan-900/30 text-cyan-700 dark:text-cyan-400 border-cyan-200', border: 'border-cyan-500/50', leftBorder: 'border-l-cyan-500', ring: 'ring-cyan-500', checkboxBg: 'bg-cyan-500', checkboxHover: 'hover:border-cyan-400', cardBg: 'bg-cyan-50/50 dark:bg-cyan-900/10' },
+  slate: { bg: 'bg-slate-100 dark:bg-slate-900/30 text-slate-700 dark:text-slate-400 border-slate-200', border: 'border-slate-500/50', leftBorder: 'border-l-slate-500', ring: 'ring-slate-500', checkboxBg: 'bg-slate-500', checkboxHover: 'hover:border-slate-400', cardBg: 'bg-slate-50/50 dark:bg-slate-900/10' },
 }
 
 export function CRMBoard() {
@@ -462,6 +462,10 @@ export function CRMBoard() {
                           const isNewLead = item.status === 'new'
                           const isSelected = selectedKanbanIds.has(item.id)
                           const isDraggedGroupItem = draggingGroupId && selectedKanbanIds.has(item.id) && draggingGroupId !== item.id
+                          const clientName = item.master_clients?.name || 'Неизвестный'
+                          const initial = clientName.charAt(0).toUpperCase()
+                          const images = item.reference_images && item.reference_images.length > 0 ? item.reference_images : (item.master_clients?.leads?.image_urls || [])
+                          
                           return (
                           <motion.div
                             layout
@@ -489,7 +493,7 @@ export function CRMBoard() {
                               else newSet.add(item.id)
                               setSelectedKanbanIds(newSet)
                             }}
-                            className={`rounded-2xl border-y border-r border-l-4 ${styles.leftBorder} ${isNewLead ? 'bg-emerald-50/70 dark:bg-emerald-900/20' : 'bg-white dark:bg-neutral-800'} ${isNewLead ? 'border-y-emerald-400/50 border-r-emerald-400/50' : 'border-y-neutral-200 border-r-neutral-200 dark:border-y-white/5 dark:border-r-white/5'} ${isSelected ? `!bg-neutral-100 dark:!bg-neutral-700 shadow-inner scale-[1.01] z-10` : isNewLead ? 'hover:scale-[1.01] shadow-sm' : 'hover:scale-[1.01] shadow-sm'} ${!isNewLead ? 'cursor-pointer transition-all duration-300' : 'transition-all duration-300'} relative group`}
+                            className={`rounded-2xl border-2 ${styles.border} ${styles.cardBg} ${isSelected ? `!bg-neutral-100 dark:!bg-neutral-700 shadow-inner scale-[1.01] z-10` : 'hover:scale-[1.01] shadow-sm'} cursor-pointer transition-all duration-300 relative group overflow-hidden`}
                           >
                             <div className="absolute top-3 right-3 flex items-center gap-2 z-10 no-select-click">
 
@@ -506,25 +510,29 @@ export function CRMBoard() {
                                 {isSelected && <Icons.Check className="w-3.5 h-3.5 stroke-[3]" />}
                               </div>
                             </div>
-                            <div className="flex gap-3 mb-3 pr-14">
-                              {item.reference_images && item.reference_images.length > 0 ? (
-                                <img src={item.reference_images[0]} alt="" className="w-12 h-12 rounded-xl object-cover" />
-                              ) : item.master_clients?.leads?.image_urls && item.master_clients.leads.image_urls.length > 0 ? (
-                                <img src={item.master_clients.leads.image_urls[0]} alt="" className="w-12 h-12 rounded-xl object-cover" />
-                              ) : (
-                                <div className="w-12 h-12 flex items-center justify-center bg-neutral-100 dark:bg-neutral-700 text-neutral-400 rounded-xl">
-                                  <UserPlus className="w-5 h-5" />
-                                </div>
-                              )}
+                            <div className="flex items-center gap-3 mb-3 pr-14">
+                              <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg ${styles.bg.split('border')[0]}`}>
+                                {initial}
+                              </div>
                               <div className="flex-1 min-w-0">
                                 <h4 className="font-bold text-neutral-900 dark:text-white text-sm truncate">
-                                  {item.master_clients?.name || 'Неизвестный'}
+                                  {clientName}
                                 </h4>
                                 <p className="text-xs text-neutral-500 line-clamp-1 mt-0.5">
                                   {item.master_clients?.phone || item.master_clients?.telegram || item.master_clients?.email || 'Нет контактов'}
                                 </p>
                               </div>
                             </div>
+                            
+                            {images.length > 0 && (
+                              <div className={`grid gap-2 mb-3 ${images.length > 1 ? 'grid-cols-2' : 'grid-cols-1'}`}>
+                                {images.slice(0, 2).map((img, idx) => (
+                                  <div key={idx} className="aspect-square rounded-xl overflow-hidden bg-neutral-200 dark:bg-neutral-800">
+                                    <img src={img} alt="" className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" />
+                                  </div>
+                                ))}
+                              </div>
+                            )}
                             
                             <div className="flex flex-col gap-2 mt-3 pt-3 border-t border-neutral-100 dark:border-white/5">
                               <div className="flex items-start justify-between gap-2">
