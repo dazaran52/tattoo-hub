@@ -220,7 +220,7 @@ export function CRMBoard() {
       if (item && item.status !== colId) {
         if (item.status === 'new' && colId !== 'cancelled') {
           // If moving multiple new leads, we can only safely accept one via modal right now
-          if (sessionIds.length === 1) setSessionToAccept(item)
+          if (sessionIds.length === 1) setSessionDetails(item)
         } else {
           updateSessionStatus(sessionId, colId)
         }
@@ -528,7 +528,7 @@ export function CRMBoard() {
                               <div className={`grid gap-2 mb-3 ${images.length > 1 ? 'grid-cols-2' : 'grid-cols-1'}`}>
                                 {images.slice(0, 2).map((img, idx) => (
                                   <div key={idx} className="aspect-square rounded-xl overflow-hidden bg-neutral-200 dark:bg-neutral-800">
-                                    <img src={img} alt="" className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" />
+                                    <img src={img} alt="" className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" draggable={false} />
                                   </div>
                                 ))}
                               </div>

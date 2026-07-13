@@ -1,4 +1,4 @@
-import { X, Calendar, Palette, User, MessageCircle, Send, Phone } from 'lucide-react'
+import { X, Calendar, Palette, User, MessageCircle, Send, Phone, Scale3d, MapPin } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useState } from 'react'
 import { ImageViewerModal } from './ImageViewerModal'
@@ -118,7 +118,7 @@ export function LeadDetailsModal({ isOpen, onClose, session, onAccept, onReject 
               </div>
               {leadData.body_place && (
                 <div className="bg-sky-50 dark:bg-sky-900/20 text-sky-700 dark:text-sky-400 px-4 py-3 rounded-2xl flex-1 min-w-[120px] flex items-center gap-3 border border-sky-100 dark:border-sky-500/20">
-                  <User className="w-5 h-5 shrink-0" />
+                  <MapPin className="w-5 h-5 shrink-0" />
                   <div className="text-sm">
                     <span className="font-bold block">Место</span>
                     {leadData.body_place}
@@ -127,7 +127,7 @@ export function LeadDetailsModal({ isOpen, onClose, session, onAccept, onReject 
               )}
               {leadData.size && (
                 <div className="bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 px-4 py-3 rounded-2xl flex-1 min-w-[120px] flex items-center gap-3 border border-amber-100 dark:border-amber-500/20">
-                  <div className="text-lg font-bold">cm</div>
+                  <Scale3d className="w-5 h-5 shrink-0" />
                   <div className="text-sm">
                     <span className="font-bold block">Размер</span>
                     {leadData.size}
