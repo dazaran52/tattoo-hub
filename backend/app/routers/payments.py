@@ -52,6 +52,11 @@ async def create_stripe_checkout_session(
     
     try:
         checkout_session = stripe.checkout.Session.create(
+            customer_email=current_user.email,
+            submit_type='pay',
+            custom_text={
+                'submit': {'message': 'Спасибо, что выбираете Tattoo HUB! Средства будут зачислены мгновенно.'}
+            },
             line_items=[
                 {
                     'price_data': {
