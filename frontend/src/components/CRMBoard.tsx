@@ -99,10 +99,35 @@ export function CRMBoard() {
   
   // Filters
   const [searchQuery, setSearchQuery] = useState('')
-  const [kanbanDateFilter, setKanbanDateFilter] = useState<'all'|'this_week'|'this_month'>('all')
+  const [dateFilter, setDateFilter] = useState<'all'|'today'|'this_week'|'this_month'>('this_month')
   const [selectedKanbanIds, setSelectedKanbanIds] = useState<Set<string>>(new Set())
   const [columns, setColumns] = useState<KanbanColumn[]>(DEFAULT_COLUMNS)
   const [isEditingColumns, setIsEditingColumns] = useState(false)
+  
+  const dateFilteredSessions = useMemo(() => {
+    if (dateFilter === 'all') return sessions
+    return sessions.filter(i => {
+      if (!i.session_date) return false
+      const d = new Date(i.session_date)
+      const now = new Date()
+      if (dateFilter === 'today') {
+        return d.getDate() === now.getDate() && d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear()
+      } else if (dateFilter === 'this_month') {
+        return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear()
+      } else if (dateFilter === 'this_week') {
+        const day = now.getDay() || 7
+        const diff = now.getDate() - day + 1
+        const monday = new Date(now)
+        monday.setDate(diff)
+        monday.setHours(0,0,0,0)
+        const sunday = new Date(monday)
+        sunday.setDate(monday.getDate() + 6)
+        sunday.setHours(23,59,59,999)
+        return d >= monday && d <= sunday
+      }
+      return true
+    })
+  }, [sessions, dateFilter])
 
   // Scroll ref for drag and drop
   const scrollContainerRef = useRef<HTMLDivElement>(null)
@@ -329,15 +354,16 @@ export function CRMBoard() {
                   />
                 </div>
               )}
-              {sessionView === 'kanban' && (
+              {(sessionView === 'kanban' || sessionView === 'list') && (
                 <select 
-                  value={kanbanDateFilter}
-                  onChange={(e) => setKanbanDateFilter(e.target.value as any)}
+                  value={dateFilter}
+                  onChange={(e) => setDateFilter(e.target.value as any)}
                   className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-violet-500/20 outline-none font-medium"
                 >
-                  <option value="all">Все время</option>
+                  <option value="today">Сегодня</option>
                   <option value="this_week">Эта неделя</option>
                   <option value="this_month">Этот месяц</option>
+                  <option value="all">Все время</option>
                 </select>
               )}
 
@@ -376,7 +402,7 @@ export function CRMBoard() {
         />
       ) : sessionView === 'list' ? (
         <SessionsList 
-          sessions={sessions} 
+          sessions={dateFilteredSessions} 
           searchQuery={searchQuery}
           setSearchQuery={setSearchQuery}
           onStatusChange={updateSessionStatus}
@@ -410,31 +436,13 @@ export function CRMBoard() {
                 const styles = COLOR_STYLES[col.color] || COLOR_STYLES.slate
                 const Icon = (Icons as any)[col.iconName] || Icons.Star
                 
-                const colItems = sessions.filter(i => {
+                const colItems = dateFilteredSessions.filter(i => {
                   const search = searchQuery.toLowerCase().replace(/\s/g, '')
                   const cName = (i.master_clients?.name || '').toLowerCase().replace(/\s/g, '')
                   const cContact = (i.master_clients?.contact_info || '').toLowerCase().replace(/\s/g, '')
                   const matchesSearch = cName.includes(search) || cContact.includes(search)
                   
-                  let matchesDate = true
-                  if (kanbanDateFilter !== 'all') {
-                    const d = new Date(i.session_date)
-                    const now = new Date()
-                    if (kanbanDateFilter === 'this_month') {
-                      matchesDate = d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear()
-                    } else if (kanbanDateFilter === 'this_week') {
-                      const day = now.getDay() || 7
-                      const diff = now.getDate() - day + 1
-                      const monday = new Date(now.setDate(diff))
-                      monday.setHours(0,0,0,0)
-                      const sunday = new Date(monday)
-                      sunday.setDate(monday.getDate() + 6)
-                      sunday.setHours(23,59,59,999)
-                      matchesDate = d >= monday && d <= sunday
-                    }
-                  }
-                  
-                  return (i.status === col.id || (i.status === 'scheduled' && col.id === 'booked')) && matchesSearch && matchesDate
+                  return (i.status === col.id || (i.status === 'scheduled' && col.id === 'booked')) && matchesSearch
                 })
                 
                 return (
