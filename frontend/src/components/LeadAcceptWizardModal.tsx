@@ -71,6 +71,10 @@ export function LeadAcceptWizardModal({ isOpen, onClose, onSuccess, session, all
   const nextMonth = () => setCurrentMonthDate(new Date(currentMonthDate.getFullYear(), currentMonthDate.getMonth() + 1, 1))
   const prevMonth = () => setCurrentMonthDate(new Date(currentMonthDate.getFullYear(), currentMonthDate.getMonth() - 1, 1))
 
+  const selectedDateSessions = allSessions
+    .filter(s => s.session_date === selectedDate && s.id !== session.id)
+    .sort((a, b) => (a.start_time || '00:00').localeCompare(b.start_time || '00:00'))
+
   if (!isOpen) return null
 
   const handleNext = () => setStep(s => s + 1)
@@ -259,6 +263,30 @@ export function LeadAcceptWizardModal({ isOpen, onClose, onSuccess, session, all
                       )
                     })}
                   </div>
+                </div>
+
+                {/* Selected Date Schedule */}
+                <div className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-700 p-4">
+                  <h4 className="text-sm font-bold text-neutral-900 dark:text-white mb-3 flex items-center gap-2">
+                    <Clock className="w-4 h-4 text-violet-500" />
+                    Расписание на {new Date(selectedDate).toLocaleDateString('ru-RU')}
+                  </h4>
+                  {selectedDateSessions.length === 0 ? (
+                    <p className="text-sm text-neutral-500 dark:text-neutral-400">В этот день пока нет других записей.</p>
+                  ) : (
+                    <div className="space-y-2">
+                      {selectedDateSessions.map(s => (
+                        <div key={s.id} className="flex justify-between items-center bg-neutral-50 dark:bg-neutral-800 p-2.5 rounded-lg text-sm border border-neutral-100 dark:border-neutral-800">
+                          <span className="font-bold text-violet-600 dark:text-violet-400 bg-violet-100 dark:bg-violet-900/30 px-2 py-1 rounded">
+                            {s.start_time || '??:??'} - {s.end_time || '??:??'}
+                          </span>
+                          <span className="text-neutral-600 dark:text-neutral-300 font-medium">
+                            {s.master_clients?.name || 'Клиент'}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
 
