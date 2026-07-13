@@ -577,13 +577,15 @@ export default function BookMasterPage({ params }: { params: { username: string 
               </label>
               <div className={`relative rounded-xl p-4 flex justify-center shadow-inner overflow-hidden ${tClasses.input}`}>
                 <style>{`
-                  .rdp { --rdp-cell-size: 40px; --rdp-accent-color: #8b5cf6; --rdp-background-color: transparent; margin: 0; }
-                  .rdp-day_selected, .rdp-day_selected:focus-visible, .rdp-day_selected:hover { background-color: var(--rdp-accent-color); color: white; }
-                  .rdp-day_disabled { opacity: 0.3; text-decoration: line-through; }
-                  .rdp-day_today:not(.rdp-day_selected) { color: var(--rdp-accent-color); font-weight: bold; }
-                  .rdp-nav_button { color: currentColor; opacity: 0.7; }
-                  .rdp-nav_button:hover { opacity: 1; background-color: rgba(139, 92, 246, 0.1); }
-                  .rdp-button:hover:not([disabled]):not(.rdp-day_selected) { background-color: rgba(139, 92, 246, 0.1); }
+                  .rdp-root { 
+                    --rdp-day-height: 40px; 
+                    --rdp-day-width: 40px;
+                    --rdp-accent-color: #8b5cf6; 
+                    --rdp-accent-background-color: rgba(139, 92, 246, 0.1);
+                    margin: 0; 
+                  }
+                  .rdp-day_button:hover:not([disabled]):not(.rdp-selected) { background-color: rgba(139, 92, 246, 0.1); }
+                  .rdp-disabled { opacity: 0.3; text-decoration: line-through; }
                 `}</style>
                 <DayPicker
                   mode="single"
