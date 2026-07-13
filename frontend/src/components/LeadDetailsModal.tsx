@@ -159,6 +159,7 @@ export function LeadDetailsModal({ isOpen, onClose, session, onAccept, onReject 
         isOpen={!!selectedImage}
         onClose={() => setSelectedImage(null)}
         imageUrl={selectedImage || ''}
+        showActions={true}
       />
 
       {isClientModalOpen && session.master_clients && (

@@ -14,6 +14,7 @@ import { SessionsList } from '@/components/SessionsList'
 import { LeadAcceptWizardModal } from '@/components/LeadAcceptWizardModal'
 import { KanbanColumnEditor } from '@/components/KanbanColumnEditor'
 import { LeadDetailsModal } from '@/components/LeadDetailsModal'
+import { ImageViewerModal } from '@/components/ImageViewerModal'
 
 export interface CRMSession {
   id: string
@@ -92,6 +93,7 @@ export function CRMBoard() {
   const [sessionToEdit, setSessionToEdit] = useState<CRMSession | null>(null)
   const [sessionToAccept, setSessionToAccept] = useState<CRMSession | null>(null)
   const [sessionDetails, setSessionDetails] = useState<CRMSession | null>(null)
+  const [viewerImage, setViewerImage] = useState<string | null>(null)
   const [clientToView, setClientToView] = useState<any | null>(null)
   const [clientsForModal, setClientsForModal] = useState([])
   
@@ -528,7 +530,13 @@ export function CRMBoard() {
                               <div className={`grid gap-2 mb-3 ${images.length > 1 ? 'grid-cols-2' : 'grid-cols-1'}`}>
                                 {images.slice(0, 2).map((img, idx) => (
                                   <div key={idx} className="aspect-square rounded-xl overflow-hidden bg-neutral-200 dark:bg-neutral-800">
-                                    <img src={img} alt="" className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" draggable={false} />
+                                    <img 
+                                      src={img} 
+                                      alt="" 
+                                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-500 cursor-pointer" 
+                                      draggable={false} 
+                                      onClick={(e) => { e.stopPropagation(); setViewerImage(img); }}
+                                    />
                                   </div>
                                 ))}
                               </div>
@@ -765,6 +773,15 @@ export function CRMBoard() {
           client={clientToView}
           onUpdate={fetchData}
           chatId={null}
+        />
+      )}
+
+      {viewerImage && (
+        <ImageViewerModal
+          isOpen={!!viewerImage}
+          onClose={() => setViewerImage(null)}
+          imageUrl={viewerImage}
+          showActions={true}
         />
       )}
     </div>
