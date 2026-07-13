@@ -1,5 +1,5 @@
-import React, { useState } from 'react'
-import { X, Calendar as CalendarIcon, CheckCircle, MessageCircle, DollarSign, Clock } from 'lucide-react'
+import React, { useState, useEffect } from 'react'
+import { X, Calendar as CalendarIcon, CheckCircle, MessageCircle, DollarSign, Clock, ChevronLeft, ChevronRight } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { supabase } from '@/lib/supabase'
 import { CRMSession } from './CRMBoard'
@@ -9,15 +9,67 @@ interface LeadAcceptWizardModalProps {
   onClose: () => void
   onSuccess: () => void
   session: CRMSession
+  allSessions: CRMSession[]
 }
 
-export function LeadAcceptWizardModal({ isOpen, onClose, onSuccess, session }: LeadAcceptWizardModalProps) {
+interface DayOff {
+  id: string
+  date: string
+  is_full_day: boolean
+  start_time: string | null
+  end_time: string | null
+}
+
+export function LeadAcceptWizardModal({ isOpen, onClose, onSuccess, session, allSessions }: LeadAcceptWizardModalProps) {
   const [step, setStep] = useState(1)
   const [loading, setLoading] = useState(false)
   const [price, setPrice] = useState(session.price?.toString() || '')
   const [startTime, setStartTime] = useState(session.start_time || '10:00')
   const [endTime, setEndTime] = useState(session.end_time || '14:00')
   const [sendMessage, setSendMessage] = useState(true)
+
+  // Calendar states
+  const [selectedDate, setSelectedDate] = useState(session.session_date)
+  const [currentMonthDate, setCurrentMonthDate] = useState(new Date(session.session_date || new Date()))
+  const [daysOff, setDaysOff] = useState<DayOff[]>([])
+
+  useEffect(() => {
+    if (isOpen) {
+      fetchDaysOff()
+    }
+  }, [isOpen])
+
+  const fetchDaysOff = async () => {
+    try {
+      const { data: { session: authSession } } = await supabase.auth.getSession()
+      const token = authSession?.access_token
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/crm/days-off`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      if (res.ok) setDaysOff(await res.json())
+    } catch (e) {}
+  }
+
+  // Calendar logic
+  const getDaysInMonth = (date: Date) => {
+    const year = date.getFullYear()
+    const month = date.getMonth()
+    const daysInMonth = new Date(year, month + 1, 0).getDate()
+    const firstDayOfMonth = new Date(year, month, 1).getDay()
+    const startDayOffset = firstDayOfMonth === 0 ? 6 : firstDayOfMonth - 1
+    
+    const days = []
+    for (let i = 0; i < startDayOffset; i++) days.push(null)
+    for (let i = 1; i <= daysInMonth; i++) days.push(new Date(year, month, i))
+    return days
+  }
+
+  const days = getDaysInMonth(currentMonthDate)
+  const monthNames = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь']
+  const dayNames = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
+
+  const nextMonth = () => setCurrentMonthDate(new Date(currentMonthDate.getFullYear(), currentMonthDate.getMonth() + 1, 1))
+  const prevMonth = () => setCurrentMonthDate(new Date(currentMonthDate.getFullYear(), currentMonthDate.getMonth() - 1, 1))
 
   if (!isOpen) return null
 
@@ -33,7 +85,8 @@ export function LeadAcceptWizardModal({ isOpen, onClose, onSuccess, session }: L
           status: 'booked',
           price: price ? parseFloat(price) : null,
           start_time: startTime,
-          end_time: endTime
+          end_time: endTime,
+          session_date: selectedDate
         })
         .eq('id', session.id)
 
@@ -139,12 +192,74 @@ export function LeadAcceptWizardModal({ isOpen, onClose, onSuccess, session }: L
               
               <div className="bg-neutral-50 dark:bg-neutral-800/50 p-4 rounded-2xl mb-6">
                 <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-1">Пожелания клиента по времени:</p>
-                <p className="font-medium text-neutral-900 dark:text-white">{clientPrefTime}</p>
-                <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-3 mb-1">Выбранная дата:</p>
-                <p className="font-medium text-neutral-900 dark:text-white flex items-center gap-1.5">
-                  <CalendarIcon className="w-4 h-4 text-emerald-500" />
-                  {new Date(session.session_date).toLocaleDateString('ru-RU')}
-                </p>
+                <p className="font-medium text-neutral-900 dark:text-white mb-4">{clientPrefTime}</p>
+                
+                {/* Mini Calendar UI */}
+                <div className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-700 p-4">
+                  <div className="flex justify-between items-center mb-4">
+                    <button onClick={prevMonth} className="p-1.5 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors">
+                      <ChevronLeft className="w-4 h-4" />
+                    </button>
+                    <span className="font-bold text-sm text-neutral-900 dark:text-white">
+                      {monthNames[currentMonthDate.getMonth()]} {currentMonthDate.getFullYear()}
+                    </span>
+                    <button onClick={nextMonth} className="p-1.5 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors">
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
+                  </div>
+                  
+                  <div className="grid grid-cols-7 gap-1 mb-2">
+                    {dayNames.map(d => (
+                      <div key={d} className="text-center text-[10px] font-bold text-neutral-400 uppercase">{d}</div>
+                    ))}
+                  </div>
+                  
+                  <div className="grid grid-cols-7 gap-1">
+                    {days.map((date, i) => {
+                      if (!date) return <div key={`empty-${i}`} className="aspect-square" />
+                      
+                      const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000)
+                      const dateStr = localDate.toISOString().split('T')[0]
+                      
+                      const isSelected = dateStr === selectedDate
+                      const dayOff = daysOff.find(d => d.date === dateStr)
+                      const daySessions = allSessions.filter(s => s.session_date === dateStr && s.id !== session.id)
+                      const isToday = dateStr === new Date().toISOString().split('T')[0]
+                      
+                      return (
+                        <button
+                          key={dateStr}
+                          onClick={() => setSelectedDate(dateStr)}
+                          className={`
+                            relative aspect-square rounded-lg flex flex-col items-center justify-center text-xs transition-all
+                            ${isSelected ? 'bg-emerald-500 text-white shadow-md font-bold' : 
+                              dayOff ? 'bg-red-50 dark:bg-red-900/20 text-red-500 border border-red-100 dark:border-red-900/30' : 
+                              'hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300'}
+                            ${isToday && !isSelected && !dayOff ? 'border border-emerald-500 text-emerald-600 dark:text-emerald-400' : ''}
+                          `}
+                        >
+                          <span>{date.getDate()}</span>
+                          
+                          {/* Dots for sessions */}
+                          {daySessions.length > 0 && !isSelected && !dayOff && (
+                            <div className="absolute bottom-1 flex gap-0.5">
+                              {daySessions.slice(0, 3).map((_, idx) => (
+                                <div key={idx} className="w-1 h-1 rounded-full bg-violet-500" />
+                              ))}
+                            </div>
+                          )}
+                          {daySessions.length > 0 && isSelected && !dayOff && (
+                            <div className="absolute bottom-1 flex gap-0.5">
+                              {daySessions.slice(0, 3).map((_, idx) => (
+                                <div key={idx} className="w-1 h-1 rounded-full bg-white" />
+                              ))}
+                            </div>
+                          )}
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4 mb-6">

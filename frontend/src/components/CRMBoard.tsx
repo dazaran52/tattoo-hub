@@ -743,6 +743,7 @@ export function CRMBoard() {
             setSessionToAccept(null)
           }}
           session={sessionToAccept}
+          allSessions={sessions}
         />
       )}
       <LeadDetailsModal
