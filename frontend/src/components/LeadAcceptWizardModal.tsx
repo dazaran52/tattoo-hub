@@ -139,7 +139,7 @@ export function LeadAcceptWizardModal({ isOpen, onClose, onSuccess, session, all
 
   return (
     <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
-      <div className="bg-white dark:bg-neutral-900 rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden my-8 transform transition-all">
+      <div className={`bg-white dark:bg-neutral-900 rounded-3xl w-full shadow-2xl overflow-hidden my-8 transform transition-all duration-300 ${step === 1 ? 'max-w-md' : 'max-w-3xl'}`}>
         {/* Header */}
         <div className="flex justify-between items-center p-6 border-b border-neutral-200 dark:border-neutral-800">
           <h2 className="text-xl font-bold flex items-center gap-2 text-neutral-900 dark:text-white">
@@ -194,12 +194,15 @@ export function LeadAcceptWizardModal({ isOpen, onClose, onSuccess, session, all
                 Назначение времени
               </h3>
               
-              <div className="bg-neutral-50 dark:bg-neutral-800/50 p-4 rounded-2xl mb-6">
+              <div className="bg-neutral-50 dark:bg-neutral-800/50 p-4 rounded-2xl mb-4">
                 <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-1">Пожелания клиента по времени:</p>
-                <p className="font-medium text-neutral-900 dark:text-white mb-4">{clientPrefTime}</p>
-                
-                {/* Mini Calendar UI */}
-                <div className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-700 p-4">
+                <p className="font-medium text-neutral-900 dark:text-white">{clientPrefTime}</p>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div>
+                  {/* Mini Calendar UI */}
+                  <div className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-700 p-4">
                   <div className="flex justify-between items-center mb-4">
                     <button onClick={prevMonth} className="p-1.5 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors">
                       <ChevronLeft className="w-4 h-4" />
@@ -264,9 +267,11 @@ export function LeadAcceptWizardModal({ isOpen, onClose, onSuccess, session, all
                     })}
                   </div>
                 </div>
+                </div>
 
-                {/* Selected Date Schedule */}
-                <div className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-700 p-4">
+                <div className="flex flex-col gap-6">
+                  {/* Selected Date Schedule */}
+                  <div className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-700 p-4 flex-1">
                   <h4 className="text-sm font-bold text-neutral-900 dark:text-white mb-3 flex items-center gap-2">
                     <Clock className="w-4 h-4 text-violet-500" />
                     Расписание на {new Date(selectedDate).toLocaleDateString('ru-RU')}
@@ -278,7 +283,7 @@ export function LeadAcceptWizardModal({ isOpen, onClose, onSuccess, session, all
                       {selectedDateSessions.map(s => (
                         <div key={s.id} className="flex justify-between items-center bg-neutral-50 dark:bg-neutral-800 p-2.5 rounded-lg text-sm border border-neutral-100 dark:border-neutral-800">
                           <span className="font-bold text-violet-600 dark:text-violet-400 bg-violet-100 dark:bg-violet-900/30 px-2 py-1 rounded">
-                            {s.start_time || '??:??'} - {s.end_time || '??:??'}
+                            {(s.start_time || '??:??').slice(0, 5)} - {(s.end_time || '??:??').slice(0, 5)}
                           </span>
                           <span className="text-neutral-600 dark:text-neutral-300 font-medium">
                             {s.master_clients?.name || 'Клиент'}
@@ -288,9 +293,8 @@ export function LeadAcceptWizardModal({ isOpen, onClose, onSuccess, session, all
                     </div>
                   )}
                 </div>
-              </div>
 
-              <div className="grid grid-cols-2 gap-4 mb-6">
+                <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-2">Начало</label>
                   <input
@@ -310,8 +314,10 @@ export function LeadAcceptWizardModal({ isOpen, onClose, onSuccess, session, all
                   />
                 </div>
               </div>
+              </div>
+              </div>
 
-              <label className="flex items-start gap-3 p-4 bg-emerald-50 dark:bg-emerald-900/10 rounded-2xl cursor-pointer hover:bg-emerald-100 dark:hover:bg-emerald-900/20 transition-colors border border-emerald-100 dark:border-emerald-900/30">
+              <label className="flex items-start gap-3 p-4 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-900/30 rounded-2xl cursor-pointer">
                 <input
                   type="checkbox"
                   checked={sendMessage}
