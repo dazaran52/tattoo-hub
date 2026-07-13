@@ -282,12 +282,25 @@ export function LeadAcceptWizardModal({ isOpen, onClose, onSuccess, session, all
                     <div className="space-y-2">
                       {selectedDateSessions.map(s => (
                         <div key={s.id} className="flex justify-between items-center bg-neutral-50 dark:bg-neutral-800 p-2.5 rounded-lg text-sm border border-neutral-100 dark:border-neutral-800">
-                          <span className="font-bold text-violet-600 dark:text-violet-400 bg-violet-100 dark:bg-violet-900/30 px-2 py-1 rounded">
-                            {(s.start_time || '??:??').slice(0, 5)} - {(s.end_time || '??:??').slice(0, 5)}
-                          </span>
-                          <span className="text-neutral-600 dark:text-neutral-300 font-medium">
-                            {s.master_clients?.name || 'Клиент'}
-                          </span>
+                          <div className="flex flex-col gap-1">
+                            {s.start_time || s.end_time ? (
+                              <span className="font-bold text-violet-600 dark:text-violet-400 bg-violet-100 dark:bg-violet-900/30 px-2 py-1 rounded w-fit">
+                                {s.start_time ? s.start_time.slice(0, 5) : '...'} - {s.end_time ? s.end_time.slice(0, 5) : '...'}
+                              </span>
+                            ) : (
+                              <span className="font-medium text-neutral-500 dark:text-neutral-400 text-xs bg-neutral-200 dark:bg-neutral-700 px-2 py-1 rounded w-fit">
+                                Время не указано
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex flex-col items-end">
+                            <span className="text-neutral-900 dark:text-white font-bold">
+                              {s.master_clients?.name || 'Клиент'}
+                            </span>
+                            <span className="text-[10px] uppercase font-bold text-neutral-500 dark:text-neutral-400">
+                              {s.status === 'new' ? 'Новая заявка' : s.status === 'discussing' ? 'В диалоге' : s.status === 'booked' ? 'Записан' : s.status === 'in_progress' ? 'В процессе' : s.status === 'completed' ? 'Завершено' : s.status === 'cancelled' ? 'Отмена' : s.status}
+                            </span>
+                          </div>
                         </div>
                       ))}
                     </div>
