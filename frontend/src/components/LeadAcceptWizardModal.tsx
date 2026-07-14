@@ -319,7 +319,7 @@ export function LeadAcceptWizardModal({ isOpen, onClose, onSuccess, session, all
                               {s.status === 'new' ? 'Новая заявка' : s.status === 'discussing' ? 'В диалоге' : s.status === 'booked' ? 'Записан' : s.status === 'in_progress' ? 'В процессе' : s.status === 'completed' ? 'Завершено' : s.status === 'cancelled' ? 'Отмена' : s.status}
                             </span>
                           </div>
-                        </div>
+                        </button>
                       ))}
                     </div>
                   )}
