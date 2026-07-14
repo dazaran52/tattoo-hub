@@ -586,7 +586,6 @@ function LoginContent() {
               {authMode === 'login' && (
                 <div className="mt-6 flex flex-col items-center gap-3 text-sm font-medium">
                   <button type="button" onClick={() => { setAuthMode('forgot_password'); setError(''); setSuccessMsg('') }} className="text-neutral-500 hover:text-neutral-900 dark:hover:text-white transition-colors">{t('forgotPassword')}</button>
-                  <button type="button" onClick={() => { setAuthMode('magic_link'); setError(''); setSuccessMsg('') }} className={`transition-colors ${role === 'master' ? 'text-orange-500 hover:text-orange-600' : 'text-indigo-500 hover:text-indigo-600'}`}>{t('loginWithCode')}</button>
                 </div>
               )}
               {authMode === 'magic_link' && (
