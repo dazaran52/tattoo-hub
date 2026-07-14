@@ -170,13 +170,14 @@ def send_smtp_reply(to_email: str, subject: str, body_html: str, original_msg_id
                 server.login(smtp_user, settings.LEAD_REPLY_PASSWORD)
                 server.send_message(msg)
                 
-        try:
-            imap_host = settings.LEAD_REPLY_SMTP_SERVER.replace("smtp", "imap")
-            with imaplib.IMAP4_SSL(imap_host) as imap_server:
-                imap_server.login(settings.LEAD_REPLY_EMAIL, settings.LEAD_REPLY_PASSWORD)
-                imap_server.append("Sent", '\\Seen', imaplib.Time2Internaldate(time.time()), bytes(msg))
-        except Exception as imap_e:
-            logger.error(f"Failed to append to Sent folder: {imap_e}")
+        if "resend.com" not in settings.LEAD_REPLY_SMTP_SERVER.lower():
+            try:
+                imap_host = settings.LEAD_REPLY_SMTP_SERVER.replace("smtp", "imap")
+                with imaplib.IMAP4_SSL(imap_host) as imap_server:
+                    imap_server.login(settings.LEAD_REPLY_EMAIL, settings.LEAD_REPLY_PASSWORD)
+                    imap_server.append("Sent", '\\Seen', imaplib.Time2Internaldate(time.time()), bytes(msg))
+            except Exception as imap_e:
+                logger.error(f"Failed to append to Sent folder: {imap_e}")
                 
         logger.info(f"Replied to client email: {to_email}")
         return True

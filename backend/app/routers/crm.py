@@ -422,19 +422,33 @@ async def send_accept_email(
         subject = f"Ваша заявка принята мастером {master_name}!"
         
         html = f'''
-        <div style="font-family: sans-serif; max-w-[600px]; margin: 0 auto; color: #171717;">
-            <h2>Отличные новости!</h2>
-            <p>Мастер <strong>{master_name}</strong> готов принять вашу заявку в работу.</p>
-            <div style="background-color: #f3f4f6; padding: 20px; border-radius: 12px; margin: 20px 0;">
-                <ul style="list-style: none; padding: 0; margin: 0; line-height: 1.8;">
-                    <li><strong>Дата сеанса:</strong> {date_text}</li>
-                    <li><strong>Время сеанса:</strong> {time_text}</li>
-                    <li><strong>Стоимость:</strong> {price_text}</li>
-                </ul>
+        <div style="font-family: 'Helvetica Neue', Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #171717; background-color: #ffffff; border: 1px solid #e5e7eb; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+            <div style="background: linear-gradient(to right, #10b981, #059669); padding: 30px 20px; text-align: center;">
+                <h1 style="color: white; margin: 0; font-size: 24px; font-weight: 700;">Ваша заявка принята! 🎉</h1>
             </div>
-            <p>Для удобного общения с мастером и отслеживания статуса сеанса, рекомендуем войти на платформу:</p>
-            <div style="margin: 30px 0;">
-                <a href="https://tattoo-hub.xyz/login" style="background-color: #7c3aed; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold;">Перейти в личный кабинет</a>
+            
+            <div style="padding: 30px;">
+                <p style="font-size: 16px; line-height: 1.6; margin-top: 0;">Привет!</p>
+                <p style="font-size: 16px; line-height: 1.6;">Отличные новости: мастер <strong>{master_name}</strong> рассмотрел вашу идею и готов взять её в работу!</p>
+                
+                <div style="background-color: #f3f4f6; border-left: 4px solid #10b981; padding: 20px; border-radius: 0 12px 12px 0; margin: 25px 0;">
+                    <p style="margin: 0 0 10px 0; font-weight: bold; color: #374151;">Предварительные детали:</p>
+                    <ul style="list-style: none; padding: 0; margin: 0; line-height: 1.8; color: #4b5563;">
+                        <li>📅 <strong>Дата:</strong> {date_text}</li>
+                        <li>⏰ <strong>Время:</strong> {time_text}</li>
+                        <li>💰 <strong>Стоимость:</strong> {price_text}</li>
+                    </ul>
+                </div>
+                
+                <p style="font-size: 16px; line-height: 1.6; font-weight: bold; text-align: center; margin-bottom: 25px;">У мастера могут быть уточняющие вопросы.</p>
+                
+                <div style="text-align: center; margin: 35px 0;">
+                    <a href="https://tattoo-hub.xyz/login" style="background-color: #10b981; color: white; padding: 14px 28px; text-decoration: none; border-radius: 12px; font-weight: bold; font-size: 16px; display: inline-block;">Открыть чат с мастером</a>
+                </div>
+                
+                <p style="font-size: 14px; color: #6b7280; text-align: center; margin: 0; border-top: 1px solid #e5e7eb; padding-top: 20px;">
+                    Если у вас не получается войти, просто ответьте на это письмо.
+                </p>
             </div>
         </div>
         '''
