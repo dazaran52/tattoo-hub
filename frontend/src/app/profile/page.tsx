@@ -183,7 +183,7 @@ export default function ProfilePage() {
       toast.error(language === 'ru' ? 'Сначала установите username' : 'Set username first')
       return
     }
-    const url = `${window.location.origin}/master/${profile.username}`
+    const url = `${window.location.origin}/book/${profile.username}`
     
     if (navigator.share) {
       try {
@@ -224,7 +224,7 @@ export default function ProfilePage() {
       <QRCodeModal 
         isOpen={isQRModalOpen} 
         onClose={() => setIsQRModalOpen(false)} 
-        url={`${window.location.origin}/master/${profile.username}`} 
+        url={`${window.location.origin}/book/${profile.username}`} 
       />
       
       {/* Cool Background Gradients */}
@@ -328,7 +328,7 @@ export default function ProfilePage() {
               
               <div className="bg-black/20 rounded-xl p-3 flex items-center justify-between backdrop-blur-sm border border-white/10 mt-4">
                 <span className="text-sm truncate font-medium opacity-90">
-                  tattoo-hub.xyz/master/{profile.username || '...'}
+                  tattoo-hub.xyz/book/{profile.username || '...'}
                 </span>
                 <div className="flex gap-2 ml-2 shrink-0">
                   <button 
