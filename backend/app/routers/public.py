@@ -39,7 +39,7 @@ async def get_public_master(
             pass
 
         query = supabase.table("users").select(
-            "id, username, display_name, bio, portfolio_url, city_ids, is_verified_master, status, role, theme, avatar_url, portfolio_posts(id, media, description, created_at), master_reviews(rating)"
+            "id, username, display_name, bio, portfolio_url, city_ids, is_verified_master, status, role, theme, avatar_url, portfolio_posts(id, media, description, created_at), master_reviews!master_reviews_master_id_fkey(rating)"
         )
         
         if is_uuid:
@@ -63,7 +63,7 @@ async def get_public_master(
         posts.sort(key=lambda x: x.get("created_at", ""), reverse=True)
 
         # Calculate rating
-        reviews = data.get("master_reviews") or []
+        reviews = data.get("master_reviews!master_reviews_master_id_fkey") or []
         review_count = len(reviews)
         rating = sum([r.get("rating", 0) for r in reviews]) / review_count if review_count > 0 else 0.0
 
