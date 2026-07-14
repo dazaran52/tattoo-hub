@@ -52,10 +52,17 @@ async def get_messages(
     # Check if client or master
     if client_token and chat["client_session_id"] == client_token:
         pass # Client authorized
+    elif current_user:
+        if chat["master_id"] == current_user.user_id:
+            pass # Master authorized
+        else:
+            lead_res = supabase.table("leads").select("client_id").eq("id", chat["lead_id"]).execute()
+            if lead_res.data and lead_res.data[0].get("client_id") == current_user.user_id:
+                pass # Authenticated client authorized
+            else:
+                raise HTTPException(status_code=403, detail="Forbidden")
     else:
-        # Check master auth
-        if not current_user or chat["master_id"] != current_user.user_id:
-            raise HTTPException(status_code=403, detail="Forbidden")
+        raise HTTPException(status_code=403, detail="Forbidden")
 
     msgs_res = supabase.table("chat_messages").select("*").eq("chat_id", chat_id).order("created_at", desc=False).execute()
     return msgs_res.data or []
@@ -114,11 +121,17 @@ async def send_message(
 
     if client_token and chat["client_session_id"] == client_token:
         sender_type = "client"
-    else:
-        if current_user and chat["master_id"] == current_user.user_id:
+    elif current_user:
+        if chat["master_id"] == current_user.user_id:
             sender_type = "master"
         else:
-            raise HTTPException(status_code=403, detail="Forbidden")
+            lead_res = supabase.table("leads").select("client_id").eq("id", lead_id).execute()
+            if lead_res.data and lead_res.data[0].get("client_id") == current_user.user_id:
+                sender_type = "client"
+            else:
+                raise HTTPException(status_code=403, detail="Forbidden")
+    else:
+        raise HTTPException(status_code=403, detail="Forbidden")
 
     # Check if proposal is accepted
     prop_res = supabase.table("lead_proposals").select("status").eq("lead_id", lead_id).eq("user_id", master_id).execute()

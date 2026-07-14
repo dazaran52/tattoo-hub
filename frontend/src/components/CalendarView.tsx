@@ -298,7 +298,11 @@ export function CalendarView({ sessions, onUpdate, onSessionClick, onCreateSessi
                 ) : (
                   <div className={isSidebarExpanded ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" : "flex flex-col gap-4"}>
                     {selectedDateSessions.map(s => (
-                      <div key={s.id} className={`bg-white dark:bg-neutral-800 border rounded-2xl p-4 shadow-sm h-full flex flex-col ${s.status === 'new' ? 'border-emerald-500/50 bg-emerald-50/30 dark:bg-emerald-900/10' : 'border-neutral-200 dark:border-neutral-700'}`}>
+                      <div 
+                        key={s.id} 
+                        onClick={() => onSessionClick(s)}
+                        className={`bg-white dark:bg-neutral-800 border rounded-2xl p-4 shadow-sm h-full flex flex-col cursor-pointer transition-transform hover:scale-[1.02] active:scale-[0.98] ${s.status === 'new' ? 'border-emerald-500/50 bg-emerald-50/30 dark:bg-emerald-900/10' : 'border-neutral-200 dark:border-neutral-700 hover:border-violet-300 dark:hover:border-violet-700'}`}
+                      >
                       <div className="flex justify-between items-start mb-3">
                         <div>
                           <div className="font-bold text-neutral-900 dark:text-white text-lg">
@@ -319,42 +323,54 @@ export function CalendarView({ sessions, onUpdate, onSessionClick, onCreateSessi
                       
                       {s.style && <div className="text-sm text-neutral-500 mb-4">Стиль: {s.style}</div>}
                       {s.reference_images && s.reference_images.length > 0 && (
-                        <div className="flex gap-2 overflow-x-auto mb-4 custom-scrollbar pb-2">
+                        <div className="flex gap-2 overflow-x-auto mb-4 custom-scrollbar pb-2" onClick={(e) => e.stopPropagation()}>
                           {s.reference_images.map((url, idx) => (
                             <img key={idx} src={url} alt="ref" onClick={() => setViewerImage(url)} className="w-16 h-16 rounded-lg object-cover shrink-0 border border-neutral-200 dark:border-neutral-700 cursor-pointer" />
                           ))}
                         </div>
                       )}
 
-                      <div className="flex items-center justify-between border-t border-neutral-100 dark:border-neutral-700 pt-3">
-                        <div className="flex gap-2">
-                          {s.status === 'booked' && (
-                            <button 
-                              onClick={() => {
-                                setClientNameForWaiver(s.master_clients?.name || '')
-                                setSessionToStart(s.id)
-                              }}
-                              className="px-3 py-1.5 bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400 font-bold text-xs rounded-lg flex items-center gap-1 hover:bg-violet-200 transition-colors"
-                            >
-                              <PlayCircle className="w-3.5 h-3.5" /> Начать
+                      <div className="flex items-center justify-between border-t border-neutral-100 dark:border-neutral-700 pt-3" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex gap-2 w-full justify-between">
+                          <div className="flex gap-2">
+                            {s.status === 'new' && (
+                              <button 
+                                onClick={() => onSessionClick(s)}
+                                className="px-3 py-1.5 bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 font-bold text-xs rounded-lg flex items-center gap-1 hover:bg-emerald-200 transition-colors w-full"
+                              >
+                                Рассмотреть заявку
+                              </button>
+                            )}
+                            {s.status === 'booked' && (
+                              <button 
+                                onClick={() => {
+                                  setClientNameForWaiver(s.master_clients?.name || '')
+                                  setSessionToStart(s.id)
+                                }}
+                                className="px-3 py-1.5 bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400 font-bold text-xs rounded-lg flex items-center gap-1 hover:bg-violet-200 transition-colors"
+                              >
+                                <PlayCircle className="w-3.5 h-3.5" /> Начать
+                              </button>
+                            )}
+                            {s.status === 'in_progress' && (
+                              <button 
+                                onClick={() => onSessionComplete(s.id)}
+                                className="px-3 py-1.5 bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 font-bold text-xs rounded-lg flex items-center gap-1 hover:bg-green-200 transition-colors"
+                              >
+                                <CheckCircle className="w-3.5 h-3.5" /> Завершить
+                              </button>
+                            )}
+                          </div>
+                          <div className="flex gap-2">
+                            {s.status !== 'new' && (
+                              <button onClick={() => onSessionClick(s)} className="p-1.5 text-neutral-400 hover:text-violet-500 rounded-md transition-colors" title="Редактировать">
+                                <Edit3 className="w-4 h-4" />
+                              </button>
+                            )}
+                            <button onClick={() => handleDeleteSession(s.id)} className="p-1.5 text-neutral-400 hover:text-red-500 rounded-md transition-colors" title="Удалить">
+                              <Trash2 className="w-4 h-4" />
                             </button>
-                          )}
-                          {s.status === 'in_progress' && (
-                            <button 
-                              onClick={() => onSessionComplete(s.id)}
-                              className="px-3 py-1.5 bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 font-bold text-xs rounded-lg flex items-center gap-1 hover:bg-green-200 transition-colors"
-                            >
-                              <CheckCircle className="w-3.5 h-3.5" /> Завершить
-                            </button>
-                          )}
-                        </div>
-                        <div className="flex gap-2">
-                          <button onClick={() => onSessionClick(s)} className="p-1.5 text-neutral-400 hover:text-violet-500 rounded-md transition-colors">
-                            <Edit3 className="w-4 h-4" />
-                          </button>
-                          <button onClick={() => handleDeleteSession(s.id)} className="p-1.5 text-neutral-400 hover:text-red-500 rounded-md transition-colors">
-                            <Trash2 className="w-4 h-4" />
-                          </button>
+                          </div>
                         </div>
                       </div>
                     </div>

@@ -99,7 +99,12 @@ export function CRMBoard() {
   
   const handleSessionClick = (session: CRMSession) => {
     if (session.status === 'new') {
-      setSessionDetails(session)
+      const client = clients.find(c => c.id === session.client_id)
+      if (client) {
+        setClientToView(client)
+      } else {
+        setSessionDetails(session)
+      }
     } else {
       setSessionToEdit(session)
     }
@@ -793,7 +798,7 @@ export function CRMBoard() {
           client={clientToView}
           onUpdate={fetchData}
           onSessionClick={handleSessionClick}
-          chatId={null}
+          chatId={clientToView.chat_id || null}
         />
       )}
 

@@ -79,11 +79,24 @@ async def get_clients(
             .order("created_at", desc=True) \
             .execute()
         
-        # Filter out deleted sessions in the client's nested array just in case
         clients = res.data or []
+        
+        # Fetch chats for these clients
+        lead_ids = [c["lead_id"] for c in clients if c.get("lead_id")]
+        chat_dict = {}
+        if lead_ids:
+            chats_res = await supabase.table("lead_chats") \
+                .select("id, lead_id") \
+                .eq("master_id", current_user.user_id) \
+                .in_("lead_id", lead_ids) \
+                .execute()
+            chat_dict = {c["lead_id"]: c["id"] for c in (chats_res.data or [])}
+
+        # Filter out deleted sessions in the client's nested array just in case
         for client in clients:
             if client.get("master_sessions"):
                 client["master_sessions"] = [s for s in client["master_sessions"] if not s.get("is_deleted")]
+            client["chat_id"] = chat_dict.get(client.get("lead_id"))
         
         return clients
     except Exception as e:

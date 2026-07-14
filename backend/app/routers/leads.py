@@ -731,8 +731,8 @@ async def get_client_leads(
                 }
 
         # Get chats
-        chats_res = await supabase.table("lead_chats").select("lead_id, id").in_("lead_id", lead_ids).execute()
-        chats_dict = {c["lead_id"]: c["id"] for c in (chats_res.data or [])}
+        chats_res = await supabase.table("lead_chats").select("lead_id, id, master_id").in_("lead_id", lead_ids).execute()
+        chats_dict = {(c["lead_id"], c["master_id"]): c["id"] for c in (chats_res.data or [])}
 
         # Get master clients & sessions
         master_clients_res = await supabase.table("master_clients").select("id, lead_id").in_("lead_id", lead_ids).execute()
@@ -770,10 +770,14 @@ async def get_client_leads(
             if session and session.get("status") in ["appointment_set", "completed"]:
                  lead["status"] = session["status"]
 
+            chat_id = None
+            if master_info and master_info.get("id"):
+                chat_id = chats_dict.get((lead["id"], master_info["id"]))
+
             out.append({
                 **lead,
                 "unlock_count": proposals_count.get(lead["id"], 0),
-                "chat_id": chats_dict.get(lead["id"]),
+                "chat_id": chat_id,
                 "master": master_info,
                 "session": session
             })

@@ -86,7 +86,7 @@ export function ChatModal({ isOpen, onClose, chatId, leadTitle, currentUserRole 
     }, 100)
   }
 
-  if (!isOpen || !chatId) return null
+  if (!isOpen) return null
 
   return (
     <AnimatePresence>
@@ -98,6 +98,29 @@ export function ChatModal({ isOpen, onClose, chatId, leadTitle, currentUserRole 
           className="bg-white dark:bg-neutral-900 w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden border border-neutral-200 dark:border-white/10 flex flex-col h-[80vh]"
         >
           <div className="flex justify-between items-center p-4 lg:p-6 border-b border-neutral-100 dark:border-white/5 bg-neutral-50/50 dark:bg-neutral-900/50">
+            <div>
+              <h2 className="text-xl font-bold text-neutral-900 dark:text-white flex items-center gap-2">
+                <MessageCircle className="w-5 h-5 text-violet-500" />
+                {recipientName || leadTitle}
+              </h2>
+              <p className="text-xs text-neutral-500 mt-0.5">Внутренний чат</p>
+            </div>
+            <button onClick={onClose} className="p-2 hover:bg-neutral-200 dark:hover:bg-neutral-800 rounded-xl transition-colors">
+              <X className="w-5 h-5 text-neutral-500" />
+            </button>
+          </div>
+
+          {!chatId ? (
+            <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
+              <AlertCircle className="w-12 h-12 text-neutral-300 dark:text-neutral-700 mb-4" />
+              <h3 className="text-lg font-bold text-neutral-900 dark:text-white mb-2">Чат недоступен</h3>
+              <p className="text-sm text-neutral-500">
+                Чат еще не создан или у вас нет к нему доступа. Чат создается автоматически при отправке или принятии отклика.
+              </p>
+            </div>
+          ) : (
+            <>
+              <div className="flex-1 overflow-y-auto p-4 lg:p-6 space-y-4 bg-neutral-50/30 dark:bg-neutral-950/30 relative">
             <h2 className="text-xl font-bold text-neutral-900 dark:text-white flex items-center gap-2">
               <MessageCircle className="w-5 h-5 text-violet-500" />
               Чат с {recipientName || (currentUserRole === 'client' ? 'мастером' : 'клиентом')}
@@ -158,6 +181,8 @@ export function ChatModal({ isOpen, onClose, chatId, leadTitle, currentUserRole 
               </button>
             </form>
           </div>
+            </>
+          )}
         </motion.div>
       </div>
     </AnimatePresence>

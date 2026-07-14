@@ -16,6 +16,7 @@ export interface CRMClient {
   source: string
   notes: string
   lead_id?: string
+  chat_id?: string
   created_at: string
   leads?: {
     title: string
