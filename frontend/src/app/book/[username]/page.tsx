@@ -388,7 +388,7 @@ export default function BookMasterPage({ params }: { params: { username: string 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-semibold opacity-90 mb-2">
-                  Ваше имя *
+                  Ваше имя <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
                   <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 opacity-50" />
@@ -404,24 +404,6 @@ export default function BookMasterPage({ params }: { params: { username: string 
               </div>
               <div>
                 <label className="block text-sm font-semibold opacity-90 mb-2">
-                  Телефон или Telegram (Необязательно)
-                </label>
-                <div className="relative">
-                  <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 opacity-50" />
-                  <input
-                    type="text"
-                    value={contact}
-                    onChange={(e) => setContact(e.target.value)}
-                    placeholder="+420... или @username"
-                    className={`w-full rounded-xl pl-11 pr-4 py-3 transition-all ${tClasses.input}`}
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-semibold opacity-90 mb-2">
                   Email <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
@@ -432,6 +414,24 @@ export default function BookMasterPage({ params }: { params: { username: string 
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="example@mail.com"
                     className={`w-full rounded-xl px-4 py-3 transition-all ${tClasses.input}`}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-semibold opacity-90 mb-2">
+                  Телефон или Telegram (Необязательно)
+                </label>
+                <div className="relative">
+                  <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 opacity-50" />
+                  <input
+                    type="text"
+                    value={contact}
+                    onChange={(e) => setContact(e.target.value)}
+                    placeholder="+420... или @username"
+                    className={`w-full rounded-xl pl-11 pr-4 py-3 transition-all ${tClasses.input}`}
                   />
                 </div>
               </div>
@@ -556,7 +556,7 @@ export default function BookMasterPage({ params }: { params: { username: string 
 
             <div>
               <label className="block text-sm font-semibold opacity-90 mb-2">
-                Идея татуировки *
+                Идея татуировки <span className="text-red-500">*</span>
               </label>
               <div className="relative">
                 <FileText className="absolute left-3.5 top-3.5 w-5 h-5 opacity-50" />
@@ -618,7 +618,7 @@ export default function BookMasterPage({ params }: { params: { username: string 
 
             <div>
               <label className="block text-sm font-semibold opacity-90 mb-2">
-                Фото-референсы (До 3 шт)
+                Фото-референсы (До 10 шт)
               </label>
               <div className="flex flex-wrap gap-4">
                 {images.map((file, idx) => (
@@ -633,7 +633,7 @@ export default function BookMasterPage({ params }: { params: { username: string 
                     </button>
                   </div>
                 ))}
-                {images.length < 3 && (
+                {images.length < 10 && (
                   <label className={`w-20 h-20 rounded-xl border-2 border-dashed flex flex-col items-center justify-center transition-colors cursor-pointer ${tClasses.input}`}>
                     <Upload className="w-6 h-6 mb-1 opacity-50" />
                     <span className="text-[10px] font-medium opacity-70">Добавить</span>
@@ -645,7 +645,7 @@ export default function BookMasterPage({ params }: { params: { username: string 
                       onChange={(e) => {
                         if (e.target.files) {
                           const newFiles = Array.from(e.target.files)
-                          setImages(prev => [...prev, ...newFiles].slice(0, 3))
+                          setImages(prev => [...prev, ...newFiles].slice(0, 10))
                         }
                       }} 
                     />
