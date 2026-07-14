@@ -99,9 +99,8 @@ export function CRMBoard() {
   
   const handleSessionClick = (session: CRMSession) => {
     if (session.status === 'new') {
-      const client = clients.find(c => c.id === session.client_id)
-      if (client) {
-        setClientToView(client)
+      if (session.master_clients) {
+        setClientToView(session.master_clients)
       } else {
         setSessionDetails(session)
       }
