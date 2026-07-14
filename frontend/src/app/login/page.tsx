@@ -8,7 +8,7 @@ import { supabase } from '@/lib/supabase'
 import { getTranslation, Language } from '@/lib/i18n'
 import { Logo } from '@/components/Logo'
 
-type AuthMode = 'login' | 'signup' | 'verify_email' | 'forgot_password' | 'reset_password' | 'magic_link'
+type AuthMode = 'login' | 'signup' | 'verify_email' | 'forgot_password' | 'reset_password'
 
 function LoginContent() {
   const router = useRouter()
@@ -142,20 +142,6 @@ function LoginContent() {
           }
         })
         if (signUpError) {
-          if (signUpError.message?.toLowerCase().includes('already registered')) {
-            setAuthMode('magic_link')
-            const { error: magicLinkError } = await supabase.auth.signInWithOtp({ 
-              email,
-              options: {
-                shouldCreateUser: false,
-                emailRedirectTo: `${window.location.origin}/auth/callback?next=/dashboard`
-              }
-            })
-            if (magicLinkError) throw magicLinkError
-            setSuccessMsg(t('codeSent')) // Text can be repurposed for 'link sent'
-            setIsLoading(false)
-            return
-          }
           throw signUpError
         }
         if (data.session) {
@@ -191,19 +177,7 @@ function LoginContent() {
         if (error) throw error
         setSuccessMsg(t('codeSent')) // Text can be repurposed for 'link sent'
       }
-      else if (authMode === 'magic_link') {
-        if (!successMsg) {
-          const { error } = await supabase.auth.signInWithOtp({ 
-            email,
-            options: {
-              shouldCreateUser: false,
-              emailRedirectTo: `${window.location.origin}/auth/callback?next=/dashboard`
-            }
-          })
-          if (error) throw error
-          setSuccessMsg(t('codeSent')) // Text can be repurposed for 'link sent'
-        }
-      }
+
     } catch (err: any) {
       console.error('Login error:', err)
       setError(err.message || 'An error occurred')
@@ -367,7 +341,7 @@ function LoginContent() {
               <button
                 type="button"
                 onClick={() => { setAuthMode('login'); setError(''); setSuccessMsg('') }}
-                className={`flex-1 py-5 text-sm font-bold uppercase tracking-widest transition-all ${!isSignUp && !isForgotPassword && authMode !== 'magic_link' ? `text-neutral-900 dark:text-white bg-neutral-900/5 dark:bg-white/5 border-b-2 ${role === 'master' ? 'border-orange-500' : 'border-indigo-500'}` : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-300 hover:bg-neutral-900/5 dark:hover:bg-white/5'}`}
+                className={`flex-1 py-5 text-sm font-bold uppercase tracking-widest transition-all ${!isSignUp && !isForgotPassword ? `text-neutral-900 dark:text-white bg-neutral-900/5 dark:bg-white/5 border-b-2 ${role === 'master' ? 'border-orange-500' : 'border-indigo-500'}` : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-300 hover:bg-neutral-900/5 dark:hover:bg-white/5'}`}
               >
                 {t('loginTab')}
               </button>
@@ -438,7 +412,7 @@ function LoginContent() {
                     </div>
                   </motion.div>
 
-                  {!needsCode && authMode !== 'forgot_password' && authMode !== 'magic_link' && (
+                  {!needsCode && authMode !== 'forgot_password' && (
                     <motion.div layout>
                       <div className="relative group">
                         <Lock className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500 transition-all duration-300 ${role === 'master' ? 'group-focus-within:text-orange-400' : 'group-focus-within:text-indigo-400'}`} />
@@ -550,7 +524,7 @@ function LoginContent() {
                     <>
                       {authMode === 'signup' ? t('createAccount') : 
                        authMode === 'login' ? t('signIn') : 
-                       (authMode === 'forgot_password' || (authMode === 'magic_link' && !successMsg)) ? t('nextBtn') : 
+                       authMode === 'forgot_password' ? t('nextBtn') : 
                        t('confirmBtn')}
                       <ArrowRight className="w-5 h-5" />
                     </>
@@ -588,11 +562,7 @@ function LoginContent() {
                   <button type="button" onClick={() => { setAuthMode('forgot_password'); setError(''); setSuccessMsg('') }} className="text-neutral-500 hover:text-neutral-900 dark:hover:text-white transition-colors">{t('forgotPassword')}</button>
                 </div>
               )}
-              {authMode === 'magic_link' && (
-                <div className="mt-6 flex justify-center">
-                  <button type="button" onClick={() => { setAuthMode('login'); setError(''); setSuccessMsg('') }} className="text-neutral-500 hover:text-neutral-900 dark:hover:text-white transition-colors text-sm font-medium">{t('loginWithPassword')}</button>
-                </div>
-              )}
+
             </div>
           </div>
 
