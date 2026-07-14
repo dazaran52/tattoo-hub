@@ -6,8 +6,6 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { CRMSession } from './CRMBoard'
 import { LiabilityWaiverModal } from './LiabilityWaiverModal'
 import { CompleteSessionModal } from './CompleteSessionModal'
-import { SessionModal } from './SessionModal'
-import { CRMClient } from './ClientsDatabase'
 import { ImageViewerModal } from './ImageViewerModal'
 
 interface DayOff {
@@ -21,9 +19,12 @@ interface DayOff {
 interface CalendarViewProps {
   sessions: CRMSession[]
   onUpdate: () => void
+  onSessionClick: (session: CRMSession) => void
+  onCreateSession: () => void
+  onSessionComplete: (id: string) => void
 }
 
-export function CalendarView({ sessions, onUpdate }: CalendarViewProps) {
+export function CalendarView({ sessions, onUpdate, onSessionClick, onCreateSession, onSessionComplete }: CalendarViewProps) {
   const [currentDate, setCurrentDate] = useState(new Date())
   const [daysOff, setDaysOff] = useState<DayOff[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -32,29 +33,13 @@ export function CalendarView({ sessions, onUpdate }: CalendarViewProps) {
   // Modals state
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
   const [sessionToStart, setSessionToStart] = useState<string | null>(null)
-  const [sessionToComplete, setSessionToComplete] = useState<string | null>(null)
-  const [sessionToEdit, setSessionToEdit] = useState<CRMSession | null>(null)
   const [clientNameForWaiver, setClientNameForWaiver] = useState('')
-  const [isSessionModalOpen, setIsSessionModalOpen] = useState(false)
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(false)
-  const [clientsForModal, setClientsForModal] = useState<CRMClient[]>([])
   const [viewerImage, setViewerImage] = useState<string | null>(null)
 
   useEffect(() => {
     fetchDaysOff()
-    fetchClients()
   }, [])
-
-  const fetchClients = async () => {
-    try {
-      const { data: { session } } = await supabase.auth.getSession()
-      const token = session?.access_token
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/crm/clients`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      })
-      if (res.ok) setClientsForModal(await res.json())
-    } catch {}
-  }
 
   const fetchDaysOff = async () => {
     try {
@@ -356,7 +341,7 @@ export function CalendarView({ sessions, onUpdate }: CalendarViewProps) {
                           )}
                           {s.status === 'in_progress' && (
                             <button 
-                              onClick={() => setSessionToComplete(s.id)}
+                              onClick={() => onSessionComplete(s.id)}
                               className="px-3 py-1.5 bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 font-bold text-xs rounded-lg flex items-center gap-1 hover:bg-green-200 transition-colors"
                             >
                               <CheckCircle className="w-3.5 h-3.5" /> Завершить
@@ -364,7 +349,7 @@ export function CalendarView({ sessions, onUpdate }: CalendarViewProps) {
                           )}
                         </div>
                         <div className="flex gap-2">
-                          <button onClick={() => setSessionToEdit(s)} className="p-1.5 text-neutral-400 hover:text-violet-500 rounded-md transition-colors">
+                          <button onClick={() => onSessionClick(s)} className="p-1.5 text-neutral-400 hover:text-violet-500 rounded-md transition-colors">
                             <Edit3 className="w-4 h-4" />
                           </button>
                           <button onClick={() => handleDeleteSession(s.id)} className="p-1.5 text-neutral-400 hover:text-red-500 rounded-md transition-colors">
@@ -380,7 +365,7 @@ export function CalendarView({ sessions, onUpdate }: CalendarViewProps) {
 
               <div className="p-6 border-t border-neutral-100 dark:border-neutral-800 bg-white dark:bg-neutral-900 mt-auto">
                 <button 
-                  onClick={() => setIsSessionModalOpen(true)}
+                  onClick={onCreateSession}
                   className="w-full flex items-center justify-center gap-2 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 font-bold py-3.5 rounded-xl hover:bg-neutral-800 transition-all shadow-lg"
                 >
                   <Plus className="w-5 h-5" />
@@ -405,43 +390,7 @@ export function CalendarView({ sessions, onUpdate }: CalendarViewProps) {
         />
       )}
 
-      {sessionToComplete && (
-        <CompleteSessionModal
-          isOpen={!!sessionToComplete}
-          onClose={() => setSessionToComplete(null)}
-          sessionId={sessionToComplete}
-          onSuccess={() => {
-            setSessionToComplete(null)
-            onUpdate()
-          }}
-        />
-      )}
 
-      {isSessionModalOpen && (
-        <SessionModal
-          isOpen={isSessionModalOpen}
-          onClose={() => setIsSessionModalOpen(false)}
-          onSuccess={() => {
-            setIsSessionModalOpen(false)
-            onUpdate()
-          }}
-          initialDate={selectedDate}
-          existingClients={clientsForModal}
-        />
-      )}
-
-      {sessionToEdit && (
-        <SessionModal
-          isOpen={!!sessionToEdit}
-          onClose={() => setSessionToEdit(null)}
-          onSuccess={() => {
-            setSessionToEdit(null)
-            onUpdate()
-          }}
-          editSession={sessionToEdit}
-          existingClients={clientsForModal}
-        />
-      )}
 
       <ImageViewerModal
         isOpen={!!viewerImage}

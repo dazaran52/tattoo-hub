@@ -97,6 +97,14 @@ export function CRMBoard() {
   const [clientToView, setClientToView] = useState<any | null>(null)
   const [clientsForModal, setClientsForModal] = useState([])
   
+  const handleSessionClick = (session: CRMSession) => {
+    if (session.status === 'new') {
+      setSessionDetails(session)
+    } else {
+      setSessionToEdit(session)
+    }
+  }
+
   // Filters
   const [searchQuery, setSearchQuery] = useState('')
   const [dateFilter, setDateFilter] = useState<'all'|'today'|'this_week'|'this_month'>('this_month')
@@ -399,6 +407,9 @@ export function CRMBoard() {
         <CalendarView 
           sessions={sessions} 
           onUpdate={fetchData} 
+          onSessionClick={handleSessionClick}
+          onCreateSession={() => setIsSessionModalOpen(true)}
+          onSessionComplete={setSessionToComplete}
         />
       ) : sessionView === 'list' ? (
         <SessionsList 
@@ -406,7 +417,7 @@ export function CRMBoard() {
           searchQuery={searchQuery}
           setSearchQuery={setSearchQuery}
           onStatusChange={updateSessionStatus}
-          onSessionClick={setSessionToEdit}
+          onSessionClick={handleSessionClick}
           onUpdate={fetchData}
         />
       ) : isEditingColumns ? (
@@ -781,6 +792,7 @@ export function CRMBoard() {
           onClose={() => setClientToView(null)}
           client={clientToView}
           onUpdate={fetchData}
+          onSessionClick={handleSessionClick}
           chatId={null}
         />
       )}

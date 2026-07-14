@@ -17,9 +17,10 @@ interface ClientDetailsModalProps {
   client: CRMClient
   onUpdate: () => void
   chatId: string | null
+  onSessionClick?: (session: any) => void
 }
 
-export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId }: ClientDetailsModalProps) {
+export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId, onSessionClick }: ClientDetailsModalProps) {
   const [activeTab, setActiveTab] = useState<'info'|'sessions'|'chat'>('info')
   const [isChatOpen, setIsChatOpen] = useState(false)
   const [isSessionModalOpen, setIsSessionModalOpen] = useState(false)
@@ -43,7 +44,6 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId }
   
   const [sessionToComplete, setSessionToComplete] = useState<string | null>(null)
   const [sessionToStart, setSessionToStart] = useState<string | null>(null)
-  const [sessionToEdit, setSessionToEdit] = useState<any | null>(null)
 
   if (!isOpen) return null
 
@@ -279,7 +279,10 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId }
                                 <CheckCircle className="w-3 h-3" /> Завершить
                               </button>
                             )}
-                            <button onClick={() => setSessionToEdit({ ...s, master_clients: { id: client.id, name: client.name } })} className="p-1.5 text-neutral-400 hover:text-violet-500 rounded-md">
+                            <button onClick={() => {
+                              onClose();
+                              onSessionClick?.({ ...s, master_clients: { id: client.id, name: client.name } });
+                            }} className="p-1.5 text-neutral-400 hover:text-violet-500 rounded-md">
                               <Edit3 className="w-4 h-4" />
                             </button>
                             <button onClick={() => handleDeleteSession(s.id)} className="p-1.5 text-neutral-400 hover:text-red-500 rounded-md">
@@ -367,18 +370,7 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId }
       />
     )}
 
-    {sessionToEdit && (
-      <SessionModal
-        isOpen={!!sessionToEdit}
-        onClose={() => setSessionToEdit(null)}
-        onSuccess={() => {
-          setSessionToEdit(null)
-          onUpdate()
-        }}
-        editSession={sessionToEdit}
-        existingClients={[client]}
-      />
-    )}
+
 
     {sessionToStart && (
       <LiabilityWaiverModal
