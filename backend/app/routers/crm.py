@@ -515,7 +515,7 @@ async def send_accept_email(
                         await supabase.table("chat_messages").insert({
                             "chat_id": chat_id,
                             "sender_type": "master",
-                            "text": msg_text
+                            "content": msg_text
                         }).execute()
             except Exception as e:
                 print(f"Error creating chat auto-message: {e}")

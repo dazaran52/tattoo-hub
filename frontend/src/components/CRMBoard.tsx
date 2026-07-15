@@ -531,8 +531,14 @@ export function CRMBoard() {
                                 {isSelected && <Icons.Check className="w-3.5 h-3.5 stroke-[3]" />}
                               </div>
                             </div>
-                            <div className="flex items-center gap-3 mb-3 pr-14">
-                              <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg ${styles.bg.split('border')[0]}`}>
+                            <div 
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setClientToView(item.master_clients);
+                              }}
+                              className="flex items-center gap-3 mb-3 pr-14 cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-800/50 rounded-xl p-1 -m-1 transition-colors"
+                            >
+                              <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg shrink-0 ${styles.bg.split('border')[0]}`}>
                                 {initial}
                               </div>
                               <div className="flex-1 min-w-0">
@@ -569,9 +575,9 @@ export function CRMBoard() {
                                     <span className="whitespace-normal break-words">
                                       {new Date(item.session_date).toLocaleDateString('ru-RU')}
                                       {(item.start_time || item.end_time) && (
-                                        <span className="opacity-75">
-                                          • {item.start_time?.slice(0, 5)} {item.end_time ? `- ${item.end_time.slice(0, 5)}` : ''}
-                                        </span>
+                                      <span className="opacity-75">
+                                        {item.start_time?.slice(0, 5)} {item.end_time ? `- ${item.end_time.slice(0, 5)}` : ''}
+                                      </span>
                                       )}
                                     </span>
 
@@ -616,11 +622,7 @@ export function CRMBoard() {
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  if (isNewLead) {
-                                    setSessionDetails(item);
-                                  } else {
-                                    setSessionToEdit(item);
-                                  }
+                                  setSessionDetails(item);
                                 }}
                                 className={`w-full py-2.5 text-xs font-bold text-white rounded-xl shadow-md transition-colors ${isNewLead ? 'bg-emerald-500 hover:bg-emerald-600' : 'bg-violet-600 hover:bg-violet-700 dark:bg-violet-600/90 dark:hover:bg-violet-600'}`}
                               >
@@ -787,6 +789,13 @@ export function CRMBoard() {
         }}
         onReject={() => {
           if (sessionDetails) updateSessionStatus(sessionDetails.id, 'rejected')
+        }}
+        onEdit={() => {
+          if (sessionDetails) setTimeout(() => setSessionToEdit(sessionDetails), 100)
+        }}
+        onSessionClick={(session) => {
+          setSessionDetails(null)
+          setTimeout(() => setSessionToEdit(session), 100)
         }}
       />
 

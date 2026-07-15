@@ -10,10 +10,12 @@ interface LeadDetailsModalProps {
   session: any
   onAccept: () => void
   onReject: () => void
+  onEdit?: () => void
+  onSessionClick?: (session: any) => void
   chatId?: string | null
 }
 
-export function LeadDetailsModal({ isOpen, onClose, session, onAccept, onReject, chatId }: LeadDetailsModalProps) {
+export function LeadDetailsModal({ isOpen, onClose, session, onAccept, onReject, onEdit, onSessionClick, chatId }: LeadDetailsModalProps) {
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
   const [isClientModalOpen, setIsClientModalOpen] = useState(false)
 
@@ -140,18 +142,39 @@ export function LeadDetailsModal({ isOpen, onClose, session, onAccept, onReject,
           </div>
 
           <div className="p-6 bg-white dark:bg-neutral-900 border-t border-neutral-200 dark:border-white/5 flex gap-3">
-            <button 
-              onClick={() => { onClose(); onReject(); }}
-              className="flex-1 py-3.5 px-4 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 rounded-xl font-bold transition-colors"
-            >
-              Отклонить
-            </button>
-            <button 
-              onClick={() => { onClose(); onAccept(); }}
-              className="flex-1 py-3.5 px-4 bg-violet-600 hover:bg-violet-700 text-white shadow-lg shadow-violet-500/25 rounded-xl font-bold transition-all hover:scale-[1.02]"
-            >
-              Принять заявку
-            </button>
+            {session.status === 'new' ? (
+              <>
+                <button 
+                  onClick={() => { onClose(); onReject(); }}
+                  className="flex-1 py-3.5 px-4 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 rounded-xl font-bold transition-colors"
+                >
+                  Отклонить
+                </button>
+                <button 
+                  onClick={() => { onClose(); onAccept(); }}
+                  className="flex-1 py-3.5 px-4 bg-violet-600 hover:bg-violet-700 text-white shadow-lg shadow-violet-500/25 rounded-xl font-bold transition-all hover:scale-[1.02]"
+                >
+                  Принять заявку
+                </button>
+              </>
+            ) : (
+              <>
+                <button 
+                  onClick={onClose}
+                  className="flex-1 py-3.5 px-4 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 rounded-xl font-bold transition-colors"
+                >
+                  Закрыть
+                </button>
+                {onEdit && (
+                  <button 
+                    onClick={() => { onClose(); onEdit(); }}
+                    className="flex-1 py-3.5 px-4 bg-violet-600 hover:bg-violet-700 text-white shadow-lg shadow-violet-500/25 rounded-xl font-bold transition-all hover:scale-[1.02]"
+                  >
+                    Редактировать
+                  </button>
+                )}
+              </>
+            )}
           </div>
         </motion.div>
       </div>
@@ -169,7 +192,11 @@ export function LeadDetailsModal({ isOpen, onClose, session, onAccept, onReject,
           onClose={() => setIsClientModalOpen(false)}
           client={session.master_clients as any}
           onUpdate={() => {}}
-          onSessionClick={() => {}}
+          onSessionClick={(s) => {
+            setIsClientModalOpen(false)
+            onClose()
+            onSessionClick?.(s)
+          }}
           chatId={chatId || session.master_clients?.chat_id}
         />
       )}
