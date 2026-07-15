@@ -24,6 +24,14 @@ export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState<'feed' | 'my-leads' | 'auctions' | 'crm' | 'messages' | 'portfolio'>('crm')
 
   useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const tab = urlParams.get('tab');
+    if (tab && ['feed', 'my-leads', 'auctions', 'crm', 'messages', 'portfolio'].includes(tab)) {
+      setActiveTab(tab as any);
+    }
+  }, [])
+
+  useEffect(() => {
     fetchProfile()
 
     // Realtime subscription for balance updates

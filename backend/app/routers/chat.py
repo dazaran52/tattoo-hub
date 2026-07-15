@@ -76,25 +76,56 @@ async def get_my_chats(
     Get all chats for the current master with lead details and last message.
     """
     chats_res = supabase.table("lead_chats").select(
-        "id, lead_id, created_at, leads(title, description, image_urls)"
+        "id, lead_id, created_at, leads(title, description, image_urls, contacts, client_id, users(display_name, email, avatar_url))"
     ).eq("master_id", current_user.user_id).execute()
 
     chats = chats_res.data or []
     
     # Enrich with last message
     for chat in chats:
-        msgs_res = supabase.table("chat_messages").select("content, created_at, sender_type").eq("chat_id", chat["id"]).order("created_at", desc=True).limit(1).execute()
-        if msgs_res.data:
-            chat["last_message"] = msgs_res.data[0]
-        else:
-            chat["last_message"] = None
+        msgs_res = supabase.table("chat_messages").select("content, created_at, sender_type").eq("chat_id", chat["id"]).order("created_at", desc=True).execute()
+        messages = msgs_res.data or []
+        
+        chat["last_message"] = messages[0] if messages else None
             
         # Enrich with proposal status
         prop_res = supabase.table("lead_proposals").select("status").eq("lead_id", chat["lead_id"]).eq("user_id", current_user.user_id).execute()
-        if prop_res.data:
-            chat["proposal_status"] = prop_res.data[0]["status"]
-        else:
-            chat["proposal_status"] = None
+        chat["proposal_status"] = prop_res.data[0]["status"] if prop_res.data else None
+            
+        # Build client_info
+        leads_data = chat.get("leads") or {}
+        users_data = leads_data.get("users") or {}
+        
+        c_name = users_data.get("display_name")
+        c_email = users_data.get("email")
+        c_avatar = users_data.get("avatar_url")
+        
+        if not c_name or not c_email:
+            # Parse from contacts if client is not registered or info missing
+            contacts = leads_data.get("contacts") or ""
+            if "Email:" in contacts:
+                try:
+                    c_email = contacts.split("Email:")[1].split(",")[0].strip()
+                except:
+                    pass
+            if "Имя:" in contacts:
+                try:
+                    c_name = contacts.split("Имя:")[1].split(",")[0].strip()
+                except:
+                    pass
+        
+        # If still no avatar, find last image sent by client
+        if not c_avatar:
+            for msg in messages:
+                if msg["sender_type"] == "client" and msg["content"].startswith("http") and ("supabase.co" in msg["content"]):
+                    c_avatar = msg["content"]
+                    break
+                    
+        chat["client_info"] = {
+            "name": c_name or c_email or leads_data.get("title") or "Клиент",
+            "email": c_email or "",
+            "avatar_url": c_avatar or ""
+        }
 
     # Sort by created_at of last message or chat created_at
     chats.sort(key=lambda x: x["last_message"]["created_at"] if x["last_message"] else x["created_at"], reverse=True)

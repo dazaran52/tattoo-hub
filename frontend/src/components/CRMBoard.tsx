@@ -144,6 +144,18 @@ export function CRMBoard() {
     fetchData()
   }, [])
 
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const leadId = urlParams.get('view_client_lead_id');
+    if (leadId && clientsForModal.length > 0) {
+      const client = clientsForModal.find(c => c.lead_id === leadId || c.id === leadId);
+      if (client) {
+        setClientToView(client);
+        window.history.replaceState({}, '', '/dashboard?tab=crm');
+      }
+    }
+  }, [clientsForModal])
+
   const fetchData = async () => {
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'

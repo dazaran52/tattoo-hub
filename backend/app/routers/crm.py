@@ -242,7 +242,7 @@ async def create_session(
 ):
     try:
         # Verify client belongs to master
-        client_res = await supabase.table("master_clients").select("id").eq("id", data.client_id).eq("master_id", current_user.user_id).execute()
+        client_res = await supabase.table("master_clients").select("id, lead_id").eq("id", data.client_id).eq("master_id", current_user.user_id).execute()
         if not client_res.data:
             raise HTTPException(status_code=404, detail="Client not found or not owned by master")
 
@@ -262,6 +262,24 @@ async def create_session(
         res = await supabase.table("master_sessions").insert(session_data).execute()
         if not res.data:
             raise HTTPException(status_code=400, detail="Failed to create session")
+            
+        # Inject system message into chat if it exists
+        lead_id = client_res.data[0].get("lead_id")
+        if lead_id:
+            chat_res = await supabase.table("lead_chats").select("id").eq("lead_id", lead_id).eq("master_id", current_user.user_id).execute()
+            if chat_res.data:
+                import json
+                system_msg = {
+                    "type": "session_created",
+                    "price": data.price,
+                    "date": data.session_date,
+                    "time": data.start_time
+                }
+                await supabase.table("chat_messages").insert({
+                    "chat_id": chat_res.data[0]["id"],
+                    "sender_type": "master", 
+                    "content": f"[SYSTEM_CARD]: {json.dumps(system_msg)}"
+                }).execute()
         
         return res.data[0]
     except Exception as e:
