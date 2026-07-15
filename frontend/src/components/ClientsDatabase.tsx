@@ -70,7 +70,7 @@ export function ClientsDatabase() {
       if (!clientsData && user) {
         // Fallback to Supabase
         const { data } = await supabase.from('master_clients')
-          .select('*, leads(title, description, image_urls, client_priority), master_sessions(id, session_date, start_time, end_time, status, price, style, is_deleted, reference_images, result_image_urls)')
+          .select('*, leads(title, description, image_urls, client_priority, is_personal), master_sessions(id, session_date, start_time, end_time, status, price, style, is_deleted, reference_images, result_image_urls)')
           .eq('master_id', user.id)
           .eq('is_deleted', false)
           .order('created_at', { ascending: false })
