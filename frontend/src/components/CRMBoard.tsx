@@ -566,7 +566,7 @@ export function CRMBoard() {
                                 <div className="flex flex-col gap-1 min-w-0">
                                   <div className="flex items-center gap-1.5 text-xs font-bold text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-900/20 px-2 py-1.5 rounded-lg w-fit max-w-full">
                                     <Calendar className="w-3.5 h-3.5 shrink-0" />
-                                    <span className="truncate">
+                                    <span className="whitespace-normal break-words">
                                       {new Date(item.session_date).toLocaleDateString('ru-RU')}
                                       {(item.start_time || item.end_time) && (
                                         <span className="opacity-75">
@@ -574,6 +574,7 @@ export function CRMBoard() {
                                         </span>
                                       )}
                                     </span>
+
                                   </div>
                                   <span className="text-[10px] text-neutral-400 font-medium ml-1">
                                     Создано: {new Date(item.created_at).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute:'2-digit' })}
@@ -618,7 +619,7 @@ export function CRMBoard() {
                                   if (isNewLead) {
                                     setSessionDetails(item);
                                   } else {
-                                    setClientToView(item.master_clients);
+                                    setSessionToEdit(item);
                                   }
                                 }}
                                 className={`w-full py-2.5 text-xs font-bold text-white rounded-xl shadow-md transition-colors ${isNewLead ? 'bg-emerald-500 hover:bg-emerald-600' : 'bg-violet-600 hover:bg-violet-700 dark:bg-violet-600/90 dark:hover:bg-violet-600'}`}

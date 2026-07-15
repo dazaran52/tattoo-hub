@@ -489,6 +489,37 @@ async def send_accept_email(
         # Send email in background so the UI doesn't hang
         background_tasks.add_task(send_email_sync)
         
+        # Create chat auto-message if lead_id exists
+        lead_id = session_data.get("master_clients", {}).get("lead_id")
+        if lead_id:
+            try:
+                lead_res = await supabase.table("leads").select("client_token").eq("id", lead_id).execute()
+                if lead_res.data:
+                    client_token = lead_res.data[0].get("client_token")
+                    chats_res = await supabase.table("lead_chats").select("id").eq("lead_id", lead_id).eq("master_id", current_user.user_id).execute()
+                    
+                    chat_id = None
+                    if not chats_res.data:
+                        new_chat = await supabase.table("lead_chats").insert({
+                            "lead_id": lead_id,
+                            "master_id": current_user.user_id,
+                            "client_session_id": client_token
+                        }).execute()
+                        if new_chat.data:
+                            chat_id = new_chat.data[0]["id"]
+                    else:
+                        chat_id = chats_res.data[0]["id"]
+                        
+                    if chat_id:
+                        msg_text = f"Здравствуйте! Ваша заявка принята. Дата: {date_text}, время: {time_text}."
+                        await supabase.table("chat_messages").insert({
+                            "chat_id": chat_id,
+                            "sender_type": "master",
+                            "text": msg_text
+                        }).execute()
+            except Exception as e:
+                print(f"Error creating chat auto-message: {e}")
+        
         return {"status": "success", "email": client_email}
             
     except Exception as e:
