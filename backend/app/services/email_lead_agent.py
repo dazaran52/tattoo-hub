@@ -161,11 +161,11 @@ def send_smtp_reply(to_email: str, subject: str, body_html: str, original_msg_id
         
         # Port 465 requires SMTP_SSL, 587 requires SMTP + starttls
         if settings.LEAD_REPLY_SMTP_PORT == 465:
-            with smtplib.SMTP_SSL(settings.LEAD_REPLY_SMTP_SERVER, settings.LEAD_REPLY_SMTP_PORT) as server:
+            with smtplib.SMTP_SSL(settings.LEAD_REPLY_SMTP_SERVER, settings.LEAD_REPLY_SMTP_PORT, timeout=10) as server:
                 server.login(smtp_user, settings.LEAD_REPLY_PASSWORD)
                 server.send_message(msg)
         else:
-            with smtplib.SMTP(settings.LEAD_REPLY_SMTP_SERVER, settings.LEAD_REPLY_SMTP_PORT) as server:
+            with smtplib.SMTP(settings.LEAD_REPLY_SMTP_SERVER, settings.LEAD_REPLY_SMTP_PORT, timeout=10) as server:
                 server.starttls()
                 server.login(smtp_user, settings.LEAD_REPLY_PASSWORD)
                 server.send_message(msg)

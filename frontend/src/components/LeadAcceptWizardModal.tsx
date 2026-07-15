@@ -103,6 +103,9 @@ export function LeadAcceptWizardModal({ isOpen, onClose, onSuccess, session, all
         const token = authSession?.access_token
         
         try {
+          const controller = new AbortController()
+          const timeoutId = setTimeout(() => controller.abort(), 15000)
+          
           const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/crm/sessions/${session.id}/send-accept-email`, {
             method: 'POST',
             headers: {
@@ -114,8 +117,10 @@ export function LeadAcceptWizardModal({ isOpen, onClose, onSuccess, session, all
               start_time: startTime,
               end_time: endTime,
               date: selectedDate
-            })
+            }),
+            signal: controller.signal
           })
+          clearTimeout(timeoutId)
           
           if (!res.ok) {
             console.error('Failed to send email', await res.text())
