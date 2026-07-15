@@ -120,9 +120,7 @@ export function ChatModal({ isOpen, onClose, chatId, leadTitle, currentUserRole 
             </div>
           ) : (
             <>
-              <div className="px-4 py-2 bg-neutral-100 dark:bg-neutral-800 text-xs text-neutral-500 text-center font-bold">
-                Заявка: {leadTitle}
-              </div>
+
 
               <div className="flex-1 overflow-y-auto p-4 lg:p-6 space-y-4 bg-neutral-50/30 dark:bg-neutral-950/30 relative">
                 <div className="bg-amber-500/10 text-amber-600 dark:text-amber-400 p-3 rounded-2xl text-xs flex gap-2">
