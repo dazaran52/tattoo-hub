@@ -84,7 +84,7 @@ export function LeadDetailsModal({ isOpen, onClose, session, onAccept, onReject,
               </h4>
               <div className="mb-3">
                 <span className="inline-block bg-white dark:bg-neutral-800 px-3 py-1 rounded-lg text-sm font-medium border border-neutral-200 dark:border-white/10 shadow-sm">
-                  {session.style || leadData.title || 'Стиль не указан'}
+                  {session.style || (leadData.title && leadData.title !== 'Новая заявка на татуировку' ? leadData.title : 'Не выбрано')}
                 </span>
               </div>
               <p className="text-neutral-600 dark:text-neutral-300 text-sm leading-relaxed whitespace-pre-wrap">
