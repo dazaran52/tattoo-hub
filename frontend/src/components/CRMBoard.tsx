@@ -778,7 +778,7 @@ export function CRMBoard() {
         isOpen={!!sessionDetails}
         onClose={() => setSessionDetails(null)}
         session={sessionDetails}
-        chatId={clientsForModal.find(c => c.id === sessionDetails?.client_id)?.chat_id}
+        chatId={clientsForModal.find(c => c.id === sessionDetails?.master_clients?.id)?.chat_id}
         onAccept={() => {
           if (sessionDetails) setSessionToAccept(sessionDetails)
         }}
