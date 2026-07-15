@@ -561,7 +561,8 @@ export function CRMBoard() {
                               </div>
                             )}
                             
-                              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mt-3 pt-3 border-t border-neutral-100 dark:border-white/5">
+                            <div className="flex flex-col gap-2 mt-3 pt-3 border-t border-neutral-100 dark:border-white/5">
+                              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
                                 <div className="flex flex-col gap-1 min-w-0">
                                   <div className="flex items-center gap-1.5 text-xs font-bold text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-900/20 px-2 py-1.5 rounded-lg w-fit max-w-full">
                                     <Calendar className="w-3.5 h-3.5 shrink-0" />
