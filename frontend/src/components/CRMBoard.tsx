@@ -95,7 +95,7 @@ export function CRMBoard() {
   const [sessionDetails, setSessionDetails] = useState<CRMSession | null>(null)
   const [viewerImage, setViewerImage] = useState<string | null>(null)
   const [clientToView, setClientToView] = useState<any | null>(null)
-  const [clientsForModal, setClientsForModal] = useState([])
+  const [clientsForModal, setClientsForModal] = useState<any[]>([])
   
   const handleSessionClick = (session: CRMSession) => {
     if (session.status === 'new') {
