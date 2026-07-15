@@ -559,7 +559,10 @@ async def create_client_lead(
                         # Generate magic link
                         link_resp = await supabase.auth.admin.generate_link({
                             "type": "magiclink",
-                            "email": email
+                            "email": email,
+                            "options": {
+                                "redirect_to": "https://tattoo-hub.xyz/dashboard"
+                            }
                         })
                         
                         action_link = None

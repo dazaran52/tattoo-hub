@@ -435,9 +435,13 @@ async def send_accept_email(
         
         login_link = "https://tattoo-hub.xyz/login"
         try:
-            res = await supabase.auth.admin.generate_link(
-                {"type": "magiclink", "email": client_email.strip()}
-            )
+            res = await supabase.auth.admin.generate_link({
+                "type": "magiclink", 
+                "email": client_email.strip(),
+                "options": {
+                    "redirect_to": "https://tattoo-hub.xyz/dashboard"
+                }
+            })
             if hasattr(res, 'properties') and res.properties.action_link:
                 login_link = res.properties.action_link
         except Exception as e:
