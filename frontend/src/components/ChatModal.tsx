@@ -120,25 +120,15 @@ export function ChatModal({ isOpen, onClose, chatId, leadTitle, currentUserRole 
             </div>
           ) : (
             <>
-              <div className="flex-1 overflow-y-auto p-4 lg:p-6 space-y-4 bg-neutral-50/30 dark:bg-neutral-950/30 relative">
-            <h2 className="text-xl font-bold text-neutral-900 dark:text-white flex items-center gap-2">
-              <MessageCircle className="w-5 h-5 text-violet-500" />
-              Чат с {recipientName || (currentUserRole === 'client' ? 'мастером' : 'клиентом')}
-            </h2>
-            <button onClick={onClose} className="p-2 text-neutral-500 hover:text-neutral-900 dark:hover:text-white rounded-full transition-colors bg-neutral-100 dark:bg-neutral-800">
-              <X className="w-5 h-5" />
-            </button>
-          </div>
-          
-          <div className="px-4 py-2 bg-neutral-100 dark:bg-neutral-800 text-xs text-neutral-500 text-center font-bold">
-            Заявка: {leadTitle}
-          </div>
+              <div className="px-4 py-2 bg-neutral-100 dark:bg-neutral-800 text-xs text-neutral-500 text-center font-bold">
+                Заявка: {leadTitle}
+              </div>
 
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
-            <div className="bg-amber-500/10 text-amber-600 dark:text-amber-400 p-3 rounded-2xl text-xs flex gap-2">
-              <AlertCircle className="w-4 h-4 shrink-0" />
-              Ссылки и номера телефонов автоматически скрываются до тех пор, пока клиент не примет ваш оффер.
-            </div>
+              <div className="flex-1 overflow-y-auto p-4 lg:p-6 space-y-4 bg-neutral-50/30 dark:bg-neutral-950/30 relative">
+                <div className="bg-amber-500/10 text-amber-600 dark:text-amber-400 p-3 rounded-2xl text-xs flex gap-2">
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  Ссылки и номера телефонов автоматически скрываются до тех пор, пока клиент не примет ваш оффер.
+                </div>
 
             {messages.length === 0 ? (
               <div className="text-center text-neutral-400 py-8 text-sm">
