@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks, status
 from pydantic import BaseModel
 from typing import List, Optional, Any
 from datetime import date, time, datetime
@@ -404,6 +404,7 @@ async def complete_session(
 async def send_accept_email(
     session_id: str,
     data: SendAcceptEmailData,
+    background_tasks: BackgroundTasks,
     current_user: AuthUser = Depends(get_current_user),
     supabase: AsyncClient = Depends(get_async_supabase_client)
 ):
@@ -485,14 +486,10 @@ async def send_accept_email(
                 print(f"Error sending email: {e}")
                 return False
                 
-        # Fire and forget or await, wait let's await to know if it succeeded
-        sent = await asyncio.to_thread(send_email_sync)
+        # Send email in background so the UI doesn't hang
+        background_tasks.add_task(send_email_sync)
         
-        if sent:
-            return {"status": "success", "email": client_email}
-        else:
-            # Maybe SMTP isn't configured, so we treat it as failure but don't throw 500
-            return {"status": "smtp_failed", "email": client_email}
+        return {"status": "success", "email": client_email}
             
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

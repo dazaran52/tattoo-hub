@@ -156,21 +156,43 @@ def send_smtp_reply(to_email: str, subject: str, body_html: str, original_msg_id
         
     msg.set_content(body_html, subtype='html')
     
-    try:        # Use username if set, else fallback to email
-        smtp_user = settings.LEAD_REPLY_SMTP_USERNAME or settings.LEAD_REPLY_EMAIL
-        
-        # Port 465 requires SMTP_SSL, 587 requires SMTP + starttls
-        if settings.LEAD_REPLY_SMTP_PORT == 465:
-            with smtplib.SMTP_SSL(settings.LEAD_REPLY_SMTP_SERVER, settings.LEAD_REPLY_SMTP_PORT, timeout=10) as server:
-                server.login(smtp_user, settings.LEAD_REPLY_PASSWORD)
-                server.send_message(msg)
+    try:
+        if "resend.com" in settings.LEAD_REPLY_SMTP_SERVER.lower():
+            import requests
+            headers = {
+                "Authorization": f"Bearer {settings.LEAD_REPLY_PASSWORD}",
+                "Content-Type": "application/json"
+            }
+            data = {
+                "from": f"{settings.LEAD_REPLY_FROM_NAME} <{settings.LEAD_REPLY_EMAIL}>",
+                "to": [to_email],
+                "subject": subject,
+                "html": body_html,
+            }
+            if original_msg_id:
+                data["headers"] = {
+                    "In-Reply-To": original_msg_id,
+                    "References": original_msg_id
+                }
+            resp = requests.post("https://api.resend.com/emails", headers=headers, json=data, timeout=10)
+            if not resp.ok:
+                logger.error(f"Resend API failed: {resp.text}")
+                return False
         else:
-            with smtplib.SMTP(settings.LEAD_REPLY_SMTP_SERVER, settings.LEAD_REPLY_SMTP_PORT, timeout=10) as server:
-                server.starttls()
-                server.login(smtp_user, settings.LEAD_REPLY_PASSWORD)
-                server.send_message(msg)
-                
-        if "resend.com" not in settings.LEAD_REPLY_SMTP_SERVER.lower():
+            # Use username if set, else fallback to email
+            smtp_user = settings.LEAD_REPLY_SMTP_USERNAME or settings.LEAD_REPLY_EMAIL
+            
+            # Port 465 requires SMTP_SSL, 587 requires SMTP + starttls
+            if settings.LEAD_REPLY_SMTP_PORT == 465:
+                with smtplib.SMTP_SSL(settings.LEAD_REPLY_SMTP_SERVER, settings.LEAD_REPLY_SMTP_PORT, timeout=10) as server:
+                    server.login(smtp_user, settings.LEAD_REPLY_PASSWORD)
+                    server.send_message(msg)
+            else:
+                with smtplib.SMTP(settings.LEAD_REPLY_SMTP_SERVER, settings.LEAD_REPLY_SMTP_PORT, timeout=10) as server:
+                    server.starttls()
+                    server.login(smtp_user, settings.LEAD_REPLY_PASSWORD)
+                    server.send_message(msg)
+                    
             try:
                 imap_host = settings.LEAD_REPLY_SMTP_SERVER.replace("smtp", "imap")
                 with imaplib.IMAP4_SSL(imap_host) as imap_server:
