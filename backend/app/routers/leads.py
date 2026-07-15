@@ -673,7 +673,17 @@ async def create_client_lead(
                                 print(f"Warning: Failed to send notifications: {notif_e}")
                         
                         if lead_data.email:
-                            def send_submission_email():
+                            login_link = "https://tattoo-hub.xyz/login"
+                            try:
+                                res = await supabase.auth.admin.generate_link(
+                                    {"type": "magiclink", "email": lead_data.email.strip()}
+                                )
+                                if hasattr(res, 'properties') and res.properties.action_link:
+                                    login_link = res.properties.action_link
+                            except Exception as e:
+                                print(f"Warning: Failed to generate magiclink for {lead_data.email}: {e}")
+                                
+                            def send_submission_email(link: str = login_link):
                                 from app.services.email_lead_agent import send_smtp_reply
                                 subject = "Ваша заявка успешно отправлена! 🎉"
                                 html = f'''
@@ -687,7 +697,7 @@ async def create_client_lead(
                                             Мастер скоро ознакомится с ней. Вы можете отслеживать статус заявки и общаться с мастером в личном кабинете.
                                         </p>
                                         <div style="text-align: center; margin: 35px 0;">
-                                            <a href="https://tattoo-hub.xyz/login" style="background-color: #7c3aed; color: white; padding: 14px 28px; text-decoration: none; border-radius: 12px; font-weight: bold; font-size: 16px; display: inline-block;">Открыть мои заявки</a>
+                                            <a href="{link}" style="background-color: #7c3aed; color: white; padding: 14px 28px; text-decoration: none; border-radius: 12px; font-weight: bold; font-size: 16px; display: inline-block;">Открыть мои заявки</a>
                                         </div>
                                         <p style="font-size: 14px; color: #6b7280; text-align: center; margin: 0; border-top: 1px solid #e5e7eb; padding-top: 20px;">
                                             Используйте email {lead_data.email} для входа.
