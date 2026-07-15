@@ -73,7 +73,7 @@ async def get_clients(
     try:
         # Fetch non-deleted clients linked to this master
         res = await supabase.table("master_clients") \
-            .select("*, leads(title, description, image_urls, client_priority), master_sessions(*)") \
+            .select("*, leads(title, description, image_urls, client_priority, is_personal), master_sessions(*)") \
             .eq("master_id", current_user.user_id) \
             .eq("is_deleted", False) \
             .order("created_at", desc=True) \
@@ -222,7 +222,7 @@ async def get_sessions(
     """Get all non-deleted sessions for the master's kanban board."""
     try:
         res = await supabase.table("master_sessions") \
-            .select("*, master_clients(*, leads(title, description, image_urls, client_priority))") \
+            .select("*, master_clients(*, leads(title, description, image_urls, client_priority, is_personal))") \
             .eq("master_id", current_user.user_id) \
             .eq("is_deleted", False) \
             .order("created_at", desc=True) \

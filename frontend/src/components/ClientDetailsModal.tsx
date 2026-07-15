@@ -128,9 +128,19 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId, 
                   <div className="flex-1 mr-4">
                     <div className="flex items-center gap-2 mb-1">
                       <label className="text-xs font-bold text-neutral-400 uppercase tracking-wider">Имя клиента</label>
-                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${!client.lead_id && client.source !== 'marketplace' ? 'bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400' : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'}`}>
-                        {!client.lead_id && client.source !== 'marketplace' ? 'Добавлен вручную' : 'С маркетплейса'}
-                      </span>
+                      {(!client.lead_id && client.source !== 'marketplace') ? (
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400">
+                          Добавлен вручную
+                        </span>
+                      ) : client.leads?.is_personal ? (
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
+                          По личной ссылке
+                        </span>
+                      ) : (
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
+                          С маркетплейса
+                        </span>
+                      )}
                     </div>
                     <input 
                       defaultValue={client.name}
