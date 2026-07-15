@@ -23,6 +23,7 @@ export interface CRMClient {
     description: string
     image_urls: string[]
     client_priority: string
+    is_personal?: boolean
   }
   master_sessions?: {
     id: string
