@@ -3,6 +3,7 @@ import { MessageCircle, Clock, Send, AlertCircle, Search, ChevronLeft, Image as 
 import { motion, AnimatePresence } from 'framer-motion'
 import { supabase } from '@/lib/supabase'
 import { toast } from 'react-hot-toast'
+import { ClientDetailsModal } from '@/components/ClientDetailsModal'
 
 interface Message {
   id: string
@@ -39,6 +40,8 @@ export function MessagesList() {
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedChat, setSelectedChat] = useState<ChatPreview | null>(null)
+  const [clients, setClients] = useState<any[]>([])
+  const [clientToView, setClientToView] = useState<any | null>(null)
   
   const [messages, setMessages] = useState<Message[]>([])
   const [newMessage, setNewMessage] = useState('')
@@ -75,18 +78,29 @@ export function MessagesList() {
 
   const fetchChats = async () => {
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
       const { data: { session } } = await supabase.auth.getSession()
-      const token = session?.access_token
-      const res = await fetch(`${apiUrl}/api/chat/my`, {
-        headers: { 'Authorization': `Bearer ${token}` }
+      if (!session) return
+
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+
+      const response = await fetch(`${apiUrl}/api/chat/my`, {
+        headers: { 'Authorization': `Bearer ${session.access_token}` }
       })
-      if (res.ok) {
-        const data = await res.json()
+      
+      if (response.ok) {
+        const data = await response.json()
         setChats(data)
       }
-    } catch (err) {
-      console.error(err)
+
+      // Also fetch CRM clients so we can open their cards
+      const clientsRes = await fetch(`${apiUrl}/api/crm/clients`, {
+        headers: { 'Authorization': `Bearer ${session.access_token}` }
+      })
+      if (clientsRes.ok) {
+        setClients(await clientsRes.json())
+      }
+    } catch (error) {
+      console.error('Error fetching chats:', error)
     } finally {
       setLoading(false)
     }
@@ -341,14 +355,13 @@ export function MessagesList() {
                 // Determine if we need to open LeadDetails or ClientDetails
                 // We can navigate or pass a prop, but since MessagesList is not wrapped in CRMBoard,
                 // we might need to use a router or state to open a modal here.
-                // Use Next.js router to avoid full page reload
-                const newUrl = `/dashboard?tab=crm&view_client_lead_id=${selectedChat.lead_id}`;
-                window.history.pushState({}, '', newUrl);
-                window.dispatchEvent(new Event('popstate')); // trigger re-render if necessary, or just rely on router
-                // Actually, the most reliable way in Next.js app router without reloading is router.push
-                // I'll dispatch a custom event that page.tsx or CRMBoard can listen to, or since page.tsx doesn't listen to popstate for activeTab, I should just use window.location.href or router.push.
-                // Wait, if I just use window.dispatchEvent(new CustomEvent('switchTab', {detail: {tab: 'crm', lead_id: selectedChat.lead_id}})), that would be cleanest!
-                window.dispatchEvent(new CustomEvent('navigateToCRM', { detail: selectedChat.lead_id }));
+                // Instead of navigating, find the client and open the modal locally
+                const client = clients.find((c: any) => c.lead_id === selectedChat.lead_id);
+                if (client) {
+                  setClientToView(client);
+                } else {
+                  toast.error('Карточка клиента не найдена. Возможно, это новая заявка из маркетплейса, которая ещё не перешла в CRM.');
+                }
               }}
             >
               <button 
@@ -488,6 +501,19 @@ export function MessagesList() {
           </div>
         )}
       </div>
+      {clientToView && (
+        <ClientDetailsModal
+          isOpen={!!clientToView}
+          onClose={() => setClientToView(null)}
+          client={clientToView}
+          onUpdate={() => fetchChats()}
+          chatId={selectedChat?.id || null}
+          onSessionClick={() => {
+            // Sessions can be handled if needed, for now just close the modal
+            setClientToView(null)
+          }}
+        />
+      )}
     </div>
   )
 }
