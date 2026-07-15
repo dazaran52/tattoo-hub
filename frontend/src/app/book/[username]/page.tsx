@@ -92,6 +92,8 @@ export default function BookMasterPage({ params }: { params: { username: string 
   const [size, setSize] = useState('')
   const [sessionDate, setSessionDate] = useState<Date | undefined>(undefined)
   const [sessionTime, setSessionTime] = useState('')
+  const [budgetVal, setBudgetVal] = useState('')
+  const [isNegotiable, setIsNegotiable] = useState(true)
   const [images, setImages] = useState<File[]>([])
   const [isUploading, setIsUploading] = useState(false)
   const [unavailableDates, setUnavailableDates] = useState<Date[]>([])
@@ -196,7 +198,9 @@ export default function BookMasterPage({ params }: { params: { username: string 
           : null,
         session_time: sessionTime || null,
         assigned_master_id: master.id,
-        is_negotiable_budget: true, // Default for personal leads to let them discuss in chat
+        budget_val: budgetVal ? parseInt(budgetVal) : null,
+        budget_currency: 'CZK',
+        is_negotiable_budget: isNegotiable,
         is_personal: true
       }
 
@@ -615,6 +619,49 @@ export default function BookMasterPage({ params }: { params: { username: string 
                 </div>
               </div>
             )}
+
+            <div>
+              <label className="block text-sm font-semibold opacity-90 mb-3">
+                Бюджет на сеанс
+              </label>
+              
+              <label className="flex items-center gap-3 mb-4 cursor-pointer group">
+                <div className={`relative flex items-center justify-center w-6 h-6 rounded-md border transition-all ${
+                  isNegotiable 
+                    ? 'bg-cyan-500 border-cyan-500' 
+                    : 'bg-white/10 border-neutral-300 dark:border-neutral-700 group-hover:border-cyan-500/50'
+                }`}>
+                  <input 
+                    type="checkbox" 
+                    className="sr-only"
+                    checked={isNegotiable}
+                    onChange={(e) => {
+                      setIsNegotiable(e.target.checked)
+                      if (e.target.checked) setBudgetVal('')
+                    }}
+                  />
+                  {isNegotiable && <CheckCircle className="w-4 h-4 text-white" />}
+                </div>
+                <span className="text-sm font-medium">Договорная цена / Обсудить с мастером</span>
+              </label>
+
+              {!isNegotiable && (
+                <div className="animate-in fade-in slide-in-from-top-2 duration-300">
+                  <div className="relative">
+                    <input
+                      type="number"
+                      value={budgetVal}
+                      onChange={(e) => setBudgetVal(e.target.value)}
+                      placeholder="Например: 5000"
+                      className={`w-full rounded-xl pr-16 pl-4 py-3 transition-all ${tClasses.input}`}
+                    />
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2 font-semibold text-neutral-500">
+                      Kč
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
 
             <div>
               <label className="block text-sm font-semibold opacity-90 mb-2">
