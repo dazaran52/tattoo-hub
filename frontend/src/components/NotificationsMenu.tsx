@@ -150,7 +150,7 @@ export function NotificationsMenu() {
         setPushEnabled(true)
         // Attempt subscription
         const { subscribeToPush } = await import('@/lib/push')
-        await subscribeToPush(session.access_token)
+        await subscribeToPush()
       }
     } catch (err) {
       console.error('Failed to request push permissions:', err)

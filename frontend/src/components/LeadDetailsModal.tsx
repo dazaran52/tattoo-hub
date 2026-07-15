@@ -168,6 +168,7 @@ export function LeadDetailsModal({ isOpen, onClose, session, onAccept, onReject,
           isOpen={isClientModalOpen}
           onClose={() => setIsClientModalOpen(false)}
           client={session.master_clients as any}
+          onUpdate={() => {}}
           onSessionClick={() => {}}
           chatId={chatId || session.master_clients?.chat_id}
         />
