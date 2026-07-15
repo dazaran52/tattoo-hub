@@ -91,6 +91,10 @@ async def get_my_chats(
         # Enrich with proposal status
         prop_res = supabase.table("lead_proposals").select("status").eq("lead_id", chat["lead_id"]).eq("user_id", current_user.user_id).execute()
         chat["proposal_status"] = prop_res.data[0]["status"] if prop_res.data else None
+
+        # Fetch kanban status
+        client_res = supabase.table("master_clients").select("kanban_status").eq("lead_id", chat["lead_id"]).eq("master_id", current_user.user_id).execute()
+        chat["kanban_status"] = client_res.data[0]["kanban_status"] if client_res.data else None
             
         # Build client_info
         leads_data = chat.get("leads") or {}

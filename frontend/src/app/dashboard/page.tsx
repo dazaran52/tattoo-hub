@@ -29,6 +29,15 @@ export default function DashboardPage() {
     if (tab && ['feed', 'my-leads', 'auctions', 'crm', 'messages', 'portfolio'].includes(tab)) {
       setActiveTab(tab as any);
     }
+
+    const handleNavigate = (e: Event) => {
+      setActiveTab('crm');
+    };
+    window.addEventListener('navigateToCRM', handleNavigate);
+    
+    return () => {
+      window.removeEventListener('navigateToCRM', handleNavigate);
+    }
   }, [])
 
   useEffect(() => {

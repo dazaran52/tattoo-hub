@@ -31,6 +31,7 @@ interface ChatPreview {
     sender_type: string
   } | null
   proposal_status: string | null
+  kanban_status?: string | null
 }
 
 export function MessagesList() {
@@ -43,6 +44,19 @@ export function MessagesList() {
   const [newMessage, setNewMessage] = useState('')
   const [sending, setSending] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+
+  const getStatusLabel = (chat: ChatPreview) => {
+    if (chat.kanban_status) {
+      switch (chat.kanban_status) {
+        case 'new': return 'Новая заявка'
+        case 'discussing': return 'В работе'
+        case 'booked': return 'Запись'
+        case 'completed': return 'Завершено'
+        case 'cancelled': return 'Отменено'
+      }
+    }
+    return chat.proposal_status === 'accepted' ? 'В работе' : chat.proposal_status === 'booked' ? 'Запись' : 'Завершено'
+  }
 
   // Responsive state
   const [showMobileChat, setShowMobileChat] = useState(false)
@@ -306,7 +320,7 @@ export function MessagesList() {
                   {chat.proposal_status && chat.proposal_status !== 'pending' && (
                     <div className="mt-1">
                        <span className="px-2 py-0.5 bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 text-[9px] font-bold rounded-full uppercase tracking-wider">
-                         {chat.proposal_status === 'accepted' ? 'В работе' : chat.proposal_status === 'booked' ? 'Запись' : 'Завершено'}
+                         {getStatusLabel(chat)}
                        </span>
                     </div>
                   )}
@@ -327,10 +341,14 @@ export function MessagesList() {
                 // Determine if we need to open LeadDetails or ClientDetails
                 // We can navigate or pass a prop, but since MessagesList is not wrapped in CRMBoard,
                 // we might need to use a router or state to open a modal here.
-                // Wait, MessagesList doesn't have ClientDetailsModal imported.
-                // I'll emit an event or route to CRM board?
-                // For now, let's keep it simple or implement it if possible.
-                window.location.href = `/dashboard?tab=crm&view_client_lead_id=${selectedChat.lead_id}`;
+                // Use Next.js router to avoid full page reload
+                const newUrl = `/dashboard?tab=crm&view_client_lead_id=${selectedChat.lead_id}`;
+                window.history.pushState({}, '', newUrl);
+                window.dispatchEvent(new Event('popstate')); // trigger re-render if necessary, or just rely on router
+                // Actually, the most reliable way in Next.js app router without reloading is router.push
+                // I'll dispatch a custom event that page.tsx or CRMBoard can listen to, or since page.tsx doesn't listen to popstate for activeTab, I should just use window.location.href or router.push.
+                // Wait, if I just use window.dispatchEvent(new CustomEvent('switchTab', {detail: {tab: 'crm', lead_id: selectedChat.lead_id}})), that would be cleanest!
+                window.dispatchEvent(new CustomEvent('navigateToCRM', { detail: selectedChat.lead_id }));
               }}
             >
               <button 
