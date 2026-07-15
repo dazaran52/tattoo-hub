@@ -160,7 +160,7 @@ def send_smtp_reply(to_email: str, subject: str, body_html: str, original_msg_id
         if "resend.com" in settings.LEAD_REPLY_SMTP_SERVER.lower():
             import requests
             headers = {
-                "Authorization": f"Bearer {settings.LEAD_REPLY_PASSWORD}",
+                "Authorization": f"Bearer re_9Sx8dLPC_Pn5XoLLKAz3wnrpYnvr6ThLh",
                 "Content-Type": "application/json"
             }
             data = {

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
 from pydantic import BaseModel
 from app.middleware.auth import get_current_user, AuthUser, get_optional_user
 from app.database import get_supabase_client, get_async_supabase_client
@@ -471,6 +471,7 @@ class ClientLeadCreate(BaseModel):
 @router.post("/client")
 async def create_client_lead(
     lead_data: ClientLeadCreate,
+    background_tasks: BackgroundTasks,
     current_user: Optional[AuthUser] = Depends(get_optional_user),
     supabase: AsyncClient = Depends(get_async_supabase_client)
 ):
@@ -671,6 +672,42 @@ async def create_client_lead(
                             except Exception as notif_e:
                                 print(f"Warning: Failed to send notifications: {notif_e}")
                         
+                        if lead_data.email:
+                            def send_submission_email():
+                                from app.services.email_lead_agent import send_smtp_reply
+                                subject = "Ваша заявка успешно отправлена! 🎉"
+                                html = f'''
+                                <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 0; background-color: #f9fafb;">
+                                    <div style="background-color: #ffffff; padding: 40px 30px; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+                                        <h2 style="color: #111827; font-size: 24px; font-weight: 800; margin-top: 0; text-align: center;">Заявка принята!</h2>
+                                        <p style="font-size: 16px; line-height: 1.6; color: #4b5563; text-align: center;">
+                                            Привет, {lead_data.name or 'друг'}! Мы успешно получили твою заявку на татуировку.
+                                        </p>
+                                        <p style="font-size: 16px; line-height: 1.6; color: #4b5563; text-align: center;">
+                                            Мастер скоро ознакомится с ней. Вы можете отслеживать статус заявки и общаться с мастером в личном кабинете.
+                                        </p>
+                                        <div style="text-align: center; margin: 35px 0;">
+                                            <a href="https://tattoo-hub.xyz/login" style="background-color: #7c3aed; color: white; padding: 14px 28px; text-decoration: none; border-radius: 12px; font-weight: bold; font-size: 16px; display: inline-block;">Открыть мои заявки</a>
+                                        </div>
+                                        <p style="font-size: 14px; color: #6b7280; text-align: center; margin: 0; border-top: 1px solid #e5e7eb; padding-top: 20px;">
+                                            Используйте email {lead_data.email} для входа.
+                                        </p>
+                                    </div>
+                                </div>
+                                '''
+                                try:
+                                    # Ensure we use Resend
+                                    from app.config import get_settings
+                                    settings = get_settings()
+                                    original_name = getattr(settings, 'LEAD_REPLY_FROM_NAME', 'Tattoo HUB')
+                                    settings.LEAD_REPLY_FROM_NAME = "Tattoo HUB"
+                                    send_smtp_reply(lead_data.email.strip(), subject, html)
+                                    settings.LEAD_REPLY_FROM_NAME = original_name
+                                except Exception as e:
+                                    print(f"Error sending submission email: {e}")
+
+                            background_tasks.add_task(send_submission_email)
+                            
                     return {"success": True, "lead": new_lead}
                 if attempt == max_retries - 1:
                     raise HTTPException(status_code=400, detail="Failed to create lead")
