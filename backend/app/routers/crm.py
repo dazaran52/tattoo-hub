@@ -477,20 +477,12 @@ async def send_accept_email(
         </div>
         '''
         
-        from app.services.email_lead_agent import send_smtp_reply
+        from app.services.mail import send_transactional_email
         import asyncio
-        # Run send_smtp_reply in background thread
+        # Run send_transactional_email in background thread
         def send_email_sync():
             try:
-                # Dynamically set FROM name for this request by monkey-patching settings temporarily
-                from app.config import get_settings
-                settings = get_settings()
-                original_name = getattr(settings, 'LEAD_REPLY_FROM_NAME', 'Tattoo HUB')
-                settings.LEAD_REPLY_FROM_NAME = f"Tattoo HUB - {master_name}"
-                
-                success = send_smtp_reply(client_email, subject, html)
-                
-                settings.LEAD_REPLY_FROM_NAME = original_name
+                success = send_transactional_email(client_email, subject, html, from_name=f"Tattoo HUB - {master_name}")
                 return success
             except Exception as e:
                 print(f"Error sending email: {e}")

@@ -570,17 +570,20 @@ export function CRMBoard() {
                             <div className="flex flex-col gap-2 mt-3 pt-3 border-t border-neutral-100 dark:border-white/5">
                               <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
                                 <div className="flex flex-col gap-1 min-w-0">
-                                  <div className="flex items-center gap-1.5 text-xs font-bold text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-900/20 px-2 py-1.5 rounded-lg w-fit max-w-full">
-                                    <Calendar className="w-3.5 h-3.5 shrink-0" />
-                                    <span className="whitespace-normal break-words">
-                                      {new Date(item.session_date).toLocaleDateString('ru-RU')}
-                                      {(item.start_time || item.end_time) && (
-                                      <span className="opacity-75 ml-1.5 font-medium">
-                                        {item.start_time?.slice(0, 5)} {item.end_time ? `- ${item.end_time.slice(0, 5)}` : ''}
+                                  <div className="flex flex-col gap-0.5 text-xs font-bold text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-900/20 px-2 py-1.5 rounded-lg w-fit max-w-full">
+                                    <div className="flex items-center gap-1.5">
+                                      <Calendar className="w-3.5 h-3.5 shrink-0" />
+                                      <span className="whitespace-normal break-words">
+                                        {new Date(item.session_date).toLocaleDateString('ru-RU')}
                                       </span>
-                                      )}
-                                    </span>
-
+                                    </div>
+                                    {(item.start_time || item.end_time) && (
+                                      <div className="flex items-center gap-1.5 opacity-75 font-medium ml-5">
+                                        <span>
+                                          {item.start_time?.slice(0, 5)} {item.end_time ? `- ${item.end_time.slice(0, 5)}` : ''}
+                                        </span>
+                                      </div>
+                                    )}
                                   </div>
                                   <span className="text-[10px] text-neutral-400 font-medium ml-1">
                                     Создано: {new Date(item.created_at).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute:'2-digit' })}

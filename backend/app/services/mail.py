@@ -5,29 +5,24 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-def send_transactional_email(to_email: str, subject: str, html_content: str):
-    settings = get_settings()
-    
-    if not settings.SMTP_USERNAME or not settings.SMTP_PASSWORD:
-        logger.warning(f"SMTP not configured. Skipping email to {to_email}")
-        return False
-        
-    msg = EmailMessage()
-    msg['Subject'] = subject
-    msg['From'] = f"Tattoo Hub <{settings.SMTP_FROM_EMAIL}>"
-    msg['To'] = to_email
-    msg.set_content(html_content, subtype='html')
-    
+def send_transactional_email(to_email: str, subject: str, html_content: str, from_name: str = "Tattoo Hub"):
+    import requests
     try:
-        if settings.SMTP_PORT == 465:
-            with smtplib.SMTP_SSL(settings.SMTP_SERVER, settings.SMTP_PORT) as server:
-                server.login(settings.SMTP_USERNAME, settings.SMTP_PASSWORD)
-                server.send_message(msg)
-        else:
-            with smtplib.SMTP(settings.SMTP_SERVER, settings.SMTP_PORT) as server:
-                server.starttls()
-                server.login(settings.SMTP_USERNAME, settings.SMTP_PASSWORD)
-                server.send_message(msg)
+        headers = {
+            "Authorization": f"Bearer re_9Sx8dLPC_Pn5XoLLKAz3wnrpYnvr6ThLh",
+            "Content-Type": "application/json"
+        }
+        data = {
+            "from": f"{from_name} <info@tattoo-hub.xyz>",
+            "to": [to_email],
+            "subject": subject,
+            "html": html_content,
+        }
+        resp = requests.post("https://api.resend.com/emails", headers=headers, json=data, timeout=10)
+        if not resp.ok:
+            logger.error(f"Resend API failed: {resp.text}")
+            return False
+            
         logger.info(f"Email sent successfully to {to_email}")
         return True
     except Exception as e:
