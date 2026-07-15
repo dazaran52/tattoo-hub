@@ -570,14 +570,14 @@ export function CRMBoard() {
                             <div className="flex flex-col gap-2 mt-3 pt-3 border-t border-neutral-100 dark:border-white/5">
                               <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
                                 <div className="flex flex-col gap-1 min-w-0">
-                                  <div className="flex items-center gap-1.5 text-xs font-bold text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-900/20 px-2 py-1.5 rounded-lg w-fit max-w-full">
-                                    <Calendar className="w-3.5 h-3.5 shrink-0" />
+                                  <div className="flex items-center gap-2 text-xs font-bold text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-900/20 px-2 py-1.5 rounded-lg w-fit max-w-full">
+                                    <Calendar className="w-4 h-4 shrink-0 mt-0.5 self-start sm:self-auto sm:my-auto" />
                                     <div className="flex flex-col gap-0.5">
                                       <span className="whitespace-normal break-words leading-none">
                                         {new Date(item.session_date).toLocaleDateString('ru-RU')}
                                       </span>
                                       {(item.start_time || item.end_time) && (
-                                        <span className="opacity-75 font-medium leading-none">
+                                        <span className="opacity-75 font-medium leading-none mt-1">
                                           {item.start_time?.slice(0, 5)} {item.end_time ? `- ${item.end_time.slice(0, 5)}` : ''}
                                         </span>
                                       )}

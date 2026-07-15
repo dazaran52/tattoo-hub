@@ -43,6 +43,29 @@ function LoginContent() {
   }, [])
 
   useEffect(() => {
+    // Handle Magic Link / Implicit Grant flow
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' && session) {
+        // If we came via magic link, the URL might have #access_token
+        // supabase-js parses it and triggers SIGNED_IN
+        const token = session.access_token
+        const maxAge = 60 * 60 * 24 * 7
+        document.cookie = `sb-access-token=${token};path=/;max-age=${maxAge};SameSite=Lax${window.location.protocol === 'https:' ? ';Secure' : ''}`
+        
+        // Let UI show success before redirect
+        setTimeout(() => {
+          if (session.user.user_metadata?.role === 'client') {
+            window.location.href = '/dashboard' // Clients have ClientDashboard now!
+          } else {
+            window.location.href = '/dashboard'
+          }
+        }, 1000)
+      }
+    })
+    return () => subscription.unsubscribe()
+  }, [])
+
+  useEffect(() => {
     const registerParam = searchParams.get('register')
     const roleParam = searchParams.get('role')
 
