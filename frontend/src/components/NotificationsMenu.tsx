@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { Bell, Check, Info, DollarSign, Settings, Archive, X, BellRing } from 'lucide-react'
+import { Bell, Check, Info, DollarSign, Settings, Archive, X, BellRing, ArrowLeft } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
 interface Notification {
@@ -180,38 +180,47 @@ export function NotificationsMenu() {
       {isOpen && (
         <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white dark:bg-neutral-900 rounded-2xl shadow-xl border border-neutral-200 dark:border-neutral-800 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2">
           <div className="p-4 border-b border-neutral-100 dark:border-neutral-800 flex items-center justify-between">
-            <h3 className="font-bold text-neutral-900 dark:text-white">Уведомления</h3>
-            {activeTab === 'active' && unreadCount > 0 && (
-              <button 
-                onClick={markAllAsRead}
-                className="text-xs font-medium text-cyan-600 dark:text-cyan-400 hover:text-cyan-700 transition-colors flex items-center gap-1"
-              >
-                <Check className="w-3 h-3" /> Прочитать все
-              </button>
+            {activeTab === 'active' ? (
+              <h3 className="font-bold text-neutral-900 dark:text-white">Уведомления</h3>
+            ) : (
+              <div className="flex items-center gap-2">
+                <button 
+                  onClick={() => setActiveTab('active')}
+                  className="p-1 -ml-1 text-neutral-500 hover:text-neutral-900 dark:hover:text-white transition-colors"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                </button>
+                <h3 className="font-bold text-neutral-900 dark:text-white">Архив</h3>
+              </div>
             )}
-            {activeTab === 'active' && unreadCount === 0 && notifications.length > 0 && (
-              <button 
-                onClick={archiveAllRead}
-                className="text-xs font-medium text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300 transition-colors flex items-center gap-1"
-              >
-                <Archive className="w-3 h-3" /> Очистить все
-              </button>
-            )}
-          </div>
-          
-          <div className="flex border-b border-neutral-100 dark:border-neutral-800">
-            <button 
-              onClick={() => setActiveTab('active')}
-              className={`flex-1 py-2.5 text-sm font-medium transition-colors ${activeTab === 'active' ? 'text-violet-600 dark:text-violet-400 border-b-2 border-violet-600 dark:border-violet-400' : 'text-neutral-500 hover:bg-neutral-50 dark:hover:bg-neutral-800/50'}`}
-            >
-              Активные {unreadCount > 0 && `(${unreadCount})`}
-            </button>
-            <button 
-              onClick={() => setActiveTab('archived')}
-              className={`flex-1 py-2.5 text-sm font-medium transition-colors ${activeTab === 'archived' ? 'text-violet-600 dark:text-violet-400 border-b-2 border-violet-600 dark:border-violet-400' : 'text-neutral-500 hover:bg-neutral-50 dark:hover:bg-neutral-800/50'}`}
-            >
-              Архив
-            </button>
+            
+            <div className="flex items-center gap-3">
+              {activeTab === 'active' && unreadCount > 0 && (
+                <button 
+                  onClick={markAllAsRead}
+                  className="text-xs font-medium text-cyan-600 dark:text-cyan-400 hover:text-cyan-700 transition-colors flex items-center gap-1"
+                >
+                  <Check className="w-3 h-3" /> Прочитать все
+                </button>
+              )}
+              {activeTab === 'active' && unreadCount === 0 && notifications.length > 0 && (
+                <button 
+                  onClick={archiveAllRead}
+                  className="text-xs font-medium text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300 transition-colors flex items-center gap-1"
+                >
+                  <Archive className="w-3 h-3" /> Очистить все
+                </button>
+              )}
+              {activeTab === 'active' && (
+                <button 
+                  onClick={() => setActiveTab('archived')}
+                  className="p-1 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
+                  title="Перейти в архив"
+                >
+                  <Archive className="w-4 h-4" />
+                </button>
+              )}
+            </div>
           </div>
 
           <div className="max-h-[350px] overflow-y-auto">
