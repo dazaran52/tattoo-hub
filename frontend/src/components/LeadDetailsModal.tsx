@@ -10,9 +10,10 @@ interface LeadDetailsModalProps {
   session: any
   onAccept: () => void
   onReject: () => void
+  chatId?: string | null
 }
 
-export function LeadDetailsModal({ isOpen, onClose, session, onAccept, onReject }: LeadDetailsModalProps) {
+export function LeadDetailsModal({ isOpen, onClose, session, onAccept, onReject, chatId }: LeadDetailsModalProps) {
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
   const [isClientModalOpen, setIsClientModalOpen] = useState(false)
 
@@ -167,8 +168,8 @@ export function LeadDetailsModal({ isOpen, onClose, session, onAccept, onReject 
           isOpen={isClientModalOpen}
           onClose={() => setIsClientModalOpen(false)}
           client={session.master_clients as any}
-          onUpdate={() => {}}
-          chatId={null}
+          onSessionClick={() => {}}
+          chatId={chatId || session.master_clients?.chat_id}
         />
       )}
     </AnimatePresence>

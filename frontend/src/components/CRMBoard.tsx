@@ -99,11 +99,7 @@ export function CRMBoard() {
   
   const handleSessionClick = (session: CRMSession) => {
     if (session.status === 'new') {
-      if (session.master_clients) {
-        setClientToView(session.master_clients)
-      } else {
-        setSessionDetails(session)
-      }
+      setSessionDetails(session)
     } else {
       setSessionToEdit(session)
     }
@@ -782,6 +778,7 @@ export function CRMBoard() {
         isOpen={!!sessionDetails}
         onClose={() => setSessionDetails(null)}
         session={sessionDetails}
+        chatId={clientsForModal.find(c => c.id === sessionDetails?.client_id)?.chat_id}
         onAccept={() => {
           if (sessionDetails) setSessionToAccept(sessionDetails)
         }}

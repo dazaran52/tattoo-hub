@@ -52,6 +52,7 @@ async def unsubscribe_from_push(endpoint: str, authorization: str = Header(None)
 
 @router.get("")
 async def get_notifications(
+    archived: bool = False,
     current_user: AuthUser = Depends(get_current_user),
     supabase: Client = Depends(get_supabase_client)
 ):
@@ -59,6 +60,7 @@ async def get_notifications(
         res = supabase.table("notifications") \
             .select("*") \
             .eq("user_id", current_user.user_id) \
+            .eq("is_archived", archived) \
             .order("created_at", desc=True) \
             .execute()
         return res.data or []
@@ -91,6 +93,38 @@ async def mark_all_read(
             .update({"is_read": True}) \
             .eq("user_id", current_user.user_id) \
             .eq("is_read", False) \
+            .execute()
+        return {"status": "success"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.put("/{notification_id}/archive")
+async def archive_notification(
+    notification_id: str,
+    current_user: AuthUser = Depends(get_current_user),
+    supabase: Client = Depends(get_supabase_client)
+):
+    try:
+        supabase.table("notifications") \
+            .update({"is_archived": True}) \
+            .eq("id", notification_id) \
+            .eq("user_id", current_user.user_id) \
+            .execute()
+        return {"status": "success"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.put("/archive-all")
+async def archive_all_read(
+    current_user: AuthUser = Depends(get_current_user),
+    supabase: Client = Depends(get_supabase_client)
+):
+    try:
+        supabase.table("notifications") \
+            .update({"is_archived": True}) \
+            .eq("user_id", current_user.user_id) \
+            .eq("is_read", True) \
+            .eq("is_archived", False) \
             .execute()
         return {"status": "success"}
     except Exception as e:
