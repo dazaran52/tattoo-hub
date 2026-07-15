@@ -694,7 +694,7 @@ async def check_abandoned_leads_async():
             client_name = client.get("name") if client else "Клиент"
             
             subject = "Необработанная заявка от клиента!"
-            body_html = f\"\"\"
+            body_html = f"""
             <html>
               <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
                 <h2 style="color: #4f46e5;">Привет, {master_name}!</h2>
@@ -707,7 +707,7 @@ async def check_abandoned_leads_async():
                 </a>
               </body>
             </html>
-            \"\"\"
+            """
             
             sent = send_smtp_reply(master_email, subject, body_html)
             if sent:
