@@ -154,7 +154,7 @@ export function CRMBoard() {
       const { data: { user } } = await supabase.auth.getUser()
       if (user) {
         const { data } = await supabase.from('master_sessions')
-          .select('*, master_clients(*, leads(title, description, image_urls, client_priority, body_place, size, is_personal))')
+          .select('*, master_clients(*, master_sessions(id, session_date, start_time, end_time, status, price, style, is_deleted, reference_images, result_image_urls), leads(title, description, image_urls, client_priority, body_place, size, is_personal))')
           .eq('master_id', user.id)
           .eq('is_deleted', false)
           .order('created_at', { ascending: false })

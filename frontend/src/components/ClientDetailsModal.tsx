@@ -20,11 +20,32 @@ interface ClientDetailsModalProps {
   onSessionClick?: (session: any) => void
 }
 
-export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId, onSessionClick }: ClientDetailsModalProps) {
+export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId: initialChatId, onSessionClick }: ClientDetailsModalProps) {
   const [activeTab, setActiveTab] = useState<'info'|'sessions'|'chat'>('info')
   const [isChatOpen, setIsChatOpen] = useState(false)
   const [isSessionModalOpen, setIsSessionModalOpen] = useState(false)
   const [phone, setPhone] = useState(client.phone || '')
+  const [resolvedChatId, setResolvedChatId] = useState<string | null>(initialChatId)
+
+  useEffect(() => {
+    setResolvedChatId(initialChatId)
+    
+    // If we don't have a chat ID but we have a lead ID, try to fetch it
+    if (!initialChatId && client.lead_id) {
+      const fetchChatId = async () => {
+        const { data } = await supabase
+          .from('lead_chats')
+          .select('id')
+          .eq('lead_id', client.lead_id)
+          .single()
+        
+        if (data?.id) {
+          setResolvedChatId(data.id)
+        }
+      }
+      fetchChatId()
+    }
+  }, [initialChatId, client.lead_id])
   
   useEffect(() => {
     if (isOpen) {
@@ -354,7 +375,7 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId, 
       <ChatModal
         isOpen={isChatOpen}
         onClose={() => setIsChatOpen(false)}
-        chatId={chatId}
+        chatId={resolvedChatId}
         leadTitle={client.name}
       />
     )}
