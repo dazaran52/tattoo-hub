@@ -473,7 +473,7 @@ export function CRMBoard() {
                       </span>
                     </div>
                     
-                    <div className="flex-1 overflow-y-auto space-y-3 pr-1">
+                    <div className="flex-1 overflow-y-auto overflow-x-hidden space-y-3 pr-1 custom-scrollbar">
                       {colItems.length === 0 ? (
                         <div className="text-center py-8 text-neutral-400 text-sm italic border-2 border-dashed border-neutral-200 dark:border-neutral-800 rounded-2xl">
                           Перетащите сюда
@@ -561,23 +561,24 @@ export function CRMBoard() {
                               </div>
                             )}
                             
-                            <div className="flex flex-col gap-2 mt-3 pt-3 border-t border-neutral-100 dark:border-white/5">
-                              <div className="flex items-start justify-between gap-2">
-                                <div className="flex flex-col gap-1">
-                                  <div className="flex items-center gap-1.5 text-xs font-bold text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-900/20 px-2 py-1.5 rounded-lg w-fit">
+                              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mt-3 pt-3 border-t border-neutral-100 dark:border-white/5">
+                                <div className="flex flex-col gap-1 min-w-0">
+                                  <div className="flex items-center gap-1.5 text-xs font-bold text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-900/20 px-2 py-1.5 rounded-lg w-fit max-w-full">
                                     <Calendar className="w-3.5 h-3.5 shrink-0" />
-                                    {new Date(item.session_date).toLocaleDateString('ru-RU')}
-                                    {(item.start_time || item.end_time) && (
-                                      <span className="opacity-75 whitespace-nowrap">
-                                        • {item.start_time?.slice(0, 5)} {item.end_time ? `- ${item.end_time.slice(0, 5)}` : ''}
-                                      </span>
-                                    )}
+                                    <span className="truncate">
+                                      {new Date(item.session_date).toLocaleDateString('ru-RU')}
+                                      {(item.start_time || item.end_time) && (
+                                        <span className="opacity-75">
+                                          • {item.start_time?.slice(0, 5)} {item.end_time ? `- ${item.end_time.slice(0, 5)}` : ''}
+                                        </span>
+                                      )}
+                                    </span>
                                   </div>
                                   <span className="text-[10px] text-neutral-400 font-medium ml-1">
                                     Создано: {new Date(item.created_at).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute:'2-digit' })}
                                   </span>
                                 </div>
-                                <div className="font-bold text-neutral-900 dark:text-white text-sm whitespace-nowrap mt-1">
+                                <div className="font-bold text-neutral-900 dark:text-white text-sm whitespace-nowrap mt-1 sm:mt-0 sm:text-right shrink-0">
                                   {item.price ? `${item.price} Kč` : '—'}
                                 </div>
                               </div>
