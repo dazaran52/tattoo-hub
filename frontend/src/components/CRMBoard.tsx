@@ -575,7 +575,7 @@ export function CRMBoard() {
                                     <span className="whitespace-normal break-words">
                                       {new Date(item.session_date).toLocaleDateString('ru-RU')}
                                       {(item.start_time || item.end_time) && (
-                                      <span className="opacity-75">
+                                      <span className="opacity-75 ml-1.5 font-medium">
                                         {item.start_time?.slice(0, 5)} {item.end_time ? `- ${item.end_time.slice(0, 5)}` : ''}
                                       </span>
                                       )}

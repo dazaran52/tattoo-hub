@@ -106,7 +106,7 @@ export function LeadAcceptWizardModal({ isOpen, onClose, onSuccess, session, all
           const controller = new AbortController()
           const timeoutId = setTimeout(() => controller.abort(), 15000)
           
-          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/crm/sessions/${session.id}/send-accept-email`, {
+          const res = await fetch(`/api/crm/sessions/${session.id}/send-accept-email`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',

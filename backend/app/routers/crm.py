@@ -433,6 +433,16 @@ async def send_accept_email(
         time_text = f"{data.start_time or '...'} - {data.end_time or '...'}"
         date_text = data.date or session_data.get("session_date") or ""
         
+        login_link = "https://tattoo-hub.xyz/login"
+        try:
+            res = await supabase.auth.admin.generate_link(
+                {"type": "magiclink", "email": client_email.strip()}
+            )
+            if hasattr(res, 'properties') and res.properties.action_link:
+                login_link = res.properties.action_link
+        except Exception as e:
+            print(f"Warning: Failed to generate magiclink for {client_email}: {e}")
+
         subject = f"Ваша заявка принята мастером {master_name}!"
         
         html = f'''
@@ -457,7 +467,7 @@ async def send_accept_email(
                 <p style="font-size: 16px; line-height: 1.6; font-weight: bold; text-align: center; margin-bottom: 25px;">У мастера могут быть уточняющие вопросы.</p>
                 
                 <div style="text-align: center; margin: 35px 0;">
-                    <a href="https://tattoo-hub.xyz/login" style="background-color: #10b981; color: white; padding: 14px 28px; text-decoration: none; border-radius: 12px; font-weight: bold; font-size: 16px; display: inline-block;">Открыть чат с мастером</a>
+                    <a href="{login_link}" style="background-color: #10b981; color: white; padding: 14px 28px; text-decoration: none; border-radius: 12px; font-weight: bold; font-size: 16px; display: inline-block;">Открыть чат с мастером</a>
                 </div>
                 
                 <p style="font-size: 14px; color: #6b7280; text-align: center; margin: 0; border-top: 1px solid #e5e7eb; padding-top: 20px;">
