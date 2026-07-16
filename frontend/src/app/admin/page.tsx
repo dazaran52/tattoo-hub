@@ -399,7 +399,7 @@ export default function AdminPage() {
                           </div>
                         )}
                         <div className="text-neutral-500 dark:text-neutral-400 text-xs mt-1">
-                          {user.display_name ? `${user.display_name}` : 'No Name'} 
+                          {user.display_name ? `${user.display_name}` : <span className="text-red-500 font-medium text-[10px] uppercase">Не завершил онбординг</span>} 
                           {user.phone && ` • ${user.phone}`}
                           {user.portfolio_url && (
                             <a href={user.portfolio_url} target="_blank" rel="noopener noreferrer" className="ml-2 inline-flex items-center text-purple-600 dark:text-purple-400 hover:underline font-semibold">
@@ -456,7 +456,9 @@ export default function AdminPage() {
                             {user.status === 'pending' && (
                               <button
                                 onClick={() => updateUserStatus(user.id, 'approved')}
-                                className="px-3.5 py-2 bg-green-500/10 dark:bg-green-900/20 text-green-600 dark:text-green-400 border border-green-500/20 rounded-xl text-xs font-bold hover:bg-green-500/20 transition-all"
+                                disabled={user.role === 'master' && !user.portfolio_url}
+                                title={user.role === 'master' && !user.portfolio_url ? 'Нет ссылки на портфолио' : ''}
+                                className="px-3.5 py-2 bg-green-500/10 dark:bg-green-900/20 text-green-600 dark:text-green-400 border border-green-500/20 rounded-xl text-xs font-bold hover:bg-green-500/20 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
                               >
                                 Одобрить
                               </button>

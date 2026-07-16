@@ -104,6 +104,7 @@ async def get_users(
                 query = query.eq("is_admin", True)
             else:
                 query = query.eq("role", role_filter)
+                query = query.eq("is_admin", False)
                 
         # Apply pagination
         offset = (page - 1) * page_size
