@@ -13,7 +13,8 @@ class UserStatusUpdate(BaseModel):
     status: str
 
 class UserBalanceUpdate(BaseModel):
-    balance: float
+    credits: int | None = None
+    balance: float | None = None
 
 class AdminUserResponse(BaseModel):
     id: str
@@ -94,7 +95,7 @@ async def get_users(
                 phone=u.get("phone"),
                 bio=u.get("bio"),
                 status=u.get("status", "pending"),
-                balance=u.get("balance", 0),
+                balance=u.get("credits", 0),
                 created_at=u["created_at"]
             )
             for u in response.data
@@ -206,12 +207,13 @@ async def update_user_balance(
     supabase: Client = Depends(get_supabase_client)
 ):
     """Update a user's credit balance."""
-    if update_data.balance < 0:
+    val = update_data.credits if update_data.credits is not None else update_data.balance
+    if val is None or val < 0:
         raise HTTPException(status_code=400, detail="Credits cannot be negative")
         
     try:
         response = supabase.table("users") \
-            .update({"balance": update_data.balance}) \
+            .update({"credits": val}) \
             .eq("id", user_id) \
             .execute()
             
@@ -224,10 +226,10 @@ async def update_user_balance(
             send_transactional_email(
                 to_email=user_email,
                 subject="Ваш баланс Tattoo Hub пополнен!",
-                html_content=f"<h1>Ваш баланс обновлен</h1><p>Текущий баланс: <strong>{update_data.balance} кредитов</strong>.</p>"
+                html_content=f"<h1>Ваш баланс обновлен</h1><p>Текущий баланс: <strong>{val} кредитов</strong>.</p>"
             )
             
-        return {"message": f"User credits updated to {update_data.balance}"}
+        return {"message": f"User credits updated to {val}"}
     except HTTPException:
         raise
     except Exception as e:
@@ -468,10 +470,17 @@ async def resolve_dispute(
             lead_res = supabase.table("leads").select("base_unlock_price_eur").eq("id", dispute["lead_id"]).single().execute()
             price = lead_res.data["base_unlock_price_eur"] if lead_res.data else 5.0
                 
-            user_res = supabase.table("users").select("balance").eq("id", user_id).single().execute()
+            user_res = supabase.table("users").select("credits").eq("id", user_id).single().execute()
             if user_res.data:
-                new_balance = float(user_res.data["balance"]) + float(price) # FIXME: Ideally we should refund the exact local amount that was deducted
-                supabase.table("users").update({"balance": new_balance}).eq("id", user_id).execute()
+                # We refund the original base_unlock_price in credits. 
+                # (Assuming 1 credit = 1 EUR for simplicity, or we should have price_credits on leads?)
+                # Actually, in leads.py price_credits is fixed at 50, but we'll fallback to price if price_credits doesn't exist
+                # Let's get price_credits if it exists, otherwise use 50.
+                lead_price_res = supabase.table("leads").select("price_credits").eq("id", dispute["lead_id"]).single().execute()
+                refund_amount = lead_price_res.data.get("price_credits") if lead_price_res.data and lead_price_res.data.get("price_credits") else 50
+
+                new_credits = float(user_res.data.get("credits", 0)) + float(refund_amount)
+                supabase.table("users").update({"credits": new_credits}).eq("id", user_id).execute()
                 
             supabase.table("disputes").update({"status": "resolved"}).eq("id", dispute_id).execute()
             
