@@ -1,11 +1,9 @@
-"""Fixed authentication middleware with proper JWT handling."""
+"""Fixed authentication middleware with proper JWT handling via Supabase Auth API."""
 from fastapi import HTTPException, status, Security
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel
-from jose import jwt, JWTError
-import base64
 
-from app.config import get_settings
+from app.database import get_supabase_client
 
 security = HTTPBearer()
 
@@ -21,48 +19,41 @@ def get_current_user(
     credentials: HTTPAuthorizationCredentials = Security(security)
 ) -> AuthUser:
     """
-    Validate JWT token and extract user information.
+    Validate JWT token securely and extract user information.
+    This calls Supabase Auth API directly to ensure the token is cryptographically valid, 
+    has not expired, and the user hasn't been deleted or banned.
     """
-    print(f"DEBUG: Authorization header received: {bool(credentials)}")
-    
     if not credentials:
-        print("DEBUG: No credentials provided")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="No authorization header"
         )
     
     token = credentials.credentials
-    print(f"DEBUG: Token received (first 50 chars): {token[:50]}...")
     
-    settings = get_settings()
     try:
-        # Tokens might be ES256, so we temporarily use get_unverified_claims
-        # TODO: Implement proper JWKS fetching for ES256
-        payload = jwt.get_unverified_claims(token)
-        print(f"DEBUG: Payload decoded successfully: {payload}")
+        supabase = get_supabase_client()
+        # Securely validate token with Supabase (handles both HS256 and ES256 automatically)
+        res = supabase.auth.get_user(token)
         
-        user_id = payload.get("sub")
-        email = payload.get("email")
-        
-        print(f"DEBUG: user_id={user_id}, email={email}")
-        
-        if not user_id or not email:
-            print(f"DEBUG: Missing user_id or email in token")
+        if not res or not res.user:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid token: missing user data"
+                detail="Invalid or expired token"
             )
-        
-        user_metadata = payload.get("user_metadata", {})
-        print(f"DEBUG: Auth successful for {email}, metadata: {user_metadata}")
-        return AuthUser(user_id=user_id, email=email, user_metadata=user_metadata)
+            
+        user = res.user
+        return AuthUser(
+            user_id=user.id, 
+            email=user.email, 
+            user_metadata=user.user_metadata or {}
+        )
         
     except Exception as e:
-        print(f"DEBUG: Token decode error: {type(e).__name__}: {e}")
+        print(f"DEBUG: Token validation error: {type(e).__name__}: {e}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=f"Invalid token: {str(e)}"
+            detail=f"Invalid token or session expired"
         )
 
 
@@ -72,22 +63,21 @@ def get_optional_user(
     """Optional authentication check helper."""
     if not credentials:
         return None
+        
     token = credentials.credentials
-    settings = get_settings()
+    
     try:
-        payload = jwt.get_unverified_claims(token)
-        user_id = payload.get("sub")
-        email = payload.get("email")
-        if not user_id or not email:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid token: missing user data"
-            )
-        user_metadata = payload.get("user_metadata", {})
-        return AuthUser(user_id=user_id, email=email, user_metadata=user_metadata)
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=f"Invalid token: {str(e)}"
+        supabase = get_supabase_client()
+        res = supabase.auth.get_user(token)
+        
+        if not res or not res.user:
+            return None
+            
+        user = res.user
+        return AuthUser(
+            user_id=user.id, 
+            email=user.email, 
+            user_metadata=user.user_metadata or {}
         )
-
+    except Exception:
+        return None
