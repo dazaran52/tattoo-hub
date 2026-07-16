@@ -37,9 +37,13 @@ def get_current_user(
     
     settings = get_settings()
     try:
-        # Decode JWT payload without verification for now
-        # The token is already validated by Supabase on the frontend, but should be verified on backend later
-        payload = jwt.get_unverified_claims(token)
+        # Decode and verify JWT signature using SUPABASE_JWT_SECRET
+        payload = jwt.decode(
+            token,
+            settings.SUPABASE_JWT_SECRET,
+            algorithms=["HS256"],
+            options={"verify_aud": False}
+        )
         print(f"DEBUG: Payload decoded successfully: {payload}")
         
         user_id = payload.get("sub")
@@ -75,7 +79,12 @@ def get_optional_user(
     token = credentials.credentials
     settings = get_settings()
     try:
-        payload = jwt.get_unverified_claims(token)
+        payload = jwt.decode(
+            token,
+            settings.SUPABASE_JWT_SECRET,
+            algorithms=["HS256"],
+            options={"verify_aud": False}
+        )
         user_id = payload.get("sub")
         email = payload.get("email")
         if not user_id or not email:
