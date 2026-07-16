@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Calendar as CalendarIcon, User, MapPin, FileText, CheckCircle, ArrowLeft, Send, Link as LinkIcon, Instagram, Upload, Loader2, X, Image as ImageIcon, ChevronRight, Phone, Video, Star } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { DayPicker } from 'react-day-picker'
@@ -71,6 +71,8 @@ const getThemeClasses = (theme: string) => {
 // Use a subset of Lucide icons or basic SVG if needed
 export default function BookMasterPage({ params }: { params: { username: string } }) {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const source = searchParams.get('source')
   const [master, setMaster] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -202,7 +204,7 @@ export default function BookMasterPage({ params }: { params: { username: string 
         budget_currency: 'CZK',
         budget: isNegotiable ? 'Договорная цена' : budgetVal ? `${budgetVal} Kč` : null,
         is_negotiable_budget: isNegotiable,
-        is_personal: true
+        is_personal: source !== 'platform'
       }
 
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/leads/client`, {
@@ -273,26 +275,7 @@ export default function BookMasterPage({ params }: { params: { username: string 
             Отправить еще одну
           </button>
           
-          <div className="bg-violet-50 dark:bg-violet-900/10 border border-violet-100 dark:border-violet-900/30 rounded-2xl p-5 text-left relative overflow-hidden group hover:shadow-md transition-shadow">
-            <div className="absolute top-0 right-0 w-24 h-24 bg-violet-500/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 group-hover:scale-150 transition-transform duration-700"></div>
-            <h3 className="text-sm font-bold text-violet-900 dark:text-violet-300 mb-2 flex items-center gap-2">
-              <span className="relative flex h-2.5 w-2.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-violet-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-violet-500"></span>
-              </span>
-              Скоро: Маркетплейс заявок
-            </h3>
-            <p className="text-xs text-violet-700/80 dark:text-violet-400/80 mb-3 leading-relaxed">
-              Не хотите ждать ответа? С 1 августа запустится маркетплейс — вы сможете опубликовать свою идею, и свободные мастера сами предложат вам цену и эскизы.
-            </p>
-            <button 
-              onClick={() => router.push('/')}
-              className="text-xs font-bold text-violet-600 dark:text-violet-400 hover:text-violet-700 dark:hover:text-violet-300 flex items-center gap-1 transition-colors"
-            >
-              Узнать больше о платформе
-              <ChevronRight className="w-3.5 h-3.5" />
-            </button>
-          </div>
+
         </div>
       </div>
     )

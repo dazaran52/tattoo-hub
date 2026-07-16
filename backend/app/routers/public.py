@@ -20,6 +20,65 @@ class PublicMasterResponse(BaseModel):
     rating: float = 0.0
     review_count: int = 0
 
+@router.get("/masters", response_model=list[PublicMasterResponse])
+async def get_public_masters(
+    supabase: AsyncClient = Depends(get_async_supabase_client)
+):
+    """
+    Get a list of top verified masters for the marketplace feed.
+    """
+    try:
+        query = supabase.table("users").select(
+            "id, username, display_name, bio, portfolio_url, city_ids, is_verified_master, status, role, theme, avatar_url, portfolio_posts(id, media, description, created_at), master_reviews!master_reviews_master_id_fkey(rating)"
+        ).eq("role", "master").eq("is_verified_master", True).eq("status", "active")
+        
+        response = await query.execute()
+        
+        masters_list = []
+        for data in response.data or []:
+            # Sort posts by created_at desc
+            posts = data.get("portfolio_posts") or []
+            posts.sort(key=lambda x: x.get("created_at", ""), reverse=True)
+            
+            # Limit posts to 3 for the feed
+            top_posts = posts[:3]
+
+            # Calculate rating
+            reviews = data.get("master_reviews!master_reviews_master_id_fkey") or []
+            review_count = len(reviews)
+            rating = sum([r.get("rating", 0) for r in reviews]) / review_count if review_count > 0 else 0.0
+
+            # Generate a pseudo trust score to sort by (e.g. rating * log(reviews))
+            # For simplicity, we just use rating + (reviews * 0.1) as a sort key
+            sort_score = rating + (review_count * 0.1)
+            
+            masters_list.append({
+                "master": PublicMasterResponse(
+                    id=data["id"],
+                    username=data.get("username"),
+                    display_name=data.get("display_name"),
+                    bio=data.get("bio"),
+                    portfolio_url=data.get("portfolio_url"),
+                    city_ids=data.get("city_ids", []),
+                    is_verified_master=data.get("is_verified_master", False),
+                    portfolio_posts=top_posts,
+                    theme=data.get("theme", "system"),
+                    avatar_url=data.get("avatar_url"),
+                    rating=round(rating, 1),
+                    review_count=review_count
+                ),
+                "score": sort_score
+            })
+            
+        masters_list.sort(key=lambda x: x["score"], reverse=True)
+        return [item["master"] for item in masters_list]
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error fetching top masters: {str(e)}"
+        )
+
 @router.get("/master/{username_or_id}", response_model=PublicMasterResponse)
 async def get_public_master(
     username_or_id: str,

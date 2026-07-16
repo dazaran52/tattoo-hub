@@ -358,6 +358,23 @@ export function MessagesList() {
                     <img src={chat.leads.image_urls[0]} alt="tattoo" className="w-full h-full object-cover" />
                   ) : (
                     <MessageCircle className="w-6 h-6 text-neutral-400" />
+                  )}
+                </div>
+                
+                <div className="flex-1 min-w-0">
+                  <div className="flex justify-between items-baseline mb-0.5">
+                    <h3 className="font-bold text-neutral-900 dark:text-white truncate">{clientName}</h3>
+                    <span className="text-[10px] text-neutral-400 font-medium">
+                      {chat.last_message 
+                        ? new Date(chat.last_message.created_at).toLocaleDateString() 
+                        : ''}
+                    </span>
+                  </div>
+                  
+                  <div className="flex justify-between items-center">
+                    {chat.last_message ? (
+                      <p className="text-xs text-neutral-500 truncate max-w-[180px]">
+                        {chat.last_message.content}
                       </p>
                     ) : (
                       <p className="text-xs text-neutral-400 italic">Нет сообщений</p>

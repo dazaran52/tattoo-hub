@@ -52,7 +52,7 @@ async def get_marketplace_leads(
     try:
         leads_res = await supabase.table("leads") \
             .select("*, cities(country_id)") \
-            .is_("assigned_master_id", "null") \
+            .or_(f"assigned_master_id.is.null,and(assigned_master_id.eq.{current_user.user_id},is_personal.eq.false)") \
             .neq("status", "closed") \
             .order("created_at", desc=True) \
             .execute()
@@ -175,8 +175,8 @@ def get_leads(
         user_res = supabase.table("users").select("currency").eq("id", current_user.user_id).execute()
         master_currency = user_res.data[0].get("currency", "CZK") if user_res.data else "CZK"
 
-        # Fetch all public leads (exclude personal CRM leads)
-        leads_res = supabase.table("leads").select("*, cities(country_id)").is_("assigned_master_id", "null").order("created_at", desc=True).execute()
+        # Fetch all public leads (and exclusive paid leads)
+        leads_res = supabase.table("leads").select("*, cities(country_id)").or_(f"assigned_master_id.is.null,and(assigned_master_id.eq.{current_user.user_id},is_personal.eq.false)").order("created_at", desc=True).execute()
         leads = leads_res.data or []
 
         # Fetch ALL unlocks

@@ -426,34 +426,36 @@ export default function ProfilePage() {
                 </div>
 
                 {/* Locations */}
-                <div>
-                  <label className="block text-sm font-bold text-neutral-700 dark:text-neutral-300 mb-2">{t('country')}</label>
-                  <select
-                    value={selectedCountry}
-                    onChange={(e) => setSelectedCountry(e.target.value)}
-                    disabled={!isEditing}
-                    className="w-full bg-white dark:bg-black/50 border border-neutral-200 dark:border-neutral-800 rounded-xl px-4 py-3 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all disabled:opacity-70 font-medium cursor-pointer"
-                  >
-                    <option value="">{t('selectCountry')}</option>
-                    {countries.map(country => (
-                      <option key={country.id} value={country.id}>{country.name_ru}</option>
-                    ))}
-                  </select>
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-bold text-neutral-700 dark:text-neutral-300 mb-2">{t('city')}</label>
-                  <select
-                    value={selectedCity}
-                    onChange={(e) => setSelectedCity(e.target.value)}
-                    disabled={!isEditing || !selectedCountry}
-                    className="w-full bg-white dark:bg-black/50 border border-neutral-200 dark:border-neutral-800 rounded-xl px-4 py-3 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all disabled:opacity-70 font-medium cursor-pointer"
-                  >
-                    <option value="">{t('selectCity')}</option>
-                    {cities.map(city => (
-                      <option key={city.id} value={city.id}>{city.name_ru}</option>
-                    ))}
-                  </select>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:col-span-2">
+                  <div>
+                    <label className="block text-sm font-bold text-neutral-700 dark:text-neutral-300 mb-2">{t('country')}</label>
+                    <select
+                      value={selectedCountry}
+                      onChange={(e) => setSelectedCountry(e.target.value)}
+                      disabled={!isEditing}
+                      className="w-full bg-white dark:bg-black/50 border border-neutral-200 dark:border-neutral-800 rounded-xl px-4 py-3 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all disabled:opacity-70 font-medium cursor-pointer"
+                    >
+                      <option value="">{t('selectCountry')}</option>
+                      {countries.map(country => (
+                        <option key={country.id} value={country.id}>{country.name_ru}</option>
+                      ))}
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-bold text-neutral-700 dark:text-neutral-300 mb-2">{t('city')}</label>
+                    <select
+                      value={selectedCity}
+                      onChange={(e) => setSelectedCity(e.target.value)}
+                      disabled={!isEditing || !selectedCountry}
+                      className="w-full bg-white dark:bg-black/50 border border-neutral-200 dark:border-neutral-800 rounded-xl px-4 py-3 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all disabled:opacity-70 font-medium cursor-pointer"
+                    >
+                      <option value="">{t('selectCity')}</option>
+                      {cities.map(city => (
+                        <option key={city.id} value={city.id}>{city.name_ru}</option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
                 
                 {/* Theme Selector */}

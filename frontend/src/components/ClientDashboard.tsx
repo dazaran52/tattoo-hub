@@ -9,10 +9,12 @@ import { useLanguage } from '@/i18n/LanguageContext'
 
 export function ClientDashboard({ profile }: { profile: Profile }) {
   const { t } = useLanguage()
-  const [activeTab, setActiveTab] = useState<'leads' | 'favorites'>('leads')
+  const [activeTab, setActiveTab] = useState<'leads' | 'favorites' | 'top_masters'>('leads')
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [leads, setLeads] = useState<any[]>([])
+  const [topMasters, setTopMasters] = useState<any[]>([])
   const [isLoadingLeads, setIsLoadingLeads] = useState(true)
+  const [isLoadingMasters, setIsLoadingMasters] = useState(false)
   const [editingLead, setEditingLead] = useState<any>(null)
   const [openMenuId, setOpenMenuId] = useState<string | null>(null)
   const [selectedChatId, setSelectedChatId] = useState<string | null>(null)
@@ -109,7 +111,24 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
         setIsLoadingLeads(false)
       }
     }
+    
+    async function fetchTopMasters() {
+      try {
+        setIsLoadingMasters(true)
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/public/masters`)
+        if (response.ok) {
+          const data = await response.json()
+          setTopMasters(data)
+        }
+      } catch (err) {
+        console.error('Error fetching top masters:', err)
+      } finally {
+        setIsLoadingMasters(false)
+      }
+    }
+
     fetchLeads()
+    fetchTopMasters()
   }, [])
 
   return (
@@ -145,6 +164,17 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
           >
             <Heart className="w-4 h-4 inline-block mr-2" />
             {t('favoriteMasters')}
+          </button>
+          <button
+            onClick={() => setActiveTab('top_masters')}
+            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              activeTab === 'top_masters'
+                ? 'bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white shadow-sm'
+                : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200'
+            }`}
+          >
+            <Heart className="w-4 h-4 inline-block mr-2 opacity-0 hidden" />
+            Топ мастера
           </button>
         </div>
       </div>
@@ -314,11 +344,86 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
             </div>
           ))}
         </div>
-      ) : (
+      ) : activeTab === 'favorites' ? (
         <div className="text-center py-20">
           <Heart className="w-16 h-16 text-neutral-300 dark:text-neutral-700 mx-auto mb-4" />
           <h3 className="text-xl font-bold text-neutral-500 mb-2">{t('noFavorites')}</h3>
           <p className="text-neutral-400">{t('saveMastersDesc')}</p>
+        </div>
+      ) : (
+        <div className="space-y-6">
+          <div className="bg-gradient-to-r from-violet-600 to-indigo-600 rounded-3xl p-8 text-white shadow-xl relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+            <div className="relative z-10 max-w-2xl">
+              <h3 className="text-3xl font-extrabold mb-4">Найти идеального мастера стало проще</h3>
+              <p className="text-indigo-100 font-medium mb-6 text-lg">
+                Оставьте одну заявку, и лучшие мастера вашего города сами предложат вам свои условия, цены и эскизы. Выбирайте того, кто подходит именно вам!
+              </p>
+              <button 
+                onClick={() => setIsFormOpen(true)}
+                className="px-8 py-4 bg-white text-indigo-900 font-extrabold rounded-xl hover:bg-indigo-50 transition-colors shadow-lg hover:shadow-xl hover:scale-105"
+              >
+                Оставить заявку всем мастерам
+              </button>
+            </div>
+          </div>
+
+          <h3 className="text-2xl font-bold text-neutral-900 dark:text-white mt-12 mb-6">Рейтинг мастеров</h3>
+          
+          {isLoadingMasters ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[1,2,3].map(i => (
+                <div key={i} className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-3xl h-[400px] animate-pulse"></div>
+              ))}
+            </div>
+          ) : topMasters.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {topMasters.map(master => (
+                <div key={master.id} className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-shadow group flex flex-col">
+                  <div className="p-6 pb-4 flex items-start gap-4">
+                    <img 
+                      src={master.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(master.display_name || master.username || 'M')}`}
+                      alt="Avatar"
+                      className="w-16 h-16 rounded-2xl object-cover border-2 border-neutral-100 dark:border-neutral-800"
+                    />
+                    <div>
+                      <h4 className="font-bold text-lg text-neutral-900 dark:text-white group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors">
+                        {master.display_name || master.username}
+                      </h4>
+                      <p className="text-sm text-neutral-500 mb-2">@{master.username}</p>
+                      
+                      <div className="flex items-center gap-1.5 text-yellow-500">
+                        <span className="text-sm font-bold">★ {master.rating}</span>
+                        <span className="text-xs text-neutral-400">({master.review_count} отзывов)</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {master.portfolio_posts && master.portfolio_posts.length > 0 && (
+                    <div className="grid grid-cols-3 gap-1 px-6 mb-4">
+                      {master.portfolio_posts.map((post: any) => (
+                        <div key={post.id} className="aspect-square bg-neutral-100 dark:bg-neutral-800 rounded-lg overflow-hidden">
+                          <img src={post.media?.[0]?.url} className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity" alt="Portfolio" />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  <div className="px-6 pb-6 mt-auto">
+                    <a 
+                      href={`/book/${master.username}?source=platform`}
+                      target="_blank"
+                      className="block w-full py-3 text-center bg-neutral-100 dark:bg-neutral-800 hover:bg-violet-600 hover:text-white dark:hover:bg-violet-600 text-neutral-900 dark:text-white font-bold rounded-xl transition-all"
+                    >
+                      Смотреть портфолио
+                    </a>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+             <div className="text-center py-12 text-neutral-500">Нет доступных мастеров</div>
+          )}
         </div>
       )}
 
