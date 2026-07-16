@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { SkeletonCard } from '@/components/SkeletonCard'
-import { RefreshCw, Search, Loader2, Plus, Edit2, Trash2, XCircle, ChevronLeft, ChevronRight, Image as ImageIcon, Clock, Bell, BellOff } from 'lucide-react'
+import { RefreshCw, Search, Loader2, Plus, Edit2, Trash2, XCircle, ChevronLeft, ChevronRight, Image as ImageIcon, Clock, Bell, BellOff, MapPin } from 'lucide-react'
 import { getTranslation, Language } from '@/lib/i18n'
 import { LowBalanceModal } from '@/components/LowBalanceModal'
 import { DisputeModal } from '@/components/DisputeModal'
@@ -658,13 +658,14 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
           {!showOnlyUnlocked && userCities.length > 0 && (
             <button
               onClick={() => setShowOtherCities(!showOtherCities)}
-              className={`flex items-center gap-2 px-4 py-2 border rounded-lg text-sm transition-colors ${
+              className={`flex items-center gap-2 px-4 py-2 border rounded-full text-sm font-semibold transition-all duration-300 shadow-sm hover:scale-[1.02] ${
                 showOtherCities 
-                  ? 'bg-neutral-100 dark:bg-neutral-800 border-neutral-300 dark:border-neutral-700 text-neutral-900 dark:text-white' 
-                  : 'bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 text-neutral-700 dark:text-neutral-300 hover:border-neutral-400'
+                  ? 'bg-violet-500/10 dark:bg-violet-500/20 border-violet-500/30 dark:border-violet-500/50 text-violet-600 dark:text-violet-400' 
+                  : 'bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 text-neutral-500 hover:text-neutral-950 dark:hover:text-white'
               }`}
             >
-              {showOtherCities ? 'Только мои города' : 'Остальные города'}
+              <MapPin className={`w-4 h-4 ${showOtherCities ? 'text-violet-500 dark:text-violet-400' : ''}`} />
+              {showOtherCities ? 'Только мои города' : 'Все города'}
             </button>
           )}
           <button

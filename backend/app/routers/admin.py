@@ -167,7 +167,7 @@ async def update_user_status(
             supabase.table("notifications").insert({
                 "user_id": user_id,
                 "title": "Профиль верифицирован",
-                "message": "Ваш профиль успешно проверен администратором. Теперь вы можете получать заявки на тату!",
+                "message": "Ваш профиль успешно проверен администратором. Теперь вам доступен маркетплейс заявок!",
                 "type": "system"
             }).execute()
             
@@ -177,7 +177,7 @@ async def update_user_status(
                 send_transactional_email(
                     to_email=user_email,
                     subject="Поздравляем! Ваш профиль Tattoo Hub верифицирован",
-                    html_content="<h1>Добро пожаловать в Tattoo Hub!</h1><p>Ваш аккаунт успешно проверен. Теперь вы можете получать заявки на тату в нашем приложении.</p>"
+                    html_content="<h1>Добро пожаловать в Tattoo Hub!</h1><p>Ваш аккаунт успешно проверен. Теперь вам доступен маркетплейс заявок в нашем приложении.</p>"
                 )
         elif update_data.status == "rejected":
             # Send Email for rejection
