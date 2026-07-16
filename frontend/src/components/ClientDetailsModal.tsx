@@ -65,6 +65,7 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId: 
   
   const [sessionToComplete, setSessionToComplete] = useState<string | null>(null)
   const [sessionToStart, setSessionToStart] = useState<string | null>(null)
+  const [sessionToEdit, setSessionToEdit] = useState<any | null>(null)
 
   if (!isOpen) return null
 
@@ -305,7 +306,11 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId: 
                             )}
                             <button onClick={(e) => {
                               e.stopPropagation();
-                              onSessionClick?.({ ...s, master_clients: { id: client.id, name: client.name } });
+                              if (onSessionClick) {
+                                onSessionClick({ ...s, master_clients: { id: client.id, name: client.name } });
+                              } else {
+                                setSessionToEdit({ ...s, master_clients: { id: client.id, name: client.name } });
+                              }
                             }} className="p-1.5 text-neutral-400 hover:text-violet-500 rounded-md">
                               <Edit3 className="w-4 h-4" />
                             </button>
@@ -381,16 +386,18 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId: 
       />
     )}
 
-    {isSessionModalOpen && (
+    {(isSessionModalOpen || sessionToEdit) && (
       <SessionModal
-        isOpen={isSessionModalOpen}
-        onClose={() => setIsSessionModalOpen(false)}
+        isOpen={isSessionModalOpen || !!sessionToEdit}
+        onClose={() => { setIsSessionModalOpen(false); setSessionToEdit(null); }}
         onSuccess={() => {
           setIsSessionModalOpen(false)
+          setSessionToEdit(null)
           onUpdate()
         }}
         initialClientId={client.id}
         existingClients={[client]} // just pass this client
+        editSession={sessionToEdit}
       />
     )}
 
