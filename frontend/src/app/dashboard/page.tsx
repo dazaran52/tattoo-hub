@@ -107,12 +107,6 @@ export default function DashboardPage() {
       setProfile(profileData)
       setCurrentSession(session)
       
-      // Redirect to onboarding if critical profile info is missing
-      if (!profileData.country_ids || profileData.country_ids.length === 0) {
-        router.push('/onboarding')
-        return
-      }
-
       // Redirect admin to admin panel
       if (profileData.is_admin) {
         window.location.href = '/admin'
