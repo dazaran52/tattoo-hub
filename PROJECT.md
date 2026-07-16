@@ -1,27 +1,37 @@
-# Project: Tattoo HUB - Email Parser Upgrade
+# Project: Tattoo HUB - Security Audit and Feature Completeness
 
 ## Architecture
-- `backend/app/services/email_lead_agent.py`: Handles fetching emails, parsing with Gemini, calculating prices, and replying.
-- `backend/app/routers/admin.py`: Handles admin API endpoints.
-- Supabase table `email_lead_conversations`: Stores conversations and metadata.
-- `frontend/src/components/AdminAiChats.tsx`: Admin UI for AI conversations.
+- **Frontend**: Next.js App Router in `frontend/src/`.
+  - Direct Booking Page: `frontend/src/app/book/[username]/page.tsx`
+  - Marketplace Form: `frontend/src/components/LeadForm.tsx`
+- **Backend**: FastAPI in `backend/app/`.
+  - Leads router: `backend/app/routers/leads.py`
+  - CRM router: `backend/app/routers/crm.py`
+  - Auth Middleware: `backend/app/middleware/auth.py`
+- **Database**: Supabase PostgreSQL.
+  - Tables: `leads`, `master_clients`, `master_sessions`.
+  - RLS Policies.
 
 ## Milestones
 | # | Name | Scope | Dependencies | Status |
 |---|------|-------|-------------|--------|
-| 1 | Backend Finalization (M1+M2) | Verify and fix UNSEEN logic, Gemini extraction, price calc, IMAP append, AND fix Pause logic bugs (synthetic hash, cache query, commit after reply, race condition unpausing). | none | DONE |
-| 2 | Backend Pause Logic | Add `is_paused` field logic, ignore paused, and PUT `/api/admin/conversations/{id}/pause` endpoint (R5 backend) | none | DONE |
-| 3 | Frontend UI | Add country tag, country filter, and "Intercept dialog" button in `AdminAiChats.tsx` (R5 frontend) | M1, M2 | DONE |
-| 4 | Final Milestone (E2E Phase 1) | Pass 100% of the E2E test suite (Tiers 1-4) | M1, M2, M3 | IN_PROGRESS (9d918dc3-475d-443b-ab55-c245f4686d7b) |
-| 5 | Final Milestone (E2E Phase 2) | Adversarial Coverage Hardening (Tier 5) | M4 | PLANNED |
+| 1 | Codebase Audit & Security Analysis | Audit Supabase RLS policies and FastAPI authorization checks on chat, sessions, and leads endpoints. Identify vulnerabilities. | none | PLANNED |
+| 2 | Backend Consistency Implementation | Update endpoints `/api/leads`, `/api/crm`, etc. to correctly accept, store, and propagate all booking fields (budget, description, style, reference images, body location, size, is_personal) in `leads`, `master_clients`, and `master_sessions` tables. | M1 | PLANNED |
+| 3 | Frontend Booking Form Alignment | Refactor direct booking form at `/book/[username]/page.tsx` to align with the marketplace form fields. Ensure all required fields are visual, interactive, validated, and sent to backend. | M1 | PLANNED |
+| 4 | Verification & E2E Testing | Verify frontend build (`npm run build`), backend tests, database constraints, RLS policies, and ensure no remote pushes. | M2, M3 | PLANNED |
 
 ## Interface Contracts
-### Admin API ↔ Frontend
-- `PUT /api/admin/conversations/{id}/pause`
-  - Body: JSON `{ "is_paused": boolean }`
-  - Result: Updates `is_paused` flag in DB.
+- **Booking Fields Consistency**:
+  - `budget` (numeric/decimal/integer/text, match schema)
+  - `description` (text)
+  - `style` (text)
+  - `reference_images` (array of text URLs)
+  - `body_location` (text)
+  - `size` (text/numeric, match schema)
+  - `is_personal` (boolean)
+- **FastAPI Endpoint Auth**:
+  - Chat/session/lead endpoints must verify JWT tokens, and verify that the user owns or is authorized to access the requested resource.
 
 ## Code Layout
-- Backend Services: `backend/app/services/`
-- Backend Routers: `backend/app/routers/`
-- Frontend Components: `frontend/src/components/`
+- Backend Services: `backend/app/`
+- Frontend Pages/Components: `frontend/src/`

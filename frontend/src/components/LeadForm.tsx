@@ -96,16 +96,12 @@ export function LeadForm() {
     if (selectedCountry) {
       const country = countries.find(c => c.id === selectedCountry)
       if (country) {
-        const cCode = country.code || 'CZ'
-        let newCurr = 'EUR'
-        if (cCode === 'CZ') newCurr = 'CZK'
-        if (cCode === 'PL') newCurr = 'PLN'
-        setCurrency(newCurr)
+        // Hardcode to CZK since we are starting only in Czechia
+        setCurrency('CZK')
         
-        const defaults: Record<string, number> = { CZK: 5000, EUR: 200, PLN: 1000 }
-        if (!formData.budget || !formData.budget.includes(newCurr)) {
-          setBudgetVal(defaults[newCurr])
-          setFormData(prev => ({ ...prev, budget: `${defaults[newCurr]} ${newCurr}` }))
+        if (!formData.budget || !formData.budget.includes('CZK')) {
+          setBudgetVal(5000)
+          setFormData(prev => ({ ...prev, budget: '5000 CZK' }))
         }
       }
 
@@ -654,30 +650,30 @@ export function LeadForm() {
                     >
                       <div className="flex justify-between items-center mb-4">
                         <span className="font-bold text-xl text-neutral-900 dark:text-white">
-                          {budgetVal} {currency}
+                          {budgetVal} Kč
                         </span>
                         <div className="flex gap-2 p-1.5 bg-white/20 dark:bg-neutral-900/20 backdrop-blur-md border border-neutral-200 dark:border-white/5 rounded-2xl w-fit">
                            <span className="px-4 py-2 rounded-xl text-xs font-bold transition-all bg-violet-500 text-white shadow-md">
-                             {currency}
+                             Kč
                            </span>
                         </div>
                       </div>
                       <input
                         type="range"
-                        min={currency === 'EUR' ? '50' : currency === 'PLN' ? '200' : '1000'}
-                        max={currency === 'EUR' ? '2000' : currency === 'PLN' ? '10000' : '50000'}
-                        step={currency === 'EUR' ? '50' : currency === 'PLN' ? '100' : '500'}
+                        min="1000"
+                        max="50000"
+                        step="500"
                         value={budgetVal}
                         onChange={e => {
                           const val = parseInt(e.target.value)
                           setBudgetVal(val)
-                          setFormData({ ...formData, budget: `${val} ${currency}` })
+                          setFormData({ ...formData, budget: `${val} CZK` })
                         }}
                         className="w-full accent-violet-500 cursor-pointer h-2 bg-neutral-200 dark:bg-neutral-800 rounded-lg appearance-none"
                       />
                       <div className="flex justify-between text-xs text-neutral-400 mt-2 font-semibold">
-                        <span>{currency === 'EUR' ? '50' : currency === 'PLN' ? '200' : '1000'} {currency}</span>
-                        <span>{currency === 'EUR' ? '2000' : currency === 'PLN' ? '10000' : '50000'} {currency}</span>
+                        <span>1000 Kč</span>
+                        <span>50000 Kč</span>
                       </div>
                     </motion.div>
                   )}

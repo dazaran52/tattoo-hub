@@ -654,7 +654,8 @@ async def create_client_lead(
                                 "style": lead_data.style,
                                 "body_place": lead_data.body_place,
                                 "size": lead_data.size,
-                                "reference_images": lead_data.image_urls or []
+                                "reference_images": lead_data.image_urls or [],
+                                "price": lead_data.budget_val
                             }).execute()
                             
                             # Create in-app and push notifications for new lead

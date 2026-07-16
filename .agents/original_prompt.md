@@ -1,37 +1,37 @@
-## 2026-06-08T15:40:14Z
-Переработка системы ИИ-парсера для обработки почты клиентов. Система должна отслеживать обработанные письма без изменения их статуса на сервере (оставлять UNSEEN), извлекать точный набор данных, учитывать мультивалютность при расчете стоимости лида, сохранять отправленные письма в папку "Отправленные" и поддерживать ручной перехват и группировку по странам.
+# Original User Request
 
-Working directory: /home/dazaran/Загрузки/OUT Tattoo WEB
+## 2026-07-16T01:50:54Z
+
+Audit, refactor, and complete features (marketplace consistency, RLS check, security audit) for the Tattoo HUB project (frontend and backend). Ensure that direct-link requests match the marketplace requests fields. Do NOT push changes to origin/main.
+
+Working directory: /home/dazaran/Загрузки/Tattoo HUB
 Integrity mode: development
 
 ## Requirements
 
-### R1. Обработка почты без потери статуса UNSEEN
-В `backend/app/services/email_lead_agent.py`: Заменить `BODY[]` на `BODY.PEEK[]` при скачивании писем. 
-Добавить в таблицу Supabase `email_lead_conversations` в поле `collected_data` (JSONB) массив `processed_message_ids`. Проверять каждый новый `Message-ID` письма. Если он уже есть в `processed_message_ids` для текущего `sender_email` — пропускать письмо.
+### R1. Security and RLS Audit
+- Audit all Supabase RLS policies (use auditor_check_rls or SQL inspections if needed) to ensure no unauthorized access to chats, sessions, or leads.
+- Audit the FastAPI backend endpoints for correct authorization (e.g. check jwt tokens, verify ownership of requested resources).
 
-### R2. Обновление извлекаемых данных Gemini
-Обновить системный промпт для Gemini. Обязать извлекать поля: `style`, `location`, `size`, `budget_amount`, `budget_currency` (например CZK, EUR, PLN), `has_references` (boolean), `idea` (суть), `client_country_code` (например CZ, DE).
+### R2. Feature Completeness and Field Consistency
+- Compare the direct booking form (/book/[username]/page.tsx) with the marketplace booking form (LeadForm.tsx / new-lead).
+- Ensure all fields (budget, description, style, reference images, body location, size, and is_personal) are fully aligned in both forms.
+- Ensure that the backend endpoints (/api/leads, /api/crm, etc.) correctly accept, store, and propagate these fields in Supabase tables (leads, master_clients, master_sessions).
 
-### R3. Мультивалютный расчет цены лида
-Если валюта CZK: порог 5000. EUR: порог 200. PLN: порог 1000.
-Если бюджет выше порога, процент = 5%, иначе 10%. 
-Для сохранения в `price_credits` переводить 10% или 5% от бюджета в "Кредиты" (считаем 1 кредит = 1 CZK, 1 EUR = 25 кредитов, 1 PLN = 5 кредитов).
-
-### R4. Сохранение в Отправленные (IMAP APPEND)
-После отправки ответа через SMTP, скрипт должен подключиться по IMAP к исходящей почте (используя `LEAD_REPLY_EMAIL` и `LEAD_REPLY_PASSWORD`) и выполнить `mail.append("Sent", ...)`, чтобы ответ появился в исходящих у администратора.
-
-### R5. Ручной перехват и интерфейс
-Добавить поле `is_paused` (boolean) в `email_lead_conversations` в Supabase.
-Добавить в `admin.py` эндпоинт `PUT /api/admin/conversations/{id}/pause` для переключения этого флага.
-В `check_lead_emails`: если `is_paused == True`, игнорировать новые письма от этого клиента (бот молчит).
-На фронтенде в `AdminAiChats.tsx` вывести тег страны, фильтр по странам и кнопку "Перехватить диалог" (Pause AI), которая дергает эндпоинт.
+### R3. Safe Local Environment (NO REMOTE PUSH)
+- The team must implement and verify the changes locally.
+- Do NOT push any git commits to the remote repository. Changes must remain local in the workspace.
 
 ## Acceptance Criteria
 
-### База данных и Логика
-- [ ] Старые письма не читаются повторно.
-- [ ] Статус писем на IMAP-сервере остается UNSEEN.
-- [ ] Логика цены корректно переводит EUR, PLN, CZK в кредиты.
-- [ ] Отправленные письма от ИИ появляются в папке Sent.
-- [ ] При нажатии "Перехватить диалог" диалог замораживается для ИИ.
+### Security
+- [ ] RLS policies and endpoints verified to be secure against data leakage.
+
+### Feature Consistency
+- [ ] Direct booking form contains the budget field and other missing fields to match the marketplace form.
+- [ ] CRM backend creates records with identical structure regardless of the lead source.
+
+### Verification
+- [ ] Local build (npm run build in frontend/) completes successfully.
+- [ ] Local tests run and pass without errors.
+- [ ] git remote remains untouched (no pushes).

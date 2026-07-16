@@ -5,6 +5,8 @@ from pydantic import BaseModel
 from jose import jwt, JWTError
 import base64
 
+from app.config import get_settings
+
 security = HTTPBearer()
 
 
@@ -33,11 +35,15 @@ def get_current_user(
     token = credentials.credentials
     print(f"DEBUG: Token received (first 50 chars): {token[:50]}...")
     
-    # For now, just decode without verification (get user info from payload)
-    # The token is already validated by Supabase on the frontend
+    settings = get_settings()
     try:
-        # Try to decode JWT payload without verification
-        payload = jwt.get_unverified_claims(token)
+        # Decode and verify JWT signature using SUPABASE_JWT_SECRET
+        payload = jwt.decode(
+            token,
+            settings.SUPABASE_JWT_SECRET,
+            algorithms=["HS256"],
+            options={"verify_aud": False}
+        )
         print(f"DEBUG: Payload decoded successfully: {payload}")
         
         user_id = payload.get("sub")
@@ -71,14 +77,26 @@ def get_optional_user(
     if not credentials:
         return None
     token = credentials.credentials
+    settings = get_settings()
     try:
-        payload = jwt.get_unverified_claims(token)
+        payload = jwt.decode(
+            token,
+            settings.SUPABASE_JWT_SECRET,
+            algorithms=["HS256"],
+            options={"verify_aud": False}
+        )
         user_id = payload.get("sub")
         email = payload.get("email")
         if not user_id or not email:
-            return None
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid token: missing user data"
+            )
         user_metadata = payload.get("user_metadata", {})
         return AuthUser(user_id=user_id, email=email, user_metadata=user_metadata)
-    except Exception:
-        return None
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=f"Invalid token: {str(e)}"
+        )
 

@@ -162,7 +162,7 @@ export default function BookMasterPage({ params }: { params: { username: string 
         const compressedFile = await imageCompression(file, compressionOptions)
         const fileExt = compressedFile.name.split('.').pop() || 'webp'
         const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`
-        const filePath = `${fileName}`
+        const filePath = `client_leads/${fileName}`
         
         const { error: uploadError } = await supabase.storage
           .from('lead_images')
@@ -200,6 +200,7 @@ export default function BookMasterPage({ params }: { params: { username: string 
         assigned_master_id: master.id,
         budget_val: budgetVal ? parseInt(budgetVal) : null,
         budget_currency: 'CZK',
+        budget: isNegotiable ? 'Договорная цена' : budgetVal ? `${budgetVal} Kč` : null,
         is_negotiable_budget: isNegotiable,
         is_personal: true
       }
