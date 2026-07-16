@@ -50,14 +50,17 @@ async def get_marketplace_leads(
 ):
     """Get all public leads (marketplace) that are not assigned to a master."""
     try:
-        leads_res = await supabase.table("leads") \
+        raw_res = await supabase.table("leads") \
             .select("*, cities(country_id)") \
-            .or_(f"assigned_master_id.is.null,and(assigned_master_id.eq.{current_user.user_id},is_personal.eq.false)") \
             .neq("status", "closed") \
             .order("created_at", desc=True) \
             .execute()
             
-        leads = leads_res.data or []
+        raw_leads = raw_res.data or []
+        leads = [
+            l for l in raw_leads
+            if l.get("assigned_master_id") is None or (l.get("assigned_master_id") == current_user.user_id and not l.get("is_personal", False))
+        ]
         
         # Check unlocks
         unlocks_res = await supabase.table("lead_unlocks") \
@@ -176,8 +179,12 @@ def get_leads(
         master_currency = user_res.data[0].get("currency", "CZK") if user_res.data else "CZK"
 
         # Fetch all public leads (and exclusive paid leads)
-        leads_res = supabase.table("leads").select("*, cities(country_id)").or_(f"assigned_master_id.is.null,and(assigned_master_id.eq.{current_user.user_id},is_personal.eq.false)").order("created_at", desc=True).execute()
-        leads = leads_res.data or []
+        raw_res = supabase.table("leads").select("*, cities(country_id)").order("created_at", desc=True).execute()
+        raw_leads = raw_res.data or []
+        leads = [
+            l for l in raw_leads
+            if l.get("assigned_master_id") is None or (l.get("assigned_master_id") == current_user.user_id and not l.get("is_personal", False))
+        ]
 
         # Fetch ALL unlocks
         all_unlocks_res = supabase.table("lead_unlocks").select("lead_id, user_id, status").execute()
