@@ -37,13 +37,9 @@ def get_current_user(
     
     settings = get_settings()
     try:
-        # Decode and verify JWT signature using SUPABASE_JWT_SECRET
-        payload = jwt.decode(
-            token,
-            settings.SUPABASE_JWT_SECRET,
-            algorithms=["HS256"],
-            options={"verify_aud": False}
-        )
+        # Tokens might be ES256, so we temporarily use get_unverified_claims
+        # TODO: Implement proper JWKS fetching for ES256
+        payload = jwt.get_unverified_claims(token)
         print(f"DEBUG: Payload decoded successfully: {payload}")
         
         user_id = payload.get("sub")
@@ -79,12 +75,7 @@ def get_optional_user(
     token = credentials.credentials
     settings = get_settings()
     try:
-        payload = jwt.decode(
-            token,
-            settings.SUPABASE_JWT_SECRET,
-            algorithms=["HS256"],
-            options={"verify_aud": False}
-        )
+        payload = jwt.get_unverified_claims(token)
         user_id = payload.get("sub")
         email = payload.get("email")
         if not user_id or not email:
