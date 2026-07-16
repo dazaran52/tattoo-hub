@@ -16,14 +16,14 @@ import toast from 'react-hot-toast'
 interface AdminUserResponse {
   id: string
   email: string
-  display_name: string | null
-  phone: string | null
-  bio: string | null
+  display_name?: string
+  phone?: string
+  bio?: string
   status: string
   balance: number
   created_at: string
   portfolio_url?: string
-  own_referral_code?: string
+  role?: string
   referred_by?: string
 }
 
@@ -35,12 +35,41 @@ export default function AdminPage() {
   
   const [profile, setProfile] = useState<Profile | null>(null)
   const [users, setUsers] = useState<AdminUserResponse[]>([])
+  const [userRoleTab, setUserRoleTab] = useState<'all' | 'master' | 'client' | 'admin'>('all')
+  const [userPage, setUserPage] = useState(1)
+  const [userTotalPages, setUserTotalPages] = useState(1)
+  const [userTotalCount, setUserTotalCount] = useState(0)
   const [activeTab, setActiveTab] = useState<'users' | 'chats' | 'ai-chats' | 'locations' | 'disputes' | 'withdrawals'>('users')
   const [searchQuery, setSearchQuery] = useState('')
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest' | 'balance_desc' | 'balance_asc'>('newest')
   const [balanceModalUser, setBalanceModalUser] = useState<{ id: string, email: string, balance: number } | null>(null)
   const [newBalanceValue, setNewBalanceValue] = useState<string>('')
 
+
+  const fetchAdminUsers = async (page: number, role: string) => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) return
+
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/admin/users?page=${page}&page_size=20&role_filter=${role}`,
+        {
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      )
+
+      if (!res.ok) throw new Error('Failed to fetch users')
+      const data = await res.json()
+      setUsers(data.users || [])
+      setUserTotalPages(data.total_pages || 1)
+      setUserTotalCount(data.total || 0)
+    } catch (err: any) {
+      setError(err.message || 'An error occurred')
+    }
+  }
 
   const checkAdminAndFetchData = async () => {
     try {
@@ -71,20 +100,7 @@ export default function AdminPage() {
         return
       }
 
-      // 2. Fetch users for admin panel
-      const usersRes = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/admin/users`,
-        {
-          headers: {
-            'Authorization': `Bearer ${session.access_token}`,
-            'Content-Type': 'application/json',
-          },
-        }
-      )
-
-      if (!usersRes.ok) throw new Error('Failed to fetch users')
-      const usersData = await usersRes.json()
-      setUsers(usersData)
+      await fetchAdminUsers(userPage, userRoleTab)
 
     } catch (err: any) {
       setError(err.message || 'An error occurred')
@@ -92,6 +108,13 @@ export default function AdminPage() {
       setIsLoading(false)
     }
   }
+
+  // Refetch when page or tab changes
+  useEffect(() => {
+    if (profile?.is_admin) {
+      fetchAdminUsers(userPage, userRoleTab)
+    }
+  }, [userPage, userRoleTab])
 
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -315,7 +338,21 @@ export default function AdminPage() {
         
         {activeTab === 'users' && (
           <div className="bg-white/40 dark:bg-neutral-900/40 backdrop-blur-md border border-neutral-200/50 dark:border-white/5 rounded-3xl overflow-hidden shadow-xl animate-fade-in-up">
-            <div className="p-4 border-b border-neutral-200/50 dark:border-white/5 bg-neutral-50/50 dark:bg-neutral-900/30 flex flex-col sm:flex-row gap-4 items-center justify-between">
+            <div className="p-4 border-b border-neutral-200/50 dark:border-white/5 bg-neutral-50/50 dark:bg-neutral-900/30">
+              <div className="flex items-center gap-2 mb-4 overflow-x-auto pb-2">
+                {(['all', 'master', 'client', 'admin'] as const).map(role => (
+                  <button
+                    key={role}
+                    onClick={() => { setUserRoleTab(role); setUserPage(1); }}
+                    className={`px-4 py-1.5 rounded-full text-xs font-bold transition-colors whitespace-nowrap ${
+                      userRoleTab === role ? 'bg-cyan-600 text-white' : 'bg-neutral-200/50 hover:bg-neutral-300 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-600 dark:text-neutral-400'
+                    }`}
+                  >
+                    {role === 'all' ? 'Все' : role === 'master' ? 'Мастера' : role === 'client' ? 'Клиенты' : 'Админы'}
+                  </button>
+                ))}
+              </div>
+              <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
               <div className="relative w-full sm:w-96">
                 <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
                 <input
@@ -338,6 +375,7 @@ export default function AdminPage() {
                   <option value="balance_asc">Баланс (возр)</option>
                 </select>
               </div>
+              </div>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm">
@@ -355,6 +393,11 @@ export default function AdminPage() {
                     <tr key={user.id} className="hover:bg-neutral-50/50 dark:hover:bg-neutral-800/30 transition-colors">
                       <td className="px-6 py-4">
                         <div className="font-bold text-neutral-900 dark:text-white">{user.email}</div>
+                        {user.role && (
+                          <div className="text-[10px] font-black uppercase tracking-wider text-cyan-600 dark:text-cyan-400 mt-1">
+                            {user.role}
+                          </div>
+                        )}
                         <div className="text-neutral-500 dark:text-neutral-400 text-xs mt-1">
                           {user.display_name ? `${user.display_name}` : 'No Name'} 
                           {user.phone && ` • ${user.phone}`}
@@ -410,12 +453,28 @@ export default function AdminPage() {
                             >
                               Баланс
                             </button>
-                            {user.status !== 'approved' && (
+                            {user.status === 'pending' && (
                               <button
                                 onClick={() => updateUserStatus(user.id, 'approved')}
                                 className="px-3.5 py-2 bg-green-500/10 dark:bg-green-900/20 text-green-600 dark:text-green-400 border border-green-500/20 rounded-xl text-xs font-bold hover:bg-green-500/20 transition-all"
                               >
                                 Одобрить
+                              </button>
+                            )}
+                            {user.status === 'approved' && (
+                              <button
+                                onClick={() => updateUserStatus(user.id, 'pending')}
+                                className="px-3.5 py-2 bg-amber-500/10 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 border border-amber-500/20 rounded-xl text-xs font-bold hover:bg-amber-500/20 transition-all"
+                              >
+                                Отозвать
+                              </button>
+                            )}
+                            {user.status === 'rejected' && (
+                              <button
+                                onClick={() => updateUserStatus(user.id, 'pending')}
+                                className="px-3.5 py-2 bg-neutral-500/10 dark:bg-neutral-900/20 text-neutral-600 dark:text-neutral-400 border border-neutral-500/20 rounded-xl text-xs font-bold hover:bg-neutral-500/20 transition-all"
+                              >
+                                Вернуть
                               </button>
                             )}
                             {user.status !== 'rejected' && (
@@ -440,6 +499,30 @@ export default function AdminPage() {
                   )}
                 </tbody>
               </table>
+              <div className="flex items-center justify-between px-6 py-4 border-t border-neutral-200/50 dark:border-white/5 bg-neutral-50/30 dark:bg-neutral-900/20">
+                <div className="text-sm text-neutral-500 font-medium">
+                  Всего: {userTotalCount}
+                </div>
+                <div className="flex gap-2">
+                  <button 
+                    onClick={() => setUserPage(p => Math.max(1, p - 1))}
+                    disabled={userPage === 1}
+                    className="px-3 py-1.5 rounded-lg text-sm font-semibold bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 disabled:opacity-50 transition-all"
+                  >
+                    Пред.
+                  </button>
+                  <span className="px-3 py-1.5 text-sm font-semibold">
+                    {userPage} / {userTotalPages}
+                  </span>
+                  <button 
+                    onClick={() => setUserPage(p => Math.min(userTotalPages, p + 1))}
+                    disabled={userPage === userTotalPages}
+                    className="px-3 py-1.5 rounded-lg text-sm font-semibold bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 disabled:opacity-50 transition-all"
+                  >
+                    След.
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         )}

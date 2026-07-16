@@ -25,6 +25,16 @@ class AdminUserResponse(BaseModel):
     status: str
     balance: float
     created_at: str
+    portfolio_url: str | None = None
+    role: str | None = None
+    referred_by: str | None = None
+
+class AdminUserPaginatedResponse(BaseModel):
+    users: List[AdminUserResponse]
+    total: int
+    page: int
+    page_size: int
+    total_pages: int
 
 class LeadCreate(BaseModel):
     title: str
@@ -72,22 +82,36 @@ async def get_admin_user(
         )
 
 
-@router.get("/users", response_model=List[AdminUserResponse])
+@router.get("/users", response_model=AdminUserPaginatedResponse)
 async def get_users(
+    page: int = Query(1, ge=1),
+    page_size: int = Query(20, ge=1, le=100),
+    role_filter: str | None = None,
     status_filter: str | None = None,
     admin_user: AuthUser = Depends(get_admin_user),
     supabase: Client = Depends(get_supabase_client)
-) -> List[AdminUserResponse]:
-    """Get all users, optionally filtered by status."""
+) -> AdminUserPaginatedResponse:
+    """Get all users, paginated and optionally filtered by role and status."""
     try:
-        query = supabase.table("users").select("*").order("created_at", desc=True)
+        # We need to query with count="exact" to get the total count for pagination
+        query = supabase.table("users").select("*", count="exact")
         
         if status_filter:
             query = query.eq("status", status_filter)
             
+        if role_filter and role_filter != 'all':
+            if role_filter == 'admin':
+                query = query.eq("is_admin", True)
+            else:
+                query = query.eq("role", role_filter)
+                
+        # Apply pagination
+        offset = (page - 1) * page_size
+        query = query.order("created_at", desc=True).range(offset, offset + page_size - 1)
+            
         response = query.execute()
         
-        return [
+        users_list = [
             AdminUserResponse(
                 id=u["id"],
                 email=u["email"],
@@ -96,10 +120,24 @@ async def get_users(
                 bio=u.get("bio"),
                 status=u.get("status", "pending"),
                 balance=u.get("credits", 0),
-                created_at=u["created_at"]
+                created_at=u["created_at"],
+                portfolio_url=u.get("portfolio_url"),
+                role=u.get("role"),
+                referred_by=u.get("referred_by")
             )
             for u in response.data
         ]
+        
+        total_count = response.count if response.count is not None else len(users_list)
+        total_pages = (total_count + page_size - 1) // page_size if total_count > 0 else 1
+        
+        return AdminUserPaginatedResponse(
+            users=users_list,
+            total=total_count,
+            page=page,
+            page_size=page_size,
+            total_pages=total_pages
+        )
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
