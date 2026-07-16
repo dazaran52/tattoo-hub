@@ -269,33 +269,12 @@ export default function DashboardPage() {
 
             {/* Content Rendering based on Tab */}
             {['feed', 'my-leads', 'auctions'].includes(activeTab) ? (
-              profile.role === 'master' && !profile.is_verified_master ? (
-                <div className="text-center p-12 bg-white/60 dark:bg-neutral-900/60 backdrop-blur-xl rounded-3xl border border-indigo-200 dark:border-indigo-900/30 shadow-2xl relative overflow-hidden mt-8">
-                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(79,70,229,0.1)_0%,transparent_70%)] pointer-events-none" />
-                <div className="relative z-10">
-                  <div className="w-24 h-24 bg-indigo-100/50 dark:bg-indigo-950/50 rounded-full mx-auto mb-6 flex items-center justify-center border border-indigo-500/20 shadow-[0_0_30px_rgba(79,70,229,0.15)]">
-                    <span className="text-4xl">🔒</span>
-                  </div>
-                  <h3 className="text-3xl font-extrabold text-neutral-900 dark:text-white mb-4 tracking-tight">{t('cabinetLocked')}</h3>
-                  <p className="text-neutral-600 dark:text-neutral-400 max-w-lg mx-auto mb-10 text-lg leading-relaxed font-medium">
-                    {t('cabinetLockedDesc')}
-                  </p>
-                  <button
-                    onClick={() => router.push('/profile')}
-                    className="px-10 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white rounded-full font-extrabold text-lg transition-all hover:scale-105 shadow-xl shadow-indigo-600/25"
-                  >
-                    {t('fillProfile')}
-                  </button>
-                </div>
-              </div>
-            ) : (
               <>
                 {activeTab === 'feed' && <LeadsFeed onUnlockSuccess={handleUnlockSuccess} isAdmin={profile.is_admin} userCities={profile.city_ids || []} />}
                 {activeTab === 'my-leads' && <LeadsFeed onUnlockSuccess={handleUnlockSuccess} isAdmin={profile.is_admin} showOnlyUnlocked={true} userCities={profile.city_ids || []} />}
                 {activeTab === 'auctions' && <AuctionsFeed />}
               </>
-            )
-          ) : null}
+            ) : null}
 
           {activeTab === 'crm' && <CRMBoard />}
           {activeTab === 'portfolio' && <PortfolioTab profile={profile} />}

@@ -23,7 +23,13 @@ class AdminUserResponse(BaseModel):
     phone: str | None = None
     bio: str | None = None
     status: str
+    is_verified_master: bool
+    is_admin: bool
     balance: float
+    credits: int
+    telegram_id: int | None = None
+    telegram_username: str | None = None
+    whatsapp_number: str | None = None
     created_at: str
     portfolio_url: str | None = None
     role: str | None = None

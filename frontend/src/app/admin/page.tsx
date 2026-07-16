@@ -18,9 +18,10 @@ interface AdminUserResponse {
   email: string
   display_name?: string
   phone?: string
-  bio?: string
-  status: string
+  is_verified_master: boolean
+  is_admin: boolean
   balance: number
+  credits: number
   created_at: string
   portfolio_url?: string
   role?: string
@@ -413,11 +414,9 @@ export default function AdminPage() {
                           </div>
                         )}
                       </td>
-                      <td className="px-6 py-4 font-semibold text-neutral-900 dark:text-white">
-                        <div className="flex items-center gap-1.5 text-cyan-600 dark:text-cyan-400">
-                          <Coins className="w-4 h-4" />
-                          {user.balance}
-                        </div>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-500 dark:text-neutral-400">
+                        <div className="font-bold text-cyan-600 dark:text-cyan-400">{user.credits} CR</div>
+                        <div className="text-xs text-neutral-500 dark:text-neutral-400">{user.balance} CZK</div>
                       </td>
                       <td className="px-6 py-4 text-neutral-500 dark:text-neutral-400">
                         {new Date(user.created_at).toLocaleDateString()}

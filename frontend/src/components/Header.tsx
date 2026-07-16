@@ -228,7 +228,7 @@ export function Header({ profile, onLogout, maxWidthClass = 'max-w-7xl' }: Heade
                         {t('adminPanel')}
                       </a>
                     )}
-                    {profile.role === 'master' && profile.own_referral_code && (
+                    {profile.role === 'master' && !profile.is_admin && profile.own_referral_code && (
                       <>
                         <div className="border-t border-neutral-200 dark:border-neutral-800 my-1"></div>
                         <div className="px-4 py-2 flex items-center justify-between group cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-800"
