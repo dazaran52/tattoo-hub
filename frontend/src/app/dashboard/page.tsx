@@ -112,6 +112,12 @@ export default function DashboardPage() {
         router.push('/onboarding')
         return
       }
+
+      // Redirect admin to admin panel
+      if (profileData.is_admin) {
+        window.location.href = '/admin'
+        return
+      }
     } catch (error) {
       console.error('Error fetching profile:', error)
     } finally {
