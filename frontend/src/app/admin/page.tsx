@@ -305,7 +305,6 @@ export default function AdminPage() {
           >
             Выводы
           </button>
-          </button>
         </div>
 
         {activeTab === 'locations' && <AdminLocations />}
