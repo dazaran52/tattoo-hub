@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef } from 'react'
-import { X, Send, AlertCircle, MessageCircle } from 'lucide-react'
+import { X, Send, AlertCircle, MessageCircle, Paperclip } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 import { motion, AnimatePresence } from 'framer-motion'
 import { supabase } from '@/lib/supabase'
 import { ImageViewerModal } from '@/components/ImageViewerModal'
+import { AttachmentMenu } from '@/components/AttachmentMenu'
 
 interface Message {
   id: string
@@ -25,6 +26,8 @@ export function ChatModal({ isOpen, onClose, chatId, leadTitle, currentUserRole 
   const [messages, setMessages] = useState<Message[]>([])
   const [newMessage, setNewMessage] = useState('')
   const [loading, setLoading] = useState(false)
+  const [sending, setSending] = useState(false)
+  const [isAttachmentMenuOpen, setIsAttachmentMenuOpen] = useState(false)
   const [viewerImage, setViewerImage] = useState<string | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
@@ -52,6 +55,50 @@ export function ChatModal({ isOpen, onClose, chatId, leadTitle, currentUserRole 
       }
     } catch (err) {
       console.error('Failed to load chat:', err)
+    }
+  }
+
+  const handleImageUpload = async (file: File) => {
+    if (!file || !chatId) return
+
+    setSending(true)
+    try {
+      const fileExt = file.name.split('.').pop()
+      const fileName = `${Math.random()}.${fileExt}`
+      const filePath = `chat-images/${fileName}`
+
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, file)
+
+      if (uploadError) throw uploadError
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(filePath)
+
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+      const { data: { session } } = await supabase.auth.getSession()
+      const token = session?.access_token
+
+      const res = await fetch(`${apiUrl}/api/chat/${chatId}/messages`, {
+        method: 'POST',
+        headers: { 
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ content: publicUrl })
+      })
+
+      if (!res.ok) throw new Error('Failed to send image')
+      
+      const msg = await res.json()
+      setMessages(prev => [...prev, msg])
+      scrollToBottom()
+    } catch (error: any) {
+      toast.error('Ошибка загрузки фото: ' + error.message)
+    } finally {
+      setSending(false)
     }
   }
 
@@ -159,7 +206,14 @@ export function ChatModal({ isOpen, onClose, chatId, leadTitle, currentUserRole 
           </div>
 
           <div className="p-4 bg-neutral-50 dark:bg-neutral-900/50 border-t border-neutral-100 dark:border-white/5">
-            <form onSubmit={sendMessage} className="flex gap-2">
+            <form onSubmit={sendMessage} className="flex gap-2 items-center">
+              <button 
+                type="button" 
+                onClick={() => setIsAttachmentMenuOpen(true)}
+                className="cursor-pointer p-2 text-neutral-400 hover:text-violet-500 transition-colors"
+              >
+                <Paperclip className="w-5 h-5" />
+              </button>
               <input 
                 type="text"
                 placeholder="Написать сообщение..."
@@ -169,7 +223,7 @@ export function ChatModal({ isOpen, onClose, chatId, leadTitle, currentUserRole 
               />
               <button 
                 type="submit"
-                disabled={!newMessage.trim()}
+                disabled={!newMessage.trim() || sending}
                 className="bg-violet-500 hover:bg-violet-600 disabled:bg-neutral-300 disabled:dark:bg-neutral-700 text-white p-3 rounded-xl transition-all"
               >
                 <Send className="w-5 h-5" />
@@ -189,6 +243,12 @@ export function ChatModal({ isOpen, onClose, chatId, leadTitle, currentUserRole 
         showActions={true}
       />
     )}
+    
+    <AttachmentMenu
+      isOpen={isAttachmentMenuOpen}
+      onClose={() => setIsAttachmentMenuOpen(false)}
+      onFileSelect={(file) => handleImageUpload(file)}
+    />
     </>
   )
 }

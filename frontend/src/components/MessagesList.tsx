@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from 'react'
-import { MessageCircle, Clock, Send, AlertCircle, Search, ChevronLeft, Image as ImageIcon, Calendar } from 'lucide-react'
+import { MessageCircle, Clock, Send, AlertCircle, Search, ChevronLeft, Image as ImageIcon, Calendar, Paperclip } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { supabase } from '@/lib/supabase'
 import { toast } from 'react-hot-toast'
 import { ClientDetailsModal } from '@/components/ClientDetailsModal'
 import { ImageViewerModal } from '@/components/ImageViewerModal'
+import { AttachmentMenu } from '@/components/AttachmentMenu'
 
 interface Message {
   id: string
@@ -48,6 +49,7 @@ export function MessagesList() {
   const [messages, setMessages] = useState<Message[]>([])
   const [newMessage, setNewMessage] = useState('')
   const [sending, setSending] = useState(false)
+  const [isAttachmentMenuOpen, setIsAttachmentMenuOpen] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   const getStatusLabel = (chat: ChatPreview) => {
@@ -168,8 +170,8 @@ export function MessagesList() {
     }
   }
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
+  const handleImageUpload = async (eOrFile: React.ChangeEvent<HTMLInputElement> | File) => {
+    const file = eOrFile instanceof File ? eOrFile : (eOrFile as React.ChangeEvent<HTMLInputElement>).target.files?.[0]
     if (!file || !selectedChat) return
 
     setSending(true)
@@ -470,10 +472,13 @@ export function MessagesList() {
 
             <div className="p-4 bg-white dark:bg-neutral-900 border-t border-neutral-200 dark:border-white/5">
               <form onSubmit={sendMessage} className="flex gap-2 max-w-4xl mx-auto items-center">
-                <label className="cursor-pointer p-2 text-neutral-400 hover:text-violet-500 transition-colors">
-                  <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
-                  <ImageIcon className="w-5 h-5" />
-                </label>
+                <button 
+                  type="button" 
+                  onClick={() => setIsAttachmentMenuOpen(true)}
+                  className="cursor-pointer p-2 text-neutral-400 hover:text-violet-500 transition-colors"
+                >
+                  <Paperclip className="w-5 h-5" />
+                </button>
                 <input 
                   type="text"
                   placeholder="Написать сообщение..."
@@ -520,6 +525,12 @@ export function MessagesList() {
           showActions={true}
         />
       )}
+
+      <AttachmentMenu
+        isOpen={isAttachmentMenuOpen}
+        onClose={() => setIsAttachmentMenuOpen(false)}
+        onFileSelect={(file) => handleImageUpload(file)}
+      />
     </div>
   )
 }
