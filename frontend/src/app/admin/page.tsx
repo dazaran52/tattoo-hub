@@ -453,7 +453,7 @@ export default function AdminPage() {
                             >
                               Баланс
                             </button>
-                            {user.status === 'pending' && (
+                            {user.status === 'pending' && user.role !== 'client' && (
                               <button
                                 onClick={() => updateUserStatus(user.id, 'approved')}
                                 disabled={user.role === 'master' && !user.portfolio_url}
@@ -463,7 +463,7 @@ export default function AdminPage() {
                                 Одобрить
                               </button>
                             )}
-                            {user.status === 'approved' && (
+                            {user.status === 'approved' && user.role !== 'client' && (
                               <button
                                 onClick={() => updateUserStatus(user.id, 'pending')}
                                 className="px-3.5 py-2 bg-amber-500/10 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 border border-amber-500/20 rounded-xl text-xs font-bold hover:bg-amber-500/20 transition-all"

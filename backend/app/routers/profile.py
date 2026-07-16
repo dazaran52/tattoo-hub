@@ -130,8 +130,8 @@ async def get_profile(
             city_ids = current_user.user_metadata.get("city_ids", [])
             role = current_user.user_metadata.get("role", "master")
             
-            # Set default status to pending for manual review
-            status_val = "pending"
+            # Clients are automatically approved, masters need manual review
+            status_val = "approved" if role == "client" else "pending"
             
             new_profile = {
                 "id": current_user.user_id,
