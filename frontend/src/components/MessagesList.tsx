@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { supabase } from '@/lib/supabase'
 import { toast } from 'react-hot-toast'
 import { ClientDetailsModal } from '@/components/ClientDetailsModal'
+import { ImageViewerModal } from '@/components/ImageViewerModal'
 
 interface Message {
   id: string
@@ -42,6 +43,7 @@ export function MessagesList() {
   const [selectedChat, setSelectedChat] = useState<ChatPreview | null>(null)
   const [clients, setClients] = useState<any[]>([])
   const [clientToView, setClientToView] = useState<any | null>(null)
+  const [viewerImage, setViewerImage] = useState<string | null>(null)
   
   const [messages, setMessages] = useState<Message[]>([])
   const [newMessage, setNewMessage] = useState('')
@@ -452,7 +454,7 @@ export function MessagesList() {
                         : 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white rounded-bl-sm border border-neutral-100 dark:border-white/5 shadow-sm'
                     }`}>
                       {msg.content.startsWith('http') && msg.content.includes('supabase') ? (
-                        <img src={msg.content} alt="chat attachment" className="max-w-full rounded-lg mt-1 mb-2 max-h-48 object-cover" />
+                        <img src={msg.content} alt="chat attachment" className="max-w-full rounded-lg mt-1 mb-2 max-h-48 object-cover cursor-pointer hover:opacity-90 transition-opacity" onClick={() => setViewerImage(msg.content)} />
                       ) : (
                         <p className="whitespace-pre-wrap text-sm leading-relaxed">{msg.content}</p>
                       )}
@@ -512,6 +514,14 @@ export function MessagesList() {
             // Sessions can be handled if needed, for now just close the modal
             setClientToView(null)
           }}
+        />
+      )}
+      {viewerImage && (
+        <ImageViewerModal
+          isOpen={!!viewerImage}
+          onClose={() => setViewerImage(null)}
+          imageUrl={viewerImage}
+          showActions={true}
         />
       )}
     </div>
