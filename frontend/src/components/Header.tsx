@@ -116,7 +116,7 @@ export function Header({ profile, onLogout, maxWidthClass = 'max-w-7xl' }: Heade
             </div>
 
             {/* Help Button (Master only) */}
-            {profile.role === 'master' && (
+            {profile.role === 'master' && !profile.is_admin && (
               <button 
                 onClick={() => setStartTour(true)} 
                 className="hidden sm:flex items-center gap-2 px-3 py-2 text-sm font-medium text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
@@ -127,7 +127,7 @@ export function Header({ profile, onLogout, maxWidthClass = 'max-w-7xl' }: Heade
             )}
 
             {/* Credits Counter & Top-up (Master only) */}
-            {profile.role === 'master' && (
+            {profile.role === 'master' && !profile.is_admin && (
               <div id="tour-balance" className="flex items-stretch bg-neutral-100 dark:bg-neutral-800/80 border border-neutral-200 dark:border-neutral-700 rounded-xl overflow-hidden transition-all shadow-sm hover:shadow-md">
                 <button 
                   onClick={() => setShowHistory(true)}
@@ -159,7 +159,7 @@ export function Header({ profile, onLogout, maxWidthClass = 'max-w-7xl' }: Heade
             )}
 
             {/* Notifications Menu (Master only or standard depending on logic, let's keep it but only if master) */}
-            {profile.role === 'master' && <NotificationsMenu />}
+            {profile.role === 'master' && !profile.is_admin && <NotificationsMenu />}
 
             {/* Menu Button */}
             <div ref={menuRef} id="tour-profile" className="relative">
@@ -173,11 +173,13 @@ export function Header({ profile, onLogout, maxWidthClass = 'max-w-7xl' }: Heade
               {menuOpen && (
                 <>
                   <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-lg shadow-xl py-1 z-50">
-                    <a href="/dashboard" className="flex items-center gap-3 px-4 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800">
-                      <LayoutDashboard className="w-4 h-4" />
-                      {t('dashboard')}
-                    </a>
-                    {profile.role === 'master' && (
+                    {!profile.is_admin && (
+                      <a href="/dashboard" className="flex items-center gap-3 px-4 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800">
+                        <LayoutDashboard className="w-4 h-4" />
+                        {t('dashboard')}
+                      </a>
+                    )}
+                    {profile.role === 'master' && !profile.is_admin && (
                       <a href="/analytics" className="flex items-center gap-3 px-4 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800">
                         <BarChart2 className="w-4 h-4" />
                         {t('analytics')}
@@ -196,10 +198,12 @@ export function Header({ profile, onLogout, maxWidthClass = 'max-w-7xl' }: Heade
 
                     <div className="border-t border-neutral-200 dark:border-neutral-800 my-1"></div>
                     
-                    <a href="/profile" className="flex items-center gap-3 px-4 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800">
-                      <User className="w-4 h-4" />
-                      Моя страница
-                    </a>
+                    {!profile.is_admin && (
+                      <a href="/profile" className="flex items-center gap-3 px-4 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800">
+                        <User className="w-4 h-4" />
+                        Моя страница
+                      </a>
+                    )}
                     <a href="/settings" className="flex items-center gap-3 px-4 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800">
                       <Settings className="w-4 h-4" />
                       {t('settings')}
