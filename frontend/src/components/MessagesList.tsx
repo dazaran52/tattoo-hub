@@ -46,10 +46,18 @@ export function MessagesList() {
   const [clientToView, setClientToView] = useState<any | null>(null)
   const [viewerImage, setViewerImage] = useState<string | null>(null)
   
+  const [chatsOffset, setChatsOffset] = useState(0)
+  const [hasMoreChats, setHasMoreChats] = useState(true)
+  const CHATS_LIMIT = 30
+
   const [messages, setMessages] = useState<Message[]>([])
   const [newMessage, setNewMessage] = useState('')
   const [sending, setSending] = useState(false)
   const [isAttachmentMenuOpen, setIsAttachmentMenuOpen] = useState(false)
+  const [messagesOffset, setMessagesOffset] = useState(0)
+  const [hasMoreMessages, setHasMoreMessages] = useState(true)
+  const [isLoadingMore, setIsLoadingMore] = useState(false)
+  const MESSAGES_LIMIT = 50
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   const getStatusLabel = (chat: ChatPreview) => {
@@ -69,31 +77,41 @@ export function MessagesList() {
   const [showMobileChat, setShowMobileChat] = useState(false)
 
   useEffect(() => {
-    fetchChats()
+    fetchChats(0, false)
   }, [])
 
   useEffect(() => {
     if (selectedChat) {
-      loadChatMessages(selectedChat.id)
-      const interval = setInterval(() => loadChatMessages(selectedChat.id), 5000)
+      setMessagesOffset(0)
+      setHasMoreMessages(true)
+      loadChatMessages(selectedChat.id, 0, false)
+      const interval = setInterval(() => pollMessages(selectedChat.id), 5000)
       return () => clearInterval(interval)
     }
   }, [selectedChat])
 
-  const fetchChats = async () => {
+  const fetchChats = async (offset = 0, append = false) => {
     try {
+      if (!append) setLoading(true)
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) return
 
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
-      const response = await fetch(`${apiUrl}/api/chat/my`, {
+      const response = await fetch(`${apiUrl}/api/chat/my?limit=${CHATS_LIMIT}&offset=${offset}`, {
         headers: { 'Authorization': `Bearer ${session.access_token}` }
       })
       
       if (response.ok) {
         const data = await response.json()
-        setChats(data)
+        if (data.length < CHATS_LIMIT) setHasMoreChats(false)
+        else setHasMoreChats(true)
+
+        if (append) {
+          setChats(prev => [...prev, ...data])
+        } else {
+          setChats(data)
+        }
       }
 
       // Also fetch CRM clients so we can open their cards
@@ -110,28 +128,74 @@ export function MessagesList() {
     }
   }
 
-  const loadChatMessages = async (chatId: string) => {
+  const loadChatMessages = async (chatId: string, offset = 0, append = false) => {
     try {
+      if (append) setIsLoadingMore(true)
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
       const { data: { session } } = await supabase.auth.getSession()
       const token = session?.access_token
-      const res = await fetch(`${apiUrl}/api/chat/${chatId}/messages`, {
+      const res = await fetch(`${apiUrl}/api/chat/${chatId}/messages?limit=${MESSAGES_LIMIT}&offset=${offset}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       })
       if (res.ok) {
         const data = await res.json()
-        // Only update if data changed (simple length check for MVP, or deep compare)
+        if (data.length < MESSAGES_LIMIT) setHasMoreMessages(false)
+        else setHasMoreMessages(true)
+
         setMessages(prev => {
-          if (prev.length !== data.length) {
+          if (append) {
+            // Keep the previous scroll position visually by not scrolling to bottom
+            return [...data, ...prev]
+          }
+          setTimeout(scrollToBottom, 100)
+          return data
+        })
+      }
+    } catch (err) {
+      console.error('Failed to load chat messages:', err)
+    } finally {
+      if (append) setIsLoadingMore(false)
+    }
+  }
+
+  const pollMessages = async (chatId: string) => {
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+      const { data: { session } } = await supabase.auth.getSession()
+      const res = await fetch(`${apiUrl}/api/chat/${chatId}/messages?limit=${MESSAGES_LIMIT}&offset=0`, {
+        headers: { 'Authorization': `Bearer ${session?.access_token}` }
+      })
+      if (res.ok) {
+        const data = await res.json()
+        setMessages(prev => {
+          const prevMap = new Map(prev.map(m => [m.id, m]))
+          const newData = []
+          for (const msg of data) {
+            if (!prevMap.has(msg.id)) newData.push(msg)
+          }
+          if (newData.length > 0) {
             setTimeout(scrollToBottom, 100)
-            return data
+            const combined = [...prev, ...newData]
+            return combined.sort((a,b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
           }
           return prev
         })
       }
     } catch (err) {
-      console.error('Failed to load chat messages:', err)
+      console.error('Failed to poll messages:', err)
     }
+  }
+
+  const handleLoadMoreChats = () => {
+    const nextOffset = chatsOffset + CHATS_LIMIT
+    setChatsOffset(nextOffset)
+    fetchChats(nextOffset, true)
+  }
+
+  const handleLoadMoreMessages = () => {
+    const nextOffset = messagesOffset + MESSAGES_LIMIT
+    setMessagesOffset(nextOffset)
+    loadChatMessages(selectedChat!.id, nextOffset, true)
   }
 
   const sendMessage = async (e: React.FormEvent) => {
@@ -294,41 +358,6 @@ export function MessagesList() {
                     <img src={chat.leads.image_urls[0]} alt="tattoo" className="w-full h-full object-cover" />
                   ) : (
                     <MessageCircle className="w-6 h-6 text-neutral-400" />
-                  )}
-                </div>
-                
-                <div className="flex-1 min-w-0">
-                  <div className="flex justify-between items-start mb-1">
-                    <div className="flex flex-col min-w-0 pr-2">
-                        <h3 className={`font-bold truncate text-sm ${isSelected ? 'text-violet-700 dark:text-violet-400' : 'text-neutral-900 dark:text-white'}`}>
-                          {clientName}
-                        </h3>
-                        {chat.client_info?.email && (
-                            <span className="text-xs text-neutral-500 truncate">
-                              {chat.client_info.email}
-                            </span>
-                        )}
-                    </div>
-                    {chat.last_message && (
-                      <span className="text-[10px] text-neutral-400 shrink-0">
-                        {new Date(chat.last_message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                      </span>
-                    )}
-                  </div>
-                  
-                  <div className="flex items-center gap-2">
-                    {chat.last_message ? (
-                      <p className="text-xs text-neutral-500 dark:text-neutral-400 truncate max-w-[200px] sm:max-w-[240px]">
-                        {chat.last_message.content.startsWith('[SYSTEM_CARD]:') ? (
-                          <span className="text-violet-600 dark:text-violet-400">Системное уведомление</span>
-                        ) : (
-                          <>
-                            <span className="text-violet-500 dark:text-violet-400 font-medium">
-                              {chat.last_message.sender_type === 'master' ? 'Вы: ' : ''}
-                            </span>
-                            {chat.last_message.content}
-                          </>
-                        )}
                       </p>
                     ) : (
                       <p className="text-xs text-neutral-400 italic">Нет сообщений</p>

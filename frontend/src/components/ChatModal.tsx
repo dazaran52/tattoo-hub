@@ -29,33 +29,83 @@ export function ChatModal({ isOpen, onClose, chatId, leadTitle, currentUserRole 
   const [sending, setSending] = useState(false)
   const [isAttachmentMenuOpen, setIsAttachmentMenuOpen] = useState(false)
   const [viewerImage, setViewerImage] = useState<string | null>(null)
+  
+  const [messagesOffset, setMessagesOffset] = useState(0)
+  const [hasMoreMessages, setHasMoreMessages] = useState(true)
+  const [isLoadingMore, setIsLoadingMore] = useState(false)
+  const MESSAGES_LIMIT = 50
+  
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (isOpen && chatId) {
-      loadChat()
-      // Setup simple polling for MVP
-      const interval = setInterval(loadChat, 5000)
+      setMessagesOffset(0)
+      setHasMoreMessages(true)
+      loadChatMessages(chatId, 0, false)
+      const interval = setInterval(() => pollMessages(chatId), 5000)
       return () => clearInterval(interval)
     }
   }, [isOpen, chatId])
 
-  const loadChat = async () => {
+  const loadChatMessages = async (currentChatId: string, offset = 0, append = false) => {
     try {
+      if (append) setIsLoadingMore(true)
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
       const { data: { session } } = await supabase.auth.getSession()
       const token = session?.access_token
-      const res = await fetch(`${apiUrl}/api/chat/${chatId}/messages`, {
+      const res = await fetch(`${apiUrl}/api/chat/${currentChatId}/messages?limit=${MESSAGES_LIMIT}&offset=${offset}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       })
       if (res.ok) {
         const data = await res.json()
-        setMessages(data)
-        scrollToBottom()
+        if (data.length < MESSAGES_LIMIT) setHasMoreMessages(false)
+        else setHasMoreMessages(true)
+
+        setMessages(prev => {
+          if (append) return [...data, ...prev]
+          setTimeout(scrollToBottom, 100)
+          return data
+        })
       }
     } catch (err) {
       console.error('Failed to load chat:', err)
+    } finally {
+      if (append) setIsLoadingMore(false)
     }
+  }
+
+  const pollMessages = async (currentChatId: string) => {
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+      const { data: { session } } = await supabase.auth.getSession()
+      const res = await fetch(`${apiUrl}/api/chat/${currentChatId}/messages?limit=${MESSAGES_LIMIT}&offset=0`, {
+        headers: { 'Authorization': `Bearer ${session?.access_token}` }
+      })
+      if (res.ok) {
+        const data = await res.json()
+        setMessages(prev => {
+          const prevMap = new Map(prev.map(m => [m.id, m]))
+          const newData = []
+          for (const msg of data) {
+            if (!prevMap.has(msg.id)) newData.push(msg)
+          }
+          if (newData.length > 0) {
+            setTimeout(scrollToBottom, 100)
+            const combined = [...prev, ...newData]
+            return combined.sort((a,b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
+          }
+          return prev
+        })
+      }
+    } catch (err) {
+      console.error('Failed to poll chat:', err)
+    }
+  }
+
+  const handleLoadMoreMessages = () => {
+    const nextOffset = messagesOffset + MESSAGES_LIMIT
+    setMessagesOffset(nextOffset)
+    if (chatId) loadChatMessages(chatId, nextOffset, true)
   }
 
   const handleImageUpload = async (file: File) => {
@@ -170,9 +220,18 @@ export function ChatModal({ isOpen, onClose, chatId, leadTitle, currentUserRole 
             </div>
           ) : (
             <>
-
-
               <div className="flex-1 overflow-y-auto p-4 lg:p-6 space-y-4 bg-neutral-50/30 dark:bg-neutral-950/30 relative">
+                {hasMoreMessages && messages.length >= MESSAGES_LIMIT && (
+                  <div className="flex justify-center mb-4">
+                    <button
+                      onClick={handleLoadMoreMessages}
+                      disabled={isLoadingMore}
+                      className="px-4 py-2 text-xs font-medium text-violet-600 bg-white dark:bg-neutral-800 border border-violet-100 dark:border-violet-500/20 hover:bg-violet-50 dark:hover:bg-neutral-700 disabled:opacity-50 rounded-xl shadow-sm transition-all"
+                    >
+                      {isLoadingMore ? 'Загрузка...' : 'Загрузить предыдущие сообщения'}
+                    </button>
+                  </div>
+                )}
                 <div className="bg-amber-500/10 text-amber-600 dark:text-amber-400 p-3 rounded-2xl text-xs flex gap-2">
                   <AlertCircle className="w-4 h-4 shrink-0" />
                   Ссылки и номера телефонов автоматически скрываются до тех пор, пока клиент не примет ваш оффер.
