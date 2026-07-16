@@ -441,6 +441,21 @@ export default function ProfilePage() {
                   </select>
                 </div>
                 
+                <div>
+                  <label className="block text-sm font-bold text-neutral-700 dark:text-neutral-300 mb-2">{t('city')}</label>
+                  <select
+                    value={selectedCity}
+                    onChange={(e) => setSelectedCity(e.target.value)}
+                    disabled={!isEditing || !selectedCountry}
+                    className="w-full bg-white dark:bg-black/50 border border-neutral-200 dark:border-neutral-800 rounded-xl px-4 py-3 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all disabled:opacity-70 font-medium cursor-pointer"
+                  >
+                    <option value="">{t('selectCity')}</option>
+                    {cities.map(city => (
+                      <option key={city.id} value={city.id}>{city.name_ru}</option>
+                    ))}
+                  </select>
+                </div>
+                
                 {/* Theme Selector */}
                 <div className="md:col-span-2 mt-4 pt-4 border-t border-neutral-100 dark:border-neutral-800">
                   <label className="block text-sm font-bold text-neutral-700 dark:text-neutral-300 mb-4">
@@ -467,20 +482,6 @@ export default function ProfilePage() {
                       </button>
                     ))}
                   </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-bold text-neutral-700 dark:text-neutral-300 mb-2">{t('city')}</label>
-                  <select
-                    value={selectedCity}
-                    onChange={(e) => setSelectedCity(e.target.value)}
-                    disabled={!isEditing || !selectedCountry}
-                    className="w-full bg-white dark:bg-black/50 border border-neutral-200 dark:border-neutral-800 rounded-xl px-4 py-3 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all disabled:opacity-70 font-medium cursor-pointer"
-                  >
-                    <option value="">{t('selectCity')}</option>
-                    {cities.map(city => (
-                      <option key={city.id} value={city.id}>{city.name_ru}</option>
-                    ))}
-                  </select>
                 </div>
               </div>
             </div>
