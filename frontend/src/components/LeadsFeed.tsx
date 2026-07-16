@@ -113,6 +113,10 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
   const [selectedChatLead, setSelectedChatLead] = useState<Lead | null>(null)
   const [isMasterModalOpen, setIsMasterModalOpen] = useState(false)
   const [pushEnabled, setPushEnabled] = useState(false)
+  
+  const [page, setPage] = useState(1)
+  const [hasMore, setHasMore] = useState(true)
+  const [isLoadingMore, setIsLoadingMore] = useState(false)
 
   const togglePushNotifications = async () => {
     if (!('Notification' in window)) {
@@ -202,22 +206,24 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
     }
   }, [])
 
-  const fetchLeads = async (background = false) => {
+  const fetchLeads = async (background = false, pageNum = 1) => {
     try {
-      if (!background) setIsLoading(true)
+      if (!background && pageNum === 1) setIsLoading(true)
+      if (pageNum > 1) setIsLoadingMore(true)
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) {
         setIsLoading(false)
+        setIsLoadingMore(false)
         document.cookie = 'sb-access-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT'
         window.location.href = '/login'
         return
       }
 
-      let endpoint = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/leads`
+      let endpoint = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/leads?offset=${(pageNum - 1) * 20}&limit=20`
       if (isAdmin && !isMarketplace) {
-        endpoint = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/admin/leads`
+        endpoint = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/admin/leads?offset=${(pageNum - 1) * 20}&limit=20`
       } else if (isMarketplace) {
-        endpoint = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/leads/marketplace`
+        endpoint = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/leads/marketplace?offset=${(pageNum - 1) * 20}&limit=20`
       }
 
       const response = await fetch(endpoint, {
@@ -232,12 +238,25 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
       }
 
       const data = await response.json()
-      setLeads(data)
+      const more = response.headers.get('X-Has-More') === 'true'
+      setHasMore(more)
+      setPage(pageNum)
+
+      if (pageNum === 1) {
+        setLeads(data)
+      } else {
+        setLeads(prev => {
+          const existingIds = new Set(prev.map(l => l.id))
+          const newLeads = data.filter((l: Lead) => !existingIds.has(l.id))
+          return [...prev, ...newLeads]
+        })
+      }
     } catch (err) {
       console.error(err)
       setError('Не удалось загрузить лиды. Проверьте соединение.')
     } finally {
-      if (!background) setIsLoading(false)
+      if (!background && pageNum === 1) setIsLoading(false)
+      if (pageNum > 1) setIsLoadingMore(false)
     }
   }
 
@@ -991,6 +1010,25 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
         })}
         </AnimatePresence>
       </motion.div>
+
+      {hasMore && leads.length > 0 && (
+        <div className="flex justify-center mt-8 mb-12">
+          <button
+            onClick={() => fetchLeads(true, page + 1)}
+            disabled={isLoadingMore}
+            className="px-6 py-3 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rounded-lg font-bold shadow-md hover:shadow-lg transition-all flex items-center gap-2"
+          >
+            {isLoadingMore ? (
+              <>
+                <Loader2 className="w-5 h-5 animate-spin" />
+                Загрузка...
+              </>
+            ) : (
+              'Загрузить ещё'
+            )}
+          </button>
+        </div>
+      )}
 
       {/* LEAD MODAL (ADMIN ONLY) */}
       {isModalOpen && isAdmin && (

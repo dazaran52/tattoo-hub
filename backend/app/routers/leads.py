@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
+from fastapi import APIRouter, Depends, HTTPException, Query, Response, status, BackgroundTasks
 from pydantic import BaseModel
 from app.middleware.auth import get_current_user, AuthUser, get_optional_user
 from app.database import get_supabase_client, get_async_supabase_client
@@ -45,6 +45,9 @@ class UnlockResponse(BaseModel):
 
 @router.get("/marketplace", response_model=List[LeadResponse])
 async def get_marketplace_leads(
+    response: Response,
+    limit: int = Query(20, ge=1, le=100),
+    offset: int = Query(0, ge=0),
     current_user: AuthUser = Depends(get_current_user),
     supabase: AsyncClient = Depends(get_async_supabase_client)
 ):
@@ -54,6 +57,7 @@ async def get_marketplace_leads(
             .select("*, cities(country_id)") \
             .neq("status", "closed") \
             .order("created_at", desc=True) \
+            .limit(2000) \
             .execute()
             
         raw_leads = raw_res.data or []
@@ -61,6 +65,10 @@ async def get_marketplace_leads(
             l for l in raw_leads
             if l.get("assigned_master_id") is None or (l.get("assigned_master_id") == current_user.user_id and not l.get("is_personal", False))
         ]
+        
+        paginated_leads = leads[offset:offset+limit]
+        has_more = len(leads) > offset + limit
+        response.headers["X-Has-More"] = "true" if has_more else "false"
         
         # Check unlocks
         unlocks_res = await supabase.table("lead_unlocks") \
@@ -74,7 +82,7 @@ async def get_marketplace_leads(
         master_currency = user_res.data[0].get("currency", "CZK") if user_res.data else "CZK"
 
         processed_leads = []
-        for lead in leads:
+        for lead in paginated_leads:
             is_unlocked = lead["id"] in unlocked_lead_ids
             
             base_price = float(lead.get("base_unlock_price_eur", 5.0))
@@ -166,6 +174,9 @@ def get_personal_leads(
 
 @router.get("", response_model=List[LeadResponse])
 def get_leads(
+    response: Response,
+    limit: int = Query(20, ge=1, le=100),
+    offset: int = Query(0, ge=0),
     current_user: AuthUser = Depends(get_current_user),
     supabase: Client = Depends(get_supabase_client)
 ):
@@ -179,12 +190,16 @@ def get_leads(
         master_currency = user_res.data[0].get("currency", "CZK") if user_res.data else "CZK"
 
         # Fetch all public leads (and exclusive paid leads)
-        raw_res = supabase.table("leads").select("*, cities(country_id)").order("created_at", desc=True).execute()
+        raw_res = supabase.table("leads").select("*, cities(country_id)").order("created_at", desc=True).limit(2000).execute()
         raw_leads = raw_res.data or []
         leads = [
             l for l in raw_leads
             if l.get("assigned_master_id") is None or (l.get("assigned_master_id") == current_user.user_id and not l.get("is_personal", False))
         ]
+        
+        paginated_leads = leads[offset:offset+limit]
+        has_more = len(leads) > offset + limit
+        response.headers["X-Has-More"] = "true" if has_more else "false"
 
         # Fetch ALL unlocks
         all_unlocks_res = supabase.table("lead_unlocks").select("lead_id, user_id, status").execute()
@@ -224,7 +239,7 @@ def get_leads(
         auction_lead_ids = {a["lead_id"] for a in (auctions_res.data or [])}
 
         processed_leads = []
-        for lead in leads:
+        for lead in paginated_leads:
             is_unlocked = lead["id"] in unlocked_by_me
             lead_unlock_count = unlocks_count.get(lead["id"], 0)
             

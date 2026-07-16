@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks, Query, Response
 from pydantic import BaseModel
 from typing import List
 from app.middleware.auth import get_current_user, AuthUser
@@ -253,16 +253,23 @@ async def clear_user_chat(
 
 @router.get("/leads")
 async def get_admin_leads(
+    response: Response,
+    limit: int = Query(20, ge=1, le=100),
+    offset: int = Query(0, ge=0),
     admin_user: AuthUser = Depends(get_admin_user),
     supabase: Client = Depends(get_supabase_client)
 ):
     """Get all leads with unmasked contacts for admin."""
     try:
-        response = supabase.table("leads").select("*, cities(country_id)").order("created_at", desc=True).execute()
-        leads = response.data or []
-        for lead in leads:
+        res = supabase.table("leads").select("*, cities(country_id)").order("created_at", desc=True).limit(2000).execute()
+        leads = res.data or []
+        paginated_leads = leads[offset:offset+limit]
+        has_more = len(leads) > offset + limit
+        response.headers["X-Has-More"] = "true" if has_more else "false"
+        
+        for lead in paginated_leads:
             lead["country_id"] = lead.get("cities", {}).get("country_id") if lead.get("cities") else None
-        return leads
+        return paginated_leads
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
