@@ -289,7 +289,7 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId: 
                           <div className="flex items-center gap-2">
                             {s.status === 'booked' && (
                               <button 
-                                onClick={() => setSessionToStart(s.id)}
+                                onClick={(e) => { e.stopPropagation(); setSessionToStart(s.id); }}
                                 className="px-3 py-1.5 bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400 font-bold text-xs rounded-lg flex items-center gap-1"
                               >
                                 <PlayCircle className="w-3 h-3" /> Начать
@@ -297,18 +297,19 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId: 
                             )}
                             {s.status === 'in_progress' && (
                               <button 
-                                onClick={() => setSessionToComplete(s.id)}
+                                onClick={(e) => { e.stopPropagation(); setSessionToComplete(s.id); }}
                                 className="px-3 py-1.5 bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 font-bold text-xs rounded-lg flex items-center gap-1"
                               >
                                 <CheckCircle className="w-3 h-3" /> Завершить
                               </button>
                             )}
-                            <button onClick={() => {
+                            <button onClick={(e) => {
+                              e.stopPropagation();
                               onSessionClick?.({ ...s, master_clients: { id: client.id, name: client.name } });
                             }} className="p-1.5 text-neutral-400 hover:text-violet-500 rounded-md">
                               <Edit3 className="w-4 h-4" />
                             </button>
-                            <button onClick={() => handleDeleteSession(s.id)} className="p-1.5 text-neutral-400 hover:text-red-500 rounded-md">
+                            <button onClick={(e) => { e.stopPropagation(); handleDeleteSession(s.id); }} className="p-1.5 text-neutral-400 hover:text-red-500 rounded-md">
                               <Trash2 className="w-4 h-4" />
                             </button>
                           </div>
