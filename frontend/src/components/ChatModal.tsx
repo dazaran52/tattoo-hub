@@ -3,6 +3,7 @@ import { X, Send, AlertCircle, MessageCircle } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 import { motion, AnimatePresence } from 'framer-motion'
 import { supabase } from '@/lib/supabase'
+import { ImageViewerModal } from '@/components/ImageViewerModal'
 
 interface Message {
   id: string
@@ -24,6 +25,7 @@ export function ChatModal({ isOpen, onClose, chatId, leadTitle, currentUserRole 
   const [messages, setMessages] = useState<Message[]>([])
   const [newMessage, setNewMessage] = useState('')
   const [loading, setLoading] = useState(false)
+  const [viewerImage, setViewerImage] = useState<string | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -89,6 +91,7 @@ export function ChatModal({ isOpen, onClose, chatId, leadTitle, currentUserRole 
   if (!isOpen) return null
 
   return (
+    <>
     <AnimatePresence>
       <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-black/50 backdrop-blur-sm" onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
         <motion.div 
@@ -140,7 +143,11 @@ export function ChatModal({ isOpen, onClose, chatId, leadTitle, currentUserRole 
                       ? 'bg-violet-500 text-white rounded-br-sm' 
                       : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white rounded-bl-sm'
                   }`}>
-                    <p className="whitespace-pre-wrap text-sm">{msg.content}</p>
+                    {msg.content.startsWith('http') && msg.content.includes('supabase') ? (
+                      <img src={msg.content} alt="chat attachment" className="max-w-full rounded-lg object-cover cursor-pointer hover:opacity-90 transition-opacity" onClick={() => setViewerImage(msg.content)} />
+                    ) : (
+                      <p className="whitespace-pre-wrap text-sm">{msg.content}</p>
+                    )}
                     <span className="text-[10px] opacity-60 mt-1 block text-right">
                       {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </span>
@@ -174,5 +181,14 @@ export function ChatModal({ isOpen, onClose, chatId, leadTitle, currentUserRole 
         </motion.div>
       </div>
     </AnimatePresence>
+    {viewerImage && (
+      <ImageViewerModal
+        isOpen={!!viewerImage}
+        onClose={() => setViewerImage(null)}
+        imageUrl={viewerImage}
+        showActions={true}
+      />
+    )}
+    </>
   )
 }
