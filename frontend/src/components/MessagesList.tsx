@@ -510,10 +510,6 @@ export function MessagesList() {
           client={clientToView}
           onUpdate={() => fetchChats()}
           chatId={selectedChat?.id || null}
-          onSessionClick={() => {
-            // Sessions can be handled if needed, for now just close the modal
-            setClientToView(null)
-          }}
         />
       )}
       {viewerImage && (
