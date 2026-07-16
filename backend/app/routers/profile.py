@@ -5,6 +5,36 @@ from app.middleware.auth import get_current_user, AuthUser
 from app.database import get_async_supabase_client
 from supabase._async.client import AsyncClient
 import uuid
+import asyncio
+import random
+from fastapi import BackgroundTasks
+
+async def auto_verify_master(user_id: str):
+    """Fake auto-verification for startup phase."""
+    from app.database import get_async_supabase_client
+    delay = random.uniform(10.0, 120.0)
+    print(f"Auto-verifying master {user_id} in {delay:.1f} seconds...")
+    await asyncio.sleep(delay)
+    
+    try:
+        supabase = await get_async_supabase_client()
+        # Verify if they are still unverified (in case an admin did it manually in the meantime)
+        res = await supabase.table("users").select("is_verified_master").eq("id", user_id).single().execute()
+        if res.data and not res.data.get("is_verified_master"):
+            await supabase.table("users").update({
+                "is_verified_master": True, 
+                "status": "active"
+            }).eq("id", user_id).execute()
+            
+            await supabase.table("notifications").insert({
+                "user_id": user_id,
+                "title": "🎉 Верификация пройдена!",
+                "message": "Ваш профиль мастера успешно верифицирован. Теперь вам доступны все функции платформы и маркетплейс!",
+                "type": "system"
+            }).execute()
+            print(f"Auto-verified master {user_id} after {delay:.1f}s")
+    except Exception as e:
+        print(f"Failed to auto-verify master {user_id}: {e}")
 
 
 router = APIRouter(prefix="/api", tags=["profile"])
@@ -66,6 +96,7 @@ class ProfileUpdate(BaseModel):
 
 @router.get("/profile", response_model=ProfileResponse)
 async def get_profile(
+    background_tasks: BackgroundTasks,
     current_user: AuthUser = Depends(get_current_user),
     supabase: AsyncClient = Depends(get_async_supabase_client)
 ) -> ProfileResponse:
@@ -152,6 +183,16 @@ async def get_profile(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail=f"Error creating profile: {str(e)}"
             )
+
+    # Fake auto-verification logic for unverified masters
+    if data and data.get("role") == "master" and not data.get("is_verified_master") and data.get("status") == "pending":
+        try:
+            # Mark as verifying so we don't spawn multiple background tasks
+            await supabase.table("users").update({"status": "verifying"}).eq("id", current_user.user_id).execute()
+            data["status"] = "verifying"
+            background_tasks.add_task(auto_verify_master, current_user.user_id)
+        except Exception as e:
+            print(f"Failed to trigger auto-verification: {e}")
 
     # Calculate unlocks and gamification level
     unlocks_res = await supabase.table("lead_unlocks").select("id", count="exact").eq("user_id", current_user.user_id).execute()
