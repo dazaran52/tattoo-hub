@@ -62,10 +62,12 @@ export function Header({ profile, onLogout, maxWidthClass = 'max-w-7xl' }: Heade
   // Enforce onboarding check globally for all protected pages using Header
   useEffect(() => {
     if (profile && !profile.is_admin) {
-      const isMissingLocation = !profile.country_ids || profile.country_ids.length === 0
-      const isMissingPortfolio = profile.role === 'master' && !profile.portfolio_url
-      if (isMissingLocation || isMissingPortfolio) {
-        router.push('/onboarding')
+      if (profile.role === 'master') {
+        const isMissingLocation = !profile.country_ids || profile.country_ids.length === 0
+        const isMissingPortfolio = !profile.portfolio_url
+        if (isMissingLocation || isMissingPortfolio) {
+          router.push('/onboarding')
+        }
       }
     }
   }, [profile, router])
