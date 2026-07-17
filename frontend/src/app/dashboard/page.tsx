@@ -165,12 +165,20 @@ export default function DashboardPage() {
           <p className="text-neutral-600 dark:text-neutral-400 mb-6">
             {t('profileLoadErrorDesc')}
           </p>
-          <button 
-            onClick={() => window.location.reload()} 
-            className="w-full bg-neutral-900 dark:bg-white text-white dark:text-neutral-950 py-3 rounded-xl font-bold"
-          >
-            {t('tryAgain')}
-          </button>
+          <div className="flex flex-col gap-3">
+            <button 
+              onClick={() => window.location.reload()} 
+              className="w-full bg-neutral-900 dark:bg-white text-white dark:text-neutral-950 py-3 rounded-xl font-bold"
+            >
+              {t('tryAgain')}
+            </button>
+            <button 
+              onClick={handleLogout} 
+              className="w-full bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20 py-3 rounded-xl font-bold hover:bg-red-500/20 transition-colors"
+            >
+              {t('logout')}
+            </button>
+          </div>
         </div>
       </div>
     )

@@ -44,25 +44,33 @@ function LoginContent() {
 
   useEffect(() => {
     // Handle Magic Link / Implicit Grant flow
+    // Only redirect on SIGNED_IN if user initiated a login action on THIS page
+    let userInitiatedLogin = false
+    
+    // If URL has hash with access_token (magic link), allow redirect
+    if (window.location.hash.includes('access_token')) {
+      userInitiatedLogin = true
+    }
+    
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_IN' && session) {
-        // If we came via magic link, the URL might have #access_token
-        // supabase-js parses it and triggers SIGNED_IN
+      if (event === 'SIGNED_IN' && session && userInitiatedLogin) {
         const token = session.access_token
         const maxAge = 60 * 60 * 24 * 7
         document.cookie = `sb-access-token=${token};path=/;max-age=${maxAge};SameSite=Lax${window.location.protocol === 'https:' ? ';Secure' : ''}`
         
-        // Let UI show success before redirect
         setTimeout(() => {
-          if (session.user.user_metadata?.role === 'client') {
-            window.location.href = '/dashboard' // Clients have ClientDashboard now!
-          } else {
-            window.location.href = '/dashboard'
-          }
+          window.location.href = '/dashboard'
         }, 1000)
       }
     })
-    return () => subscription.unsubscribe()
+    
+    // Expose setter so handleSubmit can flag user-initiated login
+    ;(window as any).__setUserInitiatedLogin = () => { userInitiatedLogin = true }
+    
+    return () => {
+      subscription.unsubscribe()
+      delete (window as any).__setUserInitiatedLogin
+    }
   }, [])
 
   useEffect(() => {
@@ -132,6 +140,8 @@ function LoginContent() {
   const handleGoogleLogin = async () => {
     try {
       setIsLoading(true)
+      // Flag that user initiated login so onAuthStateChange redirects properly
+      ;(window as any).__setUserInitiatedLogin?.()
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
