@@ -82,7 +82,7 @@ async def get_my_chats(
     Get all chats for the current master with lead details and last message, optimized via nested joins.
     """
     query = supabase.table("lead_chats").select(
-        "id, lead_id, created_at, leads!inner(title, description, image_urls, contacts, client_id, users!leads_client_id_fkey(display_name, email, avatar_url)), chat_messages(content, created_at, sender_type)"
+        "id, lead_id, master_id, created_at, leads!inner(title, description, image_urls, contacts, client_id, users!leads_client_id_fkey(display_name, email, avatar_url)), chat_messages(content, created_at, sender_type)"
     )
 
     if current_user.role == "client":
