@@ -37,7 +37,11 @@ interface ChatPreview {
   kanban_status?: string | null
 }
 
-export function MessagesList() {
+interface MessagesListProps {
+  userRole?: 'client' | 'master'
+}
+
+export function MessagesList({ userRole = 'master' }: MessagesListProps) {
   const [chats, setChats] = useState<ChatPreview[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
@@ -309,7 +313,9 @@ export function MessagesList() {
         <MessageCircle className="w-12 h-12 text-neutral-300 dark:text-neutral-700 mx-auto mb-4" />
         <h3 className="text-xl font-bold text-neutral-900 dark:text-white mb-2">Нет активных чатов</h3>
         <p className="text-neutral-500 text-sm max-w-sm mx-auto">
-          Откликайтесь на заявки или принимайте персональные заказы, чтобы начать общение с клиентами.
+          {userRole === 'client' 
+            ? 'У вас пока нет активных чатов. Оставьте заявку или напишите мастеру, чтобы начать общение.'
+            : 'Откликайтесь на заявки или принимайте персональные заказы, чтобы начать общение с клиентами.'}
         </p>
       </div>
     )

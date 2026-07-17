@@ -383,7 +383,7 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
         </div>
       ) : activeTab === 'messages' ? (
         <div className="w-full">
-          <MessagesList />
+          <MessagesList userRole="client" />
         </div>
       ) : (
         <div className="space-y-6">
