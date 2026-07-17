@@ -236,8 +236,8 @@ export function LeadForm({ masterId }: { masterId?: string }) {
         name: formData.name || null,
         email: formData.contact,
         contact: formData.contact, // keep as fallback for contact info
-        image_urls: imageUrls,
-        master_id: masterId || null,
+        assigned_master_id: masterId || null,
+        is_personal: false,
       }
 
       const getCookie = (name: string) => {

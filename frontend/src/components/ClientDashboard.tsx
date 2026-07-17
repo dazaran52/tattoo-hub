@@ -473,7 +473,9 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
               <X className="w-5 h-5" />
             </button>
             <div className="mt-4">
-              <LeadForm masterId={selectedMasterForDirectBooking || undefined} />
+              <LeadForm 
+                masterId={selectedMasterForDirectBooking || undefined}
+              />
             </div>
           </div>
         </div>

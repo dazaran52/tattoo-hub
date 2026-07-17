@@ -89,10 +89,16 @@ export function PostModal({ isOpen, post, onClose, isEditable = false, onPostDel
   return (
     <div 
       className="fixed inset-0 z-[150] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 sm:p-6"
-      onClick={onClose}
+      onClick={(e) => {
+        e.stopPropagation()
+        onClose()
+      }}
     >
       <button 
-        onClick={onClose}
+        onClick={(e) => {
+          e.stopPropagation()
+          onClose()
+        }}
         className="absolute top-4 right-4 p-2 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors z-10"
       >
         <X className="w-6 h-6" />
