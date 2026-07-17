@@ -96,6 +96,7 @@ export default function BookMasterPage({ params }: { params: { username: string 
   const [sessionTime, setSessionTime] = useState('')
   const [budgetVal, setBudgetVal] = useState('')
   const [isNegotiable, setIsNegotiable] = useState(true)
+  const [clientPriority, setClientPriority] = useState('quality')
   const [images, setImages] = useState<File[]>([])
   const [isUploading, setIsUploading] = useState(false)
   const [unavailableDates, setUnavailableDates] = useState<Date[]>([])
