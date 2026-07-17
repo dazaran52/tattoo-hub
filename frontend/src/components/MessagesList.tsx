@@ -310,13 +310,25 @@ export function MessagesList({ userRole = 'master' }: MessagesListProps) {
   if (chats.length === 0) {
     return (
       <div className="bg-white dark:bg-neutral-900 rounded-3xl border border-neutral-200 dark:border-white/5 overflow-hidden flex flex-col items-center justify-center h-[calc(100vh-140px)] min-h-[600px] shadow-sm text-center p-8">
-        <MessageCircle className="w-12 h-12 text-neutral-300 dark:text-neutral-700 mx-auto mb-4" />
-        <h3 className="text-xl font-bold text-neutral-900 dark:text-white mb-2">Нет активных чатов</h3>
-        <p className="text-neutral-500 text-sm max-w-sm mx-auto">
+        <div className="w-20 h-20 bg-violet-100 dark:bg-violet-900/30 rounded-full flex items-center justify-center mb-6 shadow-sm">
+          <MessageCircle className="w-10 h-10 text-violet-500" />
+        </div>
+        <h3 className="text-2xl font-extrabold text-neutral-900 dark:text-white mb-3">
+          {userRole === 'client' ? 'У вас пока нет диалогов' : 'Нет активных чатов'}
+        </h3>
+        <p className="text-neutral-500 text-base max-w-md mx-auto mb-8 leading-relaxed">
           {userRole === 'client' 
-            ? 'У вас пока нет активных чатов. Оставьте заявку или напишите мастеру, чтобы начать общение.'
+            ? 'Здесь будут отображаться ваши переписки с мастерами. Чтобы начать общение, выберите мастера или оставьте новую заявку на маркетплейсе.'
             : 'Откликайтесь на заявки или принимайте персональные заказы, чтобы начать общение с клиентами.'}
         </p>
+        {userRole === 'client' && (
+          <button 
+            onClick={() => window.location.href = '/dashboard'}
+            className="px-8 py-3.5 bg-violet-600 hover:bg-violet-500 text-white font-bold rounded-xl transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5"
+          >
+            Найти мастера
+          </button>
+        )}
       </div>
     )
   }

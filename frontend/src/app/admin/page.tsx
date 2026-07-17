@@ -444,7 +444,7 @@ export default function AdminPage() {
                         )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-500 dark:text-neutral-400">
-                        {user.role !== 'client' ? (
+                        {(user.role === 'master' || user.is_admin || user.is_verified_master) ? (
                           <>
                             <div className="font-bold text-cyan-600 dark:text-cyan-400">{user.credits} CR</div>
                             <div className="text-xs text-neutral-500 dark:text-neutral-400">{user.balance} CZK</div>
@@ -480,7 +480,7 @@ export default function AdminPage() {
                           </div>
                         ) : (
                           <div className="flex justify-end gap-2">
-                            {user.role !== 'client' && (
+                            {(user.role === 'master' || user.is_admin || user.is_verified_master) && (
                               <button
                                 onClick={() => handleUpdateCredits(user.id, user.balance, user.email)}
                                 className="px-3.5 py-2 bg-neutral-200/50 hover:bg-neutral-300 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 rounded-xl text-xs font-bold transition-all shadow-sm"
@@ -489,7 +489,7 @@ export default function AdminPage() {
                                 Баланс
                               </button>
                             )}
-                            {user.status === 'pending' && user.role !== 'client' && (
+                            {user.status === 'pending' && (user.role === 'master' || user.is_admin || user.is_verified_master) && (
                               <button
                                 onClick={() => updateUserStatus(user.id, 'approved')}
                                 disabled={user.role === 'master' && !user.portfolio_url}
@@ -499,7 +499,7 @@ export default function AdminPage() {
                                 Одобрить
                               </button>
                             )}
-                            {user.status === 'approved' && user.role !== 'client' && (
+                            {user.status === 'approved' && (user.role === 'master' || user.is_admin || user.is_verified_master) && (
                               <button
                                 onClick={() => updateUserStatus(user.id, 'pending')}
                                 className="px-3.5 py-2 bg-amber-500/10 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 border border-amber-500/20 rounded-xl text-xs font-bold hover:bg-amber-500/20 transition-all"
@@ -523,7 +523,7 @@ export default function AdminPage() {
                                 Забанить
                               </button>
                             )}
-                            {user.role === 'client' && (
+                            {(!user.role || user.role === 'client' || (!user.is_admin && user.role !== 'master')) && (
                               <button
                                 onClick={() => deleteUser(user.id)}
                                 className="px-3.5 py-2 bg-rose-500/10 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 border border-rose-500/20 rounded-xl text-xs font-bold hover:bg-rose-500/20 transition-all flex items-center gap-1"

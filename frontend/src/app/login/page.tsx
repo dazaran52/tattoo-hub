@@ -147,7 +147,8 @@ function LoginContent() {
         options: {
           redirectTo: `${window.location.origin}/auth/callback?next=/dashboard&role=${role}`,
           queryParams: {
-            prompt: 'select_account'
+            access_type: 'offline',
+            prompt: 'consent'
           }
         }
       })

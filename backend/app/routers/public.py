@@ -29,13 +29,16 @@ async def get_public_masters(
     """
     try:
         query = supabase.table("users").select(
-            "id, username, display_name, bio, portfolio_url, city_ids, is_verified_master, status, role, theme, avatar_url, portfolio_posts(id, media, description, created_at), master_reviews!master_reviews_master_id_fkey(rating)"
-        ).eq("role", "master").eq("is_verified_master", True).eq("status", "approved").eq("is_admin", False)
+            "id, username, display_name, bio, portfolio_url, city_ids, is_verified_master, status, role, theme, avatar_url, portfolio_posts(id, media, description, created_at), master_reviews!master_reviews_master_id_fkey(rating), is_admin"
+        ).eq("role", "master").eq("is_verified_master", True).eq("status", "approved")
         
         response = await query.execute()
         
         masters_list = []
         for data in response.data or []:
+            if data.get("is_admin") is True:
+                continue
+            
             # Sort posts by created_at desc
             posts = data.get("portfolio_posts") or []
             posts.sort(key=lambda x: x.get("created_at", ""), reverse=True)
