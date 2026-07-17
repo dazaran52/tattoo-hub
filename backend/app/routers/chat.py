@@ -90,7 +90,7 @@ async def get_my_chats(
     else:
         query = query.eq("master_id", current_user.user_id)
         
-    chats_res = query.order("created_at", desc=True, foreign_table="chat_messages").limit(1, foreign_table="chat_messages").order("created_at", desc=True).limit(limit).offset(offset).execute()
+    chats_res = await query.order("created_at", desc=True, foreign_table="chat_messages").limit(1, foreign_table="chat_messages").order("created_at", desc=True).limit(limit).offset(offset).execute()
 
     chats = chats_res.data or []
     if not chats:
