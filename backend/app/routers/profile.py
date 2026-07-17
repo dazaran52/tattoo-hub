@@ -176,12 +176,14 @@ async def get_profile(
                     status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                     detail="Failed to create profile"
                 )
-        except HTTPException:
-            raise
         except Exception as e:
+            import traceback
+            traceback.print_exc()
+            if isinstance(e, HTTPException):
+                raise e
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Error creating profile: {str(e)}"
+                detail=f"Failed to create profile: {str(e)}"
             )
 
     # Fake auto-verification logic for unverified masters
