@@ -162,21 +162,49 @@ export default function AdminPage() {
 
       if (!res.ok) throw new Error(`Failed to update status to ${newStatus}`)
 
-      setUsers(currentUsers => 
-        currentUsers.map(user => 
-          user.id === userId ? { ...user, status: newStatus } : user
-        )
-      )
-      toast.success(`User status updated to ${newStatus}`)
-
-    } catch (err: any) {
-      toast.error(err.message)
+      if (res.ok) {
+        setUsers(users.map(u => u.id === userId ? { ...u, status: newStatus } : u))
+      }
+    } catch (error) {
+      console.error(error)
     } finally {
       setActionLoadingId(null)
     }
   }
 
-  const handleUpdateCredits = (userId: string, currentBalance: number, userEmail: string) => {
+  const deleteUser = async (userId: string) => {
+    if (!confirm('Вы уверены, что хотите безвозвратно удалить этого пользователя? Это действие нельзя отменить.')) return
+
+    try {
+      setActionLoadingId(userId)
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) return
+
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/admin/users/${userId}`,
+        {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`,
+          }
+        }
+      )
+
+      if (res.ok) {
+        setUsers(users.filter(u => u.id !== userId))
+      } else {
+        const errData = await res.json()
+        setError(errData.detail || 'Failed to delete user')
+      }
+    } catch (error: any) {
+      console.error(error)
+      setError(error.message)
+    } finally {
+      setActionLoadingId(null)
+    }
+  }
+
+  const handleUpdateCredits = async (userId: string, currentBalance: number, userEmail: string) => {
     setBalanceModalUser({ id: userId, email: userEmail, balance: currentBalance })
     setNewBalanceValue(currentBalance.toString())
   }
@@ -416,8 +444,14 @@ export default function AdminPage() {
                         )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-500 dark:text-neutral-400">
-                        <div className="font-bold text-cyan-600 dark:text-cyan-400">{user.credits} CR</div>
-                        <div className="text-xs text-neutral-500 dark:text-neutral-400">{user.balance} CZK</div>
+                        {user.role !== 'client' ? (
+                          <>
+                            <div className="font-bold text-cyan-600 dark:text-cyan-400">{user.credits} CR</div>
+                            <div className="text-xs text-neutral-500 dark:text-neutral-400">{user.balance} CZK</div>
+                          </>
+                        ) : (
+                          <div className="text-xs text-neutral-400 dark:text-neutral-500 font-medium">-</div>
+                        )}
                       </td>
                       <td className="px-6 py-4 text-neutral-500 dark:text-neutral-400">
                         {new Date(user.created_at).toLocaleDateString()}
@@ -446,13 +480,15 @@ export default function AdminPage() {
                           </div>
                         ) : (
                           <div className="flex justify-end gap-2">
-                            <button
-                              onClick={() => handleUpdateCredits(user.id, user.balance, user.email)}
-                              className="px-3.5 py-2 bg-neutral-200/50 hover:bg-neutral-300 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 rounded-xl text-xs font-bold transition-all shadow-sm"
-                              title="Изменить баланс"
-                            >
-                              Баланс
-                            </button>
+                            {user.role !== 'client' && (
+                              <button
+                                onClick={() => handleUpdateCredits(user.id, user.balance, user.email)}
+                                className="px-3.5 py-2 bg-neutral-200/50 hover:bg-neutral-300 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 rounded-xl text-xs font-bold transition-all shadow-sm"
+                                title="Изменить баланс"
+                              >
+                                Баланс
+                              </button>
+                            )}
                             {user.status === 'pending' && user.role !== 'client' && (
                               <button
                                 onClick={() => updateUserStatus(user.id, 'approved')}
@@ -485,6 +521,14 @@ export default function AdminPage() {
                                 className="px-3.5 py-2 bg-red-500/10 dark:bg-red-900/20 text-red-600 dark:text-red-400 border border-red-500/20 rounded-xl text-xs font-bold hover:bg-red-500/20 transition-all flex items-center gap-1"
                               >
                                 Забанить
+                              </button>
+                            )}
+                            {user.role === 'client' && (
+                              <button
+                                onClick={() => deleteUser(user.id)}
+                                className="px-3.5 py-2 bg-rose-500/10 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 border border-rose-500/20 rounded-xl text-xs font-bold hover:bg-rose-500/20 transition-all flex items-center gap-1"
+                              >
+                                Удалить
                               </button>
                             )}
                           </div>

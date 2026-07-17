@@ -248,6 +248,29 @@ async def update_user_status(
             detail=f"Error updating user status: {str(e)}"
         )
 
+
+@router.delete("/users/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_user(
+    user_id: str,
+    admin_user: AuthUser = Depends(get_admin_user),
+    supabase: Client = Depends(get_supabase_client)
+):
+    """
+    Permanently delete a user from DB and Supabase Auth.
+    Requires service_role key initialized client to delete from Auth.
+    """
+    try:
+        # Delete from public.users table
+        supabase.table("users").delete().eq("id", user_id).execute()
+        
+        # Delete from Supabase Auth (requires service_role)
+        supabase.auth.admin.delete_user(user_id)
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error deleting user: {str(e)}"
+        )
+
 @router.put("/users/{user_id}/balance")
 async def update_user_balance(
     user_id: str,
