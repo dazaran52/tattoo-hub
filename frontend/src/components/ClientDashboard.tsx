@@ -6,6 +6,7 @@ import { PlusCircle, Heart, Clock, X, MoreVertical, Edit2, Pause, Play, Trash2, 
 import { LeadForm } from '@/components/LeadForm'
 import { ChatModal } from '@/components/ChatModal'
 import { MessagesList } from '@/components/MessagesList'
+import { MasterProfileModal } from '@/components/MasterProfileModal'
 import { useLanguage } from '@/i18n/LanguageContext'
 
 export function ClientDashboard({ profile }: { profile: Profile }) {
@@ -13,6 +14,7 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
   const [activeTab, setActiveTab] = useState<'leads' | 'favorites' | 'top_masters' | 'messages'>('leads')
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [selectedMasterForDirectBooking, setSelectedMasterForDirectBooking] = useState<string | null>(null)
+  const [selectedMasterUsernameForModal, setSelectedMasterUsernameForModal] = useState<string | null>(null)
   const [isMasterSelectModalOpen, setIsMasterSelectModalOpen] = useState(false)
   const [leads, setLeads] = useState<any[]>([])
   const [topMasters, setTopMasters] = useState<any[]>([])
@@ -445,13 +447,12 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
                   )}
 
                   <div className="px-6 pb-6 mt-auto">
-                    <a 
-                      href={`/m/${master.username}`}
-                      target="_blank"
+                    <button 
+                      onClick={() => setSelectedMasterUsernameForModal(master.username)}
                       className="block w-full py-3 text-center bg-neutral-100 dark:bg-neutral-800 hover:bg-violet-600 hover:text-white dark:hover:bg-violet-600 text-neutral-900 dark:text-white font-bold rounded-xl transition-all"
                     >
                       Смотреть портфолио
-                    </a>
+                    </button>
                   </div>
                 </div>
               ))}
@@ -530,6 +531,16 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
             </div>
           </div>
         </div>
+      )}
+      {selectedMasterUsernameForModal && (
+        <MasterProfileModal 
+          username={selectedMasterUsernameForModal} 
+          onClose={() => setSelectedMasterUsernameForModal(null)} 
+          onBook={(masterId) => {
+            setSelectedMasterForDirectBooking(masterId)
+            setIsFormOpen(true)
+          }}
+        />
       )}
     </div>
   )
