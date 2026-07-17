@@ -5,7 +5,6 @@ import { supabase } from '@/lib/supabase'
 import { toast } from 'react-hot-toast'
 import { ClientDetailsModal } from '@/components/ClientDetailsModal'
 import { ImageViewerModal } from '@/components/ImageViewerModal'
-import { AttachmentMenu } from '@/components/AttachmentMenu'
 
 interface Message {
   id: string
@@ -57,7 +56,8 @@ export function MessagesList({ userRole = 'master' }: MessagesListProps) {
   const [messages, setMessages] = useState<Message[]>([])
   const [newMessage, setNewMessage] = useState('')
   const [sending, setSending] = useState(false)
-  const [isAttachmentMenuOpen, setIsAttachmentMenuOpen] = useState(false)
+  const [viewerImage, setViewerImage] = useState<string | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const [messagesOffset, setMessagesOffset] = useState(0)
   const [hasMoreMessages, setHasMoreMessages] = useState(true)
   const [isLoadingMore, setIsLoadingMore] = useState(false)
@@ -538,11 +538,22 @@ export function MessagesList({ userRole = 'master' }: MessagesListProps) {
               <form onSubmit={sendMessage} className="flex gap-2 max-w-4xl mx-auto items-center">
                 <button 
                   type="button" 
-                  onClick={() => setIsAttachmentMenuOpen(true)}
+                  onClick={() => fileInputRef.current?.click()}
                   className="cursor-pointer p-2 text-neutral-400 hover:text-violet-500 transition-colors"
                 >
                   <Paperclip className="w-5 h-5" />
                 </button>
+                <input 
+                  type="file" 
+                  accept="image/*" 
+                  className="hidden" 
+                  ref={fileInputRef} 
+                  onChange={(e) => { 
+                    const file = e.target.files?.[0]; 
+                    if (file) handleImageUpload(file); 
+                    e.target.value = ''; // reset input
+                  }} 
+                />
                 <input 
                   type="text"
                   placeholder="Написать сообщение..."
@@ -589,12 +600,6 @@ export function MessagesList({ userRole = 'master' }: MessagesListProps) {
           showActions={true}
         />
       )}
-
-      <AttachmentMenu
-        isOpen={isAttachmentMenuOpen}
-        onClose={() => setIsAttachmentMenuOpen(false)}
-        onFileSelect={(file) => handleImageUpload(file)}
-      />
     </div>
   )
 }

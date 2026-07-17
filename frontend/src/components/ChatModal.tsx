@@ -4,7 +4,6 @@ import { toast } from 'react-hot-toast'
 import { motion, AnimatePresence } from 'framer-motion'
 import { supabase } from '@/lib/supabase'
 import { ImageViewerModal } from '@/components/ImageViewerModal'
-import { AttachmentMenu } from '@/components/AttachmentMenu'
 
 interface Message {
   id: string
@@ -27,7 +26,7 @@ export function ChatModal({ isOpen, onClose, chatId, leadTitle, currentUserRole 
   const [newMessage, setNewMessage] = useState('')
   const [loading, setLoading] = useState(false)
   const [sending, setSending] = useState(false)
-  const [isAttachmentMenuOpen, setIsAttachmentMenuOpen] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const [viewerImage, setViewerImage] = useState<string | null>(null)
   
   const [messagesOffset, setMessagesOffset] = useState(0)
@@ -268,11 +267,22 @@ export function ChatModal({ isOpen, onClose, chatId, leadTitle, currentUserRole 
             <form onSubmit={sendMessage} className="flex gap-2 items-center">
               <button 
                 type="button" 
-                onClick={() => setIsAttachmentMenuOpen(true)}
+                onClick={() => fileInputRef.current?.click()}
                 className="cursor-pointer p-2 text-neutral-400 hover:text-violet-500 transition-colors"
               >
                 <Paperclip className="w-5 h-5" />
               </button>
+              <input 
+                type="file" 
+                accept="image/*" 
+                className="hidden" 
+                ref={fileInputRef} 
+                onChange={(e) => { 
+                  const file = e.target.files?.[0]; 
+                  if (file) handleImageUpload(file); 
+                  e.target.value = ''; // reset input
+                }} 
+              />
               <input 
                 type="text"
                 placeholder="Написать сообщение..."
@@ -302,12 +312,6 @@ export function ChatModal({ isOpen, onClose, chatId, leadTitle, currentUserRole 
         showActions={true}
       />
     )}
-    
-    <AttachmentMenu
-      isOpen={isAttachmentMenuOpen}
-      onClose={() => setIsAttachmentMenuOpen(false)}
-      onFileSelect={(file) => handleImageUpload(file)}
-    />
     </>
   )
 }
