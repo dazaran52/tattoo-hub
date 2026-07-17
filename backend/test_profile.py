@@ -1,32 +1,24 @@
 import asyncio
-from app.database import get_async_supabase_client
-from app.routers.profile import get_profile
-from app.middleware.auth import AuthUser
+from fastapi.testclient import TestClient
+from main import app
+from app.middleware.auth import get_current_user, AuthUser
+import os
+from dotenv import load_dotenv
 
-async def main():
-    supabase = await get_async_supabase_client()
-    
-    user = AuthUser(
-        user_id="dummy",
-        email="fenix.mcferson@gmail.com",
-        user_metadata={}
+load_dotenv("/home/dazaran/Загрузки/Tattoo HUB/backend/.env")
+
+# Mock the get_current_user dependency
+def override_get_current_user():
+    return AuthUser(
+        user_id="578269bf-334c-4455-9a67-801d839c254f",
+        email="test_45fd36@tattoohub.cz",
+        user_metadata={"role": "client"}
     )
-    
-    res = await supabase.auth.admin.list_users()
-    users = res if isinstance(res, list) else res.users
-    for u in users:
-        if u.email == "fenix.mcferson@gmail.com":
-            user.user_id = u.id
-            user.user_metadata = u.user_metadata
-            break
-            
-    try:
-        profile = await get_profile(current_user=user, supabase=supabase)
-        print("Success:", profile)
-    except Exception as e:
-        print(f"Error: {e}")
-        import traceback
-        traceback.print_exc()
 
-if __name__ == "__main__":
-    asyncio.run(main())
+app.dependency_overrides[get_current_user] = override_get_current_user
+
+client = TestClient(app)
+
+response = client.get("/api/profile")
+print("STATUS:", response.status_code)
+print("BODY:", response.text)

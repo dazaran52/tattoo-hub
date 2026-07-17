@@ -382,7 +382,7 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
           <p className="text-neutral-400">{t('saveMastersDesc')}</p>
         </div>
       ) : activeTab === 'messages' ? (
-        <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-3xl overflow-hidden shadow-sm h-[600px] flex">
+        <div className="w-full">
           <MessagesList />
         </div>
       ) : (

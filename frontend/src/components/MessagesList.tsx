@@ -297,7 +297,7 @@ export function MessagesList() {
 
   if (loading) {
     return (
-      <div className="flex justify-center py-12">
+      <div className="bg-white dark:bg-neutral-900 rounded-3xl border border-neutral-200 dark:border-white/5 overflow-hidden flex items-center justify-center h-[calc(100vh-140px)] min-h-[600px] shadow-sm">
         <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-violet-500"></div>
       </div>
     )
@@ -305,7 +305,7 @@ export function MessagesList() {
 
   if (chats.length === 0) {
     return (
-      <div className="text-center py-20 bg-white dark:bg-neutral-900 rounded-3xl border border-neutral-200 dark:border-white/5">
+      <div className="bg-white dark:bg-neutral-900 rounded-3xl border border-neutral-200 dark:border-white/5 overflow-hidden flex flex-col items-center justify-center h-[calc(100vh-140px)] min-h-[600px] shadow-sm text-center p-8">
         <MessageCircle className="w-12 h-12 text-neutral-300 dark:text-neutral-700 mx-auto mb-4" />
         <h3 className="text-xl font-bold text-neutral-900 dark:text-white mb-2">Нет активных чатов</h3>
         <p className="text-neutral-500 text-sm max-w-sm mx-auto">

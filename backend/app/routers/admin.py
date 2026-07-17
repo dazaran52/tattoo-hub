@@ -210,12 +210,13 @@ async def update_user_status(
                 except Exception as e:
                     print(f"Error rewarding referrer {referrer_code}: {e}")
 
-            supabase.table("notifications").insert({
-                "user_id": user_id,
-                "title": "Профиль верифицирован",
-                "message": "Ваш профиль успешно проверен администратором. Теперь вам доступен маркетплейс заявок!",
-                "type": "system"
-            }).execute()
+            if target_user.get("role") == "master":
+                supabase.table("notifications").insert({
+                    "user_id": user_id,
+                    "title": "Профиль верифицирован",
+                    "message": "Ваш профиль успешно проверен администратором. Теперь вам доступен маркетплейс заявок!",
+                    "type": "system"
+                }).execute()
             
             # Send Email
             user_email = target_user.get("email")
