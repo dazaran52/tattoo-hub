@@ -85,7 +85,8 @@ async def get_my_chats(
         "id, lead_id, master_id, created_at, leads!inner(title, description, image_urls, contacts, client_id, users!leads_client_id_fkey(display_name, email, avatar_url)), chat_messages(content, created_at, sender_type)"
     )
 
-    if current_user.role == "client":
+    user_role = current_user.user_metadata.get("role")
+    if user_role == "client":
         query = query.eq("leads.client_id", current_user.user_id)
     else:
         query = query.eq("master_id", current_user.user_id)
@@ -117,7 +118,7 @@ async def get_my_chats(
         chat["kanban_status"] = kanban_map.get((chat["lead_id"], chat["master_id"]))
             
         # Build interlocutor info
-        if current_user.role == "client":
+        if user_role == "client":
             m_info = master_map.get(chat["master_id"], {})
             chat["client_info"] = {
                 "name": m_info.get("display_name") or m_info.get("username") or "Мастер",
