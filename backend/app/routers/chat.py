@@ -99,14 +99,14 @@ async def get_my_chats(
     lead_ids = list(set([c["lead_id"] for c in chats]))
     
     # Batch fetch proposal and kanban statuses
-    prop_res = supabase.table("lead_proposals").select("lead_id, user_id, status").in_("lead_id", lead_ids).execute()
+    prop_res = await supabase.table("lead_proposals").select("lead_id, user_id, status").in_("lead_id", lead_ids).execute()
     prop_map = {(p["lead_id"], p["user_id"]): p["status"] for p in (prop_res.data or [])}
 
-    client_res = supabase.table("master_clients").select("lead_id, master_id, kanban_status").in_("lead_id", lead_ids).execute()
+    client_res = await supabase.table("master_clients").select("lead_id, master_id, kanban_status").in_("lead_id", lead_ids).execute()
     kanban_map = {(k["lead_id"], k["master_id"]): k["kanban_status"] for k in (client_res.data or [])}
 
     master_ids = list(set([c["master_id"] for c in chats]))
-    master_users_res = supabase.table("users").select("id, display_name, username, avatar_url").in_("id", master_ids).execute()
+    master_users_res = await supabase.table("users").select("id, display_name, username, avatar_url").in_("id", master_ids).execute()
     master_map = {u["id"]: u for u in (master_users_res.data or [])}
 
     for chat in chats:
