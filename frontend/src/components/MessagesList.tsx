@@ -56,7 +56,6 @@ export function MessagesList({ userRole = 'master' }: MessagesListProps) {
   const [messages, setMessages] = useState<Message[]>([])
   const [newMessage, setNewMessage] = useState('')
   const [sending, setSending] = useState(false)
-  const [viewerImage, setViewerImage] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [messagesOffset, setMessagesOffset] = useState(0)
   const [hasMoreMessages, setHasMoreMessages] = useState(true)
