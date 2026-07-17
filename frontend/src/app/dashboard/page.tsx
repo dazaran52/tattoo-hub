@@ -112,6 +112,12 @@ export default function DashboardPage() {
         window.location.href = '/admin'
         return
       }
+
+      // Force onboarding for clients without a city
+      if (profileData.role === 'client' && (!profileData.city_ids || profileData.city_ids.length === 0)) {
+        window.location.href = '/onboarding'
+        return
+      }
     } catch (error) {
       console.error('Error fetching profile:', error)
     } finally {

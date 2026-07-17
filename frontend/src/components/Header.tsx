@@ -172,8 +172,8 @@ export function Header({ profile, onLogout, maxWidthClass = 'max-w-7xl' }: Heade
               </div>
             )}
 
-            {/* Notifications Menu (Master only or standard depending on logic, let's keep it but only if master) */}
-            {profile.role === 'master' && !profile.is_admin && <NotificationsMenu />}
+            {/* Notifications Menu — for ALL non-admin users */}
+            {!profile.is_admin && <NotificationsMenu />}
 
             {/* Menu Button */}
             <div ref={menuRef} id="tour-profile" className="relative">
@@ -212,7 +212,7 @@ export function Header({ profile, onLogout, maxWidthClass = 'max-w-7xl' }: Heade
 
                     <div className="border-t border-neutral-200 dark:border-neutral-800 my-1"></div>
                     
-                    {!profile.is_admin && (
+                    {profile.role === 'master' && !profile.is_admin && (
                       <a href="/profile" className="flex items-center gap-3 px-4 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800">
                         <User className="w-4 h-4" />
                         Моя страница

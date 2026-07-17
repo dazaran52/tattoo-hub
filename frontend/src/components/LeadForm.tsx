@@ -9,7 +9,7 @@ import { api } from '@/lib/api'
 import { supabase } from '@/lib/supabase'
 import imageCompression from 'browser-image-compression'
 
-export function LeadForm() {
+export function LeadForm({ masterId }: { masterId?: string }) {
   const { t, lang } = useLanguage()
   const [step, setStep] = useState(1)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -237,6 +237,7 @@ export function LeadForm() {
         email: formData.contact,
         contact: formData.contact, // keep as fallback for contact info
         image_urls: imageUrls,
+        master_id: masterId || null,
       }
 
       const getCookie = (name: string) => {

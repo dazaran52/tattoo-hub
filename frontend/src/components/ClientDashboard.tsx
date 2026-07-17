@@ -5,12 +5,15 @@ import { Profile, supabase } from '@/lib/supabase'
 import { PlusCircle, Heart, Clock, X, MoreVertical, Edit2, Pause, Play, Trash2, MessageCircle } from 'lucide-react'
 import { LeadForm } from '@/components/LeadForm'
 import { ChatModal } from '@/components/ChatModal'
+import { MessagesList } from '@/components/MessagesList'
 import { useLanguage } from '@/i18n/LanguageContext'
 
 export function ClientDashboard({ profile }: { profile: Profile }) {
   const { t } = useLanguage()
-  const [activeTab, setActiveTab] = useState<'leads' | 'favorites' | 'top_masters'>('leads')
+  const [activeTab, setActiveTab] = useState<'leads' | 'favorites' | 'top_masters' | 'messages'>('leads')
   const [isFormOpen, setIsFormOpen] = useState(false)
+  const [selectedMasterForDirectBooking, setSelectedMasterForDirectBooking] = useState<string | null>(null)
+  const [isMasterSelectModalOpen, setIsMasterSelectModalOpen] = useState(false)
   const [leads, setLeads] = useState<any[]>([])
   const [topMasters, setTopMasters] = useState<any[]>([])
   const [isLoadingLeads, setIsLoadingLeads] = useState(true)
@@ -173,28 +176,56 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
                 : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200'
             }`}
           >
-            <Heart className="w-4 h-4 inline-block mr-2 opacity-0 hidden" />
-            Топ мастера
+            {t('masters') || 'Мастера'}
+          </button>
+          <button
+            onClick={() => setActiveTab('messages')}
+            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              activeTab === 'messages'
+                ? 'bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white shadow-sm'
+                : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200'
+            }`}
+          >
+            <MessageCircle className="w-4 h-4 inline-block mr-2" />
+            {t('messages') || 'Сообщения'}
           </button>
         </div>
       </div>
 
       {activeTab === 'leads' ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="col-span-1 md:col-span-2 bg-neutral-100 dark:bg-neutral-900 border border-dashed border-neutral-300 dark:border-neutral-700 rounded-2xl p-8 flex flex-col items-center justify-center text-center">
-            <div className="w-16 h-16 bg-white dark:bg-neutral-800 rounded-full flex items-center justify-center mb-4 shadow-sm">
-              <PlusCircle className="w-8 h-8 text-indigo-500" />
+          <div className="col-span-1 md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="bg-neutral-100 dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 rounded-2xl p-8 flex flex-col items-center justify-center text-center shadow-sm">
+              <div className="w-16 h-16 bg-white dark:bg-neutral-800 rounded-full flex items-center justify-center mb-4 shadow-sm">
+                <PlusCircle className="w-8 h-8 text-indigo-500" />
+              </div>
+              <h3 className="text-lg font-bold text-neutral-900 dark:text-white mb-2">Найти мне мастера</h3>
+              <p className="text-neutral-500 dark:text-neutral-400 mb-6 text-sm">
+                Отправьте заявку в общую ленту маркетплейса. Подходящие мастера откликнутся сами.
+              </p>
+              <button 
+                onClick={() => { setSelectedMasterForDirectBooking(null); setIsFormOpen(true) }}
+                className="px-6 py-3 w-full max-w-[200px] bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl transition-colors"
+              >
+                Создать заявку
+              </button>
             </div>
-            <h3 className="text-lg font-bold text-neutral-900 dark:text-white mb-2">{t('createNewLead')}</h3>
-            <p className="text-neutral-500 dark:text-neutral-400 mb-6 max-w-sm">
-              {t('describeYourIdea')}
-            </p>
-            <button 
-              onClick={() => setIsFormOpen(true)}
-              className="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl transition-colors"
-            >
-              {t('wantTattoo')}
-            </button>
+            
+            <div className="bg-violet-50 dark:bg-violet-900/10 border border-violet-200 dark:border-violet-800 rounded-2xl p-8 flex flex-col items-center justify-center text-center shadow-sm">
+              <div className="w-16 h-16 bg-white dark:bg-neutral-800 rounded-full flex items-center justify-center mb-4 shadow-sm">
+                <Heart className="w-8 h-8 text-violet-500" />
+              </div>
+              <h3 className="text-lg font-bold text-neutral-900 dark:text-white mb-2">Записаться к конкретному</h3>
+              <p className="text-neutral-500 dark:text-neutral-400 mb-6 text-sm">
+                Выберите мастера из списка всех мастеров и запишитесь к нему напрямую.
+              </p>
+              <button 
+                onClick={() => { setIsMasterSelectModalOpen(true) }}
+                className="px-6 py-3 w-full max-w-[200px] bg-violet-600 hover:bg-violet-500 text-white font-bold rounded-xl transition-colors"
+              >
+                Выбрать мастера
+              </button>
+            </div>
           </div>
 
           {isLoadingLeads ? (
@@ -350,6 +381,10 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
           <h3 className="text-xl font-bold text-neutral-500 mb-2">{t('noFavorites')}</h3>
           <p className="text-neutral-400">{t('saveMastersDesc')}</p>
         </div>
+      ) : activeTab === 'messages' ? (
+        <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-3xl overflow-hidden shadow-sm h-[600px] flex">
+          <MessagesList />
+        </div>
       ) : (
         <div className="space-y-6">
           <div className="bg-gradient-to-r from-violet-600 to-indigo-600 rounded-3xl p-8 text-white shadow-xl relative overflow-hidden">
@@ -437,7 +472,7 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
               <X className="w-5 h-5" />
             </button>
             <div className="mt-4">
-              <LeadForm />
+              <LeadForm masterId={selectedMasterForDirectBooking || undefined} />
             </div>
           </div>
         </div>
@@ -451,6 +486,51 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
         currentUserRole="client"
         recipientName={selectedChatMaster}
       />
+      
+      {isMasterSelectModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm overflow-y-auto" onClick={(e) => { if (e.target === e.currentTarget) setIsMasterSelectModalOpen(false) }}>
+          <div className="relative w-full max-w-2xl bg-white dark:bg-neutral-900 rounded-3xl p-6 md:p-8 border border-neutral-200 dark:border-neutral-800 shadow-2xl flex flex-col max-h-[80vh]">
+            <button 
+              onClick={() => setIsMasterSelectModalOpen(false)}
+              className="absolute top-6 right-6 z-50 p-2 text-neutral-400 hover:text-neutral-900 dark:hover:text-white rounded-full bg-neutral-100 dark:bg-neutral-800 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <h2 className="text-2xl font-bold mb-4 text-neutral-900 dark:text-white">Выберите мастера</h2>
+            <div className="flex-1 overflow-y-auto space-y-4">
+              {topMasters.length === 0 ? (
+                <p className="text-neutral-500 text-center py-8">Мастера не найдены</p>
+              ) : (
+                topMasters.map(master => (
+                  <div key={master.id} className="flex items-center justify-between p-4 bg-neutral-50 dark:bg-neutral-800/50 rounded-2xl border border-neutral-100 dark:border-neutral-800">
+                    <div className="flex items-center gap-4">
+                      <img 
+                        src={master.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(master.display_name || master.username || 'M')}`}
+                        alt="Avatar"
+                        className="w-12 h-12 rounded-full object-cover"
+                      />
+                      <div>
+                        <h4 className="font-bold text-neutral-900 dark:text-white">{master.display_name || master.username}</h4>
+                        <p className="text-xs text-neutral-500">@{master.username} • ★ {master.rating}</p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => {
+                        setSelectedMasterForDirectBooking(master.id)
+                        setIsMasterSelectModalOpen(false)
+                        setIsFormOpen(true)
+                      }}
+                      className="px-4 py-2 bg-violet-600 hover:bg-violet-500 text-white rounded-lg text-sm font-bold shadow-sm transition-colors"
+                    >
+                      Выбрать
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
