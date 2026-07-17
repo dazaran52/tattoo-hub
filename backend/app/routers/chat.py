@@ -81,9 +81,16 @@ async def get_my_chats(
     """
     Get all chats for the current master with lead details and last message, optimized via nested joins.
     """
-    chats_res = supabase.table("lead_chats").select(
-        "id, lead_id, created_at, leads(title, description, image_urls, contacts, client_id, users(display_name, email, avatar_url)), chat_messages(content, created_at, sender_type)"
-    ).eq("master_id", current_user.user_id).order("created_at", desc=True, foreign_table="chat_messages").limit(1, foreign_table="chat_messages").order("created_at", desc=True).limit(limit).offset(offset).execute()
+    query = supabase.table("lead_chats").select(
+        "id, lead_id, created_at, leads!inner(title, description, image_urls, contacts, client_id, users!leads_client_id_fkey(display_name, email, avatar_url)), chat_messages(content, created_at, sender_type)"
+    )
+
+    if current_user.role == "client":
+        query = query.eq("leads.client_id", current_user.user_id)
+    else:
+        query = query.eq("master_id", current_user.user_id)
+        
+    chats_res = query.order("created_at", desc=True, foreign_table="chat_messages").limit(1, foreign_table="chat_messages").order("created_at", desc=True).limit(limit).offset(offset).execute()
 
     chats = chats_res.data or []
     if not chats:
@@ -92,49 +99,61 @@ async def get_my_chats(
     lead_ids = list(set([c["lead_id"] for c in chats]))
     
     # Batch fetch proposal and kanban statuses
-    prop_res = supabase.table("lead_proposals").select("lead_id, status").in_("lead_id", lead_ids).eq("user_id", current_user.user_id).execute()
-    prop_map = {p["lead_id"]: p["status"] for p in (prop_res.data or [])}
+    prop_res = supabase.table("lead_proposals").select("lead_id, user_id, status").in_("lead_id", lead_ids).execute()
+    prop_map = {(p["lead_id"], p["user_id"]): p["status"] for p in (prop_res.data or [])}
 
-    client_res = supabase.table("master_clients").select("lead_id, kanban_status").in_("lead_id", lead_ids).eq("master_id", current_user.user_id).execute()
-    kanban_map = {k["lead_id"]: k["kanban_status"] for k in (client_res.data or [])}
+    client_res = supabase.table("master_clients").select("lead_id, master_id, kanban_status").in_("lead_id", lead_ids).execute()
+    kanban_map = {(k["lead_id"], k["master_id"]): k["kanban_status"] for k in (client_res.data or [])}
+
+    master_ids = list(set([c["master_id"] for c in chats]))
+    master_users_res = supabase.table("users").select("id, display_name, username, avatar_url").in_("id", master_ids).execute()
+    master_map = {u["id"]: u for u in (master_users_res.data or [])}
 
     for chat in chats:
         messages = chat.pop("chat_messages", [])
         chat["last_message"] = messages[0] if messages else None
             
-        chat["proposal_status"] = prop_map.get(chat["lead_id"])
-        chat["kanban_status"] = kanban_map.get(chat["lead_id"])
+        chat["proposal_status"] = prop_map.get((chat["lead_id"], chat["master_id"]))
+        chat["kanban_status"] = kanban_map.get((chat["lead_id"], chat["master_id"]))
             
-        # Build client_info
-        leads_data = chat.get("leads") or {}
-        users_data = leads_data.get("users") or {}
-        
-        c_name = users_data.get("display_name")
-        c_email = users_data.get("email")
-        c_avatar = users_data.get("avatar_url")
-        
-        if not c_name or not c_email:
-            # Parse from contacts if client is not registered or info missing
-            contacts = leads_data.get("contacts") or ""
-            if "Email:" in contacts:
-                try: c_email = contacts.split("Email:")[1].split(",")[0].strip()
-                except: pass
-            if "Имя:" in contacts:
-                try: c_name = contacts.split("Имя:")[1].split(",")[0].strip()
-                except: pass
-        
-        # If still no avatar, find last image sent by client
-        if not c_avatar and messages:
-            for msg in messages:
-                if msg["sender_type"] == "client" and msg["content"].startswith("http") and ("supabase.co" in msg["content"]):
-                    c_avatar = msg["content"]
-                    break
-                    
-        chat["client_info"] = {
-            "name": c_name or c_email or leads_data.get("title") or "Клиент",
-            "email": c_email or "",
-            "avatar_url": c_avatar or ""
-        }
+        # Build interlocutor info
+        if current_user.role == "client":
+            m_info = master_map.get(chat["master_id"], {})
+            chat["client_info"] = {
+                "name": m_info.get("display_name") or m_info.get("username") or "Мастер",
+                "email": "",
+                "avatar_url": m_info.get("avatar_url") or ""
+            }
+        else:
+            leads_data = chat.get("leads") or {}
+            users_data = leads_data.get("users") or {}
+            
+            c_name = users_data.get("display_name")
+            c_email = users_data.get("email")
+            c_avatar = users_data.get("avatar_url")
+            
+            if not c_name or not c_email:
+                # Parse from contacts if client is not registered or info missing
+                contacts = leads_data.get("contacts") or ""
+                if "Email:" in contacts:
+                    try: c_email = contacts.split("Email:")[1].split(",")[0].strip()
+                    except: pass
+                if "Имя:" in contacts:
+                    try: c_name = contacts.split("Имя:")[1].split(",")[0].strip()
+                    except: pass
+            
+            # If still no avatar, find last image sent by client
+            if not c_avatar and messages:
+                for msg in messages:
+                    if msg["sender_type"] == "client" and msg["content"].startswith("http") and ("supabase.co" in msg["content"]):
+                        c_avatar = msg["content"]
+                        break
+                        
+            chat["client_info"] = {
+                "name": c_name or c_email or leads_data.get("title") or "Клиент",
+                "email": c_email or "",
+                "avatar_url": c_avatar or ""
+            }
 
     return chats
 
