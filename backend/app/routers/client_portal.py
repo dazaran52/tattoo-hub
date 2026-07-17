@@ -43,9 +43,8 @@ async def get_client_lead(
     master_ids = [p["user_id"] for p in proposals_data]
     users_dict = {}
     if master_ids:
-        users_res = supabase.table("users").select("id, raw_user_meta_data").in_("id", master_ids).execute()
-        for u in (users_res.data or []):
-            users_dict[u["id"]] = u
+        users_res = supabase.table("users").select("id, display_name, username, avatar_url").in_("id", master_ids).execute()
+        users_dict = {u["id"]: u for u in (users_res.data or [])}
 
     # Get chats
     chats_res = supabase.table("lead_chats").select("id, master_id").eq("lead_id", lead_id).execute()
@@ -54,11 +53,10 @@ async def get_client_lead(
     proposals_out = []
     for p in proposals_data:
         master_info = users_dict.get(p["user_id"], {})
-        meta = master_info.get("raw_user_meta_data", {})
         proposals_out.append(ClientProposalResponse(
             master_id=p["user_id"],
-            master_name=meta.get("name") or meta.get("telegram_username") or "Unknown Master",
-            master_avatar=meta.get("avatar_url"),
+            master_name=master_info.get("display_name") or master_info.get("username") or "Unknown Master",
+            master_avatar=master_info.get("avatar_url"),
             price_offer=p["price_offer"],
             proposed_dates=p["proposed_dates"],
             status=p["status"],

@@ -528,6 +528,19 @@ async def create_client_lead(
 
         client_token = str(uuid.uuid4())
 
+        city_id = None
+        if lead_data.city:
+            try:
+                # First try to find exact match in name_ru or name_en
+                q = supabase.table("cities").select("id").or_(f"name_ru.ilike.{lead_data.city},name_en.ilike.{lead_data.city}")
+                if lead_data.country_id:
+                    q = q.eq("country_id", lead_data.country_id)
+                city_res = await q.execute()
+                if city_res.data:
+                    city_id = city_res.data[0]["id"]
+            except Exception as e:
+                print(f"Failed to lookup city_id for {lead_data.city}: {e}")
+
         db_lead = {
             "title": title[:255],
             "description": full_description,
@@ -540,7 +553,7 @@ async def create_client_lead(
             "client_currency": lead_data.budget_currency,
             "is_negotiable_budget": lead_data.is_negotiable_budget,
             "country_id": lead_data.country_id,
-            "city_id": None, # City UUID lookup logic needs implementation later if needed
+            "city_id": city_id,
             "image_urls": lead_data.image_urls or [],
             "style": lead_data.style,
             "size": lead_data.size,
@@ -770,7 +783,7 @@ async def get_client_leads(
     """Get leads created by the current client."""
     try:
         res = await supabase.table("leads") \
-            .select("*, users!assigned_master_id(id, raw_user_meta_data, username)") \
+            .select("*, users!assigned_master_id(id, display_name, avatar_url, username)") \
             .eq("client_id", current_user.user_id) \
             .order("created_at", desc=True) \
             .execute()
@@ -783,7 +796,7 @@ async def get_client_leads(
         
         # Get proposals
         props_res = await supabase.table("lead_proposals") \
-            .select("lead_id, status, user_id, users(id, raw_user_meta_data, username)") \
+            .select("lead_id, status, user_id, users(id, display_name, avatar_url, username)") \
             .in_("lead_id", lead_ids) \
             .execute()
             
@@ -795,12 +808,11 @@ async def get_client_leads(
             proposals_count[lid] = proposals_count.get(lid, 0) + 1
             if p["status"] == "accepted" and p.get("users"):
                 u = p["users"]
-                meta = u.get("raw_user_meta_data", {})
                 accepted_masters[lid] = {
                     "id": u.get("id"),
                     "username": u.get("username"),
-                    "name": meta.get("name") or meta.get("telegram_username") or "Мастер",
-                    "avatar_url": meta.get("avatar_url")
+                    "name": u.get("display_name") or u.get("username") or "Мастер",
+                    "avatar_url": u.get("avatar_url")
                 }
 
         # Get chats
@@ -829,12 +841,11 @@ async def get_client_leads(
             master_info = None
             if lead.get("users"): # from assigned_master_id
                 u = lead["users"]
-                meta = u.get("raw_user_meta_data", {})
                 master_info = {
                     "id": u.get("id"),
                     "username": u.get("username"),
-                    "name": meta.get("name") or meta.get("telegram_username") or "Мастер",
-                    "avatar_url": meta.get("avatar_url")
+                    "name": u.get("display_name") or u.get("username") or "Мастер",
+                    "avatar_url": u.get("avatar_url")
                 }
             elif lead["id"] in accepted_masters:
                 master_info = accepted_masters[lead["id"]]
