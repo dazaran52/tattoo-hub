@@ -1,318 +1,40 @@
-'use client'
+import re
 
-import { useState, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { Upload, Check, Sparkles, MapPin, X } from 'lucide-react'
-import toast from 'react-hot-toast'
-import { useLanguage } from '@/i18n/LanguageContext'
-import { api } from '@/lib/api'
-import { supabase } from '@/lib/supabase'
-import imageCompression from 'browser-image-compression'
+with open('frontend/src/components/LeadForm.tsx', 'r', encoding='utf-8') as f:
+    content = f.read()
 
-export function LeadForm({ masterId, source = 'platform' }: { masterId?: string, source?: 'platform' | 'personal' }) {
-  const { t, lang } = useLanguage()
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isSuccess, setIsSuccess] = useState(false)
-  
-  
+# Add currentStep and isLoggedIn state
+state_injection = """
   const [currentStep, setCurrentStep] = useState(1)
   const totalSteps = 4
   const [isLoggedIn, setIsLoggedIn] = useState(false)
+"""
+content = re.sub(r'const \[formData, setFormData\] = useState\(\{', state_injection + r'\n  const [formData, setFormData] = useState({', content)
 
-  const [formData, setFormData] = useState({
-    description: '',
-    style: [] as string[],
-    body_place: '',
-    size: '',
-    budget: '5000 CZK',
-    city: '',
-    name: '',
-    contact: '', // email
-    contact_method: 'on_site',
-    priority: 'quality', // fast, cheap, quality
-    is_negotiable: false,
-    images: [] as File[]
-  })
-
-  // Theme support
-  const [currency, setCurrency] = useState('CZK')
-  const [budgetVal, setBudgetVal] = useState(5000)
-  const [isDragActive, setIsDragActive] = useState(false)
-  const [uploadProgress, setUploadProgress] = useState<number | null>(null)
-
-  // Countries and Cities
-  const [countries, setCountries] = useState<any[]>([])
-  const [cities, setCities] = useState<any[]>([])
-  const [selectedCountry, setSelectedCountry] = useState('')
-  const [locationPrefilled, setLocationPrefilled] = useState(false)
-  const [showLocationSelect, setShowLocationSelect] = useState(true)
-
-  useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/locations/countries`)
-      .then(res => res.json())
-      .then(data => setCountries(data))
-      .catch(err => console.error(err))
-      
-
+# Update isLoggedIn in useEffect
+session_effect = """
     // Load from profile if logged in
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.access_token) {
         setIsLoggedIn(true)
+"""
+content = content.replace("""    // Load from profile if logged in
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.access_token) {""", session_effect)
 
-        api.getProfile().then(p => {
-          if (p.country_ids && p.country_ids.length > 0) {
-            setSelectedCountry(p.country_ids[0])
-            setLocationPrefilled(true)
-            setShowLocationSelect(false)
-          }
-          if (p.display_name) {
-            setFormData(prev => ({ ...prev, name: p.display_name! }))
-          }
-          if (p.phone || p.email) {
-            setFormData(prev => ({ ...prev, contact: (p.email || p.phone)! }))
-          }
-        }).catch(err => console.error(err))
-      }
-    })
+# We will just replace the entire `return (` for the main form.
+# Let's find where the main return starts.
+# It starts at:
+#   return (
+#     <div className="relative bg-white/40 dark:bg-neutral-900/40 backdrop-blur-3xl ...
+# We will replace from there to the end.
 
-    // Load pending lead if exists
-    const pendingLeadStr = localStorage.getItem('pending_lead')
-    if (pendingLeadStr) {
-      try {
-        const pendingLead = JSON.parse(pendingLeadStr)
-        setFormData(prev => ({
-          ...prev,
-          description: pendingLead.description || prev.description,
-          size: pendingLead.size || prev.size,
-          priority: pendingLead.priority || prev.priority
-        }))
-      } catch (e) {
-        console.error('Failed to parse pending lead', e)
-      }
-    }
-  }, [])
+main_return_start = content.find("  return (\n    <div className=\"relative bg-white/40 dark:bg-neutral-900/40")
+if main_return_start == -1:
+    print("Could not find main return start")
+    exit(1)
 
-  useEffect(() => {
-    if (selectedCountry) {
-      const country = countries.find(c => c.id === selectedCountry)
-      if (country) {
-        setCurrency('CZK')
-        if (!formData.budget || !formData.budget.includes('CZK')) {
-          setBudgetVal(5000)
-          setFormData(prev => ({ ...prev, budget: '5000 CZK' }))
-        }
-      }
-
-      fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/locations/countries/${selectedCountry}/cities`)
-        .then(res => res.json())
-        .then(data => {
-          setCities(data)
-          if (data.length > 0 && !formData.city) {
-            const defaultCity = data[0].name_ru || data[0].name
-            setFormData(prev => ({ ...prev, city: defaultCity }))
-          }
-        })
-        .catch(err => console.error(err))
-    } else {
-      setCities([])
-    }
-  }, [selectedCountry, countries])
-
-  const handleDrag = (e: React.DragEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    if (e.type === "dragenter" || e.type === "dragover") {
-      setIsDragActive(true)
-    } else if (e.type === "dragleave") {
-      setIsDragActive(false)
-    }
-  }
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    setIsDragActive(false)
-    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      simulateUploadProgress(Array.from(e.dataTransfer.files))
-    }
-  }
-
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      simulateUploadProgress(Array.from(e.target.files))
-    }
-  }
-
-  const simulateUploadProgress = (files: File[]) => {
-    setUploadProgress(0)
-    const interval = setInterval(() => {
-      setUploadProgress(prev => {
-        if (prev === null) return null
-        if (prev >= 100) {
-          clearInterval(interval)
-          setFormData(prevForm => ({ ...prevForm, images: [...prevForm.images, ...files] }))
-          toast.success('Изображения прикреплены')
-          return null
-        }
-        return prev + 20
-      })
-    }, 80)
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    
-    // Validation
-    if (formData.description.length < 10) {
-      toast.error(t('errorDescShort') || 'Описание должно быть не менее 10 символов')
-      return
-    }
-    if (!formData.body_place || formData.body_place === 'Не определился') {
-      // It's allowed to not know, but if we require it strictly:
-      // Let's allow "Не определился" since it's an option.
-    }
-    if (!selectedCountry || !formData.city) {
-      toast.error(t('errorCityReq') || 'Выберите страну и город')
-      return
-    }
-    
-    setIsSubmitting(true)
-    
-    try {
-      const imageUrls: string[] = []
-      if (formData.images.length > 0) {
-        for (const file of formData.images) {
-          const compressionOptions = {
-            maxSizeMB: 1,
-            maxWidthOrHeight: 1920,
-            useWebWorker: true,
-          }
-          const compressedFile = await imageCompression(file, compressionOptions)
-          const fileExt = compressedFile.name.split('.').pop() || 'webp'
-          const fileName = `${Math.random()}.${fileExt}`
-          const filePath = `client_leads/${fileName}`
-          const { error: uploadError } = await supabase.storage.from('lead_images').upload(filePath, compressedFile)
-          if (uploadError) throw uploadError
-          const { data } = supabase.storage.from('lead_images').getPublicUrl(filePath)
-          imageUrls.push(data.publicUrl)
-        }
-      }
-
-      const payload = {
-        description: formData.description,
-        style: formData.style.length > 0 ? formData.style.join(', ') : null,
-        body_place: formData.body_place || null,
-        size: formData.size || null,
-        budget: formData.is_negotiable ? 'Договорная цена' : formData.budget || null,
-        budget_val: budgetVal,
-        budget_currency: currency,
-        is_negotiable_budget: formData.is_negotiable,
-        client_priority: formData.priority,
-        country_id: selectedCountry || null,
-        city: formData.city || null,
-        name: formData.name || null,
-        email: formData.contact,
-        contact: formData.contact,
-        assigned_master_id: masterId || null,
-        is_personal: source === 'personal',
-        image_urls: imageUrls
-      }
-
-      const { data: { session } } = await supabase.auth.getSession()
-      const token = session?.access_token
-
-      const headers: Record<string, string> = {
-        'Content-Type': 'application/json',
-      }
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`
-      }
-
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/leads/client`, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify(payload)
-      })
-
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({}))
-        throw new Error(errData.detail || 'Ошибка при отправке заявки')
-      }
-      
-      localStorage.removeItem('pending_lead')
-      setIsSuccess(true)
-    } catch (error: any) {
-      console.error(error)
-      toast.error(error.message || t('errorSubmitLead') || 'Произошла ошибка при отправке. Пожалуйста, попробуйте еще раз.')
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
-
-  const inputClasses = "w-full bg-white/40 dark:bg-neutral-900/40 backdrop-blur-xl border border-neutral-200 dark:border-white/10 rounded-2xl p-4 text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-violet-500/30 focus:border-violet-500/50 transition-all duration-300 shadow-sm"
-  const labelClasses = "block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-2 ml-1"
-
-  if (isSuccess) {
-    return (
-      <motion.div 
-        initial={{ opacity: 0, scale: 0.9, y: 20 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        transition={{ type: "spring", duration: 0.6 }}
-        className="relative bg-white/40 dark:bg-neutral-900/40 backdrop-blur-3xl border border-neutral-200/50 dark:border-white/5 rounded-[2rem] p-8 md:p-12 text-center shadow-2xl overflow-hidden"
-      >
-        <div className="absolute inset-0 bg-gradient-to-br from-violet-500/10 via-transparent to-fuchsia-500/10 pointer-events-none" />
-        
-        <motion.div 
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ type: "spring", delay: 0.2, bounce: 0.5 }}
-          className="w-24 h-24 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center mx-auto mb-8 shadow-lg shadow-emerald-500/30"
-        >
-          <Check className="w-12 h-12 text-white stroke-[3]" />
-        </motion.div>
-        <motion.h3 
-          className="text-3xl md:text-4xl font-extrabold text-neutral-900 dark:text-white mb-4"
-        >
-          {t('leadSentTitle') || 'Заявка отправлена!'}
-        </motion.h3>
-        <motion.p 
-          className="text-neutral-600 dark:text-neutral-300 text-lg max-w-md mx-auto mb-10 leading-relaxed font-medium"
-        >
-          {source === 'personal' 
-            ? 'Мастер получил вашу идею и свяжется с вами в ближайшее время для обсуждения деталей и цены.'
-            : (t('leadSentDesc') || 'Лучшие мастера твоего города скоро увидят твою идею и свяжутся с тобой, чтобы обсудить детали и предложить свои эскизы.')}
-        </motion.p>
-        <motion.button 
-          type="button"
-          onClick={() => { 
-            setIsSuccess(false)
-            setFormData({
-              description: '', 
-              style: [] as string[], 
-              body_place: '', 
-              size: '', 
-              budget: '5000 CZK', 
-              city: '', 
-              name: '', 
-              contact: '', 
-              contact_method: 'on_site',
-              priority: 'quality', 
-              is_negotiable: false, 
-              images: []
-            }) 
-            setCurrency('CZK')
-            setBudgetVal(5000)
-            setSelectedCountry('')
-          }}
-          className="group relative inline-flex items-center justify-center bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 px-8 py-4 rounded-2xl font-bold transition-all duration-300 hover:scale-105 shadow-md"
-        >
-          <span className="relative z-10">{t('newLeadBtn') || 'Отправить еще одну'}</span>
-        </motion.button>
-      </motion.div>
-    )
-  }
-
-  return (
+new_return = """  return (
     <div className="relative bg-white/40 dark:bg-neutral-900/40 backdrop-blur-3xl border border-neutral-200/50 dark:border-white/5 rounded-[2rem] shadow-2xl overflow-hidden p-6 md:p-10">
       
       <div className="mb-8 text-center">
@@ -798,3 +520,10 @@ export function LeadForm({ masterId, source = 'platform' }: { masterId?: string,
     </div>
   )
 }
+"""
+
+content = content[:main_return_start] + new_return
+with open('frontend/src/components/LeadForm.tsx', 'w', encoding='utf-8') as f:
+    f.write(content)
+
+print("Rewrite complete")
