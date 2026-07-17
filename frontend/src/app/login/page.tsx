@@ -145,7 +145,10 @@ function LoginContent() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback?next=/dashboard&role=${role}`
+          redirectTo: `${window.location.origin}/auth/callback?next=/dashboard&role=${role}`,
+          queryParams: {
+            prompt: 'select_account'
+          }
         }
       })
       if (error) throw error
