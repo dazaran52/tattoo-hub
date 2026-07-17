@@ -397,6 +397,22 @@ export function LeadForm({ masterId, source = 'platform' }: { masterId?: string,
                   </p>
                 </div>
               )}
+            
+              <div className="flex gap-4 pt-4 border-t border-neutral-200 dark:border-neutral-800 mt-8">
+                <button 
+                  type="button"
+                  onClick={() => {
+                    if (!formData.name || !formData.contact) {
+                      toast.error('Заполните обязательные поля')
+                      return
+                    }
+                    setCurrentStep(2)
+                  }}
+                  className="flex-1 py-4 px-6 bg-violet-600 hover:bg-violet-700 text-white font-bold rounded-2xl transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5"
+                >
+                  Далее
+                </button>
+              </div>
             </motion.section>
           )}
 
@@ -558,6 +574,33 @@ export function LeadForm({ masterId, source = 'platform' }: { masterId?: string,
                   </div>
                 </div>
               )}
+            
+              <div className="flex gap-4 pt-4 border-t border-neutral-200 dark:border-neutral-800 mt-8">
+                <button 
+                  type="button"
+                  onClick={() => setCurrentStep(1)}
+                  className="flex-1 py-4 px-6 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-white/10 text-neutral-900 dark:text-white font-bold rounded-2xl hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-all shadow-sm"
+                >
+                  Назад
+                </button>
+                <button 
+                  type="button"
+                  onClick={() => {
+                    if (!formData.description || formData.description.length < 10) {
+                      toast.error('Описание должно быть не менее 10 символов')
+                      return
+                    }
+                    if (!selectedCountry || !formData.city) {
+                      toast.error('Выберите страну и город')
+                      return
+                    }
+                    setCurrentStep(3)
+                  }}
+                  className="flex-1 py-4 px-6 bg-violet-600 hover:bg-violet-700 text-white font-bold rounded-2xl transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5"
+                >
+                  Далее
+                </button>
+              </div>
             </motion.section>
           )}
 
@@ -665,6 +708,23 @@ export function LeadForm({ masterId, source = 'platform' }: { masterId?: string,
                   </div>
                 )}
               </div>
+            
+              <div className="flex gap-4 pt-4 border-t border-neutral-200 dark:border-neutral-800 mt-8">
+                <button 
+                  type="button"
+                  onClick={() => setCurrentStep(2)}
+                  className="flex-1 py-4 px-6 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-white/10 text-neutral-900 dark:text-white font-bold rounded-2xl hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-all shadow-sm"
+                >
+                  Назад
+                </button>
+                <button 
+                  type="button"
+                  onClick={() => setCurrentStep(4)}
+                  className="flex-1 py-4 px-6 bg-violet-600 hover:bg-violet-700 text-white font-bold rounded-2xl transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5"
+                >
+                  Далее
+                </button>
+              </div>
             </motion.section>
           )}
 
@@ -733,68 +793,35 @@ export function LeadForm({ masterId, source = 'platform' }: { masterId?: string,
                   </div>
                 )}
               </div>
+            
+              <div className="flex gap-4 pt-4 border-t border-neutral-200 dark:border-neutral-800 mt-8">
+                <button 
+                  type="button"
+                  onClick={() => setCurrentStep(3)}
+                  className="flex-1 py-4 px-6 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-white/10 text-neutral-900 dark:text-white font-bold rounded-2xl hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-all shadow-sm"
+                >
+                  Назад
+                </button>
+                <button 
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="flex-1 py-4 px-6 bg-violet-600 hover:bg-violet-700 disabled:bg-neutral-300 disabled:dark:bg-neutral-800 text-white font-bold rounded-2xl transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5 disabled:transform-none disabled:shadow-none flex items-center justify-center relative overflow-hidden group"
+                >
+                  {isSubmitting ? (
+                    <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  ) : (
+                    <>
+                      <span className="relative z-10">{t('submitRequestBtn') || 'Оставить заявку'}</span>
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]" />
+                    </>
+                  )}
+                </button>
+              </div>
             </motion.section>
           )}
         </AnimatePresence>
 
-        {/* Navigation Buttons */}
-        <div className="flex gap-4 pt-4 border-t border-neutral-200 dark:border-neutral-800">
-          {currentStep > 1 && (
-            <button 
-              type="button"
-              onClick={() => setCurrentStep(prev => prev - 1)}
-              className="flex-1 py-4 px-6 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-white/10 text-neutral-900 dark:text-white font-bold rounded-2xl hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-all shadow-sm"
-            >
-              Назад
-            </button>
-          )}
-          
-          {currentStep < totalSteps ? (
-            <button 
-              type="button"
-              onClick={() => {
-                // Basic validation for moving next
-                if (currentStep === 1) {
-                  if (!formData.name || !formData.contact) {
-                    toast.error('Заполните обязательные поля')
-                    return
-                  }
-                }
-                if (currentStep === 2) {
-                  if (!formData.description || formData.description.length < 10) {
-                    toast.error('Описание должно быть не менее 10 символов')
-                    return
-                  }
-                  if (!selectedCountry || !formData.city) {
-                    toast.error('Выберите страну и город')
-                    return
-                  }
-                }
-                setCurrentStep(prev => prev + 1)
-              }}
-              className="flex-1 py-4 px-6 bg-violet-600 hover:bg-violet-700 text-white font-bold rounded-2xl transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5"
-            >
-              Далее
-            </button>
-          ) : (
-            <button 
-              type="submit"
-              disabled={isSubmitting}
-              className="flex-1 py-4 px-6 bg-violet-600 hover:bg-violet-700 disabled:bg-neutral-300 disabled:dark:bg-neutral-800 text-white font-bold rounded-2xl transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5 disabled:transform-none disabled:shadow-none flex items-center justify-center relative overflow-hidden group"
-            >
-              {isSubmitting ? (
-                <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              ) : (
-                <>
-                  <span className="relative z-10">{t('submitRequestBtn') || 'Оставить заявку'}</span>
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]" />
-                </>
-              )}
-            </button>
-          )}
-        </div>
-
-      </form>
+        </form>
     </div>
   )
 }
