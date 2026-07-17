@@ -26,6 +26,7 @@ interface AdminUserResponse {
   portfolio_url?: string
   role?: string
   referred_by?: string
+  status?: string
 }
 
 
