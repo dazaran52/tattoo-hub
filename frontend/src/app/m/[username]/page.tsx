@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { Calendar as CalendarIcon, User, MapPin, FileText, CheckCircle, ArrowLeft, Send, Link as LinkIcon, Instagram, Upload, Loader2, X, Image as ImageIcon, ChevronRight, Phone, Video, Star } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { DayPicker } from 'react-day-picker'
@@ -71,8 +71,7 @@ const getThemeClasses = (theme: string) => {
 // Use a subset of Lucide icons or basic SVG if needed
 export default function BookMasterPage({ params }: { params: { username: string } }) {
   const router = useRouter()
-  const searchParams = useSearchParams()
-  const source = searchParams.get('source')
+  const source = 'platform'
   const [master, setMaster] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -204,7 +203,7 @@ export default function BookMasterPage({ params }: { params: { username: string 
         budget_currency: 'CZK',
         budget: isNegotiable ? 'Договорная цена' : budgetVal ? `${budgetVal} Kč` : null,
         is_negotiable_budget: isNegotiable,
-        is_personal: source !== 'platform'
+        is_personal: false
       }
 
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/leads/client`, {
@@ -320,21 +319,7 @@ export default function BookMasterPage({ params }: { params: { username: string 
             </p>
           )}
 
-          {master.portfolio_url && source !== 'platform' && (
-            <a 
-              href={master.portfolio_url.startsWith('http') ? master.portfolio_url : `https://${master.portfolio_url}`} 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-5 py-2.5 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-900 dark:text-white rounded-full transition-colors font-medium text-sm"
-            >
-              {master.portfolio_url.includes('instagram') ? (
-                <Instagram className="w-4 h-4" />
-              ) : (
-                <LinkIcon className="w-4 h-4" />
-              )}
-              Смотреть внешнее портфолио
-            </a>
-          )}
+
         </div>
 
         {/* Tabs */}

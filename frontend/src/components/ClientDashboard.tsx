@@ -446,7 +446,7 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
 
                   <div className="px-6 pb-6 mt-auto">
                     <a 
-                      href={`/book/${master.username}?source=platform`}
+                      href={`/m/${master.username}`}
                       target="_blank"
                       className="block w-full py-3 text-center bg-neutral-100 dark:bg-neutral-800 hover:bg-violet-600 hover:text-white dark:hover:bg-violet-600 text-neutral-900 dark:text-white font-bold rounded-xl transition-all"
                     >
