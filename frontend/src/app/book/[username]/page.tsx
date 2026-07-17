@@ -9,7 +9,6 @@ import 'react-day-picker/dist/style.css'
 import { format, parseISO } from 'date-fns'
 import { cs, ru, enUS } from 'date-fns/locale'
 import { PostModal, PortfolioPost } from '@/components/PostModal'
-import { LeadForm } from '@/components/LeadForm'
 import { TATTOO_STYLES, BODY_PLACES, TATTOO_SIZES } from '@/lib/constants'
 import imageCompression from 'browser-image-compression'
 
@@ -84,10 +83,39 @@ export default function BookMasterPage({ params }: { params: { username: string 
   const [reviews, setReviews] = useState<any[]>([])
   const [isLoadingReviews, setIsLoadingReviews] = useState(false)
 
+  // Form State
+  const [name, setName] = useState('')
+  const [contact, setContact] = useState('')
+  const [email, setEmail] = useState('')
+  const [instagram, setInstagram] = useState('')
+  const [description, setDescription] = useState('')
+  const [styles, setStyles] = useState<string[]>([])
+  const [bodyPlace, setBodyPlace] = useState('')
+  const [size, setSize] = useState('')
+  const [sessionDate, setSessionDate] = useState<Date | undefined>(undefined)
+  const [sessionTime, setSessionTime] = useState('')
+  const [budgetVal, setBudgetVal] = useState('')
+  const [isNegotiable, setIsNegotiable] = useState(true)
+  const [images, setImages] = useState<File[]>([])
+  const [isUploading, setIsUploading] = useState(false)
+  const [unavailableDates, setUnavailableDates] = useState<Date[]>([])
+  
   useEffect(() => {
     fetchMasterProfile()
-    
+    fetchUnavailableDates()
   }, [params.username])
+
+  const fetchUnavailableDates = async () => {
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/leads/public/master/${params.username}/unavailable-dates`)
+      if (res.ok) {
+        const data: string[] = await res.json()
+        setUnavailableDates(data.map(d => parseISO(d)))
+      }
+    } catch (e) {
+      console.error(e)
+    }
+  }
 
   const fetchMasterProfile = async () => {
     try {
@@ -112,6 +140,91 @@ export default function BookMasterPage({ params }: { params: { username: string 
       setError(err instanceof Error ? err.message : 'Ошибка загрузки профиля')
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!name || !email || !description) {
+      alert('Пожалуйста, заполните обязательные поля')
+      return
+    }
+
+    try {
+      setIsSubmitting(true)
+      setIsUploading(true)
+      
+      let imageUrls: string[] = []
+      for (const file of images) {
+        const compressionOptions = {
+          maxSizeMB: 1,
+          maxWidthOrHeight: 1920,
+          useWebWorker: true,
+        }
+        const compressedFile = await imageCompression(file, compressionOptions)
+        const fileExt = compressedFile.name.split('.').pop() || 'webp'
+        const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`
+        const filePath = `client_leads/${fileName}`
+        
+        const { error: uploadError } = await supabase.storage
+          .from('lead_images')
+          .upload(filePath, compressedFile)
+          
+        if (uploadError) {
+          console.error('Error uploading image', uploadError)
+          continue
+        }
+        
+        const { data: publicUrlData } = supabase.storage
+          .from('lead_images')
+          .getPublicUrl(filePath)
+          
+        if (publicUrlData) {
+          imageUrls.push(publicUrlData.publicUrl)
+        }
+      }
+      setIsUploading(false)
+
+      const payload = {
+        name,
+        contact: contact || null,
+        email: email,
+        instagram: instagram || null,
+        description,
+        style: styles.length > 0 ? styles.join(', ') : null,
+        body_place: bodyPlace,
+        size,
+        image_urls: imageUrls,
+        session_date: sessionDate 
+          ? `${sessionDate.getFullYear()}-${String(sessionDate.getMonth() + 1).padStart(2, '0')}-${String(sessionDate.getDate()).padStart(2, '0')}T00:00:00.000Z` 
+          : null,
+        session_time: sessionTime || null,
+        assigned_master_id: master.id,
+        budget_val: budgetVal ? parseInt(budgetVal) : null,
+        budget_currency: 'CZK',
+        budget: isNegotiable ? 'Договорная цена' : budgetVal ? `${budgetVal} Kč` : null,
+        client_priority: clientPriority,
+        is_negotiable_budget: isNegotiable,
+        is_personal: source !== 'platform'
+      }
+
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/leads/client`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      })
+
+      if (!res.ok) {
+        throw new Error('Ошибка при отправке заявки')
+      }
+
+      setIsSuccess(true)
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Произошла ошибка')
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -140,6 +253,30 @@ export default function BookMasterPage({ params }: { params: { username: string 
           >
             На главную
           </button>
+        </div>
+      </div>
+    )
+  }
+
+  if (isSuccess) {
+    return (
+      <div className="min-h-screen bg-neutral-50 dark:bg-[#050505] flex flex-col items-center justify-center p-4">
+        <div className="bg-white dark:bg-neutral-900 rounded-3xl p-8 max-w-md w-full text-center shadow-2xl border border-neutral-200 dark:border-neutral-800">
+          <div className="w-20 h-20 bg-green-100 dark:bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+            <CheckCircle className="w-10 h-10 text-green-500" />
+          </div>
+          <h1 className="text-2xl font-bold text-neutral-900 dark:text-white mb-2">Заявка отправлена!</h1>
+          <p className="text-neutral-500 dark:text-neutral-400 mb-8">
+            Мастер получил вашу идею и свяжется с вами в ближайшее время для обсуждения деталей и цены.
+          </p>
+          <button 
+            onClick={() => window.location.reload()}
+            className="w-full bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 font-bold py-3 rounded-xl hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-colors mb-6"
+          >
+            Отправить еще одну
+          </button>
+          
+
         </div>
       </div>
     )
@@ -230,8 +367,367 @@ export default function BookMasterPage({ params }: { params: { username: string 
         </div>
 
         {activeTab === 'booking' ? (
-        <div className="mt-2">
-          <LeadForm masterId={master.id} source={source === 'platform' ? 'platform' : 'personal'} />
+        <div className={`rounded-3xl p-8 transition-colors duration-500 ${tClasses.card}`}>
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold mb-2">Запись на сеанс</h2>
+            <p className="opacity-70">Опишите свою идею, и мастер свяжется с вами.</p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-semibold opacity-90 mb-2">
+                  Ваше имя <span className="text-red-500">*</span>
+                </label>
+                <div className="relative">
+                  <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 opacity-50" />
+                  <input
+                    type="text"
+                    required
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="Иван Иванов"
+                    className={`w-full rounded-xl pl-11 pr-4 py-3 transition-all ${tClasses.input}`}
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-semibold opacity-90 mb-2">
+                  Email <span className="text-red-500">*</span>
+                </label>
+                <div className="relative">
+                  <input
+                    type="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="example@mail.com"
+                    className={`w-full rounded-xl px-4 py-3 transition-all ${tClasses.input}`}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-semibold opacity-90 mb-2">
+                  Телефон или Telegram (Необязательно)
+                </label>
+                <div className="relative">
+                  <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 opacity-50" />
+                  <input
+                    type="text"
+                    value={contact}
+                    onChange={(e) => setContact(e.target.value)}
+                    placeholder="+420... или @username"
+                    className={`w-full rounded-xl pl-11 pr-4 py-3 transition-all ${tClasses.input}`}
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-semibold opacity-90 mb-2">
+                  Instagram (Необязательно)
+                </label>
+                <div className="relative">
+                  <Instagram className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 opacity-50" />
+                  <input
+                    type="text"
+                    value={instagram}
+                    onChange={(e) => setInstagram(e.target.value)}
+                    placeholder="@username"
+                    className={`w-full rounded-xl pl-11 pr-4 py-3 transition-all ${tClasses.input}`}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-6">
+              <div>
+                <label className="block text-sm font-semibold opacity-90 mb-3">
+                  Стиль татуировки
+                </label>
+                <div className="flex flex-wrap gap-2 mb-3">
+                  {TATTOO_STYLES.map(s => (
+                    <button
+                      key={s}
+                      type="button"
+                      onClick={() => {
+                        const newStyles = styles.includes(s)
+                          ? styles.filter(style => style !== s)
+                          : [...styles, s]
+                        setStyles(newStyles)
+                      }}
+                      className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all border ${
+                        styles.includes(s) 
+                          ? 'bg-cyan-500/20 border-cyan-500 text-cyan-600 dark:text-cyan-400 shadow-sm scale-[1.02]' 
+                          : 'bg-white/50 dark:bg-neutral-900/50 border-neutral-200 dark:border-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-800 hover:scale-[1.01]'
+                      }`}
+                    >
+                      {s}
+                    </button>
+                  ))}
+                </div>
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={styles.join(', ')}
+                    onChange={(e) => setStyles(e.target.value.split(',').map(s => s.trim()).filter(s => s))}
+                    placeholder="Или введите свой вариант..."
+                    className={`w-full rounded-xl px-4 py-3 transition-all ${tClasses.input}`}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold opacity-90 mb-3">
+                  Место на теле
+                </label>
+                <div className="flex flex-wrap gap-2 mb-3">
+                  {BODY_PLACES.map(place => (
+                    <button
+                      key={place}
+                      type="button"
+                      onClick={() => setBodyPlace(place)}
+                      className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all border ${
+                        bodyPlace === place 
+                          ? 'bg-cyan-500/20 border-cyan-500 text-cyan-600 dark:text-cyan-400 shadow-sm scale-[1.02]' 
+                          : 'bg-white/50 dark:bg-neutral-900/50 border-neutral-200 dark:border-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-800 hover:scale-[1.01]'
+                      }`}
+                    >
+                      {place}
+                    </button>
+                  ))}
+                </div>
+                <div className="relative">
+                  <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 opacity-50" />
+                  <input
+                    type="text"
+                    value={bodyPlace}
+                    onChange={(e) => setBodyPlace(e.target.value)}
+                    placeholder="Уточнение (например: Внутренняя сторона предплечья)"
+                    className={`w-full rounded-xl pl-11 pr-4 py-3 transition-all ${tClasses.input}`}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold opacity-90 mb-3">
+                  Примерный размер
+                </label>
+                <div className="grid grid-cols-2 gap-3 mb-3">
+                  {TATTOO_SIZES.map(sz => (
+                    <button
+                      key={sz.id}
+                      type="button"
+                      onClick={() => setSize(sz.id)}
+                      className={`p-3 rounded-xl flex flex-col items-center justify-center gap-1 transition-all border ${
+                        size === sz.id 
+                          ? 'bg-cyan-500/20 border-cyan-500 text-cyan-600 dark:text-cyan-400 shadow-sm scale-[1.02]' 
+                          : 'bg-white/50 dark:bg-neutral-900/50 border-neutral-200 dark:border-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-800 hover:scale-[1.01]'
+                      }`}
+                    >
+                      <span className="text-sm font-bold">{sz.name}</span>
+                      <span className="text-[10px] opacity-70 uppercase tracking-wider">{sz.desc}</span>
+                    </button>
+                  ))}
+                </div>
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={size}
+                    onChange={(e) => setSize(e.target.value)}
+                    placeholder="Или введите точный размер (например: 15x10 см)"
+                    className={`w-full rounded-xl px-4 py-3 transition-all ${tClasses.input}`}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold opacity-90 mb-2">
+                Идея татуировки <span className="text-red-500">*</span>
+              </label>
+              <div className="relative">
+                <FileText className="absolute left-3.5 top-3.5 w-5 h-5 opacity-50" />
+                <textarea
+                  required
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Опишите что хотите набить, размер и место..."
+                  rows={4}
+                  className={`w-full rounded-xl pl-11 pr-4 py-3.5 transition-all resize-none ${tClasses.input}`}
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold opacity-90 mb-2">
+                Желаемая дата (Необязательно)
+              </label>
+              <div className={`relative rounded-xl p-4 flex justify-center shadow-inner overflow-hidden ${tClasses.input}`}>
+                <style>{`
+                  .rdp-root { 
+                    --rdp-day-height: 40px; 
+                    --rdp-day-width: 40px;
+                    --rdp-accent-color: #8b5cf6 !important; 
+                    --rdp-accent-background-color: rgba(139, 92, 246, 0.1) !important;
+                    margin: 0; 
+                  }
+                  .rdp-day_button:hover:not([disabled]):not(.rdp-selected) { background-color: rgba(139, 92, 246, 0.1); }
+                  .rdp-disabled { opacity: 0.3; text-decoration: line-through; }
+                `}</style>
+                <DayPicker
+                  mode="single"
+                  selected={sessionDate}
+                  onSelect={setSessionDate}
+                  disabled={[
+                    { before: new Date() },
+                    ...unavailableDates
+                  ]}
+                  locale={ru} // TODO: dynamic locale based on user lang
+                />
+              </div>
+            </div>
+
+            {sessionDate && (
+              <div className="animate-in fade-in slide-in-from-top-2 duration-300">
+                <label className="block text-sm font-semibold opacity-90 mb-2">
+                  Желаемое время (Необязательно)
+                </label>
+                <div className="relative">
+                  <input
+                    type="time"
+                    value={sessionTime}
+                    onChange={(e) => setSessionTime(e.target.value)}
+                    className={`w-full rounded-xl px-4 py-3 transition-all ${tClasses.input}`}
+                  />
+                </div>
+              </div>
+            )}
+
+            <div>
+              <label className="block text-sm font-semibold opacity-90 mb-3">
+                Что для вас важнее всего?
+              </label>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
+                {[
+                  { id: 'fast', icon: '⚡', label: 'В кратчайшие сроки' },
+                  { id: 'quality', icon: '💎', label: 'Максимальное качество' },
+                  { id: 'cheap', icon: '💸', label: 'Уложиться в бюджет' }
+                ].map(p => (
+                  <button 
+                    key={p.id}
+                    type="button"
+                    onClick={() => setClientPriority(p.id)}
+                    className={`p-4 rounded-2xl border-2 transition-all cursor-pointer flex flex-col items-center text-center gap-2 ${
+                      clientPriority === p.id 
+                        ? 'border-cyan-500 bg-cyan-500/10' 
+                        : 'border-transparent bg-neutral-500/10 hover:bg-neutral-500/20'
+                    }`}
+                  >
+                    <span className="text-2xl">{p.icon}</span>
+                    <span className="font-bold text-sm opacity-90">{p.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold opacity-90 mb-3">
+                Бюджет на сеанс
+              </label>
+              
+              <label className="flex items-center gap-3 mb-4 cursor-pointer group">
+                <div className={`relative flex items-center justify-center w-6 h-6 rounded-md border transition-all ${
+                  isNegotiable 
+                    ? 'bg-cyan-500 border-cyan-500' 
+                    : 'bg-white/10 border-neutral-300 dark:border-neutral-700 group-hover:border-cyan-500/50'
+                }`}>
+                  <input 
+                    type="checkbox" 
+                    className="sr-only"
+                    checked={isNegotiable}
+                    onChange={(e) => {
+                      setIsNegotiable(e.target.checked)
+                      if (e.target.checked) setBudgetVal('')
+                    }}
+                  />
+                  {isNegotiable && <CheckCircle className="w-4 h-4 text-white" />}
+                </div>
+                <span className="text-sm font-medium">Договорная цена / Обсудить с мастером</span>
+              </label>
+
+              {!isNegotiable && (
+                <div className="animate-in fade-in slide-in-from-top-2 duration-300">
+                  <div className="relative">
+                    <input
+                      type="number"
+                      value={budgetVal}
+                      onChange={(e) => setBudgetVal(e.target.value)}
+                      placeholder="Например: 5000"
+                      className={`w-full rounded-xl pr-16 pl-4 py-3 transition-all ${tClasses.input}`}
+                    />
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2 font-semibold text-neutral-500">
+                      Kč
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold opacity-90 mb-2">
+                Фото-референсы (До 10 шт)
+              </label>
+              <div className="flex flex-wrap gap-4">
+                {images.map((file, idx) => (
+                  <div key={idx} className="relative w-20 h-20 rounded-xl overflow-hidden border border-neutral-200 dark:border-neutral-800 bg-neutral-100 dark:bg-neutral-900">
+                    <img src={URL.createObjectURL(file)} alt="ref" className="w-full h-full object-cover" />
+                    <button 
+                      type="button" 
+                      onClick={() => setImages(prev => prev.filter((_, i) => i !== idx))}
+                      className="absolute top-1 right-1 w-5 h-5 bg-black/50 rounded-full flex items-center justify-center text-white hover:bg-red-500 transition-colors"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                ))}
+                {images.length < 10 && (
+                  <label className={`w-20 h-20 rounded-xl border-2 border-dashed flex flex-col items-center justify-center transition-colors cursor-pointer ${tClasses.input}`}>
+                    <Upload className="w-6 h-6 mb-1 opacity-50" />
+                    <span className="text-[10px] font-medium opacity-70">Добавить</span>
+                    <input 
+                      type="file" 
+                      accept="image/*" 
+                      multiple 
+                      className="hidden" 
+                      onChange={(e) => {
+                        if (e.target.files) {
+                          const newFiles = Array.from(e.target.files)
+                          setImages(prev => [...prev, ...newFiles].slice(0, 10))
+                        }
+                      }} 
+                    />
+                  </label>
+                )}
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={isSubmitting || isUploading}
+              className={`w-full flex items-center justify-center gap-2 font-bold py-4 rounded-xl disabled:opacity-50 disabled:pointer-events-none ${tClasses.buttonPrimary}`}
+            >
+              {(isSubmitting || isUploading) ? (
+                <div className="w-6 h-6 border-2 border-white/30 dark:border-black/30 border-t-white dark:border-t-black rounded-full animate-spin" />
+              ) : (
+                'Отправить заявку'
+              )}
+            </button>
+            <p className="text-center text-xs text-neutral-500">
+              Нажимая кнопку, вы соглашаетесь с условиями обработки персональных данных
+            </p>
+          </form>
         </div>
         ) : activeTab === 'portfolio' ? (
           <div className={`rounded-3xl p-8 transition-colors duration-500 ${tClasses.card}`}>
