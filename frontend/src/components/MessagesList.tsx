@@ -512,9 +512,9 @@ export function MessagesList({ userRole = 'master' }: MessagesListProps) {
                   }
 
                   return (
-                  <div key={msg.id} className={`flex ${msg.sender_type === 'master' ? 'justify-end' : 'justify-start'} shrink-0`}>
+                  <div key={msg.id} className={`flex ${msg.sender_type === userRole ? 'justify-end' : 'justify-start'} shrink-0`}>
                     <div className={`max-w-[85%] sm:max-w-[70%] rounded-2xl px-4 py-2 ${
-                      msg.sender_type === 'master' 
+                      msg.sender_type === userRole 
                         ? 'bg-violet-600 text-white rounded-br-sm shadow-sm' 
                         : 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white rounded-bl-sm border border-neutral-100 dark:border-white/5 shadow-sm'
                     }`}>
@@ -523,7 +523,7 @@ export function MessagesList({ userRole = 'master' }: MessagesListProps) {
                       ) : (
                         <p className="whitespace-pre-wrap text-sm leading-relaxed">{msg.content}</p>
                       )}
-                      <span className={`text-[10px] mt-1 block text-right ${msg.sender_type === 'master' ? 'text-violet-200' : 'text-neutral-400'}`}>
+                      <span className={`text-[10px] mt-1 block text-right ${msg.sender_type === userRole ? 'text-violet-200' : 'text-neutral-400'}`}>
                         {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </span>
                     </div>
