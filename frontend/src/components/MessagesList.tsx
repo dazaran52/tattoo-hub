@@ -37,6 +37,7 @@ interface ChatPreview {
   } | null
   proposal_status: string | null
   kanban_status?: string | null
+  sessions_count?: number
 }
 
 interface MessagesListProps {
