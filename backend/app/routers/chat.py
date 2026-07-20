@@ -17,6 +17,7 @@ class MessageResponse(BaseModel):
     sender_type: str
     content: str
     created_at: str
+    is_read: Optional[bool] = False
 
 # Basic Anti-spam regex
 PHONE_REGEX = re.compile(r'(\+?\d{1,3}[-.\s]?)?(\(?\d{3}\)?[-.\s]?)?\d{3}[-.\s]?\d{4}')
