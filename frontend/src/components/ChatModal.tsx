@@ -241,7 +241,59 @@ export function ChatModal({ isOpen, onClose, chatId, leadTitle, currentUserRole 
                 Напишите первое сообщение клиенту...
               </div>
             ) : (
-              messages.map(msg => (
+              messages.map(msg => {
+                const isSystemCard = msg.content.startsWith('[SYSTEM_CARD]:')
+                  
+                if (isSystemCard) {
+                  let cardData = null
+                  try {
+                    cardData = JSON.parse(msg.content.replace('[SYSTEM_CARD]:', '').trim())
+                  } catch (e) {}
+                  
+                  return (
+                    <div key={msg.id} className="flex justify-center w-full my-4 shrink-0">
+                      {cardData ? (
+                        <div className="bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-white/10 p-5 rounded-2xl shadow-sm text-center max-w-sm w-full">
+                           <MessageCircle className="w-8 h-8 text-violet-500 mx-auto mb-3" />
+                           <h4 className="font-bold text-neutral-900 dark:text-white mb-2">
+                             {cardData.type === 'session_created' ? 'Сеанс назначен' : cardData.type === 'master_rejected' ? 'Отказ' : cardData.type === 'master_accepted' ? 'Сеанс принят в работу' : 'Системное уведомление'}
+                           </h4>
+                           {cardData.type === 'session_created' && (
+                             <>
+                               <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-4">
+                                 {new Date(cardData.date).toLocaleDateString('ru-RU')} в {cardData.time}
+                               </p>
+                               <div className="bg-neutral-50 dark:bg-neutral-900/50 rounded-xl py-2 px-4 text-sm font-medium text-neutral-900 dark:text-white border border-neutral-100 dark:border-white/5">
+                                 Стоимость: {cardData.price} CZK
+                               </div>
+                             </>
+                           )}
+                           {cardData.type === 'master_rejected' && (
+                             <>
+                               <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-4 whitespace-pre-wrap">
+                                 Мастер отклонил заявку.<br/><br/>
+                                 <strong>Причина:</strong> {cardData.reason}
+                               </p>
+                             </>
+                           )}
+                           {cardData.type === 'master_accepted' && (
+                             <>
+                               <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-4 whitespace-pre-wrap">
+                                 Мастер взял вашу заявку в работу! Скоро он напишет вам для уточнения деталей.
+                               </p>
+                             </>
+                           )}
+                        </div>
+                      ) : (
+                        <div className="bg-neutral-100 dark:bg-neutral-800 text-neutral-500 text-xs py-1 px-3 rounded-full">
+                          Системное уведомление
+                        </div>
+                      )}
+                    </div>
+                  )
+                }
+
+                return (
                 <div key={msg.id} className={`flex ${msg.sender_type === currentUserRole ? 'justify-end' : 'justify-start'}`}>
                   <div className={`max-w-[80%] rounded-2xl px-4 py-2 ${
                     msg.sender_type === currentUserRole 
@@ -258,7 +310,7 @@ export function ChatModal({ isOpen, onClose, chatId, leadTitle, currentUserRole 
                     </span>
                   </div>
                 </div>
-              ))
+              )})
             )}
             <div ref={messagesEndRef} />
           </div>
