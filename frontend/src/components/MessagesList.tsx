@@ -429,7 +429,9 @@ export function MessagesList({ userRole = 'master' }: MessagesListProps) {
                   <div className="flex justify-between items-center">
                     {chat.last_message ? (
                       <p className="text-xs text-neutral-500 truncate max-w-[180px]">
-                        {chat.last_message.content}
+                        {chat.last_message.content.startsWith('http') && chat.last_message.content.includes('supabase') 
+                          ? '📷 Фото' 
+                          : chat.last_message.content}
                       </p>
                     ) : (
                       <p className="text-xs text-neutral-400 italic">Нет сообщений</p>
@@ -501,7 +503,7 @@ export function MessagesList({ userRole = 'master' }: MessagesListProps) {
               {userRole === 'master' && (
                 <div className="hidden sm:flex shrink-0">
                   <span className="text-xs font-semibold px-3 py-1.5 bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 rounded-lg whitespace-nowrap">
-                    Открыть CRM
+                    {selectedChat.kanban_status === 'new' ? 'Посмотреть заявку' : 'Открыть CRM'}
                   </span>
                 </div>
               )}
