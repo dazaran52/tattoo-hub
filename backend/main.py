@@ -175,8 +175,8 @@ def create_application() -> FastAPI:
     app.include_router(instagram_router)
     app.include_router(reviews_router)
     app.include_router(crm.router, prefix="/api/crm", tags=["CRM"])
-app.include_router(favorites.router)
-    
+    app.include_router(favorites.router)
+
     @app.get("/health")
     async def health_check():
         """Health check endpoint."""
