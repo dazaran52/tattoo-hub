@@ -22,6 +22,7 @@ export default function DashboardPage() {
   const { t, lang: language } = useLanguage()
   const [currentSession, setCurrentSession] = useState<any>(null)
   const [activeTab, setActiveTab] = useState<'feed' | 'my-leads' | 'auctions' | 'crm' | 'messages' | 'portfolio'>('crm')
+  const [unreadMessages, setUnreadMessages] = useState(0)
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -33,8 +34,22 @@ export default function DashboardPage() {
 
   useEffect(() => {
     fetchProfile()
+  }, [])
+  
+  useEffect(() => {
+    if (!profile || profile.role !== 'master') return
+    
+    const fetchUnreadCount = async () => {
+      const { count } = await supabase.from('chat_messages')
+        .select('*', { count: 'exact', head: true })
+        .eq('is_read', false)
+        .eq('sender_type', 'client')
+      if (count !== null) setUnreadMessages(count)
+    }
+    
+    fetchUnreadCount()
 
-    // Realtime subscription for balance updates
+    // Realtime subscription for balance updates and chats
     let channel: any;
     
     const setupSubscription = async () => {
@@ -51,7 +66,12 @@ export default function DashboardPage() {
               }
             }
           )
-          .subscribe()
+          
+        channel.on('postgres_changes', { event: '*', schema: 'public', table: 'chat_messages' }, () => {
+          fetchUnreadCount()
+        })
+        
+        channel.subscribe()
       }
     }
     
@@ -268,7 +288,7 @@ export default function DashboardPage() {
                   </button>
                   <button
                     onClick={() => setActiveTab('messages')}
-                    className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all whitespace-nowrap flex items-center gap-2 ${
+                    className={`relative px-4 py-2 rounded-lg text-sm font-semibold transition-all whitespace-nowrap flex items-center gap-2 ${
                       activeTab === 'messages'
                         ? 'bg-violet-600 text-white shadow-md scale-[1.02]'
                         : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200 hover:bg-white/50 dark:hover:bg-neutral-800/50'
@@ -276,6 +296,9 @@ export default function DashboardPage() {
                   >
                     <MessageCircle className="w-4 h-4" />
                     {t('messages')}
+                    {unreadMessages > 0 && (
+                      <span className="absolute top-1 right-2 w-2 h-2 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.6)]" />
+                    )}
                   </button>
                 </div>
               

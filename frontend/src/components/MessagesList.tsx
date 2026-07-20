@@ -364,7 +364,10 @@ export function MessagesList({ userRole = 'master' }: MessagesListProps) {
                 key={chat.id}
                 onClick={() => {
                   setSelectedChat(chat)
-                  setShowMobileChat(true)
+                  setChats(prev => prev.map(c => c.id === chat.id ? { ...c, unread_count: 0 } : c))
+                  if (window.innerWidth < 768) {
+                    setShowMobileChat(true)
+                  }
                 }}
                 className={`p-4 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 cursor-pointer transition-colors flex items-center gap-3 ${isSelected ? 'bg-violet-50/50 dark:bg-violet-900/10 border-l-4 border-violet-500' : 'border-l-4 border-transparent'}`}
               >
@@ -381,11 +384,16 @@ export function MessagesList({ userRole = 'master' }: MessagesListProps) {
                 <div className="flex-1 min-w-0">
                   <div className="flex justify-between items-baseline mb-0.5">
                     <h3 className="font-bold text-neutral-900 dark:text-white truncate">{clientName}</h3>
-                    <span className="text-[10px] text-neutral-400 font-medium">
-                      {chat.last_message 
-                        ? new Date(chat.last_message.created_at).toLocaleDateString() 
-                        : ''}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      {(chat as any).unread_count > 0 && (
+                        <span className="w-2 h-2 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.6)]" />
+                      )}
+                      <span className="text-[10px] text-neutral-400 font-medium">
+                        {chat.last_message 
+                          ? new Date(chat.last_message.created_at).toLocaleDateString() 
+                          : ''}
+                      </span>
+                    </div>
                   </div>
                   
                   <div className="flex justify-between items-center">

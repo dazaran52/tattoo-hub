@@ -39,7 +39,8 @@ async def get_messages(
     offset: int = Query(0, ge=0),
     client_token: Optional[str] = Header(None),
     current_user: Optional[AuthUser] = Depends(get_optional_user),
-    supabase: Client = Depends(get_supabase_client)
+    supabase: Client = Depends(get_supabase_client),
+    background_tasks: BackgroundTasks = BackgroundTasks()
 ):
     """
     Get messages for a chat. Requires either master auth OR client_token header.
@@ -69,6 +70,21 @@ async def get_messages(
     msgs_res = supabase.table("chat_messages").select("*").eq("chat_id", chat_id).order("created_at", desc=True).limit(limit).offset(offset).execute()
     data = msgs_res.data or []
     data.reverse() # Reverse to keep chronological order for UI
+    
+    # Mark messages as read in background
+    user_role_for_read = "client"
+    if current_user and chat["master_id"] == current_user.user_id:
+        user_role_for_read = "master"
+    target_sender = "client" if user_role_for_read == "master" else "master"
+    
+    def mark_as_read():
+        try:
+            supabase.table("chat_messages").update({"is_read": True}).eq("chat_id", chat_id).eq("sender_type", target_sender).eq("is_read", False).execute()
+        except Exception as e:
+            print(f"Failed to mark messages as read: {e}")
+            
+    background_tasks.add_task(mark_as_read)
+    
     return data
 
 @router.get("/my")
@@ -110,9 +126,17 @@ async def get_my_chats(
     master_users_res = supabase.table("users").select("id, display_name, username, avatar_url").in_("id", master_ids).execute()
     master_map = {u["id"]: u for u in (master_users_res.data or [])}
 
+    # Fetch unread messages
+    unread_res = supabase.table("chat_messages").select("chat_id, sender_type").in_("chat_id", [c["id"] for c in chats]).eq("is_read", False).execute()
+    unread_map = {}
+    for msg in (unread_res.data or []):
+        if msg["sender_type"] != user_role:
+            unread_map[msg["chat_id"]] = unread_map.get(msg["chat_id"], 0) + 1
+
     for chat in chats:
         messages = chat.pop("chat_messages", [])
         chat["last_message"] = messages[0] if messages else None
+        chat["unread_count"] = unread_map.get(chat["id"], 0)
             
         chat["proposal_status"] = prop_map.get((chat["lead_id"], chat["master_id"]))
         chat["kanban_status"] = kanban_map.get((chat["lead_id"], chat["master_id"]))
@@ -234,5 +258,28 @@ async def send_message(
         except Exception as e:
             # Don't fail the message send if email fails
             print(f"Failed to trigger chat email notification: {e}")
+            
+    elif sender_type == "client":
+        try:
+            from app.services.notifications import send_push_notification
+            import threading
+            
+            lead_res = supabase.table("leads").select("title").eq("id", lead_id).execute()
+            title = "Новое сообщение"
+            if lead_res.data:
+                title = lead_res.data[0].get("title", "Новое сообщение")
+                
+            push_text = content
+            if content.startswith("http") and "supabase" in content:
+                push_text = "📸 Фото"
+            elif len(content) > 100:
+                push_text = content[:100] + "..."
+                
+            threading.Thread(
+                target=send_push_notification,
+                args=(master_id, f"Сообщение по заявке: {title}", push_text, f"/dashboard?tab=messages")
+            ).start()
+        except Exception as e:
+            print(f"Failed to send push notification to master: {e}")
 
     return insert_res.data[0]
