@@ -175,13 +175,24 @@ export function MessagesList({ userRole = 'master' }: MessagesListProps) {
         const data = await res.json()
         setMessages(prev => {
           const prevMap = new Map(prev.map(m => [m.id, m]))
-          const newData = []
+          let hasNew = false
+          let changed = false
+          
           for (const msg of data) {
-            if (!prevMap.has(msg.id)) newData.push(msg)
+            const existing = prevMap.get(msg.id)
+            if (!existing) {
+              prevMap.set(msg.id, msg)
+              hasNew = true
+              changed = true
+            } else if (existing.is_read !== msg.is_read || existing.is_sending || existing.is_error) {
+              prevMap.set(msg.id, msg)
+              changed = true
+            }
           }
-          if (newData.length > 0) {
-            setTimeout(scrollToBottom, 100)
-            const combined = [...prev, ...newData]
+          
+          if (changed) {
+            if (hasNew) setTimeout(scrollToBottom, 100)
+            const combined = Array.from(prevMap.values())
             return combined.sort((a,b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
           }
           return prev
