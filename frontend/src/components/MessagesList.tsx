@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { MessageCircle, Clock, Send, AlertCircle, Search, ChevronLeft, Image as ImageIcon, Calendar, Paperclip } from 'lucide-react'
+import { MessageCircle, Clock, Send, AlertCircle, Search, ChevronLeft, Image as ImageIcon, Calendar, Paperclip, Check, CheckCheck } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { supabase } from '@/lib/supabase'
 import { toast } from 'react-hot-toast'
@@ -11,6 +11,7 @@ interface Message {
   sender_type: 'client' | 'master'
   content: string
   created_at: string
+  is_read?: boolean
 }
 
 interface ChatPreview {
@@ -406,7 +407,7 @@ export function MessagesList({ userRole = 'master' }: MessagesListProps) {
                     )}
                   </div>
                   
-                  {chat.proposal_status && chat.proposal_status !== 'pending' && (
+                  {userRole === 'master' && chat.proposal_status && chat.proposal_status !== 'pending' && (
                     <div className="mt-1">
                        <span className="px-2 py-0.5 bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 text-[9px] font-bold rounded-full uppercase tracking-wider">
                          {getStatusLabel(chat)}
@@ -425,12 +426,9 @@ export function MessagesList({ userRole = 'master' }: MessagesListProps) {
         {selectedChat ? (
           <>
             <div 
-              className="p-4 sm:p-6 border-b border-neutral-200 dark:border-white/5 bg-white dark:bg-neutral-900 flex items-center gap-4 shrink-0 cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors"
+              className={`p-4 sm:p-6 border-b border-neutral-200 dark:border-white/5 bg-white dark:bg-neutral-900 flex items-center justify-between shrink-0 transition-colors ${userRole === 'master' ? 'cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-800/50' : ''}`}
               onClick={() => {
-                // Determine if we need to open LeadDetails or ClientDetails
-                // We can navigate or pass a prop, but since MessagesList is not wrapped in CRMBoard,
-                // we might need to use a router or state to open a modal here.
-                // Instead of navigating, find the client and open the modal locally
+                if (userRole === 'client') return;
                 const client = clients.find((c: any) => c.lead_id === selectedChat.lead_id);
                 if (client) {
                   setClientToView(client);
@@ -439,35 +437,45 @@ export function MessagesList({ userRole = 'master' }: MessagesListProps) {
                 }
               }}
             >
-              <button 
-                onClick={(e) => { e.stopPropagation(); setShowMobileChat(false); }}
-                className="md:hidden p-2 -ml-2 text-neutral-500 hover:text-neutral-900 dark:hover:text-white rounded-full transition-colors"
-              >
-                <ChevronLeft className="w-5 h-5" />
-              </button>
-              <div className="w-10 h-10 bg-neutral-100 dark:bg-neutral-800 rounded-full flex items-center justify-center shrink-0 overflow-hidden border border-neutral-200 dark:border-white/10">
-                  {selectedChat.client_info?.avatar_url ? (
-                    <img src={selectedChat.client_info.avatar_url} alt="avatar" className="w-full h-full object-cover" />
-                  ) : selectedChat.leads?.image_urls && selectedChat.leads.image_urls.length > 0 ? (
-                    <img src={selectedChat.leads.image_urls[0]} alt="tattoo" className="w-full h-full object-cover" />
+              <div className="flex items-center gap-4 min-w-0">
+                <button 
+                  onClick={(e) => { e.stopPropagation(); setShowMobileChat(false); }}
+                  className="md:hidden p-2 -ml-2 text-neutral-500 hover:text-neutral-900 dark:hover:text-white rounded-full transition-colors"
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </button>
+                <div className="w-10 h-10 bg-neutral-100 dark:bg-neutral-800 rounded-full flex items-center justify-center shrink-0 overflow-hidden border border-neutral-200 dark:border-white/10">
+                    {selectedChat.client_info?.avatar_url ? (
+                      <img src={selectedChat.client_info.avatar_url} alt="avatar" className="w-full h-full object-cover" />
+                    ) : selectedChat.leads?.image_urls && selectedChat.leads.image_urls.length > 0 ? (
+                      <img src={selectedChat.leads.image_urls[0]} alt="tattoo" className="w-full h-full object-cover" />
+                    ) : (
+                      <MessageCircle className="w-5 h-5 text-neutral-400" />
+                    )}
+                </div>
+                <div className="flex flex-col min-w-0">
+                  <h3 className="font-bold text-neutral-900 dark:text-white truncate">
+                    {selectedChat.client_info?.name || selectedChat.leads?.title}
+                  </h3>
+                  {selectedChat.client_info?.email ? (
+                    <p className="text-xs text-neutral-500 truncate">
+                      {selectedChat.client_info.email}
+                    </p>
                   ) : (
-                    <MessageCircle className="w-5 h-5 text-neutral-400" />
+                    <p className="text-xs text-neutral-500 truncate">
+                      {selectedChat.leads?.title}
+                    </p>
                   )}
+                </div>
               </div>
-              <div className="flex flex-col min-w-0">
-                <h3 className="font-bold text-neutral-900 dark:text-white truncate">
-                  {selectedChat.client_info?.name || selectedChat.leads?.title}
-                </h3>
-                {selectedChat.client_info?.email ? (
-                  <p className="text-xs text-neutral-500 truncate">
-                    {selectedChat.client_info.email}
-                  </p>
-                ) : (
-                  <p className="text-xs text-neutral-500 truncate">
-                    {selectedChat.leads?.title}
-                  </p>
-                )}
-              </div>
+              
+              {userRole === 'master' && (
+                <div className="hidden sm:flex shrink-0">
+                  <span className="text-xs font-semibold px-3 py-1.5 bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 rounded-lg whitespace-nowrap">
+                    Открыть CRM
+                  </span>
+                </div>
+              )}
             </div>
 
             <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
@@ -531,9 +539,12 @@ export function MessagesList({ userRole = 'master' }: MessagesListProps) {
                       ) : (
                         <p className="whitespace-pre-wrap text-sm leading-relaxed">{msg.content}</p>
                       )}
-                      <span className={`text-[10px] mt-1 block text-right ${msg.sender_type === userRole ? 'text-violet-200' : 'text-neutral-400'}`}>
-                        {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                      </span>
+                      <div className={`flex items-center justify-end gap-1 text-[10px] mt-1 ${msg.sender_type === userRole ? 'text-violet-200' : 'text-neutral-400'}`}>
+                        <span>{new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                        {msg.sender_type === userRole && (
+                          msg.is_read ? <CheckCheck className="w-3 h-3" /> : <Check className="w-3 h-3" />
+                        )}
+                      </div>
                     </div>
                   </div>
                 )})
