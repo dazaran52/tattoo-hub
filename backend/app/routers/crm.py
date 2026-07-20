@@ -414,6 +414,42 @@ async def update_session(
                             "content": msg
                         }).execute()
         
+        # If moving to in_progress, notify client that the session was accepted
+        if update_data.get("status") == "in_progress":
+            s_res = await supabase.table("master_sessions") \
+                .select("*, master_clients(lead_id, leads(client_id, client_session_id))") \
+                .eq("id", session_id) \
+                .eq("master_id", current_user.user_id) \
+                .execute()
+            if s_res.data:
+                session_data = s_res.data[0]
+                client = session_data.get("master_clients") or {}
+                lead_info = client.get("leads") or {}
+                lead_id = client.get("lead_id")
+                
+                if lead_id:
+                    # check if chat exists
+                    chat_res = await supabase.table("lead_chats").select("id").eq("lead_id", lead_id).execute()
+                    chat_id = chat_res.data[0]["id"] if chat_res.data else None
+                    if not chat_id:
+                        # create chat
+                        new_chat = await supabase.table("lead_chats").insert({
+                            "lead_id": lead_id,
+                            "master_id": current_user.user_id,
+                            "client_session_id": lead_info.get("client_session_id"),
+                            "client_id": lead_info.get("client_id")
+                        }).execute()
+                        if new_chat.data:
+                            chat_id = new_chat.data[0]["id"]
+                    
+                    if chat_id:
+                        msg = f'[SYSTEM_CARD]: {{"type": "master_accepted"}}'
+                        await supabase.table("chat_messages").insert({
+                            "chat_id": chat_id,
+                            "sender_type": "system",
+                            "content": msg
+                        }).execute()
+        
         if not update_data:
             return {"status": "no changes"}
             
