@@ -407,7 +407,7 @@ async def update_session(
                         import json
                         # Escape reason
                         safe_reason = json.dumps(reason or "Без причины")[1:-1]
-                        msg = f"[SYSTEM_CARD]: {{"type": "master_rejected", "reason": "{safe_reason}"}}"
+                        msg = f'[SYSTEM_CARD]: {{"type": "master_rejected", "reason": "{safe_reason}"}}'
                         await supabase.table("chat_messages").insert({
                             "chat_id": chat_id,
                             "sender_type": "system",

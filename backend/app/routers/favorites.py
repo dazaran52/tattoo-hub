@@ -2,8 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 from app.database import get_async_supabase_client
 from supabase._async.client import AsyncClient
-from app.dependencies import get_current_user
-from app.models import AuthUser
+from app.middleware.auth import get_current_user, AuthUser
 from datetime import datetime
 
 router = APIRouter(prefix="/api/favorites", tags=["favorites"])
