@@ -12,6 +12,8 @@ interface Message {
   content: string
   created_at: string
   is_read?: boolean
+  is_sending?: boolean
+  is_error?: boolean
 }
 
 interface ChatPreview {
@@ -206,6 +208,20 @@ export function MessagesList({ userRole = 'master' }: MessagesListProps) {
     e.preventDefault()
     if (!newMessage.trim() || !selectedChat) return
 
+    const messageText = newMessage.trim()
+    setNewMessage('')
+    
+    const tempId = `temp-${Date.now()}`
+    const tempMessage: Message = {
+      id: tempId,
+      sender_type: userRole,
+      content: messageText,
+      created_at: new Date().toISOString(),
+      is_sending: true
+    }
+    setMessages(prev => [...prev, tempMessage])
+    setTimeout(scrollToBottom, 50)
+
     setSending(true)
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
@@ -217,22 +233,23 @@ export function MessagesList({ userRole = 'master' }: MessagesListProps) {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ content: newMessage })
+        body: JSON.stringify({ content: messageText })
       })
       
       if (!res.ok) throw new Error('Failed to send message')
       const msg = await res.json()
-      setMessages(prev => [...prev, msg])
+      
+      setMessages(prev => prev.map(m => m.id === tempId ? msg : m))
       
       // Update local last_message in chats list to avoid waiting for poll
       setChats(prev => prev.map(c => 
         c.id === selectedChat.id ? { ...c, last_message: { content: msg.content, created_at: msg.created_at, sender_type: msg.sender_type } } : c
       ))
       
-      setNewMessage('')
       scrollToBottom()
     } catch (err: any) {
       toast.error(err.message)
+      setMessages(prev => prev.map(m => m.id === tempId ? { ...m, is_sending: false, is_error: true } : m))
     } finally {
       setSending(false)
     }
@@ -241,6 +258,17 @@ export function MessagesList({ userRole = 'master' }: MessagesListProps) {
   const handleImageUpload = async (eOrFile: React.ChangeEvent<HTMLInputElement> | File) => {
     const file = eOrFile instanceof File ? eOrFile : (eOrFile as React.ChangeEvent<HTMLInputElement>).target.files?.[0]
     if (!file || !selectedChat) return
+
+    const tempId = `temp-${Date.now()}`
+    const tempMessage: Message = {
+      id: tempId,
+      sender_type: userRole,
+      content: '📷 Загрузка фото...',
+      created_at: new Date().toISOString(),
+      is_sending: true
+    }
+    setMessages(prev => [...prev, tempMessage])
+    setTimeout(scrollToBottom, 50)
 
     setSending(true)
     try {
@@ -274,7 +302,7 @@ export function MessagesList({ userRole = 'master' }: MessagesListProps) {
       if (!res.ok) throw new Error('Failed to send image')
       
       const msg = await res.json()
-      setMessages(prev => [...prev, msg])
+      setMessages(prev => prev.map(m => m.id === tempId ? msg : m))
       
       setChats(prev => prev.map(c => 
         c.id === selectedChat.id ? { ...c, last_message: { content: '📷 Фото', created_at: msg.created_at, sender_type: msg.sender_type } } : c
@@ -283,6 +311,7 @@ export function MessagesList({ userRole = 'master' }: MessagesListProps) {
       scrollToBottom()
     } catch (error: any) {
       toast.error('Ошибка загрузки фото: ' + error.message)
+      setMessages(prev => prev.map(m => m.id === tempId ? { ...m, is_sending: false, is_error: true } : m))
     } finally {
       setSending(false)
     }
@@ -542,7 +571,15 @@ export function MessagesList({ userRole = 'master' }: MessagesListProps) {
                       <div className={`flex items-center justify-end gap-1 text-[10px] mt-1 ${msg.sender_type === userRole ? 'text-violet-200' : 'text-neutral-400'}`}>
                         <span>{new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                         {msg.sender_type === userRole && (
-                          msg.is_read ? <CheckCheck className="w-3 h-3" /> : <Check className="w-3 h-3" />
+                          msg.is_error ? (
+                            <AlertCircle className="w-3 h-3 text-red-400" />
+                          ) : msg.is_sending ? (
+                            <Clock className="w-3 h-3 opacity-70" />
+                          ) : msg.is_read ? (
+                            <CheckCheck className="w-3 h-3" />
+                          ) : (
+                            <Check className="w-3 h-3" />
+                          )
                         )}
                       </div>
                     </div>
