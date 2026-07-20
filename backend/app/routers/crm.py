@@ -50,6 +50,7 @@ class SessionUpdate(BaseModel):
     size: Optional[str] = None
     status: Optional[str] = None
     reference_images: Optional[List[str]] = None
+    reject_reason: Optional[str] = None
 
 class CompleteSessionData(BaseModel):
     result_image_urls: Optional[List[str]] = []
@@ -97,9 +98,14 @@ async def get_clients(
         # we will fetch the leads to get their client_id / client_token
         lead_ids = [c["lead_id"] for c in clients if c.get("lead_id")]
         lead_map = {}
+        unlocked_lead_ids = set()
+        
         if lead_ids:
             l_res = await supabase.table("leads").select("id, client_id, client_session_id").in_("id", lead_ids).execute()
             lead_map = {l["id"]: l for l in (l_res.data or [])}
+            
+            u_res = await supabase.table("lead_unlocks").select("lead_id").eq("user_id", current_user.user_id).in_("lead_id", lead_ids).execute()
+            unlocked_lead_ids = {u["lead_id"] for u in (u_res.data or [])}
             
         for c in (chats_res.data or []):
             if c.get("client_id"):
@@ -122,6 +128,17 @@ async def get_clients(
                 if not chat_id:
                     chat_id = chat_dict.get(f"lead_{client['lead_id']}")
             client["chat_id"] = chat_id
+            
+            # Check unlocks and mask data
+            client["is_unlocked"] = True
+            if client.get("leads") and not client["leads"].get("is_personal"):
+                # It's a marketplace lead assigned to this master
+                if client["lead_id"] not in unlocked_lead_ids:
+                    client["is_unlocked"] = False
+                    client["phone"] = "Скрыто"
+                    client["email"] = "Скрыто"
+                    client["instagram"] = "Скрыто"
+                    client["contact_info"] = "Скрыто"
         
         return clients
     except Exception as e:
@@ -325,7 +342,78 @@ async def update_session(
     supabase: AsyncClient = Depends(get_async_supabase_client)
 ):
     try:
-        update_data = {k: v for k, v in data.model_dump().items() if v is not None}
+        dump = data.model_dump()
+        reason = dump.pop("reject_reason", None)
+        update_data = {k: v for k, v in dump.items() if v is not None}
+        
+        # If rejecting/cancelling, we might need to send to marketplace
+        is_rejecting = update_data.get("status") in ["rejected", "cancelled"]
+        
+        if is_rejecting:
+            # We must get the session details first to check if it's a marketplace lead
+            s_res = await supabase.table("master_sessions") \
+                .select("*, master_clients(lead_id, name, leads(is_personal))") \
+                .eq("id", session_id) \
+                .eq("master_id", current_user.user_id) \
+                .execute()
+            if s_res.data:
+                session_data = s_res.data[0]
+                client = session_data.get("master_clients") or {}
+                lead_info = client.get("leads") or {}
+                lead_id = client.get("lead_id")
+                
+                # Check if it was unlocked
+                is_unlocked = False
+                if lead_id:
+                    u_res = await supabase.table("lead_unlocks").select("id").eq("lead_id", lead_id).eq("user_id", current_user.user_id).execute()
+                    is_unlocked = bool(u_res.data)
+                
+                # If it's a platform lead and NOT unlocked, we should send it to marketplace
+                # and maybe soft delete this session or keep it as cancelled?
+                # The user said "should it fall to the general marketplace? YES"
+                # So we update the lead to auction status
+                if lead_id and not lead_info.get("is_personal") and not is_unlocked:
+                    await supabase.table("leads").update({
+                        "assigned_master_id": None,
+                        "status": "auction"
+                    }).eq("id", lead_id).execute()
+                    
+                    # We might also want to delete the master_clients/sessions since it's no longer theirs,
+                    # but keeping it as 'cancelled' with is_deleted=True removes it from their active view.
+                    update_data["status"] = "cancelled"
+                    update_data["is_deleted"] = True
+                
+                # Send a system message or notification with the reason
+                if lead_id:
+                    # find chat_id
+                    chat_res = await supabase.table("lead_chats").select("id").eq("lead_id", lead_id).execute()
+                    chat_id = chat_res.data[0]["id"] if chat_res.data else None
+                    
+                    if not chat_id:
+                        # Create chat just to send the rejection message
+                        # We need client_id or client_session_id
+                        lead_res = await supabase.table("leads").select("client_id, client_session_id").eq("id", lead_id).execute()
+                        if lead_res.data:
+                            new_chat = await supabase.table("lead_chats").insert({
+                                "lead_id": lead_id,
+                                "master_id": current_user.user_id,
+                                "client_session_id": lead_res.data[0].get("client_session_id"),
+                                "client_id": lead_res.data[0].get("client_id")
+                            }).execute()
+                            if new_chat.data:
+                                chat_id = new_chat.data[0]["id"]
+                                
+                    if chat_id:
+                        import json
+                        # Escape reason
+                        safe_reason = json.dumps(reason or "Без причины")[1:-1]
+                        msg = f"[SYSTEM_CARD]: {{"type": "master_rejected", "reason": "{safe_reason}"}}"
+                        await supabase.table("chat_messages").insert({
+                            "chat_id": chat_id,
+                            "sender_type": "system",
+                            "content": msg
+                        }).execute()
+        
         if not update_data:
             return {"status": "no changes"}
             
@@ -339,6 +427,8 @@ async def update_session(
             raise HTTPException(status_code=404, detail="Session not found")
         return res.data[0]
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.delete("/sessions/{session_id}")

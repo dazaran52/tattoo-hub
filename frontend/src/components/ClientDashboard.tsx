@@ -11,7 +11,10 @@ import { useLanguage } from '@/i18n/LanguageContext'
 
 export function ClientDashboard({ profile }: { profile: Profile }) {
   const { t } = useLanguage()
-  const [activeTab, setActiveTab] = useState<'leads' | 'favorites' | 'top_masters' | 'messages'>('leads')
+  const [activeTab, setActiveTab] = useState<'leads' | 'top_masters' | 'messages'>('leads')
+  const [masterTab, setMasterTab] = useState<'rating' | 'favorites'>('rating')
+  const [favoriteMasterIds, setFavoriteMasterIds] = useState<Set<string>>(new Set())
+  const [unreadMessages, setUnreadMessages] = useState(0)
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [selectedMasterForDirectBooking, setSelectedMasterForDirectBooking] = useState<string | null>(null)
   const [selectedMasterUsernameForModal, setSelectedMasterUsernameForModal] = useState<string | null>(null)
@@ -26,6 +29,40 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
   const [selectedChatTitle, setSelectedChatTitle] = useState('')
   const [selectedChatMaster, setSelectedChatMaster] = useState('')
 
+  const toggleFavorite = async (masterId: string, e: React.MouseEvent) => {
+    e.stopPropagation()
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) return
+      
+      const isFav = favoriteMasterIds.has(masterId)
+      
+      // Optimistic update
+      setFavoriteMasterIds(prev => {
+        const next = new Set(prev)
+        if (isFav) next.delete(masterId)
+        else next.add(masterId)
+        return next
+      })
+      
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/favorites/${masterId}`, {
+        method: isFav ? 'DELETE' : 'POST',
+        headers: { 'Authorization': `Bearer ${session.access_token}` }
+      })
+      
+      if (!response.ok) {
+        // Revert on error
+        setFavoriteMasterIds(prev => {
+          const next = new Set(prev)
+          if (!isFav) next.delete(masterId)
+          else next.add(masterId)
+          return next
+        })
+      }
+    } catch (err) {
+      console.error('Error toggling favorite:', err)
+    }
+  }
   const handlePauseResume = async (leadId: string, currentStatus: string) => {
     try {
       const newStatus = currentStatus === 'open' ? 'archived' : 'open'
@@ -131,9 +168,52 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
         setIsLoadingMasters(false)
       }
     }
+    
+    async function fetchFavorites() {
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        if (!session) return
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/favorites`, {
+          headers: { 'Authorization': `Bearer ${session.access_token}` }
+        })
+        if (response.ok) {
+          const data = await response.json()
+          setFavoriteMasterIds(new Set(data))
+        }
+      } catch (err) {
+        console.error('Error fetching favorites:', err)
+      }
+    }
+    
+    async function fetchUnread() {
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/chat/unread-count`, {
+          headers: { 'Authorization': `Bearer ${session?.access_token}` }
+        })
+        if (response.ok) {
+          const data = await response.json()
+          setUnreadMessages(data.count)
+        }
+      } catch (err) {
+        console.error('Error fetching unread:', err)
+      }
+    }
 
     fetchLeads()
     fetchTopMasters()
+    fetchUnread()
+    fetchFavorites()
+    
+    const channel = supabase.channel('client_messages')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'chat_messages' }, () => {
+        fetchUnread()
+      })
+      .subscribe()
+      
+    return () => {
+      supabase.removeChannel(channel)
+    }
   }, [])
 
   return (
@@ -159,17 +239,7 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
           >
             {t('myLeads')}
           </button>
-          <button
-            onClick={() => setActiveTab('favorites')}
-            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-              activeTab === 'favorites'
-                ? 'bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white shadow-sm'
-                : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200'
-            }`}
-          >
-            <Heart className="w-4 h-4 inline-block mr-2" />
-            {t('favoriteMasters')}
-          </button>
+
           <button
             onClick={() => setActiveTab('top_masters')}
             className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
@@ -182,7 +252,7 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
           </button>
           <button
             onClick={() => setActiveTab('messages')}
-            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors relative flex items-center ${
               activeTab === 'messages'
                 ? 'bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white shadow-sm'
                 : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200'
@@ -190,6 +260,9 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
           >
             <MessageCircle className="w-4 h-4 inline-block mr-2" />
             {t('messages') || 'Сообщения'}
+            {unreadMessages > 0 && (
+              <span className="ml-2 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+            )}
           </button>
         </div>
       </div>
@@ -377,12 +450,6 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
             </div>
           ))}
         </div>
-      ) : activeTab === 'favorites' ? (
-        <div className="text-center py-20">
-          <Heart className="w-16 h-16 text-neutral-300 dark:text-neutral-700 mx-auto mb-4" />
-          <h3 className="text-xl font-bold text-neutral-500 mb-2">{t('noFavorites')}</h3>
-          <p className="text-neutral-400">{t('saveMastersDesc')}</p>
-        </div>
       ) : activeTab === 'messages' ? (
         <div className="w-full">
           <MessagesList userRole="client" />
@@ -405,7 +472,24 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
             </div>
           </div>
 
-          <h3 className="text-2xl font-bold text-neutral-900 dark:text-white mt-12 mb-6">Рейтинг мастеров</h3>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between mt-12 mb-6 gap-4">
+            <h3 className="text-2xl font-bold text-neutral-900 dark:text-white">Мастера</h3>
+            <div className="flex bg-neutral-100 dark:bg-neutral-800 p-1 rounded-xl w-fit">
+              <button 
+                onClick={() => setMasterTab('rating')}
+                className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${masterTab === 'rating' ? 'bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white shadow-sm' : 'text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'}`}
+              >
+                Рейтинг мастеров
+              </button>
+              <button 
+                onClick={() => setMasterTab('favorites')}
+                className={`px-4 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-1.5 ${masterTab === 'favorites' ? 'bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white shadow-sm' : 'text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'}`}
+              >
+                <Heart className={`w-4 h-4 ${masterTab === 'favorites' ? 'fill-red-500 text-red-500' : ''}`} />
+                Избранные
+              </button>
+            </div>
+          </div>
           
           {isLoadingMasters ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -413,11 +497,17 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
                 <div key={i} className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-3xl h-[400px] animate-pulse"></div>
               ))}
             </div>
-          ) : topMasters.length > 0 ? (
+          ) : topMasters.filter(m => masterTab === 'rating' || favoriteMasterIds.has(m.id)).length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {topMasters.map(master => (
+              {topMasters.filter(m => masterTab === 'rating' || favoriteMasterIds.has(m.id)).map(master => (
                 <div key={master.id} className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-shadow group flex flex-col">
-                  <div className="p-6 pb-4 flex items-start gap-4">
+                  <div className="p-6 pb-4 flex items-start gap-4 relative">
+                    <button 
+                      onClick={(e) => toggleFavorite(master.id, e)}
+                      className="absolute top-4 right-4 p-2 bg-neutral-100 dark:bg-neutral-800 rounded-full hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
+                    >
+                      <Heart className={`w-5 h-5 transition-colors ${favoriteMasterIds.has(master.id) ? 'fill-red-500 text-red-500' : 'text-neutral-400'}`} />
+                    </button>
                     <img 
                       src={master.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(master.display_name || master.username || 'M')}`}
                       alt="Avatar"
@@ -458,7 +548,15 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
               ))}
             </div>
           ) : (
-             <div className="text-center py-12 text-neutral-500">Нет доступных мастеров</div>
+            <div className="text-center py-20 bg-neutral-50 dark:bg-neutral-900/50 rounded-3xl border border-dashed border-neutral-200 dark:border-neutral-800">
+              <Heart className="w-16 h-16 text-neutral-300 dark:text-neutral-700 mx-auto mb-4" />
+              <h3 className="text-xl font-bold text-neutral-500 mb-2">
+                {masterTab === 'favorites' ? t('noFavorites') || 'Нет избранных мастеров' : 'Нет доступных мастеров'}
+              </h3>
+              {masterTab === 'favorites' && (
+                <p className="text-neutral-400">{t('saveMastersDesc') || 'Сохраняйте понравившихся мастеров, чтобы не потерять их'}</p>
+              )}
+            </div>
           )}
         </div>
       )}

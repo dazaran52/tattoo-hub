@@ -40,11 +40,19 @@ export default function DashboardPage() {
     if (!profile || profile.role !== 'master') return
     
     const fetchUnreadCount = async () => {
-      const { count } = await supabase.from('chat_messages')
-        .select('*', { count: 'exact', head: true })
-        .eq('is_read', false)
-        .eq('sender_type', 'client')
-      if (count !== null) setUnreadMessages(count)
+      try {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+        const { data: { session } } = await supabase.auth.getSession()
+        const res = await fetch(`${apiUrl}/api/chat/unread-count`, {
+          headers: { 'Authorization': `Bearer ${session?.access_token}` }
+        })
+        if (res.ok) {
+          const { count } = await res.json()
+          setUnreadMessages(count)
+        }
+      } catch (e) {
+        console.error('Failed to fetch unread count', e)
+      }
     }
     
     fetchUnreadCount()

@@ -203,12 +203,20 @@ export function CRMBoard() {
     }
   }
 
-  const updateSessionStatus = async (sessionId: string, newStatus: string) => {
+  const updateSessionStatus = async (sessionId: string, newStatus: string, reason?: string) => {
     try {
-      const { error } = await supabase.from('master_sessions')
-        .update({ status: newStatus })
-        .eq('id', sessionId)
-      if (error) throw error
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+      const { data: { session } } = await supabase.auth.getSession()
+      
+      const res = await fetch(`${apiUrl}/api/crm/sessions/${sessionId}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${session?.access_token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ status: newStatus, reject_reason: reason })
+      })
+      if (!res.ok) throw new Error('Failed to update session status')
       
       setSessions(prev => prev.map(item => 
         item.id === sessionId ? { ...item, status: newStatus } : item
@@ -796,12 +804,13 @@ export function CRMBoard() {
         isOpen={!!sessionDetails}
         onClose={() => setSessionDetails(null)}
         session={sessionDetails}
+        onUpdate={fetchData}
         chatId={clientsForModal.find(c => c.id === sessionDetails?.master_clients?.id)?.chat_id}
         onAccept={() => {
           if (sessionDetails) setSessionToAccept(sessionDetails)
         }}
-        onReject={() => {
-          if (sessionDetails) updateSessionStatus(sessionDetails.id, 'rejected')
+        onReject={(reason?: string) => {
+          if (sessionDetails) updateSessionStatus(sessionDetails.id, 'cancelled', reason)
         }}
         onEdit={() => {
           if (sessionDetails) setTimeout(() => setSessionToEdit(sessionDetails), 100)

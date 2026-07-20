@@ -1,6 +1,8 @@
 import { X, Calendar, Palette, User, MessageCircle, Send, Phone, Scale3d, PersonStanding } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useState } from 'react'
+import { toast } from 'react-hot-toast'
+import { supabase } from '@/lib/supabase'
 import { ImageViewerModal } from './ImageViewerModal'
 import { ClientDetailsModal } from './ClientDetailsModal'
 
@@ -9,15 +11,56 @@ interface LeadDetailsModalProps {
   onClose: () => void
   session: any
   onAccept: () => void
-  onReject: () => void
+  onReject: (reason?: string) => void
   onEdit?: () => void
   onSessionClick?: (session: any) => void
+  onUpdate?: () => void
   chatId?: string | null
 }
 
-export function LeadDetailsModal({ isOpen, onClose, session, onAccept, onReject, onEdit, onSessionClick, chatId }: LeadDetailsModalProps) {
+export function LeadDetailsModal({ isOpen, onClose, session, onAccept, onReject, onEdit, onSessionClick, chatId, onUpdate }: LeadDetailsModalProps) {
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
   const [isClientModalOpen, setIsClientModalOpen] = useState(false)
+  const [isRejecting, setIsRejecting] = useState(false)
+  const [rejectReason, setRejectReason] = useState('')
+  const [isUnlocking, setIsUnlocking] = useState(false)
+  
+  const isUnlocked = session?.master_clients?.is_unlocked !== false
+  const leadId = session?.master_clients?.lead_id
+  
+  const handleUnlock = async () => {
+    try {
+      setIsUnlocking(true)
+      if (!leadId) throw new Error("No lead ID")
+      const { data: { session: authSession } } = await supabase.auth.getSession()
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/leads/${leadId}/unlock`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${authSession?.access_token}` }
+      })
+      if (!res.ok) {
+        const err = await res.json()
+        throw new Error(err.detail || 'Failed to unlock')
+      }
+      toast.success('Заявка успешно разблокирована!')
+      onUpdate?.()
+    } catch(e: any) {
+      toast.error(e.message || 'Ошибка разблокировки')
+    } finally {
+      setIsUnlocking(false)
+    }
+  }
+  
+  const submitReject = () => {
+    if (!rejectReason.trim()) {
+      toast.error('Пожалуйста, укажите причину отказа')
+      return
+    }
+    // We pass the reason via a callback or we can handle the API call here.
+    // To make it simple, we can pass it to onReject
+    onReject(rejectReason)
+    setIsRejecting(false)
+    setRejectReason('')
+  }
 
   if (!isOpen || !session) return null
 

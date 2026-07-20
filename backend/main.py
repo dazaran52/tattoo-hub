@@ -24,7 +24,7 @@ from app.routers.client_portal import router as client_portal_router
 from app.routers.public import router as public_router
 from app.routers.instagram import router as instagram_router
 from app.routers.reviews import router as reviews_router
-from app.routers import crm
+from app.routers import crm, favorites
 
 
 def run_migrations():
@@ -175,6 +175,7 @@ def create_application() -> FastAPI:
     app.include_router(instagram_router)
     app.include_router(reviews_router)
     app.include_router(crm.router, prefix="/api/crm", tags=["CRM"])
+app.include_router(favorites.router)
     
     @app.get("/health")
     async def health_check():

@@ -235,7 +235,7 @@ export function MessagesList({ userRole = 'master' }: MessagesListProps) {
     setMessages(prev => [...prev, tempMessage])
     setTimeout(scrollToBottom, 50)
 
-    setSending(true)
+    // setSending(true) -- removed to allow instant typing
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
       const { data: { session } } = await supabase.auth.getSession()
@@ -264,7 +264,7 @@ export function MessagesList({ userRole = 'master' }: MessagesListProps) {
       toast.error(err.message)
       setMessages(prev => prev.map(m => m.id === tempId ? { ...m, is_sending: false, is_error: true } : m))
     } finally {
-      setSending(false)
+      // setSending(false)
     }
   }
 
@@ -283,7 +283,7 @@ export function MessagesList({ userRole = 'master' }: MessagesListProps) {
     setMessages(prev => [...prev, tempMessage])
     setTimeout(scrollToBottom, 50)
 
-    setSending(true)
+    // setSending(true) -- removed to allow instant typing
     try {
       const fileExt = file.name.split('.').pop()
       const fileName = `${Math.random()}.${fileExt}`
@@ -326,7 +326,7 @@ export function MessagesList({ userRole = 'master' }: MessagesListProps) {
       toast.error('Ошибка загрузки фото: ' + error.message)
       setMessages(prev => prev.map(m => m.id === tempId ? { ...m, is_sending: false, is_error: true } : m))
     } finally {
-      setSending(false)
+      // setSending(false)
     }
   }
 
@@ -384,6 +384,9 @@ export function MessagesList({ userRole = 'master' }: MessagesListProps) {
           <h2 className="text-xl font-bold text-neutral-900 dark:text-white flex items-center gap-2 mb-4">
             <MessageCircle className="w-5 h-5 text-violet-500" />
             Сообщения
+            {chats.reduce((sum, c: any) => sum + (c.unread_count || 0), 0) > 0 && (
+              <span className="w-2 h-2 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.6)] animate-pulse ml-1" />
+            )}
           </h2>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
@@ -547,7 +550,7 @@ export function MessagesList({ userRole = 'master' }: MessagesListProps) {
                           <div className="bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-white/10 p-5 rounded-2xl shadow-sm text-center max-w-sm w-full">
                              <Calendar className="w-8 h-8 text-violet-500 mx-auto mb-3" />
                              <h4 className="font-bold text-neutral-900 dark:text-white mb-2">
-                               {cardData.type === 'session_created' ? 'Сеанс назначен' : 'Системное уведомление'}
+                               {cardData.type === 'session_created' ? 'Сеанс назначен' : cardData.type === 'master_rejected' ? 'Отказ' : 'Системное уведомление'}
                              </h4>
                              {cardData.type === 'session_created' && (
                                <>
@@ -557,6 +560,14 @@ export function MessagesList({ userRole = 'master' }: MessagesListProps) {
                                  <div className="bg-neutral-50 dark:bg-neutral-900/50 rounded-xl py-2 px-4 text-sm font-medium text-neutral-900 dark:text-white border border-neutral-100 dark:border-white/5">
                                    Стоимость: {cardData.price} CZK
                                  </div>
+                               </>
+                             )}
+                             {cardData.type === 'master_rejected' && (
+                               <>
+                                 <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-4 whitespace-pre-wrap">
+                                   Мастер отклонил заявку.<br/><br/>
+                                   <strong>Причина:</strong> {cardData.reason}
+                                 </p>
                                </>
                              )}
                           </div>
@@ -570,7 +581,7 @@ export function MessagesList({ userRole = 'master' }: MessagesListProps) {
                   }
 
                   return (
-                  <div key={msg.id} className={`flex ${msg.sender_type === userRole ? 'justify-end' : 'justify-start'} shrink-0`}>
+                  <div key={msg.id} className={`flex ${msg.sender_type === userRole ? 'justify-end' : 'justify-start'} shrink-0 animate-in slide-in-from-bottom-2 fade-in duration-300`}>
                     <div className={`max-w-[85%] sm:max-w-[70%] rounded-2xl px-4 py-2 ${
                       msg.sender_type === userRole 
                         ? 'bg-violet-600 text-white rounded-br-sm shadow-sm' 
@@ -631,14 +642,10 @@ export function MessagesList({ userRole = 'master' }: MessagesListProps) {
                 />
                 <button 
                   type="submit"
-                  disabled={!newMessage.trim() || sending}
+                  disabled={!newMessage.trim()}
                   className="bg-violet-600 hover:bg-violet-700 disabled:bg-neutral-300 disabled:dark:bg-neutral-800 text-white p-3 rounded-xl transition-all shadow-sm flex items-center justify-center min-w-[48px]"
                 >
-                  {sending ? (
-                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  ) : (
-                    <Send className="w-5 h-5" />
-                  )}
+                  <Send className="w-5 h-5" />
                 </button>
               </form>
             </div>
