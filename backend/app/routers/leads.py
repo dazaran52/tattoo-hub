@@ -642,12 +642,37 @@ async def create_client_lead(
                             "proposed_dates": "Сразу в работу"
                         }).execute()
                         
-                        # Create the chat
-                        await supabase.table("lead_chats").insert({
-                            "lead_id": new_lead["id"],
-                            "master_id": lead_data.assigned_master_id,
-                            "client_session_id": client_token
-                        }).execute()
+                        # Create or get the chat
+                        chat_id = None
+                        if client_id:
+                            chats_res = await supabase.table("lead_chats").select("id").eq("client_id", client_id).eq("master_id", lead_data.assigned_master_id).execute()
+                        else:
+                            chats_res = await supabase.table("lead_chats").select("id").eq("client_session_id", client_token).eq("master_id", lead_data.assigned_master_id).execute()
+                            
+                        if not chats_res.data:
+                            new_chat = await supabase.table("lead_chats").insert({
+                                "lead_id": new_lead["id"],
+                                "master_id": lead_data.assigned_master_id,
+                                "client_session_id": client_token,
+                                "client_id": client_id
+                            }).execute()
+                            if new_chat.data:
+                                chat_id = new_chat.data[0]["id"]
+                        else:
+                            chat_id = chats_res.data[0]["id"]
+                            
+                        if chat_id:
+                            import json
+                            system_msg = {
+                                "type": "new_lead",
+                                "lead_id": new_lead["id"],
+                                "title": new_lead["title"]
+                            }
+                            await supabase.table("chat_messages").insert({
+                                "chat_id": chat_id,
+                                "sender_type": "system",
+                                "content": f"[SYSTEM_CARD]: {json.dumps(system_msg)}"
+                            }).execute()
                         
                         # Also automatically add to CRM (master_clients & master_sessions)
                         # Try to find an existing client first

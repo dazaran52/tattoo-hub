@@ -51,6 +51,7 @@ export function MessagesList({ userRole = 'master' }: MessagesListProps) {
   const [clients, setClients] = useState<any[]>([])
   const [clientToView, setClientToView] = useState<any | null>(null)
   const [viewerImage, setViewerImage] = useState<string | null>(null)
+  const [showSessionsModal, setShowSessionsModal] = useState(false)
   
   const [chatsOffset, setChatsOffset] = useState(0)
   const [hasMoreChats, setHasMoreChats] = useState(true)
@@ -511,13 +512,11 @@ export function MessagesList({ userRole = 'master' }: MessagesListProps) {
                 </div>
               </div>
               
-              {userRole === 'master' && (
-                <div className="hidden sm:flex shrink-0">
-                  <span className="text-xs font-semibold px-3 py-1.5 bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 rounded-lg whitespace-nowrap">
-                    {selectedChat.kanban_status === 'new' ? 'Посмотреть заявку' : 'Открыть CRM'}
-                  </span>
-                </div>
-              )}
+              <div className="hidden sm:flex shrink-0 cursor-pointer" onClick={() => setShowSessionsModal(true)}>
+                <span className="text-xs font-semibold px-3 py-1.5 bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 rounded-lg whitespace-nowrap hover:bg-violet-200 dark:hover:bg-violet-900/50 transition-colors">
+                  Сеансы ({selectedChat.sessions_count || 1})
+                </span>
+              </div>
             </div>
 
             <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
