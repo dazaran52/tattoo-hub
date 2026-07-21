@@ -153,8 +153,12 @@ export function LeadAcceptWizardModal({ isOpen, onClose, onSuccess, session, all
     }
   }
 
-  const clientBudget = (session.master_clients?.leads as any)?.description?.match(/Бюджет:\s*(.+)/)?.[1] || 'Договорная/не указан'
-  const clientPrefTime = (session.master_clients?.leads as any)?.description?.match(/Желаемое время:\s*(.+)/)?.[1] || 'Не указано'
+  const leadData = (session.master_clients?.leads as any) || {}
+  const parsedBudgetFromDesc = leadData.description?.match(/Бюджет:\s*(.+)/)?.[1]
+  const clientBudget = leadData.client_budget 
+    ? `${leadData.client_budget} ${leadData.client_currency || 'CZK'}` 
+    : (leadData.is_negotiable_budget ? 'Договорная цена' : (parsedBudgetFromDesc || 'Договорная/не указан'))
+  const clientPrefTime = leadData.description?.match(/Желаемое время:\s*(.+)/)?.[1] || 'Не указано'
 
   return (
     <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>

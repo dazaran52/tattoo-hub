@@ -95,7 +95,7 @@ export default function BookMasterPage({ params }: { params: { username: string 
   const [sessionDate, setSessionDate] = useState<Date | undefined>(undefined)
   const [sessionTime, setSessionTime] = useState('')
   const [budgetVal, setBudgetVal] = useState('')
-  const [isNegotiable, setIsNegotiable] = useState(true)
+  const [isNegotiable, setIsNegotiable] = useState(false)
   const [clientPriority, setClientPriority] = useState('quality')
   const [images, setImages] = useState<File[]>([])
   const [isUploading, setIsUploading] = useState(false)
@@ -270,13 +270,26 @@ export default function BookMasterPage({ params }: { params: { username: string 
           <p className="text-neutral-500 dark:text-neutral-400 mb-8">
             Мастер получил вашу идею и свяжется с вами в ближайшее время для обсуждения деталей и цены.
           </p>
-          <button 
-            onClick={() => window.location.reload()}
-            className="w-full bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 font-bold py-3 rounded-xl hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-colors mb-6"
-          >
-            Отправить еще одну
-          </button>
-          
+          <div className="flex flex-col gap-3 mb-6">
+            <button 
+              onClick={() => {
+                localStorage.setItem('pending_lead', JSON.stringify({ description, size, priority: clientPriority }))
+                router.push('/new-lead')
+              }}
+              className="w-full bg-gradient-to-r from-cyan-500 to-purple-500 text-white font-bold py-3 rounded-xl hover:from-cyan-400 hover:to-purple-400 shadow-lg transition-all"
+            >
+              Отправить эту идею на маркетплейс
+            </button>
+            <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-2">
+              Вы можете предложить свою идею другим свободным мастерам
+            </p>
+            <button 
+              onClick={() => window.location.reload()}
+              className="w-full bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 font-bold py-3 rounded-xl hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-colors"
+            >
+              Отправить еще одну заявку этому мастеру
+            </button>
+          </div>
 
         </div>
       </div>
