@@ -188,7 +188,7 @@ export function LeadDetailsModal({ isOpen, onClose, session, onAccept, onReject,
             {session.status === 'new' ? (
               <>
                 <button 
-                  onClick={() => { onClose(); onReject(); }}
+                  onClick={() => setIsRejecting(true)}
                   className="flex-1 py-3.5 px-4 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 rounded-xl font-bold transition-colors"
                 >
                   Отклонить
@@ -219,6 +219,47 @@ export function LeadDetailsModal({ isOpen, onClose, session, onAccept, onReject,
               </>
             )}
           </div>
+
+          {isRejecting && (
+            <div className="absolute inset-0 bg-white/95 dark:bg-neutral-900/95 backdrop-blur-sm z-10 flex flex-col items-center justify-center p-6">
+              <h3 className="text-xl font-bold text-neutral-900 dark:text-white mb-2">Причина отказа</h3>
+              <p className="text-sm text-neutral-500 mb-6 text-center max-w-sm">
+                Пожалуйста, укажите причину отклонения заявки. Она будет отправлена клиенту.
+              </p>
+              <textarea
+                value={rejectReason}
+                onChange={(e) => setRejectReason(e.target.value)}
+                placeholder="Например: Не работаю в таком стиле / Нет свободных окон..."
+                className="w-full max-w-md bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-white/10 rounded-xl p-4 text-neutral-900 dark:text-white placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-red-500 min-h-[120px] resize-none mb-6"
+              />
+              <div className="flex gap-3 w-full max-w-md">
+                <button
+                  onClick={() => {
+                    setIsRejecting(false)
+                    setRejectReason('')
+                  }}
+                  className="flex-1 py-3 bg-neutral-200 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 font-bold rounded-xl hover:bg-neutral-300 dark:hover:bg-neutral-700 transition-colors"
+                >
+                  Отмена
+                </button>
+                <button
+                  onClick={() => {
+                    if (!rejectReason.trim()) {
+                      toast.error('Укажите причину отказа')
+                      return
+                    }
+                    onReject(rejectReason.trim())
+                    setIsRejecting(false)
+                    setRejectReason('')
+                    onClose()
+                  }}
+                  className="flex-1 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl transition-colors shadow-lg shadow-red-500/20"
+                >
+                  Отклонить заявку
+                </button>
+              </div>
+            </div>
+          )}
         </motion.div>
       </div>
 

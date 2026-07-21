@@ -146,6 +146,10 @@ def get_personal_leads(
 ):
     """Get personal CRM leads for the current master."""
     try:
+        # Fetch current master's currency
+        user_res = supabase.table("users").select("currency").eq("id", current_user.user_id).execute()
+        master_currency = user_res.data[0].get("currency", "CZK") if user_res.data else "CZK"
+
         leads_res = supabase.table("leads") \
             .select("*, cities(country_id)") \
             .eq("assigned_master_id", current_user.user_id) \
@@ -154,18 +158,50 @@ def get_personal_leads(
         
         leads = leads_res.data or []
         
+        # Fetch unlocks for these leads
+        lead_ids = [l["id"] for l in leads]
+        unlocked_by_me = {}
+        if lead_ids:
+            unlocks_res = supabase.table("lead_unlocks").select("lead_id, status").eq("user_id", current_user.user_id).in_("lead_id", lead_ids).execute()
+            unlocked_by_me = {u["lead_id"]: u["status"] for u in (unlocks_res.data or [])}
+
         processed_leads = []
         for lead in leads:
-            # Format according to LeadResponse
+            is_unlocked = lead["id"] in unlocked_by_me
+            unlock_status = unlocked_by_me.get(lead["id"]) if is_unlocked else None
+            
+            contacts = lead["contacts"] if is_unlocked else "******** [Skryto. Odemkněte za credits]"
+            
+            # Format display budget
+            display_budget = None
+            if lead.get("is_negotiable_budget"):
+                display_budget = "Договорная цена"
+            elif lead.get("client_budget") and lead.get("client_currency"):
+                orig_budget = lead["client_budget"]
+                orig_curr = lead["client_currency"]
+                if orig_curr.upper() == master_currency.upper():
+                    display_budget = f"{orig_budget} {orig_curr}"
+                else:
+                    display_budget = f"{orig_budget} {orig_curr}"
+            
+            # Calculate dynamic unlock price based on the master's currency
+            base_price_eur = float(lead.get("base_unlock_price_eur", 2.0))
+            local_unlock_price = base_price_eur
+            
             processed_leads.append({
                 **lead,
+                "contacts": contacts,
                 "city_id": lead.get("city_id"),
                 "country_id": lead.get("cities", {}).get("country_id") if lead.get("cities") else lead.get("country_id"),
-                "is_unlocked": True, # Personal leads are always unlocked
-                "price_credits": 0,
+                "is_unlocked": is_unlocked,
+                "unlock_status": unlock_status,
+                "price_credits": local_unlock_price,
+                "unlock_price_local": local_unlock_price,
+                "master_currency": master_currency,
                 "lowest_bid": None,
                 "my_proposal_status": lead.get("status", "new"),
-                "my_chat_id": None
+                "my_chat_id": None,
+                "display_budget": display_budget
             })
             
         return processed_leads

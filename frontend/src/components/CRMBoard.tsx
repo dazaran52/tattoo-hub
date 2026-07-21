@@ -38,6 +38,9 @@ export interface CRMSession {
     telegram?: string
     email?: string
     is_deleted?: boolean
+    is_unlocked?: boolean
+    lead_id?: string
+    is_lead?: boolean
     leads?: {
       title: string
       image_urls: string[]
@@ -90,6 +93,9 @@ export function CRMBoard() {
   // Modals
   const [isSessionModalOpen, setIsSessionModalOpen] = useState(false)
   const [sessionToComplete, setSessionToComplete] = useState<string | null>(null)
+  const [selectedLeadSession, setSelectedLeadSession] = useState<any | null>(null)
+
+  const [dateFilter, setDateFilter] = useState<'today'|'this_week'|'this_month'|'all'>('all')
   const [sessionToEdit, setSessionToEdit] = useState<CRMSession | null>(null)
   const [sessionToAccept, setSessionToAccept] = useState<CRMSession | null>(null)
   const [sessionDetails, setSessionDetails] = useState<CRMSession | null>(null)
@@ -98,7 +104,9 @@ export function CRMBoard() {
   const [clientsForModal, setClientsForModal] = useState<any[]>([])
   
   const handleSessionClick = (session: CRMSession) => {
-    if (session.status === 'new') {
+    if (session.master_clients?.is_lead) {
+      setSelectedLeadSession(session)
+    } else if (session.status === 'new') {
       setSessionDetails(session)
     } else {
       setSessionToEdit(session)
@@ -107,7 +115,6 @@ export function CRMBoard() {
 
   // Filters
   const [searchQuery, setSearchQuery] = useState('')
-  const [dateFilter, setDateFilter] = useState<'all'|'today'|'this_week'|'this_month'>('this_month')
   const [selectedKanbanIds, setSelectedKanbanIds] = useState<Set<string>>(new Set())
   const [columns, setColumns] = useState<KanbanColumn[]>(DEFAULT_COLUMNS)
   const [isEditingColumns, setIsEditingColumns] = useState(false)
@@ -179,7 +186,42 @@ export function CRMBoard() {
       } else {
         sessionsData = []
       }
-      setSessions(sessionsData)
+
+      let leadSessions: any[] = []
+      if (user) {
+        try {
+          const leadsRes = await fetch(`${apiUrl}/api/leads/personal`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          })
+          if (leadsRes.ok) {
+            const personalLeads = await leadsRes.json()
+            leadSessions = personalLeads
+              .filter((lead: any) => lead.my_proposal_status === 'new' && !lead.my_chat_id)
+              .map((lead: any) => ({
+                id: `lead_${lead.id}`,
+                master_id: user.id,
+                client_id: lead.id,
+                status: 'new',
+                price: lead.price_credits || 0,
+                session_date: lead.created_at,
+                reference_images: lead.image_urls || [],
+                master_clients: {
+                  id: lead.id,
+                  name: lead.title || 'Новая заявка',
+                  phone: lead.contacts || 'Скрыто',
+                  notes: lead.description,
+                  is_lead: true,
+                  lead_id: lead.id,
+                  is_unlocked: lead.is_unlocked,
+                  leads: lead
+                }
+              }))
+          }
+        } catch (e) {
+          console.error("Error fetching personal leads", e)
+        }
+      }
+      setSessions([...sessionsData, ...leadSessions])
 
       const clientsRes = await fetch(`${apiUrl}/api/crm/clients`, {
         headers: { 'Authorization': `Bearer ${token}` }
@@ -273,9 +315,16 @@ export function CRMBoard() {
     sessionIds.forEach(sessionId => {
       const item = sessions.find(i => i.id === sessionId)
       if (item && item.status !== colId) {
-        if (item.status === 'new' && colId !== 'cancelled') {
+        if (item.status === 'new' && colId !== 'cancelled' && colId !== 'rejected') {
           // If moving multiple new leads, we can only safely accept one via modal right now
           if (sessionIds.length === 1) setSessionDetails(item)
+        } else if (colId === 'cancelled' || colId === 'rejected') {
+          const reason = window.prompt('Укажите причину отмены/отказа (обязательно):')
+          if (!reason || !reason.trim()) {
+            toast.error('Необходимо указать причину')
+            return
+          }
+          updateSessionStatus(sessionId, colId, reason.trim())
         } else {
           updateSessionStatus(sessionId, colId)
         }
@@ -673,6 +722,37 @@ export function CRMBoard() {
           existingClients={clientsForModal}
         />
       )}
+
+      {sessionToAccept && (
+        <LeadAcceptWizardModal
+          isOpen={!!sessionToAccept}
+          onClose={() => setSessionToAccept(null)}
+          session={sessionToAccept}
+          allSessions={sessions}
+          onSuccess={() => {
+            fetchData()
+            setSessionToAccept(null)
+          }}
+          onSessionClick={(s) => setSessionDetails(s)}
+        />
+      )}
+
+      <LeadDetailsModal
+        isOpen={!!selectedLeadSession}
+        onClose={() => setSelectedLeadSession(null)}
+        session={selectedLeadSession}
+        onUpdate={fetchData}
+        onAccept={() => {
+          setSelectedLeadSession(null)
+          setSessionDetails(selectedLeadSession)
+        }}
+        onReject={(reason) => {
+          if (selectedLeadSession && reason) {
+            updateSessionStatus(selectedLeadSession.id, 'cancelled', reason)
+          }
+          setSelectedLeadSession(null)
+        }}
+      />
 
       {/* Animated Custom Drag Ghost for Groups */}
       {draggingGroupId && typeof document !== 'undefined' && createPortal(

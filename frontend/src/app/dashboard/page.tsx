@@ -90,7 +90,7 @@ export default function DashboardPage() {
         supabase.removeChannel(channel)
       }
     }
-  }, [])
+  }, [profile?.role])
 
   const fetchProfile = async () => {
     try {

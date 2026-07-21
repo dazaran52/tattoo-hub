@@ -445,9 +445,23 @@ export function MessagesList({ userRole = 'master' }: MessagesListProps) {
                   <div className="flex justify-between items-center">
                     {chat.last_message ? (
                       <p className="text-xs text-neutral-500 truncate max-w-[180px]">
-                        {chat.last_message.content.startsWith('http') && chat.last_message.content.includes('supabase') 
-                          ? '📷 Фото' 
-                          : chat.last_message.content}
+                        {(() => {
+                          const content = chat.last_message.content
+                          if (content.startsWith('[SYSTEM_CARD]:')) {
+                            try {
+                              const cardData = JSON.parse(content.replace('[SYSTEM_CARD]:', '').trim())
+                              if (cardData.type === 'session_created') return '🗓️ Сеанс назначен'
+                              if (cardData.type === 'master_rejected') return '❌ Отказ по заявке'
+                              if (cardData.type === 'master_accepted') return '✅ Сеанс принят в работу'
+                              return '🔔 Системное уведомление'
+                            } catch (e) {
+                              return '🔔 Системное уведомление'
+                            }
+                          }
+                          return content.startsWith('http') && content.includes('supabase') 
+                            ? '📷 Фото' 
+                            : content
+                        })()}
                       </p>
                     ) : (
                       <p className="text-xs text-neutral-400 italic">Нет сообщений</p>

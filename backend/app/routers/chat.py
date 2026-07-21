@@ -78,13 +78,10 @@ async def get_messages(
         user_role_for_read = "master"
     target_sender = "client" if user_role_for_read == "master" else "master"
     
-    def mark_as_read():
-        try:
-            supabase.table("chat_messages").update({"is_read": True}).eq("chat_id", chat_id).eq("sender_type", target_sender).eq("is_read", False).execute()
-        except Exception as e:
-            print(f"Failed to mark messages as read: {e}")
-            
-    background_tasks.add_task(mark_as_read)
+    try:
+        supabase.table("chat_messages").update({"is_read": True}).eq("chat_id", chat_id).eq("sender_type", target_sender).eq("is_read", False).execute()
+    except Exception as e:
+        print(f"Failed to mark messages as read: {e}")
     
     return data
 

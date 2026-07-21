@@ -414,8 +414,8 @@ async def update_session(
                             "content": msg
                         }).execute()
         
-        # If moving to in_progress, notify client that the session was accepted
-        if update_data.get("status") == "in_progress":
+        # If moving to in_progress or discussing, notify client that the session was accepted
+        if update_data.get("status") in ["in_progress", "discussing"]:
             s_res = await supabase.table("master_sessions") \
                 .select("*, master_clients(lead_id, leads(client_id, client_session_id))") \
                 .eq("id", session_id) \
