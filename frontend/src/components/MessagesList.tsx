@@ -451,6 +451,7 @@ export function MessagesList({ userRole = 'master' }: MessagesListProps) {
                             try {
                               const cardData = JSON.parse(content.replace('[SYSTEM_CARD]:', '').trim())
                               if (cardData.type === 'session_created') return '🗓️ Сеанс назначен'
+                              if (cardData.type === 'new_lead') return '🌟 Новая заявка'
                               if (cardData.type === 'master_rejected') return '❌ Отказ по заявке'
                               if (cardData.type === 'master_accepted') return '✅ Сеанс принят в работу'
                               return '🔔 Системное уведомление'
@@ -564,7 +565,7 @@ export function MessagesList({ userRole = 'master' }: MessagesListProps) {
                           <div className="bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-white/10 p-5 rounded-2xl shadow-sm text-center max-w-sm w-full">
                              <Calendar className="w-8 h-8 text-violet-500 mx-auto mb-3" />
                              <h4 className="font-bold text-neutral-900 dark:text-white mb-2">
-                               {cardData.type === 'session_created' ? 'Сеанс назначен' : cardData.type === 'master_rejected' ? 'Отказ' : cardData.type === 'master_accepted' ? 'Сеанс принят в работу' : 'Системное уведомление'}
+                               {cardData.type === 'session_created' ? 'Сеанс назначен' : cardData.type === 'new_lead' ? 'Новая заявка' : cardData.type === 'master_rejected' ? 'Отказ' : cardData.type === 'master_accepted' ? 'Сеанс принят в работу' : 'Системное уведомление'}
                              </h4>
                              {cardData.type === 'session_created' && (
                                <>
@@ -588,6 +589,14 @@ export function MessagesList({ userRole = 'master' }: MessagesListProps) {
                                <>
                                  <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-4 whitespace-pre-wrap">
                                    Мастер взял вашу заявку в работу! Скоро он напишет вам для уточнения деталей.
+                                 </p>
+                               </>
+                             )}
+                             {cardData.type === 'new_lead' && (
+                               <>
+                                 <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-4 whitespace-pre-wrap">
+                                   <strong>{cardData.title}</strong><br/><br/>
+                                   Клиент создал новую заявку на татуировку. Обсудите детали и предложите сеанс.
                                  </p>
                                </>
                              )}

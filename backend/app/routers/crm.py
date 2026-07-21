@@ -587,7 +587,7 @@ async def send_accept_email(
     try:
         # Fetch session and client to get email
         res = await supabase.table("master_sessions") \
-            .select("*, master_clients(email)") \
+            .select("*, master_clients(email, lead_id)") \
             .eq("id", session_id) \
             .eq("master_id", current_user.user_id) \
             .execute()
