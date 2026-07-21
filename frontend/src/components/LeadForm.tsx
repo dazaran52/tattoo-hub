@@ -282,32 +282,43 @@ export function LeadForm({ masterId, source = 'platform' }: { masterId?: string,
             ? 'Мастер получил вашу идею и свяжется с вами в ближайшее время для обсуждения деталей и цены.'
             : (t('leadSentDesc') || 'Лучшие мастера твоего города скоро увидят твою идею и свяжутся с тобой, чтобы обсудить детали и предложить свои эскизы.')}
         </motion.p>
-        <motion.button 
-          type="button"
-          onClick={() => { 
-            setIsSuccess(false)
-            setFormData({
-              description: '', 
-              style: [] as string[], 
-              body_place: '', 
-              size: '', 
-              budget: '5000 CZK', 
-              city: '', 
-              name: '', 
-              contact: '', 
-              contact_method: 'on_site',
-              priority: 'quality', 
-              is_negotiable: false, 
-              images: []
-            }) 
-            setCurrency('CZK')
-            setBudgetVal(5000)
-            setSelectedCountry('')
-          }}
-          className="group relative inline-flex items-center justify-center bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 px-8 py-4 rounded-2xl font-bold transition-all duration-300 hover:scale-105 shadow-md"
-        >
-          <span className="relative z-10">{t('newLeadBtn') || 'Отправить еще одну'}</span>
-        </motion.button>
+        <div className="flex flex-col gap-4 justify-center items-center">
+          <motion.button 
+            type="button"
+            onClick={() => { 
+              setIsSuccess(false)
+              setFormData({
+                description: '', 
+                style: [] as string[], 
+                body_place: '', 
+                size: '', 
+                budget: '5000 CZK', 
+                city: '', 
+                name: '', 
+                contact: '', 
+                contact_method: 'on_site',
+                priority: 'quality', 
+                is_negotiable: false, 
+                images: []
+              }) 
+              setCurrency('CZK')
+              setBudgetVal(5000)
+              setSelectedCountry('')
+            }}
+            className="group relative w-full sm:w-auto inline-flex items-center justify-center bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 px-8 py-4 rounded-2xl font-bold transition-all duration-300 hover:scale-105 shadow-md"
+          >
+            <span className="relative z-10">{t('newLeadBtn') || 'Отправить еще одну'}</span>
+          </motion.button>
+          
+          {source === 'personal' && (
+            <motion.a
+              href="/book"
+              className="group relative w-full sm:w-auto inline-flex items-center justify-center bg-violet-600 text-white px-8 py-4 rounded-2xl font-bold transition-all duration-300 hover:scale-105 shadow-md mt-2"
+            >
+              <span className="relative z-10">Подобрать других мастеров на маркетплейсе</span>
+            </motion.a>
+          )}
+        </div>
       </motion.div>
     )
   }

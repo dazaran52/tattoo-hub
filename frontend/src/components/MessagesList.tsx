@@ -492,7 +492,22 @@ export function MessagesList({ userRole = 'master' }: MessagesListProps) {
               className={`p-4 sm:p-6 border-b border-neutral-200 dark:border-white/5 bg-white dark:bg-neutral-900 flex items-center justify-between shrink-0 transition-colors ${userRole === 'master' ? 'cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-800/50' : ''}`}
               onClick={() => {
                 if (userRole === 'client') return;
-                const client = clients.find((c: any) => c.lead_id === selectedChat.lead_id);
+                let client = clients.find((c: any) => c.lead_id === selectedChat.lead_id);
+                if (!client) {
+                  client = {
+                    id: 'temp-' + selectedChat.id,
+                    name: selectedChat.client_info?.name || 'Новый клиент',
+                    lead_id: selectedChat.lead_id,
+                    leads: selectedChat.leads,
+                    source: 'marketplace',
+                    phone: '',
+                    telegram: '',
+                    instagram: '',
+                    email: '',
+                    notes: 'ВНИМАНИЕ: Заявка еще не принята в работу. Примите её или назначьте сеанс, чтобы карточка стала активной.',
+                    master_sessions: []
+                  };
+                }
                 if (client) {
                   setClientToView(client);
                 } else {

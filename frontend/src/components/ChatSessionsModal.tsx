@@ -14,7 +14,7 @@ interface ChatSessionsModalProps {
 export function ChatSessionsModal({ chatId, clientInfo, userRole, onClose, onUpdate }: ChatSessionsModalProps) {
   const [sessions, setSessions] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState<'all' | 'new'>('new')
+  const [activeTab, setActiveTab] = useState<'all' | 'new'>(userRole === 'client' ? 'all' : 'new')
   const [selectedSessionForAccept, setSelectedSessionForAccept] = useState<any | null>(null)
 
   useEffect(() => {
@@ -24,22 +24,22 @@ export function ChatSessionsModal({ chatId, clientInfo, userRole, onClose, onUpd
   const fetchSessions = async () => {
     setLoading(true)
     try {
-      const { data: chatData } = await supabase.from('lead_chats').select('client_id, client_session_id, master_id').eq('id', chatId).single()
-      if (!chatData) return
+      const sessionStr = localStorage.getItem('tattoo_hub_client_session')
+      const headers: Record<string, string> = {}
+      if (sessionStr) {
+        headers['client-token'] = sessionStr
+      }
+      const { data: authData } = await supabase.auth.getSession()
+      if (authData.session) {
+        headers['Authorization'] = `Bearer ${authData.session.access_token}`
+      }
 
-      let query = supabase.from('master_sessions').select('*, master_clients(id, name, lead_id, leads(*))').eq('master_id', chatData.master_id).eq('is_deleted', false).order('created_at', { ascending: false })
-      
-      const { data: s } = await query
-      // Filter sessions for this specific client
-      const chatSessions = (s || []).filter(session => {
-         const client = session.master_clients
-         if (!client) return false
-         const lead = client.leads
-         if (!lead) return false
-         return lead.client_id === chatData.client_id || lead.client_session_id === chatData.client_session_id
-      })
-      
-      setSessions(chatSessions)
+      const res = await fetch(`/api/chat/${chatId}/sessions`, { headers })
+      if (res.ok) {
+        setSessions(await res.json())
+      } else {
+        setSessions([])
+      }
     } catch (e) {
       console.error(e)
     } finally {
@@ -65,14 +65,16 @@ export function ChatSessionsModal({ chatId, clientInfo, userRole, onClose, onUpd
           </button>
         </div>
 
-        <div className="flex gap-4 p-4 border-b border-neutral-100 dark:border-white/10 overflow-x-auto no-scrollbar">
-          <button onClick={() => setActiveTab('new')} className={`px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-colors ${activeTab === 'new' ? 'bg-violet-600 text-white' : 'bg-neutral-100 dark:bg-white/5 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-white/10'}`}>
-            Новые заявки
-          </button>
-          <button onClick={() => setActiveTab('all')} className={`px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-colors ${activeTab === 'all' ? 'bg-violet-600 text-white' : 'bg-neutral-100 dark:bg-white/5 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-white/10'}`}>
-            Все сеансы
-          </button>
-        </div>
+        {userRole === 'master' && (
+          <div className="flex gap-4 p-4 border-b border-neutral-100 dark:border-white/10 overflow-x-auto no-scrollbar">
+            <button onClick={() => setActiveTab('new')} className={`px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-colors ${activeTab === 'new' ? 'bg-violet-600 text-white' : 'bg-neutral-100 dark:bg-white/5 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-white/10'}`}>
+              Новые заявки
+            </button>
+            <button onClick={() => setActiveTab('all')} className={`px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-colors ${activeTab === 'all' ? 'bg-violet-600 text-white' : 'bg-neutral-100 dark:bg-white/5 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-white/10'}`}>
+              Все сеансы
+            </button>
+          </div>
+        )}
 
         <div className="flex-1 overflow-y-auto p-6 space-y-4">
           {loading ? (
@@ -94,6 +96,22 @@ export function ChatSessionsModal({ chatId, clientInfo, userRole, onClose, onUpd
                   </div>
                   <p className="text-sm text-neutral-600 dark:text-neutral-400 whitespace-pre-wrap mb-4 line-clamp-2">{session.master_clients?.leads?.description}</p>
                   
+                  {(session.session_date || session.price) && (
+                    <div className="flex flex-wrap gap-2 mb-4 text-xs font-medium">
+                      {session.session_date && (
+                        <div className="px-2 py-1 bg-neutral-100 dark:bg-white/5 rounded-lg text-neutral-600 dark:text-neutral-300">
+                          📅 {new Date(session.session_date).toLocaleDateString('ru-RU')}
+                          {session.start_time && ` в ${session.start_time.slice(0, 5)}`}
+                        </div>
+                      )}
+                      {session.price && (
+                        <div className="px-2 py-1 bg-neutral-100 dark:bg-white/5 rounded-lg text-neutral-600 dark:text-neutral-300">
+                          💰 {session.price} Kč
+                        </div>
+                      )}
+                    </div>
+                  )}
+
                   {userRole === 'master' && (session.status === 'new') && (
                     <div className="flex gap-2">
                       <button 
@@ -101,13 +119,6 @@ export function ChatSessionsModal({ chatId, clientInfo, userRole, onClose, onUpd
                         className="flex-1 py-2 bg-violet-600 hover:bg-violet-700 text-white text-sm font-medium rounded-xl transition-colors"
                       >
                         Принять заявку
-                      </button>
-                    </div>
-                  )}
-                  {userRole === 'client' && (
-                    <div className="flex gap-2">
-                       <button className="flex-1 py-2 bg-neutral-200 dark:bg-white/10 dark:text-white hover:bg-neutral-300 dark:hover:bg-white/20 text-neutral-800 text-sm font-medium rounded-xl transition-colors">
-                        Подробнее
                       </button>
                     </div>
                   )}

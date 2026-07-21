@@ -1,17 +1,19 @@
 import asyncio
-from supabase._async.client import create_client
+import os
+import uuid
+from supabase import create_client
 
-async def main():
-    supabase = await create_client(
-        "https://swprcstdyskalatuvbqh.supabase.co",
-        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN3cHJjc3RkeXNrYWxhdHV2YnFoIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3OTgxMDE5OSwiZXhwIjoyMDk1Mzg2MTk5fQ.4SNfeqQH_B2TMhPOvXebQn2B-_R270Yh8qAO3al6AQw"
-    )
-    user_id = 'ea64d2c0-1036-449d-b7d4-68669337cded'
-    country_id = '2a71599c-91f2-4461-b77b-86a150db3aab'
-    res = await supabase.table("users").update({"country_ids": [country_id]}).eq("id", user_id).execute()
-    print("Update res:", res.data)
+def main():
+    supabase_url = os.environ.get("SUPABASE_URL")
+    supabase_key = os.environ.get("SUPABASE_KEY")
+    client = create_client(supabase_url, supabase_key)
     
-    res2 = await supabase.table("users").select("country_ids").eq("id", user_id).execute()
-    print("Fetch res:", res2.data)
+    # Try a dummy update to see if the syntax works
+    try:
+        dummy_id = str(uuid.uuid4())
+        res = client.table("chat_messages").update({"is_read": True}).eq("chat_id", dummy_id).neq("sender_type", "master").eq("is_read", False).execute()
+        print("Success, syntax is valid:", res.data)
+    except Exception as e:
+        print("Failed syntax:", e)
 
-asyncio.run(main())
+main()

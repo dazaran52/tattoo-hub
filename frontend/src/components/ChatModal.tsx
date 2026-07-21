@@ -256,11 +256,12 @@ export function ChatModal({ isOpen, onClose, chatId, leadTitle, currentUserRole 
                         <div className="bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-white/10 p-5 rounded-2xl shadow-sm text-center max-w-sm w-full">
                            <MessageCircle className="w-8 h-8 text-violet-500 mx-auto mb-3" />
                            <h4 className="font-bold text-neutral-900 dark:text-white mb-2">
-                             {cardData.type === 'session_created' ? 'Сеанс назначен' : cardData.type === 'master_rejected' ? 'Отказ' : cardData.type === 'master_accepted' ? 'Сеанс принят в работу' : 'Системное уведомление'}
+                             {cardData.type === 'session_created' ? 'Сеанс назначен' : cardData.type === 'master_rejected' ? 'Отказ' : cardData.type === 'master_accepted' ? 'Сеанс принят в работу' : cardData.type === 'new_lead' ? 'Новая заявка' : 'Системное уведомление'}
                            </h4>
                            {cardData.type === 'session_created' && (
                              <>
                                <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-4">
+                                 {currentUserRole === 'client' ? 'Вам назначен сеанс!' : 'Вы назначили сеанс.'} <br/>
                                  {new Date(cardData.date).toLocaleDateString('ru-RU')} в {cardData.time}
                                </p>
                                <div className="bg-neutral-50 dark:bg-neutral-900/50 rounded-xl py-2 px-4 text-sm font-medium text-neutral-900 dark:text-white border border-neutral-100 dark:border-white/5">
@@ -268,10 +269,18 @@ export function ChatModal({ isOpen, onClose, chatId, leadTitle, currentUserRole 
                                </div>
                              </>
                            )}
+                           {cardData.type === 'new_lead' && (
+                             <>
+                               <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-4 whitespace-pre-wrap">
+                                 <strong>{cardData.title}</strong><br/><br/>
+                                 {currentUserRole === 'client' ? 'Вы отправили новую заявку. Ожидайте ответа.' : 'Клиент создал новую заявку на татуировку. Обсудите детали и предложите сеанс.'}
+                               </p>
+                             </>
+                           )}
                            {cardData.type === 'master_rejected' && (
                              <>
                                <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-4 whitespace-pre-wrap">
-                                 Мастер отклонил заявку.<br/><br/>
+                                 {currentUserRole === 'client' ? 'Мастер отклонил заявку.' : 'Вы отклонили заявку.'}<br/><br/>
                                  <strong>Причина:</strong> {cardData.reason}
                                </p>
                              </>
@@ -279,7 +288,7 @@ export function ChatModal({ isOpen, onClose, chatId, leadTitle, currentUserRole 
                            {cardData.type === 'master_accepted' && (
                              <>
                                <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-4 whitespace-pre-wrap">
-                                 Мастер взял вашу заявку в работу! Скоро он напишет вам для уточнения деталей.
+                                 {currentUserRole === 'client' ? 'Мастер взял вашу заявку в работу! Скоро он напишет вам для уточнения деталей.' : 'Вы приняли заявку в работу. Напишите клиенту, чтобы обсудить детали!'}
                                </p>
                              </>
                            )}

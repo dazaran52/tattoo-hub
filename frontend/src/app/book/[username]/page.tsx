@@ -100,6 +100,7 @@ export default function BookMasterPage({ params }: { params: { username: string 
   const [images, setImages] = useState<File[]>([])
   const [isUploading, setIsUploading] = useState(false)
   const [unavailableDates, setUnavailableDates] = useState<Date[]>([])
+  const [uploadedImages, setUploadedImages] = useState<string[]>([])
   
   useEffect(() => {
     fetchMasterProfile()
@@ -151,6 +152,12 @@ export default function BookMasterPage({ params }: { params: { username: string 
       return
     }
 
+    if (!sessionDate || styles.length === 0 || !bodyPlace || !size) {
+      if (!window.confirm("Заполнены не все поля (стиль, место, размер или дата). Вы уверены, что хотите отправить заявку? (Мастеру будет отправлено 'Не определился')")) {
+        return
+      }
+    }
+
     try {
       setIsSubmitting(true)
       setIsUploading(true)
@@ -184,6 +191,7 @@ export default function BookMasterPage({ params }: { params: { username: string 
           imageUrls.push(publicUrlData.publicUrl)
         }
       }
+      setUploadedImages(imageUrls)
       setIsUploading(false)
 
       const payload = {
@@ -192,9 +200,9 @@ export default function BookMasterPage({ params }: { params: { username: string 
         email: email,
         instagram: instagram || null,
         description,
-        style: styles.length > 0 ? styles.join(', ') : null,
-        body_place: bodyPlace,
-        size,
+        style: styles.length > 0 ? styles.join(', ') : 'Не определился',
+        body_place: bodyPlace || 'Не определился',
+        size: size || 'Не определился',
         image_urls: imageUrls,
         session_date: sessionDate 
           ? `${sessionDate.getFullYear()}-${String(sessionDate.getMonth() + 1).padStart(2, '0')}-${String(sessionDate.getDate()).padStart(2, '0')}T00:00:00.000Z` 
@@ -222,6 +230,53 @@ export default function BookMasterPage({ params }: { params: { username: string 
       }
 
       setIsSuccess(true)
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Произошла ошибка')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  const handlePublishToMarketplace = async () => {
+    try {
+      setIsSubmitting(true)
+      const payload = {
+        name,
+        contact: contact || null,
+        email: email,
+        instagram: instagram || null,
+        description,
+        style: styles.length > 0 ? styles.join(', ') : 'Не определился',
+        body_place: bodyPlace || 'Не определился',
+        size: size || 'Не определился',
+        image_urls: uploadedImages,
+        session_date: sessionDate 
+          ? `${sessionDate.getFullYear()}-${String(sessionDate.getMonth() + 1).padStart(2, '0')}-${String(sessionDate.getDate()).padStart(2, '0')}T00:00:00.000Z` 
+          : null,
+        session_time: sessionTime || null,
+        assigned_master_id: null,
+        budget_val: budgetVal ? parseInt(budgetVal) : null,
+        budget_currency: 'CZK',
+        budget: isNegotiable ? 'Договорная цена' : budgetVal ? `${budgetVal} Kč` : null,
+        client_priority: clientPriority,
+        is_negotiable_budget: isNegotiable,
+        is_personal: false
+      }
+
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/leads/client`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      })
+
+      if (!res.ok) {
+        throw new Error('Ошибка при отправке заявки')
+      }
+
+      alert('Заявка успешно опубликована на маркетплейсе! Теперь другие мастера смогут предложить свои услуги.')
+      router.push('/dashboard')
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Произошла ошибка')
     } finally {
@@ -272,13 +327,11 @@ export default function BookMasterPage({ params }: { params: { username: string 
           </p>
           <div className="flex flex-col gap-3 mb-6">
             <button 
-              onClick={() => {
-                localStorage.setItem('pending_lead', JSON.stringify({ description, size, priority: clientPriority }))
-                router.push('/new-lead')
-              }}
-              className="w-full bg-gradient-to-r from-cyan-500 to-purple-500 text-white font-bold py-3 rounded-xl hover:from-cyan-400 hover:to-purple-400 shadow-lg transition-all"
+              onClick={handlePublishToMarketplace}
+              disabled={isSubmitting}
+              className="w-full bg-gradient-to-r from-cyan-500 to-purple-500 text-white font-bold py-3 rounded-xl hover:from-cyan-400 hover:to-purple-400 shadow-lg transition-all disabled:opacity-50"
             >
-              Отправить эту идею на маркетплейс
+              {isSubmitting ? 'Отправляем...' : 'Отправить эту идею на маркетплейс'}
             </button>
             <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-2">
               Вы можете предложить свою идею другим свободным мастерам

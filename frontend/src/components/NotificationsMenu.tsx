@@ -21,6 +21,8 @@ export function NotificationsMenu() {
   const [unreadCount, setUnreadCount] = useState(0)
   const menuRef = useRef<HTMLDivElement>(null)
   const [pushEnabled, setPushEnabled] = useState(false)
+  const [pushDenied, setPushDenied] = useState(false)
+  const [hideBanner, setHideBanner] = useState(false)
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -64,6 +66,10 @@ export function NotificationsMenu() {
     // Check push permissions
     if ('Notification' in window) {
       setPushEnabled(Notification.permission === 'granted')
+      setPushDenied(Notification.permission === 'denied')
+      if (localStorage.getItem('pushNotifications') === 'true') {
+        setHideBanner(true)
+      }
     }
 
     return () => {
@@ -276,7 +282,7 @@ export function NotificationsMenu() {
             )}
           </div>
           
-          {!pushEnabled && activeTab === 'active' && (
+          {!pushEnabled && !pushDenied && !hideBanner && activeTab === 'active' && (
             <div className="p-3 bg-violet-50 dark:bg-violet-900/20 border-t border-violet-100 dark:border-violet-900/30 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <BellRing className="w-4 h-4 text-violet-600 dark:text-violet-400" />

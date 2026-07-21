@@ -2,9 +2,17 @@ from fastapi import APIRouter, Depends, HTTPException, Header, BackgroundTasks, 
 from pydantic import BaseModel
 from app.middleware.auth import get_current_user, AuthUser, get_optional_user
 from app.database import get_supabase_client
-from supabase import Client
+from supabase import Client, create_client
 import re
 from typing import List, Optional
+import os
+
+def get_service_client() -> Client:
+    url = os.environ.get("SUPABASE_URL")
+    key = os.environ.get("SUPABASE_KEY")  # SUPABASE_KEY is the service role key in this .env
+    if not url or not key:
+        return get_supabase_client()
+    return create_client(url, key)
 
 router = APIRouter(prefix="/api/chat", tags=["chat"])
 
@@ -78,7 +86,8 @@ async def get_messages(
         user_role_for_read = "master"
     
     try:
-        supabase.table("chat_messages").update({"is_read": True}).eq("chat_id", chat_id).neq("sender_type", user_role_for_read).eq("is_read", False).execute()
+        service_client = get_service_client()
+        service_client.table("chat_messages").update({"is_read": True}).eq("chat_id", chat_id).neq("sender_type", user_role_for_read).eq("is_read", False).execute()
     except Exception as e:
         print(f"Failed to mark messages as read: {e}")
     
@@ -129,7 +138,7 @@ async def get_my_chats(
 ):
     try:
         query = supabase.table("lead_chats").select(
-            "id, client_id, client_session_id, master_id, created_at, chat_messages(content, created_at, sender_type)"
+            "id, lead_id, client_id, client_session_id, master_id, created_at, chat_messages(content, created_at, sender_type)"
         )
 
         user_role = current_user.user_metadata.get("role")
@@ -191,6 +200,24 @@ async def get_my_chats(
     except Exception as e:
         print(f"Error fetching leads in get_my_chats: {e}")
 
+    # Fetch master_sessions to count properly
+    sessions_map = {}
+    if master_ids:
+        try:
+            # Get all sessions for the masters
+            ms_res = supabase.table("master_sessions").select("*, master_clients!inner(leads(*))").in_("master_id", master_ids).eq("is_deleted", False).execute()
+            for s in (ms_res.data or []):
+                lead = s.get("master_clients", {}).get("leads", {})
+                if lead:
+                    c_id = lead.get("client_id")
+                    cs_id = lead.get("client_session_id")
+                    if c_id:
+                        sessions_map[f"{s['master_id']}_{c_id}"] = sessions_map.get(f"{s['master_id']}_{c_id}", 0) + 1
+                    if cs_id:
+                        sessions_map[f"{s['master_id']}_{cs_id}"] = sessions_map.get(f"{s['master_id']}_{cs_id}", 0) + 1
+        except Exception as e:
+            print(f"Error fetching sessions count: {e}")
+
     for chat in chats:
         messages = chat.pop("chat_messages", [])
         chat["last_message"] = messages[0] if messages else None
@@ -198,7 +225,18 @@ async def get_my_chats(
         
         key = chat.get("client_id") or chat.get("client_session_id")
         client_leads = leads_map.get(key, [])
-        chat["sessions_count"] = len(client_leads)
+        
+        c_id = chat.get("client_id")
+        cs_id = chat.get("client_session_id")
+        m_id = chat["master_id"]
+        
+        s_count = 0
+        if c_id and f"{m_id}_{c_id}" in sessions_map:
+            s_count = max(s_count, sessions_map[f"{m_id}_{c_id}"])
+        if cs_id and f"{m_id}_{cs_id}" in sessions_map:
+            s_count = max(s_count, sessions_map[f"{m_id}_{cs_id}"])
+            
+        chat["sessions_count"] = s_count
         chat["leads"] = client_leads[0] if client_leads else None
         # fallback lead_id for UI
         chat["lead_id"] = chat["leads"]["id"] if chat["leads"] else None
@@ -335,3 +373,33 @@ async def send_message(
             print(f"Failed to send push notification to master: {e}")
 
     return insert_res.data[0]
+
+@router.get("/{chat_id}/sessions")
+async def get_chat_sessions(
+    chat_id: str,
+    client_token: Optional[str] = Header(None),
+    current_user: Optional[AuthUser] = Depends(get_optional_user),
+    supabase: Client = Depends(get_supabase_client)
+):
+    chat_res = supabase.table("lead_chats").select("*").eq("id", chat_id).execute()
+    if not chat_res.data:
+        raise HTTPException(status_code=404, detail="Chat not found")
+    
+    chat = chat_res.data[0]
+    
+    # Verify access
+    if not ((client_token and chat["client_session_id"] == client_token) or (current_user and (chat["master_id"] == current_user.user_id or chat["client_id"] == current_user.user_id))):
+        raise HTTPException(status_code=403, detail="Forbidden")
+
+    # Fetch sessions for this master & client
+    query = supabase.table("master_sessions").select("*, master_clients!inner(id, name, lead_id, leads(*))").eq("master_id", chat["master_id"]).eq("is_deleted", False)
+    
+    sessions_res = query.execute()
+    sessions = []
+    for s in sessions_res.data or []:
+        if s.get("master_clients") and s["master_clients"].get("leads"):
+            lead = s["master_clients"]["leads"]
+            if lead.get("client_id") == chat.get("client_id") or lead.get("client_session_id") == chat.get("client_session_id"):
+                sessions.append(s)
+                
+    return sessions

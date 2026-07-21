@@ -54,7 +54,7 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId: 
   }, [isOpen, client.phone])
 
   useEffect(() => {
-    if (phone !== (client.phone || '')) {
+    if (phone !== (client.phone || '') && !client.id.startsWith('temp-')) {
       const timer = setTimeout(async () => {
          await supabase.from('master_clients').update({phone}).eq('id', client.id)
          onUpdate()
@@ -166,22 +166,26 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId: 
                     </div>
                     <input 
                       defaultValue={client.name}
+                      readOnly={client.id.startsWith('temp-')}
                       onBlur={async (e) => {
+                         if (client.id.startsWith('temp-')) return;
                          if (e.target.value.trim() && e.target.value !== client.name) {
                            await supabase.from('master_clients').update({name: e.target.value.trim()}).eq('id', client.id)
                            onUpdate()
                            toast.success('Имя сохранено')
                          }
                       }}
-                      className="mt-1 block text-lg font-bold text-neutral-900 dark:text-white bg-transparent border-b-2 border-transparent hover:border-neutral-200 dark:hover:border-neutral-700 focus:border-violet-500 outline-none w-full transition-colors pb-1"
+                      className="mt-1 block text-lg font-bold text-neutral-900 dark:text-white bg-transparent border-b-2 border-transparent hover:border-neutral-200 dark:hover:border-neutral-700 focus:border-violet-500 outline-none w-full transition-colors pb-1 disabled:opacity-70 read-only:opacity-70"
                     />
                   </div>
+                  {!client.id.startsWith('temp-') && (
                   <button 
                     onClick={handleDeleteClient}
                     className="flex items-center gap-1 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 px-3 py-1.5 rounded-lg text-sm font-bold transition-colors"
                   >
                     <Trash2 className="w-4 h-4" /> Удалить
                   </button>
+                  )}
                 </div>
                 
                 <div>
@@ -201,28 +205,32 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId: 
                       <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider ml-1">Telegram</span>
                       <input 
                         defaultValue={client.telegram || ''}
+                        readOnly={client.id.startsWith('temp-')}
                         placeholder="@username"
                         onBlur={async (e) => {
+                           if (client.id.startsWith('temp-')) return;
                            if (e.target.value !== (client.telegram || '')) {
                              await supabase.from('master_clients').update({telegram: e.target.value}).eq('id', client.id)
                              onUpdate()
                            }
                         }}
-                        className="w-full bg-neutral-50 dark:bg-neutral-800 border-none rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-violet-500/20 outline-none mt-1"
+                        className="w-full bg-neutral-50 dark:bg-neutral-800 border-none rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-violet-500/20 outline-none mt-1 disabled:opacity-70 read-only:opacity-70"
                       />
                     </div>
                     <div>
                       <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider ml-1">Instagram</span>
                       <input 
                         defaultValue={client.instagram || ''}
+                        readOnly={client.id.startsWith('temp-')}
                         placeholder="@username"
                         onBlur={async (e) => {
+                           if (client.id.startsWith('temp-')) return;
                            if (e.target.value !== (client.instagram || '')) {
                              await supabase.from('master_clients').update({instagram: e.target.value}).eq('id', client.id)
                              onUpdate()
                            }
                         }}
-                        className="w-full bg-neutral-50 dark:bg-neutral-800 border-none rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-violet-500/20 outline-none mt-1"
+                        className="w-full bg-neutral-50 dark:bg-neutral-800 border-none rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-violet-500/20 outline-none mt-1 disabled:opacity-70 read-only:opacity-70"
                       />
                     </div>
                     <div>
@@ -230,14 +238,16 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId: 
                       <input 
                         defaultValue={client.email || ''}
                         type="email"
+                        readOnly={client.id.startsWith('temp-')}
                         placeholder="example@mail.com"
                         onBlur={async (e) => {
+                           if (client.id.startsWith('temp-')) return;
                            if (e.target.value !== (client.email || '')) {
                              await supabase.from('master_clients').update({email: e.target.value}).eq('id', client.id)
                              onUpdate()
                            }
                         }}
-                        className="w-full bg-neutral-50 dark:bg-neutral-800 border-none rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-violet-500/20 outline-none mt-1"
+                        className="w-full bg-neutral-50 dark:bg-neutral-800 border-none rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-violet-500/20 outline-none mt-1 disabled:opacity-70 read-only:opacity-70"
                       />
                     </div>
                   </div>
@@ -247,10 +257,12 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId: 
                   <label className="text-xs font-bold text-neutral-400 uppercase tracking-wider flex items-center gap-1"><FileText className="w-3 h-3"/> Заметки мастера</label>
                   <textarea 
                     defaultValue={client.notes || ''}
+                    readOnly={client.id.startsWith('temp-')}
                     placeholder="Добавьте заметку об этом клиенте..."
-                    className="mt-2 w-full p-4 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl focus:ring-2 focus:ring-violet-500 outline-none text-neutral-900 dark:text-white"
+                    className="mt-2 w-full p-4 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl focus:ring-2 focus:ring-violet-500 outline-none text-neutral-900 dark:text-white disabled:opacity-70 read-only:opacity-70"
                     rows={4}
                     onBlur={async (e) => {
+                       if (client.id.startsWith('temp-')) return;
                        await supabase.from('master_clients').update({notes: e.target.value}).eq('id', client.id)
                        onUpdate()
                     }}
@@ -263,12 +275,14 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId: 
               <div className="space-y-4">
                 <div className="flex justify-between items-center mb-4">
                   <h3 className="font-bold text-neutral-900 dark:text-white">Сеансы клиента</h3>
+                  {!client.id.startsWith('temp-') && (
                   <button 
                     onClick={() => setIsSessionModalOpen(true)}
                     className="flex items-center gap-1 text-sm font-bold text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-900/20 px-3 py-1.5 rounded-lg hover:bg-violet-100 transition-colors"
                   >
                     <Plus className="w-4 h-4"/> Добавить
                   </button>
+                  )}
                 </div>
                 
                 {client.master_sessions && client.master_sessions.length > 0 ? (

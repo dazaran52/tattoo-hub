@@ -504,7 +504,7 @@ def create_master_lead(
 
 class ClientLeadCreate(BaseModel):
     description: str
-    email: str
+    email: str | None = None
     style: str | None = None
     location: str | None = None
     body_place: str | None = None
