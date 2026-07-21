@@ -76,10 +76,9 @@ async def get_messages(
     user_role_for_read = "client"
     if current_user and chat["master_id"] == current_user.user_id:
         user_role_for_read = "master"
-    target_sender = "client" if user_role_for_read == "master" else "master"
     
     try:
-        supabase.table("chat_messages").update({"is_read": True}).eq("chat_id", chat_id).eq("sender_type", target_sender).eq("is_read", False).execute()
+        supabase.table("chat_messages").update({"is_read": True}).eq("chat_id", chat_id).neq("sender_type", user_role_for_read).eq("is_read", False).execute()
     except Exception as e:
         print(f"Failed to mark messages as read: {e}")
     
@@ -106,14 +105,12 @@ async def get_unread_count(
         if not chat_ids:
             return {"count": 0}
             
-        target_sender = "master" if user_role == "client" else "client"
-        
         # We can fetch in batches or just count. PostgREST doesn't support IN with exact count easily, 
         # but we can fetch them since the number shouldn't be massive for unread.
         unread_res = supabase.table("chat_messages")\
             .select("id")\
             .in_("chat_id", chat_ids)\
-            .eq("sender_type", target_sender)\
+            .neq("sender_type", user_role)\
             .eq("is_read", False)\
             .execute()
             

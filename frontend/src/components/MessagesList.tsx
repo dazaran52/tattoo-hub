@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase'
 import { toast } from 'react-hot-toast'
 import { ClientDetailsModal } from '@/components/ClientDetailsModal'
 import { ImageViewerModal } from '@/components/ImageViewerModal'
+import { ChatSessionsModal } from '@/components/ChatSessionsModal'
 
 interface Message {
   id: string
@@ -531,7 +532,13 @@ export function MessagesList({ userRole = 'master' }: MessagesListProps) {
                 </div>
               </div>
               
-              <div className="hidden sm:flex shrink-0 cursor-pointer" onClick={() => setShowSessionsModal(true)}>
+              <div 
+                className="hidden sm:flex shrink-0 cursor-pointer" 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowSessionsModal(true);
+                }}
+              >
                 <span className="text-xs font-semibold px-3 py-1.5 bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 rounded-lg whitespace-nowrap hover:bg-violet-200 dark:hover:bg-violet-900/50 transition-colors">
                   Сеансы ({selectedChat.sessions_count || 1})
                 </span>
@@ -570,6 +577,7 @@ export function MessagesList({ userRole = 'master' }: MessagesListProps) {
                              {cardData.type === 'session_created' && (
                                <>
                                  <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-4">
+                                   {userRole === 'client' ? 'Вам назначен сеанс!' : 'Вы назначили сеанс.'} <br/>
                                    {new Date(cardData.date).toLocaleDateString('ru-RU')} в {cardData.time}
                                  </p>
                                  <div className="bg-neutral-50 dark:bg-neutral-900/50 rounded-xl py-2 px-4 text-sm font-medium text-neutral-900 dark:text-white border border-neutral-100 dark:border-white/5">
@@ -580,7 +588,7 @@ export function MessagesList({ userRole = 'master' }: MessagesListProps) {
                              {cardData.type === 'master_rejected' && (
                                <>
                                  <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-4 whitespace-pre-wrap">
-                                   Мастер отклонил заявку.<br/><br/>
+                                   {userRole === 'client' ? 'Мастер отклонил заявку.' : 'Вы отклонили заявку.'}<br/><br/>
                                    <strong>Причина:</strong> {cardData.reason}
                                  </p>
                                </>
@@ -588,7 +596,7 @@ export function MessagesList({ userRole = 'master' }: MessagesListProps) {
                              {cardData.type === 'master_accepted' && (
                                <>
                                  <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-4 whitespace-pre-wrap">
-                                   Мастер взял вашу заявку в работу! Скоро он напишет вам для уточнения деталей.
+                                   {userRole === 'client' ? 'Мастер взял вашу заявку в работу! Скоро он напишет вам для уточнения деталей.' : 'Вы приняли заявку в работу. Напишите клиенту, чтобы обсудить детали!'}
                                  </p>
                                </>
                              )}
@@ -596,7 +604,7 @@ export function MessagesList({ userRole = 'master' }: MessagesListProps) {
                                <>
                                  <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-4 whitespace-pre-wrap">
                                    <strong>{cardData.title}</strong><br/><br/>
-                                   Клиент создал новую заявку на татуировку. Обсудите детали и предложите сеанс.
+                                   {userRole === 'client' ? 'Вы отправили новую заявку. Ожидайте ответа.' : 'Клиент создал новую заявку на татуировку. Обсудите детали и предложите сеанс.'}
                                  </p>
                                </>
                              )}
@@ -703,6 +711,15 @@ export function MessagesList({ userRole = 'master' }: MessagesListProps) {
           onClose={() => setViewerImage(null)}
           imageUrl={viewerImage}
           showActions={true}
+        />
+      )}
+      {showSessionsModal && selectedChat && (
+        <ChatSessionsModal
+          chatId={selectedChat.id}
+          clientInfo={selectedChat.client_info || selectedChat.leads}
+          userRole={userRole}
+          onClose={() => setShowSessionsModal(false)}
+          onUpdate={() => fetchChats()}
         />
       )}
     </div>

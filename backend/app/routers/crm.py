@@ -700,13 +700,6 @@ async def send_accept_email(
                         
                     if chat_id:
                         import json
-                        msg_text = f"Здравствуйте! Ваша заявка принята. Дата: {date_text}, время: {time_text}."
-                        await supabase.table("chat_messages").insert({
-                            "chat_id": chat_id,
-                            "sender_type": "master",
-                            "content": msg_text
-                        }).execute()
-                        
                         system_msg = {
                             "type": "session_created",
                             "price": data.price,
