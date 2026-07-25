@@ -131,14 +131,17 @@ async def get_clients(
             
             # Check unlocks and mask data
             client["is_unlocked"] = True
-            if client.get("leads") and not client["leads"].get("is_personal"):
-                # It's a marketplace lead assigned to this master
-                if client["lead_id"] not in unlocked_lead_ids:
-                    client["is_unlocked"] = False
-                    client["phone"] = "Скрыто"
-                    client["email"] = "Скрыто"
-                    client["instagram"] = "Скрыто"
-                    client["contact_info"] = "Скрыто"
+            if client.get("leads"):
+                if client["leads"].get("is_personal"):
+                    client["source"] = "direct"
+                else:
+                    # It's a marketplace lead assigned to this master
+                    if client["lead_id"] not in unlocked_lead_ids:
+                        client["is_unlocked"] = False
+                        client["phone"] = "Скрыто"
+                        client["email"] = "Скрыто"
+                        client["instagram"] = "Скрыто"
+                        client["contact_info"] = "Скрыто"
         
         return clients
     except Exception as e:
