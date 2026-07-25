@@ -623,19 +623,19 @@ export function CRMBoard() {
                                 {initial}
                               </div>
                               <div className="flex-1 min-w-0">
-                                <div className="flex items-center justify-between gap-1.5 mb-0.5">
-                                  <h4 className="font-bold text-neutral-900 dark:text-white text-sm truncate min-w-0 flex-1">
-                                    {clientName}
-                                  </h4>
+                                <h4 className="font-bold text-neutral-900 dark:text-white text-sm truncate mb-1">
+                                  {clientName}
+                                </h4>
+                                <div className="flex items-center gap-1.5 min-w-0">
                                   {(item.source === 'direct' || (!item.source && (item.master_clients?.source === 'direct' || item.master_clients?.leads?.is_personal))) ? (
-                                    <span className="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-[9px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider shrink-0 ml-1">Личная</span>
+                                    <span className="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-[9px] px-1.5 py-0.5 rounded font-bold shrink-0">Личная</span>
                                   ) : (item.source === 'marketplace' || (!item.source && (item.master_clients?.source === 'marketplace' || (item.master_clients?.lead_id && !item.master_clients?.leads?.is_personal)))) ? (
-                                    <span className="bg-cyan-100 dark:bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 text-[9px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider shrink-0 ml-1">Маркетплейс</span>
+                                    <span className="bg-cyan-100 dark:bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 text-[9px] px-1.5 py-0.5 rounded font-bold shrink-0">Маркетплейс</span>
                                   ) : null}
+                                  <p className="text-xs text-neutral-500 truncate flex-1 min-w-0">
+                                    {item.master_clients?.phone || item.master_clients?.telegram || item.master_clients?.email || 'Нет контактов'}
+                                  </p>
                                 </div>
-                                <p className="text-xs text-neutral-500 line-clamp-1">
-                                  {item.master_clients?.phone || item.master_clients?.telegram || item.master_clients?.email || 'Нет контактов'}
-                                </p>
                               </div>
                             </div>
                             

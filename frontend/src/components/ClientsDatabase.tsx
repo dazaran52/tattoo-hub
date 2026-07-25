@@ -215,9 +215,9 @@ export function ClientsDatabase() {
                           <div className="font-bold text-neutral-900 dark:text-white flex items-center gap-2">
                             {client.name}
                             {(client.source === 'direct' || client.leads?.is_personal) ? (
-                              <span className="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wider font-bold">Личная</span>
+                              <span className="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-[10px] px-2 py-0.5 rounded font-bold">Личная</span>
                             ) : (client.source === 'marketplace' || (client.lead_id && !client.leads?.is_personal)) ? (
-                              <span className="bg-cyan-100 dark:bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wider font-bold">Маркетплейс</span>
+                              <span className="bg-cyan-100 dark:bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 text-[10px] px-2 py-0.5 rounded font-bold">Маркетплейс</span>
                             ) : null}
                           </div>
                           <div className="text-sm text-neutral-500">

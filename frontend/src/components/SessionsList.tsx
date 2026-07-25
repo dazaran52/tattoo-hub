@@ -235,9 +235,9 @@ export function SessionsList({ sessions, searchQuery, setSearchQuery, onStatusCh
                     <div className="font-bold text-neutral-900 dark:text-white flex items-center gap-2">
                       {session.master_clients?.name}
                       {(session.source === 'direct' || (!session.source && (session.master_clients?.source === 'direct' || session.master_clients?.leads?.is_personal))) ? (
-                        <span className="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider shrink-0">Личная</span>
+                        <span className="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-[10px] px-2 py-0.5 rounded font-bold">Личная</span>
                       ) : (session.source === 'marketplace' || (!session.source && (session.master_clients?.source === 'marketplace' || (session.master_clients?.lead_id && !session.master_clients?.leads?.is_personal)))) ? (
-                        <span className="bg-cyan-100 dark:bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider shrink-0">Маркетплейс</span>
+                        <span className="bg-cyan-100 dark:bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 text-[10px] px-2 py-0.5 rounded font-bold">Маркетплейс</span>
                       ) : null}
                     </div>
                     <div className="text-sm text-neutral-500">{session.master_clients?.phone || session.master_clients?.telegram || session.master_clients?.email || session.master_clients?.contact_info || 'Нет контактов'}</div>
