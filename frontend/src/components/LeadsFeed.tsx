@@ -17,6 +17,7 @@ import { playSuccessSound, playErrorSound, triggerHaptic } from '@/lib/sounds'
 import imageCompression from 'browser-image-compression'
 import { api } from '@/lib/api'
 import { ConfirmModal } from '@/components/ConfirmModal'
+import { useLanguage } from '@/i18n/LanguageContext'
 
 export interface Lead {
   id: string
@@ -52,6 +53,7 @@ interface LeadsFeedProps {
 }
 
 export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = false, showOnlyUnlocked = false, userCities = [] }: LeadsFeedProps) {
+  const { lang: language } = useLanguage()
   const [leads, setLeads] = useState<Lead[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -59,7 +61,7 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
   const [actionLoadingId, setActionLoadingId] = useState<string | null>(null)
   const [filterText, setFilterText] = useState('')
   const [showOtherCities, setShowOtherCities] = useState(false)
-  const [language, setLanguage] = useState<string>('cs')
+
   
   // Custom Confirm Modal State
   const [confirmModal, setConfirmModal] = useState<{
@@ -183,12 +185,6 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
 
   const t = (key: Parameters<typeof getTranslation>[1]) => getTranslation(language as Language, key)
 
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const savedLang = localStorage.getItem('language') || 'cs'
-      setLanguage(savedLang)
-    }
-  }, [])
 
   useEffect(() => {
     fetchLeads()

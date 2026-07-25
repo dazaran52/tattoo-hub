@@ -40,6 +40,31 @@ const defaultThemeClasses = {
   buttonPrimary: 'bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 text-white shadow-lg shadow-cyan-500/25 hover:shadow-cyan-500/40',
 };
 
+function ImagePreview({ file, onRemove }: { file: File; onRemove: () => void }) {
+  const previewUrl = React.useMemo(() => URL.createObjectURL(file), [file])
+
+  useEffect(() => () => URL.revokeObjectURL(previewUrl), [previewUrl])
+
+  return (
+    <div className="relative group aspect-square rounded-2xl overflow-hidden border border-white/20 bg-black/50 shadow-md">
+      <img
+        src={previewUrl}
+        alt={file.name}
+        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+      />
+      <button
+        type="button"
+        onClick={onRemove}
+        aria-label={`Удалить ${file.name}`}
+        className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-all duration-200 flex flex-col items-center justify-center text-red-400 hover:text-red-300 cursor-pointer gap-1"
+      >
+        <X className="w-7 h-7" />
+        <span className="text-[11px] font-bold">Удалить</span>
+      </button>
+    </div>
+  )
+}
+
 export function LeadWizard({ master, source = 'platform', themeClasses, onSuccess }: LeadWizardProps) {
   const router = useRouter()
   const tClasses = { ...defaultThemeClasses, ...themeClasses }
@@ -585,21 +610,11 @@ export function LeadWizard({ master, source = 'platform', themeClasses, onSucces
                 ) : (
                   <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-3.5">
                     {images.map((file, idx) => (
-                      <div key={idx} className="relative group aspect-square rounded-2xl overflow-hidden border border-white/20 bg-black/50 shadow-md">
-                        <img
-                          src={URL.createObjectURL(file)}
-                          alt="Preview"
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => removeImage(idx)}
-                          className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-all duration-200 flex flex-col items-center justify-center text-red-400 hover:text-red-300 cursor-pointer gap-1"
-                        >
-                          <X className="w-7 h-7" />
-                          <span className="text-[11px] font-bold">Удалить</span>
-                        </button>
-                      </div>
+                      <ImagePreview
+                        key={`${file.name}-${file.lastModified}-${idx}`}
+                        file={file}
+                        onRemove={() => removeImage(idx)}
+                      />
                     ))}
                     {images.length < 10 && (
                       <label className="aspect-square rounded-2xl border-2 border-dashed border-white/20 hover:border-cyan-500/50 bg-white/[0.02] hover:bg-white/[0.06] transition-all flex flex-col items-center justify-center cursor-pointer text-neutral-400 hover:text-cyan-400 group">

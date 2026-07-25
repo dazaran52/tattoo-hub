@@ -33,28 +33,41 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const [isLoaded, setIsLoaded] = useState(false)
 
   useEffect(() => {
-    // Detect system language or load from localStorage
-    const savedLang = localStorage.getItem('app_lang') as Language
-    if (savedLang && (savedLang === 'ru' || savedLang === 'en' || savedLang === 'cs' || savedLang === 'uk')) {
-      setLangState(savedLang)
+    // `language` was used by the old auth screen. Migrate it once so every
+    // route now reads the same preference.
+    const supportedLanguages: Language[] = ['ru', 'en', 'cs', 'uk']
+    const appLang = localStorage.getItem('app_lang') as Language | null
+    const legacyLang = localStorage.getItem('language') as Language | null
+    const savedLang = appLang && supportedLanguages.includes(appLang)
+      ? appLang
+      : legacyLang && supportedLanguages.includes(legacyLang)
+        ? legacyLang
+        : null
+    let resolvedLang: Language
+
+    if (savedLang) {
+      resolvedLang = savedLang
     } else {
       const browserLang = navigator.language.slice(0, 2)
-      if (browserLang === 'ru') {
-        setLangState('ru')
-      } else if (browserLang === 'uk') {
-        setLangState('uk')
-      } else if (browserLang === 'cs') {
-        setLangState('cs')
-      } else {
-        setLangState('en') // Default to EN for others to feel premium global
-      }
+      resolvedLang = browserLang === 'ru' || browserLang === 'uk' || browserLang === 'cs'
+        ? browserLang
+        : 'en'
     }
+
+    setLangState(resolvedLang)
+    // Keep the legacy key synchronized until every older dashboard widget has
+    // migrated to LanguageContext. app_lang remains the canonical value.
+    localStorage.setItem('app_lang', resolvedLang)
+    localStorage.setItem('language', resolvedLang)
+    document.documentElement.lang = resolvedLang
     setIsLoaded(true)
   }, [])
 
   const setLang = (newLang: Language) => {
     setLangState(newLang)
     localStorage.setItem('app_lang', newLang)
+    localStorage.setItem('language', newLang)
+    document.documentElement.lang = newLang
   }
 
   const t = (path: string): string => {
