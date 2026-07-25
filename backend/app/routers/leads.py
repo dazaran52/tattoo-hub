@@ -601,6 +601,7 @@ async def create_client_lead(
         }
         
         client_id = None
+        login_link = None
         if current_user:
             client_id = current_user.user_id
         elif lead_data.email:
@@ -643,17 +644,9 @@ async def create_client_lead(
                             action_link = link_resp["properties"].get("action_link")
                             
                         if action_link:
-                            from app.services.mail import send_transactional_email
-                            html = f"""
-                            <h2>Ваша заявка успешно отправлена!</h2>
-                            <p>Мы создали для вас личный кабинет, чтобы вы могли общаться с мастерами.</p>
-                            <p><a href="{action_link}" style="display:inline-block;padding:10px 20px;background:#8b5cf6;color:white;text-decoration:none;border-radius:5px;">Войти в кабинет</a></p>
-                            <p>Если кнопка не работает, скопируйте эту ссылку в браузер:</p>
-                            <p>{action_link}</p>
-                            """
-                            send_transactional_email(email, "Личный кабинет Tattoo Hub", html)
+                            login_link = action_link
                     except Exception as le:
-                        print(f"Failed to generate/send magic link: {le}")
+                        print(f"Failed to generate magic link: {le}")
             except Exception as e:
                 print(f"Shadow auth failed: {e}")
                 
@@ -773,18 +766,19 @@ async def create_client_lead(
                             except Exception as notif_e:
                                 print(f"Warning: Failed to send notifications: {notif_e}")
                         
-                        if lead_data.email:
+                        if lead_data.email and not login_link:
                             login_link = "https://tattoo-hub.xyz/login"
                             try:
                                 res = await supabase.auth.admin.generate_link(
-                                    {"type": "magiclink", "email": lead_data.email.strip()}
+                                    {"type": "magiclink", "email": lead_data.email.strip(), "options": {"redirect_to": "https://tattoo-hub.xyz/dashboard"}}
                                 )
                                 if hasattr(res, 'properties') and res.properties.action_link:
                                     login_link = res.properties.action_link
                             except Exception as e:
                                 print(f"Warning: Failed to generate magiclink for {lead_data.email}: {e}")
                                 
-                            def send_submission_email(link: str = login_link):
+                        if lead_data.email:
+                            def send_submission_email(link: str = login_link or "https://tattoo-hub.xyz/login"):
                                 from app.services.email_lead_agent import send_smtp_reply
                                 subject = "Ваша заявка успешно отправлена! 🎉"
                                 html = f'''
@@ -819,7 +813,7 @@ async def create_client_lead(
 
                             background_tasks.add_task(send_submission_email)
                             
-                    return {"success": True, "lead": new_lead}
+                    return {"success": True, "lead": new_lead, "login_link": login_link}
                 if attempt == max_retries - 1:
                     raise HTTPException(status_code=400, detail="Failed to create lead")
             except Exception as e:
