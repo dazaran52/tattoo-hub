@@ -149,7 +149,13 @@ export function CRMBoard() {
 
   useEffect(() => {
     fetchData()
-  }, [])
+  }, [mainTab, sessionView])
+
+  useEffect(() => {
+    if (isSessionModalOpen || sessionToEdit) {
+      fetchData()
+    }
+  }, [isSessionModalOpen, sessionToEdit])
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);

@@ -429,17 +429,21 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
                         setIsClientDropdownOpen(true)
                       }}
                       onFocus={() => setIsClientDropdownOpen(true)}
-                      onBlur={() => setTimeout(() => setIsClientDropdownOpen(false), 200)}
-                      placeholder="Поиск по имени или телефону..."
+                      onBlur={() => setTimeout(() => setIsClientDropdownOpen(false), 300)}
+                      placeholder="Поиск по имени, почте или контактам..."
                       className="w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 outline-none"
                     />
                     {isClientDropdownOpen && (
                       <div className="absolute z-10 w-full mt-1 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl shadow-xl max-h-60 overflow-y-auto">
                         {existingClients.filter(c => {
-                          const search = clientSearchText.toLowerCase()
-                          return c.name.toLowerCase().includes(search) || 
-                                 (c.phone || '').toLowerCase().includes(search) || 
-                                 (c.contact_info || '').toLowerCase().includes(search)
+                          const search = clientSearchText.toLowerCase().replace(/\s/g, '')
+                          const name = (c.name || '').toLowerCase().replace(/\s/g, '')
+                          const contact = (c.contact_info || '').toLowerCase().replace(/\s/g, '')
+                          const phone = (c.phone || '').toLowerCase().replace(/\s/g, '')
+                          const telegram = (c.telegram || '').toLowerCase().replace(/\s/g, '')
+                          const instagram = (c.instagram || '').toLowerCase().replace(/\s/g, '')
+                          const email = (c.email || '').toLowerCase().replace(/\s/g, '')
+                          return name.includes(search) || contact.includes(search) || phone.includes(search) || telegram.includes(search) || instagram.includes(search) || email.includes(search)
                         }).map(c => (
                           <div 
                             key={c.id}
@@ -451,7 +455,7 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
                             }}
                           >
                             <div className="font-medium text-neutral-900 dark:text-white">{c.name}</div>
-                            <div className="text-xs text-neutral-500">{c.phone || c.contact_info || 'Нет контактов'}</div>
+                            <div className="text-xs text-neutral-500">{c.phone || c.email || c.telegram || c.instagram || c.contact_info || 'Нет контактов'}</div>
                           </div>
                         ))}
                       </div>

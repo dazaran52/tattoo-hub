@@ -155,13 +155,15 @@ export function LeadDetailsModal({ isOpen, onClose, session, onAccept, onReject,
 
             {/* Preferences */}
             <div className="flex gap-4 flex-wrap">
+              {(leadData.session_date || (!leadData.id && session.session_date)) && (
               <div className="bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 px-4 py-3 rounded-2xl flex-1 min-w-[120px] flex items-center gap-3 border border-emerald-100 dark:border-emerald-500/20">
                 <Calendar className="w-5 h-5 shrink-0" />
                 <div className="text-sm">
                   <span className="font-bold block">Желаемая дата</span>
-                  {new Date(session.session_date).toLocaleDateString('ru-RU')}{session.start_time ? ` ${session.start_time.slice(0, 5)}` : ''}
+                  {new Date(leadData.session_date || session.session_date).toLocaleDateString('ru-RU')}{(leadData.session_time || session.start_time) ? ` ${(leadData.session_time || session.start_time).slice(0, 5)}` : ''}
                 </div>
               </div>
+              )}
               {leadData.body_place && (
                 <div className="bg-sky-50 dark:bg-sky-900/20 text-sky-700 dark:text-sky-400 px-4 py-3 rounded-2xl flex-1 min-w-[120px] flex items-center gap-3 border border-sky-100 dark:border-sky-500/20">
                   <PersonStanding className="w-5 h-5 shrink-0" />

@@ -743,7 +743,7 @@ async def create_client_lead(
                                 "instagram": lead_data.instagram,
                                 "email": lead_data.email,
                                 "notes": "",
-                                "source": "lead",
+                                "source": "direct" if lead_data.is_personal else "marketplace",
                                 "kanban_status": "new"
                             }
                             new_c_res = await supabase.table("master_clients").insert(client_data).execute()
@@ -751,6 +751,12 @@ async def create_client_lead(
                                 existing_client = new_c_res.data[0]
                                 
                         if existing_client:
+                            # Update existing client with latest lead_id
+                            update_client_data = {"lead_id": new_lead["id"]}
+                            if lead_data.is_personal:
+                                update_client_data["source"] = "direct"
+                            await supabase.table("master_clients").update(update_client_data).eq("id", existing_client["id"]).execute()
+
                             # Create a master_sessions for this new request
                             session_date = lead_data.session_date.isoformat()[:10] if lead_data.session_date else datetime.datetime.utcnow().date().isoformat()
                             res = await supabase.table("master_sessions").insert({

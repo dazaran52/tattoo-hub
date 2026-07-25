@@ -20,11 +20,17 @@ interface Message {
 interface ChatPreview {
   id: string
   lead_id: string
+  client_id?: string
+  client_session_id?: string
+  master_id?: string
   created_at: string
-  leads: {
+  leads?: {
+    id?: string
     title: string
     description: string
     image_urls: string[]
+    contacts?: string
+    is_personal?: boolean
   }
   client_info?: {
     name: string
@@ -492,19 +498,29 @@ export function MessagesList({ userRole = 'master' }: MessagesListProps) {
               className={`p-4 sm:p-6 border-b border-neutral-200 dark:border-white/5 bg-white dark:bg-neutral-900 flex items-center justify-between shrink-0 transition-colors ${userRole === 'master' ? 'cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-800/50' : ''}`}
               onClick={() => {
                 if (userRole === 'client') return;
-                let client = clients.find((c: any) => c.lead_id === selectedChat.lead_id);
+                let client = clients.find((c: any) => 
+                  (c.chat_id && c.chat_id === selectedChat.id) ||
+                  (c.lead_id && c.lead_id === selectedChat.lead_id) ||
+                  (selectedChat.client_id && c.id === selectedChat.client_id) ||
+                  (selectedChat.client_info?.email && c.email && c.email.toLowerCase() === selectedChat.client_info.email.toLowerCase()) ||
+                  (selectedChat.leads?.contacts && c.phone && c.phone === selectedChat.leads.contacts) ||
+                  (selectedChat.leads?.contacts && c.contact_info && c.contact_info === selectedChat.leads.contacts)
+                );
                 if (!client) {
+                  const isPersonal = selectedChat.leads?.is_personal;
                   client = {
                     id: 'temp-' + selectedChat.id,
                     name: selectedChat.client_info?.name || 'Новый клиент',
                     lead_id: selectedChat.lead_id,
                     leads: selectedChat.leads,
-                    source: 'marketplace',
-                    phone: '',
+                    source: isPersonal ? 'direct' : 'marketplace',
+                    phone: selectedChat.leads?.contacts || '',
                     telegram: '',
                     instagram: '',
-                    email: '',
-                    notes: 'ВНИМАНИЕ: Заявка еще не принята в работу. Примите её или назначьте сеанс, чтобы карточка стала активной.',
+                    email: selectedChat.client_info?.email || '',
+                    notes: isPersonal 
+                      ? 'Персональная заявка с вашей личной страницы. Карточка будет автоматически создана при принятии заявки или сеанса.' 
+                      : 'ВНИМАНИЕ: Заявка еще не принята в работу. Примите её или назначьте сеанс, чтобы карточка стала активной.',
                     master_sessions: []
                   };
                 }

@@ -183,7 +183,7 @@ async def get_my_chats(
     leads_map = {}
     try:
         if client_ids or client_session_ids:
-            l_query = supabase.table("leads").select("id, client_id, client_session_id, title, description, image_urls, contacts").order("created_at", desc=True)
+            l_query = supabase.table("leads").select("id, client_id, client_session_id, title, description, image_urls, contacts, is_personal, assigned_master_id, client_budget, client_currency, is_negotiable_budget, session_date, session_time, body_place, size, client_priority").order("created_at", desc=True)
             if client_ids and client_session_ids:
                 l_res = l_query.or_(f"client_id.in.({','.join(client_ids)}),client_session_id.in.({','.join(client_session_ids)})").execute()
             elif client_ids:
