@@ -651,6 +651,24 @@ async def create_client_lead(
                 print(f"Shadow auth failed: {e}")
                 
         if client_id:
+            try:
+                # Ensure client exists in public.users to avoid foreign key constraint error
+                u_res = await supabase.table("users").select("id").eq("id", client_id).execute()
+                if not u_res.data:
+                    client_profile = {
+                        "id": client_id,
+                        "email": lead_data.email.strip().lower() if lead_data.email else f"{client_id}@client.tattoohub.xyz",
+                        "credits": 0,
+                        "role": "client",
+                        "status": "approved",
+                        "display_name": lead_data.name or lead_data.client_name or "Клиент",
+                        "currency": "CZK",
+                        "balance": 0.0,
+                        "theme": "system"
+                    }
+                    await supabase.table("users").insert(client_profile).execute()
+            except Exception as eu:
+                print(f"Failed to ensure client user in public.users: {eu}")
             db_lead["client_id"] = client_id
 
         import asyncio

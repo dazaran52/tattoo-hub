@@ -160,6 +160,14 @@ export function LeadWizard({ master, source = 'platform', themeClasses, onSucces
     return true
   }
 
+  const validateStep2 = () => {
+    if (!isNegotiable && (!budgetVal || !budgetVal.trim() || isNaN(parseInt(budgetVal, 10)) || parseInt(budgetVal, 10) <= 0)) {
+      toast.error('Пожалуйста, укажите ориентировочный бюджет или выберите опцию "Договорная цена"')
+      return false
+    }
+    return true
+  }
+
   const validateStep3 = () => {
     if (!name.trim()) {
       toast.error('Пожалуйста, укажите ваше имя')
@@ -176,13 +184,13 @@ export function LeadWizard({ master, source = 'platform', themeClasses, onSucces
     if (step === 1) {
       if (validateStep1()) setStep(2)
     } else if (step === 2) {
-      setStep(3)
+      if (validateStep2()) setStep(3)
     }
   }
 
   const handleBeforeSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!validateStep1() || !validateStep3()) return
+    if (!validateStep1() || !validateStep2() || !validateStep3()) return
 
     const missingRecommended = styles.length === 0 || !bodyPlace.trim() || !size.trim() || !sessionDate
     if (missingRecommended && !showWarningModal) {
