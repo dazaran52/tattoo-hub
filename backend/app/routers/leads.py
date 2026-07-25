@@ -1188,12 +1188,14 @@ async def get_master_unavailable_dates(
 ):
     """Get all unavailable dates for a master (days off + booked sessions)."""
     try:
-        # First resolve username to master_id
-        master_res = await supabase.table("users").select("id").eq("username", username).single().execute()
+        # First try resolving by username, if not found check by id
+        master_res = await supabase.table("users").select("id").eq("username", username).execute()
         if not master_res.data:
-            raise HTTPException(status_code=404, detail="Master not found")
+            master_res = await supabase.table("users").select("id").eq("id", username).execute()
+        if not master_res.data:
+            return []
             
-        master_id = master_res.data["id"]
+        master_id = master_res.data[0]["id"]
         
         # Get explicit days off
         days_off_res = await supabase.table("master_days_off").select("date").eq("master_id", master_id).eq("is_full_day", True).execute()
@@ -1201,4 +1203,4 @@ async def get_master_unavailable_dates(
                 
         return list(unavailable_dates)
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        return []

@@ -92,7 +92,8 @@ export function LeadWizard({ master, source = 'platform', themeClasses, onSucces
     if (!master?.id) return
     const fetchUnavailable = async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/leads/master/${master.id}/unavailable-dates`)
+        const identifier = master.username || master.id
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/leads/public/master/${identifier}/unavailable-dates`)
         if (res.ok) {
           const data: string[] = await res.json()
           setUnavailableDates(data.map(d => new Date(d)))
@@ -102,7 +103,7 @@ export function LeadWizard({ master, source = 'platform', themeClasses, onSucces
       }
     }
     fetchUnavailable()
-  }, [master?.id])
+  }, [master?.id, master?.username])
 
   useEffect(() => {
     if (styles.length > 0 || bodyPlace || size) setOpenStep1Details(true)
@@ -223,22 +224,32 @@ export function LeadWizard({ master, source = 'platform', themeClasses, onSucces
     try {
       const finalImageUrls = await uploadPhotosToSupabase()
 
+      const parsedVal = budgetVal && !isNaN(parseInt(budgetVal, 10)) ? parseInt(budgetVal, 10) : null
+      const budgetStr = isNegotiable ? 'Договорная цена' : (budgetVal ? `${budgetVal} CZK` : null)
+
       const payload = {
-        name: name.trim(),
-        contact: contact.trim(),
-        email: email.trim(),
-        instagram: instagram.trim(),
         description: description.trim(),
-        style: styles.join(', '),
-        body_place: bodyPlace.trim(),
-        size: size.trim(),
-        session_date: sessionDate ? format(sessionDate, 'yyyy-MM-dd') : null,
-        session_time: sessionTime || null,
-        budget_val: isNegotiable ? 'Договорная' : budgetVal,
+        email: email.trim() || null,
+        style: styles.length > 0 ? styles.join(', ') : null,
+        location: null,
+        body_place: bodyPlace.trim() || null,
+        size: size.trim() || null,
+        budget: budgetStr,
+        budget_val: isNegotiable ? null : parsedVal,
+        budget_currency: 'CZK',
         client_priority: clientPriority,
+        city: null,
+        country_id: null,
+        name: name.trim() || 'Без имени',
+        contact: contact.trim() || email.trim() || null,
+        instagram: instagram.trim() || null,
+        is_negotiable_budget: isNegotiable,
         image_urls: finalImageUrls,
-        is_personal: master && source === 'personal' ? true : false,
         assigned_master_id: master && source === 'personal' ? master.id : null,
+        session_date: sessionDate ? sessionDate.toISOString() : null,
+        session_time: sessionTime || null,
+        client_name: name.trim() || null,
+        is_personal: master && source === 'personal' ? true : false,
       }
 
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/leads/client`, {
@@ -274,22 +285,32 @@ export function LeadWizard({ master, source = 'platform', themeClasses, onSucces
     const toastId = toast.loading('Публикуем заявку на маркетплейсе...')
 
     try {
+      const parsedVal = budgetVal && !isNaN(parseInt(budgetVal, 10)) ? parseInt(budgetVal, 10) : null
+      const budgetStr = isNegotiable ? 'Договорная цена' : (budgetVal ? `${budgetVal} CZK` : null)
+
       const payload = {
-        name: name.trim(),
-        contact: contact.trim(),
-        email: email.trim(),
-        instagram: instagram.trim(),
         description: description.trim(),
-        style: styles.join(', '),
-        body_place: bodyPlace.trim(),
-        size: size.trim(),
-        session_date: sessionDate ? format(sessionDate, 'yyyy-MM-dd') : null,
-        session_time: sessionTime || null,
-        budget_val: isNegotiable ? 'Договорная' : budgetVal,
+        email: email.trim() || null,
+        style: styles.length > 0 ? styles.join(', ') : null,
+        location: null,
+        body_place: bodyPlace.trim() || null,
+        size: size.trim() || null,
+        budget: budgetStr,
+        budget_val: isNegotiable ? null : parsedVal,
+        budget_currency: 'CZK',
         client_priority: clientPriority,
+        city: null,
+        country_id: null,
+        name: name.trim() || 'Без имени',
+        contact: contact.trim() || email.trim() || null,
+        instagram: instagram.trim() || null,
+        is_negotiable_budget: isNegotiable,
         image_urls: uploadedUrls,
-        is_personal: false,
         assigned_master_id: null,
+        session_date: sessionDate ? sessionDate.toISOString() : null,
+        session_time: sessionTime || null,
+        client_name: name.trim() || null,
+        is_personal: false,
       }
 
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/leads/client`, {
