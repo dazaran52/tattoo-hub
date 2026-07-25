@@ -762,6 +762,8 @@ async def create_client_lead(
                             res = await supabase.table("master_sessions").insert({
                                 "master_id": lead_data.assigned_master_id,
                                 "client_id": existing_client["id"],
+                                "lead_id": new_lead["id"],
+                                "source": "direct" if lead_data.is_personal else "marketplace",
                                 "session_date": session_date,
                                 "start_time": lead_data.session_time,
                                 "status": "new",

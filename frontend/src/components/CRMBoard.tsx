@@ -30,6 +30,8 @@ export interface CRMSession {
   reference_images?: string[]
   result_image_urls?: string[]
   status: string
+  source?: string
+  lead_id?: string
   master_clients?: {
     id: string
     name: string
@@ -209,6 +211,8 @@ export function CRMBoard() {
                 id: `lead_${lead.id}`,
                 master_id: user.id,
                 client_id: lead.id,
+                lead_id: lead.id,
+                source: lead.is_personal ? 'direct' : 'marketplace',
                 status: 'new',
                 price: lead.price_credits || 0,
                 session_date: lead.created_at,
@@ -619,15 +623,17 @@ export function CRMBoard() {
                                 {initial}
                               </div>
                               <div className="flex-1 min-w-0">
-                                <h4 className="font-bold text-neutral-900 dark:text-white text-sm truncate flex items-center gap-1.5">
-                                  {clientName}
-                                  {(item.master_clients?.source === 'direct' || item.master_clients?.leads?.is_personal) ? (
-                                    <span className="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-[9px] px-1.5 py-0.5 rounded-full font-bold uppercase tracking-wider shrink-0">Личная</span>
-                                  ) : (item.master_clients?.source === 'marketplace' || (item.master_clients?.lead_id && !item.master_clients?.leads?.is_personal)) ? (
-                                    <span className="bg-cyan-100 dark:bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 text-[9px] px-1.5 py-0.5 rounded-full font-bold uppercase tracking-wider shrink-0">Маркетплейс</span>
+                                <div className="flex items-center justify-between gap-1.5 mb-0.5">
+                                  <h4 className="font-bold text-neutral-900 dark:text-white text-sm truncate min-w-0 flex-1">
+                                    {clientName}
+                                  </h4>
+                                  {(item.source === 'direct' || (!item.source && (item.master_clients?.source === 'direct' || item.master_clients?.leads?.is_personal))) ? (
+                                    <span className="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-[9px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider shrink-0 ml-1">Личная</span>
+                                  ) : (item.source === 'marketplace' || (!item.source && (item.master_clients?.source === 'marketplace' || (item.master_clients?.lead_id && !item.master_clients?.leads?.is_personal)))) ? (
+                                    <span className="bg-cyan-100 dark:bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 text-[9px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider shrink-0 ml-1">Маркетплейс</span>
                                   ) : null}
-                                </h4>
-                                <p className="text-xs text-neutral-500 line-clamp-1 mt-0.5">
+                                </div>
+                                <p className="text-xs text-neutral-500 line-clamp-1">
                                   {item.master_clients?.phone || item.master_clients?.telegram || item.master_clients?.email || 'Нет контактов'}
                                 </p>
                               </div>

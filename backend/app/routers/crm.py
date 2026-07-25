@@ -287,13 +287,15 @@ async def create_session(
 ):
     try:
         # Verify client belongs to master
-        client_res = await supabase.table("master_clients").select("id, lead_id").eq("id", data.client_id).eq("master_id", current_user.user_id).execute()
+        client_res = await supabase.table("master_clients").select("id, lead_id, source").eq("id", data.client_id).eq("master_id", current_user.user_id).execute()
         if not client_res.data:
             raise HTTPException(status_code=404, detail="Client not found or not owned by master")
 
         session_data = {
             "master_id": current_user.user_id,
             "client_id": data.client_id,
+            "lead_id": client_res.data[0].get("lead_id"),
+            "source": client_res.data[0].get("source") or "direct",
             "session_date": data.session_date,
             "start_time": data.start_time,
             "end_time": data.end_time,

@@ -183,7 +183,7 @@ async def get_my_chats(
     leads_map = {}
     try:
         if client_ids or client_session_ids:
-            l_query = supabase.table("leads").select("id, client_id, client_session_id, title, description, image_urls, contacts, is_personal, assigned_master_id, client_budget, client_currency, is_negotiable_budget, session_date, session_time, body_place, size, client_priority").order("created_at", desc=True)
+            l_query = supabase.table("leads").select("id, client_id, client_session_id, title, description, image_urls, contacts, is_personal, assigned_master_id, client_budget, client_currency, is_negotiable_budget, session_date, session_time, body_place, size, client_priority, client_name").order("created_at", desc=True)
             if client_ids and client_session_ids:
                 l_res = l_query.or_(f"client_id.in.({','.join(client_ids)}),client_session_id.in.({','.join(client_session_ids)})").execute()
             elif client_ids:
@@ -217,6 +217,20 @@ async def get_my_chats(
                         sessions_map[f"{s['master_id']}_{cs_id}"] = sessions_map.get(f"{s['master_id']}_{cs_id}", 0) + 1
         except Exception as e:
             print(f"Error fetching sessions count: {e}")
+
+    master_clients_map = {}
+    if user_role != "client" and current_user:
+        try:
+            mc_res = supabase.table("master_clients").select("id, name, email, phone, telegram, instagram, lead_id, source").eq("master_id", current_user.user_id).eq("is_deleted", False).execute()
+            for mc in (mc_res.data or []):
+                if mc.get("lead_id"):
+                    master_clients_map[f"lead_{mc['lead_id']}"] = mc
+                if mc.get("email"):
+                    master_clients_map[f"email_{mc['email'].lower().strip()}"] = mc
+                if mc.get("phone"):
+                    master_clients_map[f"phone_{mc['phone'].strip()}"] = mc
+        except Exception as e:
+            print(f"Error fetching master_clients in chat: {e}")
 
     for chat in chats:
         messages = chat.pop("chat_messages", [])
@@ -254,19 +268,36 @@ async def get_my_chats(
             c_email = users_data.get("email")
             c_avatar = users_data.get("avatar_url")
             
-            if not c_name or not c_email:
+            # Try to match with master's CRM clients
+            mc_match = None
+            if chat["leads"] and chat["leads"].get("id"):
+                mc_match = master_clients_map.get(f"lead_{chat['leads']['id']}")
+            if not mc_match and c_email:
+                mc_match = master_clients_map.get(f"email_{c_email.lower().strip()}")
+                
+            if not c_name or c_name == "Клиент":
+                if mc_match and mc_match.get("name") and mc_match.get("name") != "Клиент":
+                    c_name = mc_match["name"]
+                elif chat["leads"] and chat["leads"].get("client_name"):
+                    c_name = chat["leads"]["client_name"]
+            
+            if not c_name or not c_email or c_name == "Клиент":
                 if chat["leads"]:
                     contacts = chat["leads"].get("contacts") or ""
-                    if "Email:" in contacts:
+                    if "Email:" in contacts and not c_email:
                         try: c_email = contacts.split("Email:")[1].split(",")[0].strip()
                         except: pass
-                    if "Имя:" in contacts:
+                    if "Имя:" in contacts and (not c_name or c_name == "Клиент"):
                         try: c_name = contacts.split("Имя:")[1].split(",")[0].strip()
                         except: pass
             
+            if not c_name or c_name == "Клиент":
+                if mc_match and mc_match.get("name"):
+                    c_name = mc_match["name"]
+            
             chat["client_info"] = {
-                "name": c_name or c_email or (chat["leads"]["title"] if chat["leads"] else "Клиент"),
-                "email": c_email or "",
+                "name": c_name or (mc_match.get("name") if mc_match else None) or c_email or (chat["leads"]["client_name"] if chat["leads"] and chat["leads"].get("client_name") else "Клиент"),
+                "email": c_email or (mc_match.get("email") if mc_match else "") or "",
                 "avatar_url": c_avatar or ""
             }
 
