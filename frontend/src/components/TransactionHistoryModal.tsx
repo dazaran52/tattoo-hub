@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase'
 import { getTranslation, Language } from '@/lib/i18n'
 import { createPortal } from 'react-dom'
 import { WithdrawalModal } from './WithdrawalModal'
+import { useLanguage } from '@/i18n/LanguageContext'
 
 interface Transaction {
   id: string
@@ -26,17 +27,10 @@ interface Props {
 }
 
 export function TransactionHistoryModal({ isOpen, onClose, withdrawableBalance = 0 }: Props) {
+  const { lang: language } = useLanguage()
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [language, setLanguage] = useState<string>('cs')
   const [showWithdraw, setShowWithdraw] = useState(false)
-
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const savedLang = localStorage.getItem('language') || 'cs'
-      setLanguage(savedLang)
-    }
-  }, [])
 
   const t = (key: Parameters<typeof getTranslation>[1]) => getTranslation(language as Language, key)
 

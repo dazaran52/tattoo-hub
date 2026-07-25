@@ -7,7 +7,30 @@ import { useLanguage } from '@/i18n/LanguageContext'
 
 export function CookieBanner() {
   const [isVisible, setIsVisible] = useState(false)
-  const { t } = useLanguage()
+  const { lang } = useLanguage()
+
+  const copy = {
+    ru: {
+      before: 'Мы используем файлы cookie для улучшения работы сайта. Продолжая пользоваться сайтом, вы соглашаетесь с нашей ',
+      policy: 'Политикой конфиденциальности',
+      accept: 'Понятно',
+    },
+    cs: {
+      before: 'Používáme soubory cookie ke zlepšení funkčnosti webu. Pokračováním v používání webu souhlasíte s našimi ',
+      policy: 'Zásadami ochrany osobních údajů',
+      accept: 'Rozumím',
+    },
+    en: {
+      before: 'We use cookies to improve website functionality. By continuing to use the site, you agree to our ',
+      policy: 'Privacy Policy',
+      accept: 'Got it',
+    },
+    uk: {
+      before: 'Ми використовуємо файли cookie, щоб покращити роботу сайту. Продовжуючи користуватися сайтом, ви погоджуєтеся з нашою ',
+      policy: 'Політикою конфіденційності',
+      accept: 'Зрозуміло',
+    },
+  }[lang]
 
   useEffect(() => {
     const consent = localStorage.getItem('cookie_consent')
@@ -43,12 +66,7 @@ export function CookieBanner() {
                 <Cookie className="w-4 h-4" />
               </div>
               <p className="text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed">
-                {useLanguage().lang === 'ru' 
-                  ? <>Мы используем файлы cookie для улучшения работы сайта. Продолжая пользоваться сайтом, вы соглашаетесь с нашей <a href="/privacy" className="text-cyan-600 dark:text-cyan-400 hover:underline">Политикой конфиденциальности</a>.</>
-                  : useLanguage().lang === 'cs'
-                  ? <>Používáme soubory cookie ke zlepšení funkčnosti webu. Pokračováním v používání webu souhlasíte s naší <a href="/privacy" className="text-cyan-600 dark:text-cyan-400 hover:underline">Zásadou ochrany osobních údajů</a>.</>
-                  : <>We use cookies to improve website functionality. By continuing to use the site, you agree to our <a href="/privacy" className="text-cyan-600 dark:text-cyan-400 hover:underline">Privacy Policy</a>.</>
-                }
+                {copy.before}<a href="/privacy" className="text-cyan-600 dark:text-cyan-400 hover:underline">{copy.policy}</a>.
               </p>
             </div>
 
@@ -57,7 +75,7 @@ export function CookieBanner() {
                 onClick={handleAccept}
                 className="flex-1 sm:flex-none bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 text-sm font-bold px-5 py-2.5 rounded-xl hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-colors whitespace-nowrap"
               >
-                ОК
+                {copy.accept}
               </button>
             </div>
           </div>

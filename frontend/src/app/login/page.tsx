@@ -7,12 +7,14 @@ import { Mail, Lock, Loader2, ArrowRight, Link as LinkIcon, Tag, MapPin, Globe, 
 import { supabase } from '@/lib/supabase'
 import { getTranslation, Language } from '@/lib/i18n'
 import { Logo } from '@/components/Logo'
+import { useLanguage } from '@/i18n/LanguageContext'
 
 type AuthMode = 'login' | 'signup' | 'verify_email' | 'forgot_password' | 'reset_password'
 
 function LoginContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const { lang: language, setLang } = useLanguage()
   const [isLoading, setIsLoading] = useState(false)
   const [authMode, setAuthMode] = useState<AuthMode>('login')
   const [email, setEmail] = useState('')
@@ -23,7 +25,6 @@ function LoginContent() {
   const [referredBy, setReferredBy] = useState('')
   const [error, setError] = useState('')
   const [successMsg, setSuccessMsg] = useState('')
-  const [language, setLanguage] = useState<string>('cs')
   const [theme, setTheme] = useState<'dark' | 'light'>('dark')
   const [tilt, setTilt] = useState({ x: 0, y: 0 })
 
@@ -91,27 +92,15 @@ function LoginContent() {
   }, [searchParams])
 
   useEffect(() => {
-    const savedLang = localStorage.getItem('language')
-    if (savedLang) {
-      setLanguage(savedLang)
-    } else {
-      const sysLang = navigator.language.toLowerCase()
-      if (sysLang.startsWith('ru')) setLanguage('ru')
-      else if (sysLang.startsWith('en')) setLanguage('en')
-      else setLanguage('cs')
-    }
-
     const savedTheme = localStorage.getItem('theme') || 'dark'
     setTheme(savedTheme as 'dark' | 'light')
   }, [])
 
   const toggleLanguage = () => {
-    const langs = ['cs', 'en', 'ru', 'uk']
+    const langs: Language[] = ['cs', 'en', 'ru', 'uk']
     const currentIndex = langs.indexOf(language)
     const newLang = langs[(currentIndex + 1) % langs.length] || 'cs'
-    setLanguage(newLang)
-    localStorage.setItem('language', newLang)
-    localStorage.setItem('app_lang', newLang)
+    setLang(newLang)
   }
 
   const toggleTheme = () => {
@@ -126,7 +115,14 @@ function LoginContent() {
     }
   }
 
-  const t = (key: Parameters<typeof getTranslation>[1]) => getTranslation(language as Language, key)
+  const t = (key: Parameters<typeof getTranslation>[1]) => getTranslation(language, key)
+
+  const roleLabels: Record<Language, { master: string; client: string; theme: string }> = {
+    ru: { master: 'Мастер', client: 'Клиент', theme: 'Переключить тему' },
+    cs: { master: 'Tatér', client: 'Klient', theme: 'Přepnout motiv' },
+    en: { master: 'Artist', client: 'Client', theme: 'Toggle theme' },
+    uk: { master: 'Майстер', client: 'Клієнт', theme: 'Перемкнути тему' },
+  }
 
   const handleAuthSuccess = (session: any, isSpecialAdmin: boolean = false) => {
     if (session) {
@@ -316,7 +312,7 @@ function LoginContent() {
           <button
             onClick={toggleTheme}
             className="flex items-center justify-center p-2.5 bg-neutral-900/5 dark:bg-neutral-900/50 backdrop-blur-md border border-neutral-200/50 dark:border-neutral-800 rounded-full text-neutral-600 dark:text-neutral-400 hover:text-neutral-950 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-all shadow-sm"
-            title="Переключить тему"
+            title={roleLabels[language].theme}
           >
             {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
           </button>
@@ -355,7 +351,7 @@ function LoginContent() {
               }}
               className={`relative z-10 flex-1 py-3 text-sm font-bold tracking-wide transition-colors duration-300 flex items-center justify-center gap-2 ${role === 'master' ? 'text-white' : 'text-neutral-500 dark:text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-300'}`}
             >
-              🔥 Мастер
+              🔥 {roleLabels[language].master}
             </button>
             <button
               type="button"
@@ -364,7 +360,7 @@ function LoginContent() {
               }}
               className={`relative z-10 flex-1 py-3 text-sm font-bold tracking-wide transition-colors duration-300 flex items-center justify-center gap-2 ${role === 'client' ? 'text-white' : 'text-neutral-500 dark:text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-300'}`}
             >
-              ✨ Клиент
+              ✨ {roleLabels[language].client}
             </button>
               </motion.div>
             )}
@@ -532,10 +528,10 @@ function LoginContent() {
                             </div>
                           </div>
                           <span className="text-xs font-medium text-neutral-500 leading-relaxed">
-                            {language === 'cs' && <>Souhlasím s <a href="/terms" target="_blank" className="text-neutral-900 dark:text-white hover:underline">Terms of Service</a> a <a href="/privacy" target="_blank" className="text-neutral-900 dark:text-white hover:underline">Privacy Policy</a>.</>}
-                            {language === 'ru' && <>Я соглашаюсь с <a href="/terms" target="_blank" className="text-neutral-900 dark:text-white hover:underline">Terms of Service</a> и <a href="/privacy" target="_blank" className="text-neutral-900 dark:text-white hover:underline">Privacy Policy</a>.</>}
-                            {language === 'en' && <>I agree to the <a href="/terms" target="_blank" className="text-neutral-900 dark:text-white hover:underline">Terms of Service</a> and <a href="/privacy" target="_blank" className="text-neutral-900 dark:text-white hover:underline">Privacy Policy</a>.</>}
-                            {language === 'uk' && <>Я погоджуюсь з <a href="/terms" target="_blank" className="text-neutral-900 dark:text-white hover:underline">Terms of Service</a> та <a href="/privacy" target="_blank" className="text-neutral-900 dark:text-white hover:underline">Privacy Policy</a>.</>}
+                            {language === 'cs' && <>Souhlasím s <a href="/terms" target="_blank" className="text-neutral-900 dark:text-white hover:underline">{t('termsOfService')}</a> a <a href="/privacy" target="_blank" className="text-neutral-900 dark:text-white hover:underline">{t('privacyPolicy')}</a>.</>}
+                            {language === 'ru' && <>Я соглашаюсь с <a href="/terms" target="_blank" className="text-neutral-900 dark:text-white hover:underline">{t('termsOfService')}</a> и <a href="/privacy" target="_blank" className="text-neutral-900 dark:text-white hover:underline">{t('privacyPolicy')}</a>.</>}
+                            {language === 'en' && <>I agree to the <a href="/terms" target="_blank" className="text-neutral-900 dark:text-white hover:underline">{t('termsOfService')}</a> and <a href="/privacy" target="_blank" className="text-neutral-900 dark:text-white hover:underline">{t('privacyPolicy')}</a>.</>}
+                            {language === 'uk' && <>Я погоджуюсь з <a href="/terms" target="_blank" className="text-neutral-900 dark:text-white hover:underline">{t('termsOfService')}</a> та <a href="/privacy" target="_blank" className="text-neutral-900 dark:text-white hover:underline">{t('privacyPolicy')}</a>.</>}
                           </span>
                         </label>
                       </motion.div>
@@ -610,11 +606,11 @@ function LoginContent() {
           )}
 
           <div className="flex flex-wrap justify-center gap-4 text-xs font-semibold text-neutral-600 mt-8">
-            <a href="/terms" className="hover:text-neutral-950 dark:hover:text-white transition-colors uppercase tracking-wider">Terms of Service</a>
+            <a href="/terms" className="hover:text-neutral-950 dark:hover:text-white transition-colors uppercase tracking-wider">{t('termsOfService')}</a>
             <span>&middot;</span>
-            <a href="/privacy" className="hover:text-neutral-950 dark:hover:text-white transition-colors uppercase tracking-wider">Privacy Policy</a>
+            <a href="/privacy" className="hover:text-neutral-950 dark:hover:text-white transition-colors uppercase tracking-wider">{t('privacyPolicy')}</a>
             <span>&middot;</span>
-            <a href="/refunds" className="hover:text-neutral-950 dark:hover:text-white transition-colors uppercase tracking-wider">Refund Policy</a>
+            <a href="/refunds" className="hover:text-neutral-950 dark:hover:text-white transition-colors uppercase tracking-wider">{t('refundPolicy')}</a>
           </div>
         </div>
       </div>

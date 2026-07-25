@@ -9,7 +9,14 @@ export function InstallPrompt() {
   const pathname = usePathname()
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null)
   const [showPrompt, setShowPrompt] = useState(false)
-  const { t, lang } = useLanguage()
+  const { lang } = useLanguage()
+
+  const copy = {
+    ru: { title: 'Установить приложение', description: 'Для быстрого доступа и уведомлений', action: 'Установить' },
+    cs: { title: 'Nainstalovat aplikaci', description: 'Pro rychlý přístup a upozornění', action: 'Instalovat' },
+    en: { title: 'Install app', description: 'For quick access and notifications', action: 'Install' },
+    uk: { title: 'Встановити застосунок', description: 'Для швидкого доступу та сповіщень', action: 'Встановити' },
+  }[lang]
 
   useEffect(() => {
     const handler = (e: Event) => {
@@ -50,8 +57,12 @@ export function InstallPrompt() {
     setShowPrompt(false)
   }
 
-  // Don't show on landing or login pages
-  if (pathname === '/' || pathname === '/login') return null
+  // Installation is a secondary action. Never cover acquisition/booking forms.
+  const isBlockedRoute = pathname === '/' ||
+    pathname === '/login' ||
+    pathname === '/new-lead' ||
+    pathname.startsWith('/book/')
+  if (isBlockedRoute) return null
 
   if (!showPrompt) return null
 
@@ -64,10 +75,10 @@ export function InstallPrompt() {
           </div>
           <div>
             <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
-              {lang === 'ru' ? 'Установить приложение' : lang === 'cs' ? 'Nainstalovat aplikaci' : 'Install App'}
+              {copy.title}
             </h3>
             <p className="text-xs text-neutral-500 dark:text-neutral-400">
-              {lang === 'ru' ? 'Для быстрого доступа и уведомлений' : lang === 'cs' ? 'Pro rychlý přístup a upozornění' : 'For quick access and notifications'}
+              {copy.description}
             </p>
           </div>
         </div>
@@ -76,7 +87,7 @@ export function InstallPrompt() {
             onClick={handleInstallClick}
             className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-bold rounded-lg transition-colors whitespace-nowrap"
           >
-            {lang === 'ru' ? 'Установить' : lang === 'cs' ? 'Instalovat' : 'Install'}
+            {copy.action}
           </button>
           <button
             onClick={() => setShowPrompt(false)}

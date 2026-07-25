@@ -6,8 +6,10 @@ import { MessageCircle, X, Send, Loader2 } from 'lucide-react'
 import { supabase, SupportMessage } from '@/lib/supabase'
 import toast from 'react-hot-toast'
 import { getTranslation, Language } from '@/lib/i18n'
+import { useLanguage } from '@/i18n/LanguageContext'
 
 export function ChatWidget() {
+  const { lang: language } = useLanguage()
   const [isOpen, setIsOpen] = useState(false)
   const [session, setSession] = useState<any>(null)
   const [messages, setMessages] = useState<SupportMessage[]>([])
@@ -18,19 +20,6 @@ export function ChatWidget() {
   const [isSending, setIsSending] = useState(false)
   const [unreadCount, setUnreadCount] = useState(0)
   const messagesEndRef = useRef<HTMLDivElement>(null)
-  const [language, setLanguage] = useState<string>('cs')
-
-  useEffect(() => {
-    const savedLang = localStorage.getItem('language')
-    if (savedLang) {
-      setLanguage(savedLang)
-    } else {
-      const sysLang = navigator.language.toLowerCase()
-      if (sysLang.startsWith('ru')) setLanguage('ru')
-      else if (sysLang.startsWith('en')) setLanguage('en')
-      else setLanguage('cs')
-    }
-  }, [])
 
   const t = (key: Parameters<typeof getTranslation>[1]) => getTranslation(language as Language, key)
 

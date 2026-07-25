@@ -12,6 +12,7 @@ import { supabase, Profile } from '@/lib/supabase'
 import { CheckCircle, XCircle, Clock, Loader2, Plus, Edit2, Trash2, Link as LinkIcon, Search, Coins, Ban } from 'lucide-react'
 import { getTranslation, Language } from '@/lib/i18n'
 import toast from 'react-hot-toast'
+import { useLanguage } from '@/i18n/LanguageContext'
 
 interface AdminUserResponse {
   id: string
@@ -33,7 +34,7 @@ interface AdminUserResponse {
 
 export default function AdminPage() {
   const router = useRouter()
-  const [language, setLanguage] = useState<string>('cs')
+  const { lang: language } = useLanguage()
   
   const [profile, setProfile] = useState<Profile | null>(null)
   const [users, setUsers] = useState<AdminUserResponse[]>([])
@@ -124,12 +125,6 @@ export default function AdminPage() {
 
   const t = (key: Parameters<typeof getTranslation>[1]) => getTranslation(language as Language, key)
 
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const savedLang = localStorage.getItem('language') || 'cs'
-      setLanguage(savedLang)
-    }
-  }, [])
 
   useEffect(() => {
     checkAdminAndFetchData()
