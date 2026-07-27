@@ -59,7 +59,6 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
   const [leads, setLeads] = useState<Lead[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [unlockingId, setUnlockingId] = useState<string | null>(null)
   const [actionLoadingId, setActionLoadingId] = useState<string | null>(null)
   const [filterText, setFilterText] = useState('')
   const [showOtherCities, setShowOtherCities] = useState(false)
@@ -257,83 +256,6 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
       if (pageNum > 1) setIsLoadingMore(false)
     }
   }
-
-  const handleUnlock = async (leadId: string) => {
-    try {
-      setUnlockingId(leadId)
-      setError(null)
-
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session) return
-
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/leads/${leadId}/unlock`,
-        {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${session.access_token}`,
-            'Content-Type': 'application/json',
-          },
-        }
-      )
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.detail || 'Failed to unlock lead')
-      }
-
-      setLeads(currentLeads => 
-        currentLeads.map(lead => 
-          lead.id === leadId 
-            ? { ...lead, contacts: data.contacts, is_unlocked: true } 
-            : lead
-        )
-      )
-
-      if (data.new_balance !== undefined) {
-        onUnlockSuccess(data.new_balance)
-      }
-
-      // Play success sound and haptic
-      playSuccessSound()
-      triggerHaptic('success')
-
-    } catch (err: any) {
-      if (err.message === 'INSUFFICIENT_CREDITS') {
-        playErrorSound()
-        triggerHaptic('error')
-        const lead = leads.find(l => l.id === leadId)
-        if (lead) {
-          setLowBalanceRequiredAmount(lead.unlock_price_local || 0)
-          setLowBalanceCurrency(lead.master_currency || 'CZK')
-          setIsLowBalanceModalOpen(true)
-        }
-      } else {
-        toast.error(err.message || 'Error unlocking lead')
-      }
-    } finally {
-      setUnlockingId(null)
-    }
-  }
-
-  const handleStatusChange = async (leadId: string, status: string) => {
-    try {
-      setActionLoadingId(leadId)
-      const res = await api.updateLeadStatus(leadId, status)
-      setLeads(currentLeads => 
-        currentLeads.map(lead => 
-          lead.id === leadId ? { ...lead, unlock_status: status, trust_score: res.trust_score } : lead
-        )
-      )
-      toast.success('Статус обновлен')
-    } catch (err: any) {
-      toast.error(err.message || 'Ошибка обновления статуса')
-    } finally {
-      setActionLoadingId(null)
-    }
-  }
-
   const openLeadModal = (lead?: Lead) => {
     if (lead) {
       setEditingLead(lead)

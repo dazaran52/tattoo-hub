@@ -87,7 +87,8 @@ def test_only_pending_certificate_can_be_reviewed():
 
 def test_numbered_migration_adds_private_certificate_path_column():
     migration = (
-        __import__("pathlib").Path(__file__).parents[1]
+        __import__("pathlib").Path(__file__).parents[2]
+        / "backend"
         / "migrations"
         / "049_manual_certificate_verification.sql"
     ).read_text()

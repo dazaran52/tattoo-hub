@@ -382,64 +382,6 @@ def get_leads(
         )
 
 
-@router.post("/{lead_id}/unlock", response_model=UnlockResponse)
-async def unlock_lead(
-    lead_id: str,
-    current_user: AuthUser = Depends(get_current_user),
-    supabase: AsyncClient = Depends(get_async_supabase_client)
-):
-    """The legacy paid-unlock flow is retired; contacts open after acceptance."""
-    raise HTTPException(status_code=410, detail="CONTACTS_AVAILABLE_AFTER_ACCEPTANCE")
-
-
-class LeadStatusUpdate(BaseModel):
-    status: str
-
-@router.patch("/{lead_id}/status")
-def update_lead_status(
-    lead_id: str,
-    payload: LeadStatusUpdate,
-    current_user: AuthUser = Depends(get_current_user),
-    supabase: Client = Depends(get_supabase_client)
-):
-    """Update lead status by the master who unlocked it."""
-    valid_statuses = ['new', 'contacted', 'no_answer', 'fake', 'appointment_set', 'came']
-    if payload.status not in valid_statuses:
-        raise HTTPException(status_code=400, detail="Invalid status")
-        
-    try:
-        # Update unlock status
-        res = supabase.table("lead_unlocks") \
-            .update({"status": payload.status}) \
-            .eq("lead_id", lead_id) \
-            .eq("user_id", current_user.user_id) \
-            .execute()
-            
-        if not res.data:
-            raise HTTPException(status_code=404, detail="Unlock record not found")
-            
-        # Recalculate lead trust score
-        unlocks_res = supabase.table("lead_unlocks").select("status").eq("lead_id", lead_id).execute()
-        unlocks = unlocks_res.data or []
-        
-        base_score = 100
-        for u in unlocks:
-            s = u["status"]
-            if s == "fake": base_score -= 50
-            elif s == "no_answer": base_score -= 20
-            elif s == "came": base_score += 50
-            elif s == "appointment_set": base_score += 20
-            
-        final_score = max(0, min(100, base_score))
-        
-        supabase.table("leads").update({"trust_score": final_score}).eq("id", lead_id).execute()
-        
-        return {"success": True, "trust_score": final_score}
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
 class MasterLeadCreate(BaseModel):
     title: str
     description: str
@@ -1091,6 +1033,12 @@ def update_proposal_status(
             "status": payload.status
         }).eq("lead_id", lead_id).eq("user_id", current_user.user_id).execute()
 
+        if res.data:
+            # Sync lead status if current master is the assigned master
+            supabase.table("leads").update({
+                "status": payload.status
+            }).eq("id", lead_id).eq("assigned_master_id", current_user.user_id).execute()
+
         if not res.data:
             # Fallback for personal leads: update the lead status directly
             lead_res = supabase.table("leads").update({
@@ -1118,10 +1066,10 @@ def update_lead_status(
     supabase: Client = Depends(get_supabase_client)
 ):
     """
-    Update the status of a lead (e.g. active, paused).
+    Update the status of a lead (e.g. active, paused, open, archived).
     Must be the owner of the lead.
     """
-    valid_statuses = ['new', 'active', 'paused', 'closed']
+    valid_statuses = ['new', 'active', 'paused', 'closed', 'open', 'archived', 'accepted', 'completed', 'cancelled']
     if payload.status not in valid_statuses:
         raise HTTPException(status_code=400, detail="Invalid status")
 

@@ -84,7 +84,8 @@ def test_interrupted_auto_verification_is_rescheduled():
 
 def test_migration_enforces_cap_and_reconciles_legacy_acceptance():
     migration = (
-        __import__("pathlib").Path(__file__).parents[1]
+        __import__("pathlib").Path(__file__).parents[2]
+        / "backend"
         / "migrations"
         / "050_marketplace_success_fee.sql"
     ).read_text()
@@ -110,7 +111,8 @@ def test_migration_enforces_cap_and_reconciles_legacy_acceptance():
     assert "OR v_proposal.status IN ('accepted', 'booked', 'completed')" not in migration
 
     client_portal = (
-        __import__("pathlib").Path(__file__).parents[1]
+        __import__("pathlib").Path(__file__).parents[2]
+        / "backend"
         / "app"
         / "routers"
         / "client_portal.py"
@@ -118,7 +120,8 @@ def test_migration_enforces_cap_and_reconciles_legacy_acceptance():
     assert 'table("lead_chats").insert' not in client_portal
 
     chat_router = (
-        __import__("pathlib").Path(__file__).parents[1]
+        __import__("pathlib").Path(__file__).parents[2]
+        / "backend"
         / "app"
         / "routers"
         / "chat.py"
@@ -128,22 +131,23 @@ def test_migration_enforces_cap_and_reconciles_legacy_acceptance():
     assert "assigned_master_id" in chat_router
 
     leads_router = (
-        __import__("pathlib").Path(__file__).parents[1]
+        __import__("pathlib").Path(__file__).parents[2]
+        / "backend"
         / "app"
         / "routers"
         / "leads.py"
     ).read_text()
-    assert 'status_code=410, detail="CONTACTS_AVAILABLE_AFTER_ACCEPTANCE"' in leads_router
+    assert '@router.post("/{lead_id}/unlock"' not in leads_router
 
 
 def test_legacy_contact_endpoints_no_longer_authorize_with_paid_unlocks():
-    root = __import__("pathlib").Path(__file__).parents[1] / "app" / "routers"
+    root = __import__("pathlib").Path(__file__).parents[2] / "backend" / "app" / "routers"
     leads_source = (root / "leads.py").read_text()
     profile_source = (root / "profile.py").read_text()
     crm_source = (root / "crm.py").read_text()
 
     legacy_feed = leads_source.split('@router.get("", response_model=List[LeadResponse])', 1)[1]
-    legacy_feed = legacy_feed.split('@router.post("/{lead_id}/unlock"', 1)[0]
+    legacy_feed = legacy_feed.split('@router.post("/master")', 1)[0]
     my_leads = profile_source.split('@router.get("/my-leads")', 1)[1]
     my_leads = my_leads.split('@router.get("/proposals")', 1)[0]
     crm_clients = crm_source.split('@router.get("/clients")', 1)[1]
@@ -171,7 +175,8 @@ def test_legacy_contact_endpoints_no_longer_authorize_with_paid_unlocks():
 
 def test_marketplace_feed_excludes_personal_leads():
     router = (
-        __import__("pathlib").Path(__file__).parents[1]
+        __import__("pathlib").Path(__file__).parents[2]
+        / "backend"
         / "app"
         / "routers"
         / "leads.py"

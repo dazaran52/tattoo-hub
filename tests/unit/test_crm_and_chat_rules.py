@@ -2,7 +2,7 @@ from pathlib import Path
 import pytest
 
 def get_router_source(filename: str) -> str:
-    root = Path(__file__).parents[1] / "app" / "routers"
+    root = Path(__file__).parents[2] / "backend" / "app" / "routers"
     return (root / filename).read_text(encoding="utf-8")
 
 def test_crm_client_source_defaults_to_direct():

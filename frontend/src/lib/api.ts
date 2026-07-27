@@ -120,31 +120,5 @@ export const api = {
     if (!res.ok) throw new Error('Failed to fetch leads')
     return res.json()
   },
-
-  async unlockLead(leadId: string) {
-    const headers = await getAuthHeaders()
-    const res = await fetch(`${API_URL}/api/leads/${leadId}/unlock`, {
-      method: 'POST',
-      headers
-    })
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}))
-      throw new Error(err.detail || 'Failed to unlock lead')
-    }
-    return res.json()
-  },
-
-  async updateLeadStatus(leadId: string, status: string): Promise<{success: boolean, trust_score: number}> {
-    const headers = await getAuthHeaders()
-    const res = await fetch(`${API_URL}/api/leads/${leadId}/status`, {
-      method: 'PATCH',
-      headers,
-      body: JSON.stringify({ status })
-    })
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}))
-      throw new Error(err.detail || 'Failed to update lead status')
-    }
-    return res.json()
   }
 }
