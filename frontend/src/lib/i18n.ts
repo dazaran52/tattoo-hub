@@ -187,6 +187,7 @@ type Translations = {
     statusAccepted: string;
     statusCompleted: string;
     statusArchived: string;
+    statusPaused: string;
     tattooStyle: string;
     tattooLead: string;
     noDescription: string;
@@ -401,6 +402,7 @@ const translations: Translations = {
     statusAccepted: 'Zpracovává se',
     statusCompleted: 'Dokončeno',
     statusArchived: 'Archiv',
+    statusPaused: 'Pozastaveno',
     tattooStyle: 'Tetování ve stylu',
     tattooLead: 'Poptávka na tetování',
     noDescription: 'Bez popisu',
@@ -612,6 +614,7 @@ const translations: Translations = {
     statusAccepted: 'В работе',
     statusCompleted: 'Завершена',
     statusArchived: 'Архив',
+    statusPaused: 'Приостановлена',
     tattooStyle: 'Тату в стиле',
     tattooLead: 'Заявка на татуировку',
     noDescription: 'Описание отсутствует',
@@ -823,6 +826,7 @@ const translations: Translations = {
     statusAccepted: 'In progress',
     statusCompleted: 'Completed',
     statusArchived: 'Archived',
+    statusPaused: 'Paused',
     tattooStyle: 'Tattoo style',
     tattooLead: 'Tattoo lead',
     noDescription: 'No description',
@@ -1034,6 +1038,7 @@ const translations: Translations = {
     statusAccepted: 'В роботі',
     statusCompleted: 'Завершена',
     statusArchived: 'Архів',
+    statusPaused: 'Призупинена',
     tattooStyle: 'Тату в стилі',
     tattooLead: 'Заявка на татуювання',
     noDescription: 'Опис відсутній',

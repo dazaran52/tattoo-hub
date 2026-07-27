@@ -180,22 +180,22 @@ export function CRMBoard() {
       const token = session?.access_token
       
       let sessionsData = null;
-      const { data: { user } } = await supabase.auth.getUser()
-      if (user) {
-        const { data } = await supabase.from('master_sessions')
-          .select('*, master_clients(*, master_sessions(id, session_date, start_time, end_time, status, price, style, is_deleted, reference_images, result_image_urls), leads(title, description, image_urls, client_priority, body_place, size, is_personal))')
-          .eq('master_id', user.id)
-          .eq('is_deleted', false)
-          .order('created_at', { ascending: false })
-        
-        if (data) {
-           sessionsData = data.filter(s => s.master_clients && !s.master_clients.is_deleted)
+      if (token) {
+        const sessionsResponse = await fetch(`${apiUrl}/api/crm/sessions`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        })
+        if (!sessionsResponse.ok) {
+          console.error('Failed to load CRM sessions', sessionsResponse.status)
+          toast.error('Не удалось загрузить сеансы. Остальные данные CRM остаются доступны.')
+          sessionsData = []
         } else {
-           sessionsData = []
+          sessionsData = await sessionsResponse.json()
         }
       } else {
         sessionsData = []
       }
+
+      const { data: { user } } = await supabase.auth.getUser()
 
       let leadSessions: any[] = []
       if (user) {

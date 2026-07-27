@@ -8,8 +8,12 @@ logger = logging.getLogger(__name__)
 def send_transactional_email(to_email: str, subject: str, html_content: str, from_name: str = "Tattoo Hub"):
     import requests
     try:
+        api_key = get_settings().RESEND_API_KEY
+        if not api_key:
+            logger.error("RESEND_API_KEY is not configured; email was not sent")
+            return False
         headers = {
-            "Authorization": f"Bearer re_9Sx8dLPC_Pn5XoLLKAz3wnrpYnvr6ThLh",
+            "Authorization": f"Bearer {api_key}",
             "Content-Type": "application/json"
         }
         data = {

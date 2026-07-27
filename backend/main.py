@@ -1,13 +1,11 @@
 """Tattoo Hub - FastAPI Backend Application"""
-import os
-import glob
-from pathlib import Path
-
 from fastapi import FastAPI
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 
 from app.config import get_settings
+from app.database import get_supabase_client
 from app.routers.profile import router as profile_router
 from app.routers.leads import router as leads_router
 from app.routers.webhooks import router as webhooks_router
@@ -15,97 +13,14 @@ from app.routers.admin import router as admin_router
 from app.routers.payments import router as payments_router
 from app.routers.notifications import router as notifications_router
 from app.routers.locations import router as locations_router
-from app.routers.disputes import router as disputes_router
-from app.routers.auctions import router as auctions_router
 from app.routers.analytics import router as analytics_router
-from app.routers.subscriptions import router as subscriptions_router
+
 from app.routers.chat import router as chat_router
 from app.routers.client_portal import router as client_portal_router
 from app.routers.public import router as public_router
 from app.routers.instagram import router as instagram_router
 from app.routers.reviews import router as reviews_router
 from app.routers import crm, favorites
-
-
-def run_migrations():
-    """Run SQL migrations automatically on startup using direct Postgres connection."""
-    settings = get_settings()
-    
-    if not settings.POSTGRES_URL:
-        print("⚠️  POSTGRES_URL not set, skipping auto-migrations")
-        print("   Set POSTGRES_URL in environment to enable auto-migrations")
-        return
-    
-    migrations_dir = Path(__file__).parent / "migrations"
-    if not migrations_dir.exists():
-        print("📁 No migrations directory found")
-        return
-    
-    # Get all SQL files and sort them
-    sql_files = sorted(glob.glob(str(migrations_dir / "*.sql")))
-    
-    if not sql_files:
-        print("📁 No migration files found")
-        return
-    
-    print(f"🔄 Found {len(sql_files)} migration file(s)")
-    
-    try:
-        import psycopg2
-        
-        # Connect directly to PostgreSQL
-        conn = psycopg2.connect(settings.POSTGRES_URL)
-        conn.autocommit = True
-        cursor = conn.cursor()
-        
-        # Create migrations tracking table if not exists
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS _migrations (
-                filename VARCHAR(255) PRIMARY KEY,
-                applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-        """)
-        
-        for sql_file in sql_files:
-            filename = os.path.basename(sql_file)
-            
-            # Check if already applied
-            cursor.execute("SELECT 1 FROM _migrations WHERE filename = %s", (filename,))
-            if cursor.fetchone():
-                print(f"  ⏭️  {filename} already applied")
-                continue
-            
-            print(f"  ⏳ Running: {filename}")
-            
-            try:
-                with open(sql_file, 'r') as f:
-                    sql = f.read()
-                
-                # Execute the migration
-                cursor.execute(sql)
-                
-                # Record migration
-                cursor.execute(
-                    "INSERT INTO _migrations (filename) VALUES (%s)",
-                    (filename,)
-                )
-                
-                print(f"  ✅ {filename} applied")
-                
-            except Exception as e:
-                print(f"  ❌ {filename} failed: {e}")
-                # Continue with other migrations
-        
-        cursor.close()
-        conn.close()
-        print("🔄 Migrations complete")
-        
-    except ImportError:
-        print("⚠️  psycopg2 not installed, skipping auto-migrations")
-        print("   Run: pip install psycopg2-binary")
-    except Exception as e:
-        print(f"⚠️  Migration runner error: {e}")
-
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -114,9 +29,7 @@ async def lifespan(app: FastAPI):
     settings = get_settings()
     print(f"🚀 Tattoo Hub API starting in {settings.APP_ENV} mode")
     
-    # Run migrations
-    run_migrations()
-    
+
     # Email parser background tasks have been completely extracted to `код_парсера_пока_не_применять.txt`
     # to avoid accidental activation during development.
     
@@ -165,10 +78,8 @@ def create_application() -> FastAPI:
     app.include_router(payments_router)
     app.include_router(notifications_router)
     app.include_router(locations_router)
-    app.include_router(disputes_router)
-    app.include_router(auctions_router)
     app.include_router(analytics_router)
-    app.include_router(subscriptions_router)
+
     app.include_router(chat_router)
     app.include_router(client_portal_router)
     app.include_router(public_router)
@@ -178,9 +89,37 @@ def create_application() -> FastAPI:
     app.include_router(favorites.router)
 
     @app.get("/health")
+    @app.get("/api/health")
     async def health_check():
         """Health check endpoint."""
-        return {"status": "ok", "service": "tattoo-hub-api", "auto_deploy": "working"}
+        return {"status": "ok", "service": "tattoo-hub-api"}
+
+    @app.get("/api/readiness")
+    async def readiness_check():
+        """Verify the database schema required by the deployed marketplace code."""
+        try:
+            supabase = get_supabase_client()
+            supabase.table("users").select(
+                "id,balance,currency,certificate_status"
+            ).limit(1).execute()
+            supabase.table("lead_proposals").select(
+                "id,success_fee_charged_at,success_fee_transaction_id"
+            ).limit(1).execute()
+            supabase.table("master_sessions").select(
+                "id,lead_id,source"
+            ).limit(1).execute()
+            supabase.table("master_clients").select(
+                "id,lead_id,source"
+            ).limit(1).execute()
+            return {"status": "ready", "service": "tattoo-hub-api"}
+        except Exception:
+            return JSONResponse(
+                status_code=503,
+                content={
+                    "status": "not_ready",
+                    "reason": "required_schema_unavailable",
+                },
+            )
     
     @app.get("/")
     async def root():

@@ -102,7 +102,7 @@ export function TransactionHistoryModal({ isOpen, onClose, withdrawableBalance =
             <h3 className="text-xl font-bold text-neutral-900 dark:text-white">
               История баланса
             </h3>
-            <p className="text-sm text-neutral-500">Последние зачисления кредитов</p>
+            <p className="text-sm text-neutral-500">Последние операции единого баланса</p>
           </div>
         </div>
 
@@ -154,7 +154,7 @@ export function TransactionHistoryModal({ isOpen, onClose, withdrawableBalance =
                   </div>
                   <div>
                     <div className="font-semibold text-neutral-900 dark:text-white flex items-center gap-2">
-                      +{tx.credits_added} {t('credit_plural')}
+                      {tx.provider === 'stripe' ? `+${tx.amount} ${tx.currency}` : `+${tx.credits_added} ${t('credit_plural')}`}
                       <div className="flex items-center gap-1.5 px-2 py-0.5 rounded text-xs font-medium bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400">
                         {tx.provider === 'stripe' ? 'Stripe' : tx.provider === 'donatello' ? 'Donatello' : tx.provider === 'cryptobot' ? 'Crypto' : tx.provider === 'revolut' ? 'Revolut' : 'Админ'}
                       </div>

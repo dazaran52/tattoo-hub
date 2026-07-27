@@ -4,12 +4,10 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { ArrowLeft, Gem, Sparkles, CheckCircle2, ShieldCheck, Zap, Loader2 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
-import Script from 'next/script'
 interface Package {
   id: string
   name: string
-  priceCZK: number
-  amountCredits: number
+  amounts: Record<string, number>
   popular?: boolean
   color: string
   borderColor: string
@@ -18,20 +16,38 @@ interface Package {
 export default function TopUpPage() {
   const router = useRouter()
   const [userId, setUserId] = useState<string>('')
-  const [userEmail, setUserEmail] = useState<string>('')
+  const [walletCurrency, setWalletCurrency] = useState<string | null>(null)
+  const [walletError, setWalletError] = useState<string | null>(null)
   const [isLoadingPackage, setIsLoadingPackage] = useState<string | null>(null)
   
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
-        setUserId(session.user.id)
-        setUserEmail(session.user.email || '')
+    const loadWallet = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.user) {
+        router.push('/login')
+        return
       }
-    })
+      setUserId(session.user.id)
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/profile`, {
+        headers: { 'Authorization': `Bearer ${session.access_token}` }
+      })
+      if (!response.ok) {
+        setWalletError('Не удалось загрузить валюту кошелька')
+        return
+      }
+      const profile = await response.json()
+      const currency = String(profile.currency || '').toUpperCase()
+      if (!['CZK', 'EUR', 'USD'].includes(currency)) {
+        setWalletError('Валюта кошелька не поддерживается')
+        return
+      }
+      setWalletCurrency(currency)
+    }
+    loadWallet().catch(() => setWalletError('Не удалось загрузить валюту кошелька'))
   }, [])
   
   const handleBuyPackage = async (pkgId: string) => {
-    if (!userId) return
+    if (!userId || !walletCurrency || walletError) return
     
     try {
       setIsLoadingPackage(pkgId)
@@ -73,16 +89,14 @@ export default function TopUpPage() {
     {
       id: 'starter',
       name: 'Starter Pack',
-      priceCZK: 300,
-      amountCredits: 300,
+      amounts: { CZK: 300, EUR: 12, USD: 13 },
       color: 'from-blue-500/10 to-blue-500/5 dark:from-blue-900/20 dark:to-blue-900/5',
       borderColor: 'border-blue-200 dark:border-blue-800'
     },
     {
       id: 'standard',
       name: 'Standard Pack',
-      priceCZK: 500,
-      amountCredits: 500,
+      amounts: { CZK: 500, EUR: 20, USD: 22 },
       popular: true,
       color: 'from-cyan-500/10 to-purple-500/10 dark:from-cyan-900/20 dark:to-purple-900/20',
       borderColor: 'border-cyan-400 dark:border-cyan-500 shadow-lg shadow-cyan-500/20'
@@ -90,16 +104,14 @@ export default function TopUpPage() {
     {
       id: 'pro',
       name: 'Pro Pack',
-      priceCZK: 1000,
-      amountCredits: 1000,
+      amounts: { CZK: 1000, EUR: 40, USD: 44 },
       color: 'from-amber-500/10 to-amber-500/5 dark:from-amber-900/20 dark:to-amber-900/5',
       borderColor: 'border-amber-200 dark:border-amber-800'
     },
     {
       id: 'vip',
       name: 'VIP Pack',
-      priceCZK: 2000,
-      amountCredits: 2000,
+      amounts: { CZK: 2000, EUR: 80, USD: 88 },
       color: 'from-rose-500/10 to-rose-500/5 dark:from-rose-900/20 dark:to-rose-900/5',
       borderColor: 'border-rose-200 dark:border-rose-800'
     }
@@ -132,9 +144,15 @@ export default function TopUpPage() {
             <Sparkles className="w-6 h-6 text-amber-500 animate-pulse" />
           </h1>
           <p className="text-lg text-neutral-500 dark:text-neutral-400 max-w-xl mx-auto font-medium">
-            Выберите подходящий пакет для покупки лидов. Баланс будет начислен мгновенно после оплаты.
+            Пополните единый баланс для оплаты 10% комиссии только после выбора вас клиентом.
           </p>
         </div>
+
+        {walletError && (
+          <div className="max-w-xl mx-auto mb-8 rounded-2xl border border-red-200 bg-red-50 p-4 text-center font-semibold text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">
+            {walletError}
+          </div>
+        )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto mb-16">
           {packages.map((pkg) => (
@@ -151,13 +169,13 @@ export default function TopUpPage() {
               <h3 className="text-xl font-bold text-neutral-900 dark:text-white mb-2 mt-2">{pkg.name}</h3>
               
               <div className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-500 to-purple-500 my-6">
-                {pkg.priceCZK} CZK
+                {walletCurrency ? `${pkg.amounts[walletCurrency]} ${walletCurrency}` : '—'}
               </div>
 
               <ul className="text-left space-y-3 w-full mb-8 flex-grow">
                 <li className="flex items-center gap-2 text-sm text-neutral-600 dark:text-neutral-300 font-medium">
                   <CheckCircle2 className="w-4 h-4 text-green-500" />
-                  Баланс: {pkg.amountCredits} CZK
+                  На баланс: {walletCurrency ? `${pkg.amounts[walletCurrency]} ${walletCurrency}` : 'загрузка…'}
                 </li>
                 <li className="flex items-center gap-2 text-sm text-neutral-600 dark:text-neutral-300 font-medium">
                   <ShieldCheck className="w-4 h-4 text-blue-500" />
@@ -171,7 +189,7 @@ export default function TopUpPage() {
 
               <button 
                 onClick={() => handleBuyPackage(pkg.id)}
-                disabled={isLoadingPackage === pkg.id}
+                disabled={isLoadingPackage === pkg.id || !walletCurrency || Boolean(walletError)}
                 className={`w-full py-4 px-4 font-bold rounded-2xl transition-all flex items-center justify-center gap-2 shadow-md ${
                   pkg.popular 
                     ? 'bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-400 hover:to-purple-400 text-white shadow-cyan-500/25' 

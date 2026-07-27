@@ -93,47 +93,13 @@ export default function ClientPortalPage() {
 
   const sendMessage = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!newMessage.trim() || !selectedProposal?.chat_id) return
-
-    try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
-      const res = await fetch(`${apiUrl}/api/chat/${selectedProposal.chat_id}/messages`, {
-        method: 'POST',
-        headers: { 
-          'client-token': token || '',
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ content: newMessage })
-      })
-      if (!res.ok) throw new Error('Failed to send')
-      const msg = await res.json()
-      setMessages(prev => [...prev, msg])
-      setNewMessage('')
-      scrollToBottom()
-    } catch (err: any) {
-      toast.error(err.message)
-    }
+    toast.error('Войдите в аккаунт, чтобы отправлять сообщения')
+    window.location.href = '/login'
   }
 
   const acceptProposal = async (masterId: string) => {
-    if (!confirm('Вы уверены, что хотите выбрать этого мастера? Другие предложения будут отклонены.')) return
-
-    try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
-      const res = await fetch(`${apiUrl}/api/client-portal/leads/${leadId}/proposals/${masterId}/accept?token=${token}`, {
-        method: 'POST'
-      })
-      
-      if (!res.ok) {
-        const errorData = await res.json()
-        throw new Error(errorData.detail || 'Failed to accept proposal')
-      }
-
-      toast.success('Мастер выбран успешно! Теперь вы можете обменяться контактами.')
-      fetchLeadData() // refresh
-    } catch (err: any) {
-      toast.error(err.message)
-    }
+    toast.error('Выбор мастера доступен после входа в личный кабинет')
+    window.location.href = '/login'
   }
 
   const scrollToBottom = () => {

@@ -12,6 +12,7 @@ export type Profile = {
   email: string
   username?: string
   balance: number
+  currency?: string
   credits: number
   is_admin: boolean
   status: string

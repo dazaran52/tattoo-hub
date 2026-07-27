@@ -159,8 +159,12 @@ def send_smtp_reply(to_email: str, subject: str, body_html: str, original_msg_id
     try:
         if "resend.com" in settings.LEAD_REPLY_SMTP_SERVER.lower():
             import requests
+            api_key = settings.RESEND_API_KEY
+            if not api_key:
+                print("RESEND_API_KEY is not configured; email was not sent")
+                return False
             headers = {
-                "Authorization": f"Bearer re_9Sx8dLPC_Pn5XoLLKAz3wnrpYnvr6ThLh",
+                "Authorization": f"Bearer {api_key}",
                 "Content-Type": "application/json"
             }
             data = {

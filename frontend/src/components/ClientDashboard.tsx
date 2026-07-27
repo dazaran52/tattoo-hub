@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { Profile, supabase } from '@/lib/supabase'
-import { PlusCircle, Heart, Clock, X, MoreVertical, Edit2, Pause, Play, Trash2, MessageCircle, DollarSign } from 'lucide-react'
+import { PlusCircle, Heart, Clock, X, MoreVertical, Edit2, Pause, Play, Trash2, MessageCircle, DollarSign, ShieldCheck, Loader2 } from 'lucide-react'
 import { LeadForm } from '@/components/LeadForm'
 import { ChatModal } from '@/components/ChatModal'
 import { MessagesList } from '@/components/MessagesList'
@@ -28,6 +28,8 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
   const [selectedChatId, setSelectedChatId] = useState<string | null>(null)
   const [selectedChatTitle, setSelectedChatTitle] = useState('')
   const [selectedChatMaster, setSelectedChatMaster] = useState('')
+  const [acceptingProposalId, setAcceptingProposalId] = useState<string | null>(null)
+  const [proposalToConfirm, setProposalToConfirm] = useState<{ leadId: string; proposal: any } | null>(null)
 
   const toggleFavorite = async (masterId: string, e: React.MouseEvent) => {
     e.stopPropagation()
@@ -64,8 +66,9 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
     }
   }
   const handlePauseResume = async (leadId: string, currentStatus: string) => {
+    if (!['new', 'active', 'paused'].includes(currentStatus)) return
     try {
-      const newStatus = currentStatus === 'open' ? 'archived' : 'open'
+      const newStatus = currentStatus === 'paused' ? 'active' : 'paused'
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) return
 
@@ -106,6 +109,41 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
       }
     } catch (e) {
       console.error(e)
+    }
+  }
+
+  const handleAcceptProposal = async (leadId: string, proposal: any) => {
+    const proposalKey = `${leadId}:${proposal.master_id}`
+    setAcceptingProposalId(proposalKey)
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) throw new Error('Войдите в аккаунт, чтобы выбрать мастера')
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+      const response = await fetch(`${apiUrl}/api/leads/client/${leadId}/proposals/${proposal.master_id}/accept`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${session.access_token}` }
+      })
+      const payload = await response.json().catch(() => ({}))
+      if (!response.ok) throw new Error(payload.detail?.message || payload.detail || 'Не удалось выбрать мастера')
+      setLeads(current => current.map(lead => lead.id !== leadId ? lead : {
+        ...lead,
+        status: 'accepted',
+        assigned_master_id: proposal.master_id,
+        proposals: (lead.proposals || []).map((item: any) => ({
+          ...item,
+          status: item.master_id === proposal.master_id ? 'accepted' : 'rejected'
+        }))
+      }))
+      import('react-hot-toast').then(mod => mod.default.success('Мастер выбран. Приватный чат открыт.'))
+      const refreshed = await fetch(`${apiUrl}/api/leads/client`, {
+        headers: { 'Authorization': `Bearer ${session.access_token}` }
+      })
+      if (refreshed.ok) setLeads(await refreshed.json())
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Не удалось выбрать мастера'
+      import('react-hot-toast').then(mod => mod.default.error(message))
+    } finally {
+      setAcceptingProposalId(null)
     }
   }
 
@@ -326,14 +364,15 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
                     )}
                     
                     <span className={`px-3 py-1 border text-xs font-extrabold tracking-wide uppercase rounded-full ${
-                      lead.status === 'open' ? 'bg-amber-100 dark:bg-amber-500/10 border-amber-200 dark:border-amber-500/20 text-amber-700 dark:text-amber-400' : 
-                      lead.status === 'accepted' ? 'bg-emerald-100 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/20 text-emerald-700 dark:text-emerald-400' : 
+                      ['new', 'active'].includes(lead.status) ? 'bg-amber-100 dark:bg-amber-500/10 border-amber-200 dark:border-amber-500/20 text-amber-700 dark:text-amber-400' :
+                      ['accepted', 'booked'].includes(lead.status) ? 'bg-emerald-100 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/20 text-emerald-700 dark:text-emerald-400' :
                       'bg-neutral-100 dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-400'
                     }`}>
-                      {lead.status === 'open' ? (t('statusSearching') || 'В поиске') : 
-                       lead.status === 'accepted' ? (t('statusAccepted') || 'В работе') : 
-                       lead.status === 'completed' ? (t('statusCompleted') || 'Завершено') : 
-                       lead.status === 'archived' ? (t('statusArchived') || 'Архив') : lead.status}
+                      {['new', 'active'].includes(lead.status) ? (t('statusSearching') || 'В поиске') :
+                       ['accepted', 'booked'].includes(lead.status) ? (t('statusAccepted') || 'В работе') :
+                       lead.status === 'completed' ? (t('statusCompleted') || 'Завершено') :
+                       lead.status === 'paused' ? (t('statusPaused') || 'Приостановлена') :
+                       lead.status === 'closed' ? (t('statusArchived') || 'Закрыта') : lead.status}
                     </span>
                   </div>
                   <div className="flex items-center gap-3">
@@ -352,19 +391,21 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
                         <>
                           <div className="fixed inset-0 z-[5]" onClick={(e) => { e.stopPropagation(); setOpenMenuId(null); }} />
                           <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl shadow-xl overflow-hidden z-10 py-1">
-                          <button 
-                            onClick={() => { setOpenMenuId(null); handlePauseResume(lead.id, lead.status) }}
-                            className="w-full text-left px-4 py-2.5 text-sm font-medium flex items-center gap-2 hover:bg-neutral-50 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300 transition-colors"
-                          >
-                            {lead.status === 'open' ? <><Pause className="w-4 h-4" /> {t('pause') || 'Приостановить'}</> : <><Play className="w-4 h-4" /> {t('resume') || 'Возобновить'}</>}
-                          </button>
-                          <div className="h-px w-full bg-neutral-100 dark:bg-neutral-800 my-1" />
-                          <button 
+                          {['new', 'active', 'paused'].includes(lead.status) && <>
+                            <button
+                              onClick={() => { setOpenMenuId(null); handlePauseResume(lead.id, lead.status) }}
+                              className="w-full text-left px-4 py-2.5 text-sm font-medium flex items-center gap-2 hover:bg-neutral-50 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300 transition-colors"
+                            >
+                              {lead.status === 'paused' ? <><Play className="w-4 h-4" /> {t('resume') || 'Возобновить'}</> : <><Pause className="w-4 h-4" /> {t('pause') || 'Приостановить'}</>}
+                            </button>
+                            <div className="h-px w-full bg-neutral-100 dark:bg-neutral-800 my-1" />
+                          </>}
+                          {['new', 'active', 'paused', 'closed'].includes(lead.status) && <button
                             onClick={() => { setOpenMenuId(null); handleDelete(lead.id) }}
                             className="w-full text-left px-4 py-2.5 text-sm font-medium flex items-center gap-2 hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400 transition-colors"
                           >
                             <Trash2 className="w-4 h-4" /> {t('delete') || 'Удалить'}
-                          </button>
+                          </button>}
                         </div>
                         </>
                       )}
@@ -465,6 +506,44 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
                           </button>
                         )}
                       </div>
+                    </div>
+                  </div>
+                )}
+
+                {!lead.master && Array.isArray(lead.proposals) && lead.proposals.length > 0 && (
+                  <div className="mb-6 rounded-2xl border border-violet-200 bg-violet-50/70 p-4 dark:border-violet-500/20 dark:bg-violet-500/5">
+                    <div className="mb-3 flex items-center justify-between gap-3">
+                      <div>
+                        <p className="text-sm font-extrabold text-neutral-900 dark:text-white">Предложения мастеров</p>
+                        <p className="text-xs text-neutral-500">Сравните условия и выберите одного мастера</p>
+                      </div>
+                      <span className="rounded-full bg-white px-2.5 py-1 text-xs font-bold text-violet-700 shadow-sm dark:bg-neutral-900 dark:text-violet-300">{lead.proposals.length} / 5</span>
+                    </div>
+                    <div className="space-y-3">
+                      {lead.proposals.map((proposal: any) => {
+                        const proposalKey = `${lead.id}:${proposal.master_id}`
+                        return (
+                          <div key={proposalKey} className="rounded-2xl border border-neutral-200 bg-white p-4 shadow-sm dark:border-neutral-800 dark:bg-neutral-950">
+                            <div className="flex items-start gap-3">
+                              <img src={proposal.master_avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(proposal.master_name)}`} alt="" className="h-11 w-11 rounded-xl object-cover" />
+                              <div className="min-w-0 flex-1">
+                                <div className="flex flex-wrap items-center gap-2">
+                                  <p className="truncate text-sm font-extrabold text-neutral-900 dark:text-white">{proposal.master_name}</p>
+                                  {proposal.certificate_verified && <span title="Сертификат об обучении проверен Tattoo HUB" className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300"><ShieldCheck className="h-3 w-3" /> Проверен</span>}
+                                </div>
+                                {proposal.proposed_dates && <p className="mt-1 text-xs text-neutral-500">{proposal.proposed_dates}</p>}
+                                <p className="mt-2 text-base font-extrabold text-neutral-900 dark:text-white">{proposal.price_offer} {proposal.offer_currency}</p>
+                              </div>
+                            </div>
+                            <div className="mt-4 flex gap-2">
+                              {proposal.master_username && <button onClick={() => setSelectedMasterUsernameForModal(proposal.master_username)} className="flex-1 rounded-xl bg-neutral-100 px-3 py-2 text-xs font-bold text-neutral-700 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-200">Портфолио</button>}
+                              <button disabled={acceptingProposalId !== null} onClick={() => setProposalToConfirm({ leadId: lead.id, proposal })} className="flex-1 rounded-xl bg-violet-600 px-3 py-2 text-xs font-bold text-white hover:bg-violet-500 disabled:opacity-60">
+                                {acceptingProposalId === proposalKey ? <span className="inline-flex items-center gap-1"><Loader2 className="h-3.5 w-3.5 animate-spin" /> Выбираем</span> : 'Выбрать мастера'}
+                              </button>
+                            </div>
+                          </div>
+                        )
+                      })}
                     </div>
                   </div>
                 )}
@@ -632,9 +711,30 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
               <X className="w-5 h-5" />
             </button>
             <div className="mt-4">
-              <LeadForm 
+              <LeadForm
                 masterId={selectedMasterForDirectBooking || undefined}
+                source={selectedMasterForDirectBooking ? 'personal' : 'platform'}
               />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {proposalToConfirm && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm" onClick={(event) => { if (event.target === event.currentTarget) setProposalToConfirm(null) }}>
+          <div role="dialog" aria-modal="true" aria-labelledby="confirm-master-title" className="w-full max-w-md rounded-[2rem] border border-white/10 bg-white p-7 shadow-2xl dark:bg-neutral-950">
+            <div className="mb-5 flex items-center gap-4">
+              <img src={proposalToConfirm.proposal.master_avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(proposalToConfirm.proposal.master_name)}`} alt="" className="h-14 w-14 rounded-2xl object-cover" />
+              <div>
+                <p className="text-xs font-extrabold uppercase tracking-wider text-violet-600">Финальный выбор</p>
+                <h3 id="confirm-master-title" className="text-xl font-extrabold text-neutral-900 dark:text-white">Выбрать {proposalToConfirm.proposal.master_name}?</h3>
+              </div>
+            </div>
+            <p className="mb-2 text-sm text-neutral-600 dark:text-neutral-300">После подтверждения остальные предложения будут закрыты, а с выбранным мастером откроется приватный чат.</p>
+            <p className="mb-6 text-sm font-bold text-neutral-900 dark:text-white">Стоимость: {proposalToConfirm.proposal.price_offer} {proposalToConfirm.proposal.offer_currency}</p>
+            <div className="flex gap-3">
+              <button onClick={() => setProposalToConfirm(null)} className="flex-1 rounded-2xl bg-neutral-100 px-4 py-3 font-bold text-neutral-700 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-200">Отмена</button>
+              <button onClick={() => { const choice = proposalToConfirm; setProposalToConfirm(null); handleAcceptProposal(choice.leadId, choice.proposal) }} className="flex-1 rounded-2xl bg-violet-600 px-4 py-3 font-bold text-white shadow-lg shadow-violet-500/20 hover:bg-violet-500">Подтвердить выбор</button>
             </div>
           </div>
         </div>

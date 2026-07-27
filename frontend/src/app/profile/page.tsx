@@ -9,7 +9,7 @@ import { useLanguage } from '@/i18n/LanguageContext'
 import imageCompression from 'browser-image-compression'
 import { 
   User, Image as ImageIcon, Check, X, Camera, MapPin, 
-  Globe, Instagram, Link as LinkIcon, Share2, ArrowLeft, Trash2, Upload
+  Globe, AtSign, Link as LinkIcon, Share2, ArrowLeft, Trash2, Upload
 } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 import { ImageViewerModal } from '@/components/ImageViewerModal'
@@ -410,7 +410,7 @@ export default function ProfilePage() {
                 </div>
                 <div>
                   <label className="block text-sm font-bold text-neutral-700 dark:text-neutral-300 mb-2">
-                    <div className="flex items-center gap-1.5"><Instagram className="w-4 h-4"/> Instagram URL</div>
+                    <div className="flex items-center gap-1.5"><AtSign className="w-4 h-4"/> Instagram URL</div>
                   </label>
                   <input
                     type="text"
