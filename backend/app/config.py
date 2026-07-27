@@ -79,6 +79,7 @@ class Settings(BaseSettings):
         env_file = ".env"
         env_file_encoding = "utf-8"
         case_sensitive = True
+        extra = "ignore"  # Ignore unknown env vars (e.g. legacy INSTAGRAM_* keys)
 
 
 @lru_cache()
