@@ -391,8 +391,8 @@ export default function SettingsPage() {
           {/* Email Change */}
           <div className="p-6 border-b border-neutral-200/50 dark:border-white/5">
             <div className="flex items-center gap-4 mb-4">
-              <div className="w-10 h-10 rounded-full bg-cyan-500/10 flex items-center justify-center">
-                <Mail className="w-5 h-5 text-cyan-500" />
+              <div className="w-10 h-10 rounded-full bg-accent-500/10 flex items-center justify-center">
+                <Mail className="w-5 h-5 text-accent-500" />
               </div>
               <p className="text-neutral-900 dark:text-white font-bold">{t('changeEmail')}</p>
             </div>
@@ -427,7 +427,7 @@ export default function SettingsPage() {
                       value={newEmail}
                       onChange={(e) => setNewEmail(e.target.value)}
                       placeholder={t('newEmail')}
-                      className="w-full bg-white/40 dark:bg-neutral-950/40 border border-neutral-200 dark:border-white/10 rounded-xl px-4 py-2.5 text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 transition-all shadow-inner"
+                      className="w-full bg-white/40 dark:bg-neutral-950/40 border border-neutral-200 dark:border-white/10 rounded-xl px-4 py-2.5 text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-accent-500/20 focus:border-accent-500 transition-all shadow-inner"
                     />
                   </div>
                   <div className="flex gap-2">
@@ -457,8 +457,8 @@ export default function SettingsPage() {
           {/* Password Change */}
           <div className="p-6 border-b border-neutral-200/50 dark:border-white/5">
             <div className="flex items-center gap-4 mb-4">
-              <div className="w-10 h-10 rounded-full bg-indigo-500/10 flex items-center justify-center">
-                <Lock className="w-5 h-5 text-indigo-500" />
+              <div className="w-10 h-10 rounded-full bg-primary-500/10 flex items-center justify-center">
+                <Lock className="w-5 h-5 text-primary-500" />
               </div>
               <p className="text-neutral-900 dark:text-white font-bold">{t('changePassword')}</p>
             </div>
@@ -492,7 +492,7 @@ export default function SettingsPage() {
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
                       placeholder={t('newPassword')}
-                      className="w-full bg-white/40 dark:bg-neutral-950/40 border border-neutral-200 dark:border-white/10 rounded-xl px-4 py-2.5 text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all shadow-inner"
+                      className="w-full bg-white/40 dark:bg-neutral-950/40 border border-neutral-200 dark:border-white/10 rounded-xl px-4 py-2.5 text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all shadow-inner"
                     />
                   </div>
                   <div className="relative">
@@ -501,7 +501,7 @@ export default function SettingsPage() {
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       placeholder={t('confirmPassword')}
-                      className="w-full bg-white/40 dark:bg-neutral-950/40 border border-neutral-200 dark:border-white/10 rounded-xl pr-12 pl-4 py-2.5 text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all shadow-inner"
+                      className="w-full bg-white/40 dark:bg-neutral-950/40 border border-neutral-200 dark:border-white/10 rounded-xl pr-12 pl-4 py-2.5 text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all shadow-inner"
                     />
                     <button
                       onClick={() => setShowNewPassword(!showNewPassword)}

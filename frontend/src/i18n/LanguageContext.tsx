@@ -12,13 +12,13 @@ type Dictionary = Record<string, any>
 interface LanguageContextType {
   lang: Language
   setLang: (lang: Language) => void
-  t: (key: string) => string
+  t: (key: string, defaultValue?: string) => string
 }
 
 const LanguageContext = createContext<LanguageContextType>({
   lang: 'ru',
   setLang: () => {},
-  t: (key) => key,
+  t: (key, defaultValue) => defaultValue !== undefined ? defaultValue : key,
 })
 
 const dictionaries: Record<Language, any> = {
@@ -70,13 +70,13 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     document.documentElement.lang = newLang
   }
 
-  const t = (path: string): string => {
+  const t = (path: string, defaultValue?: string): string => {
     const keys = path.split('.')
     let current: any = dictionaries[lang]
     for (const key of keys) {
-      if (current[key] === undefined) {
+      if (current === undefined || current === null || current[key] === undefined) {
         console.warn(`Translation missing for key: ${path} in lang: ${lang}`)
-        return path
+        return defaultValue !== undefined ? defaultValue : path
       }
       current = current[key]
     }

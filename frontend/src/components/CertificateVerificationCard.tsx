@@ -117,11 +117,11 @@ export function CertificateVerificationCard({
   const StatusIcon = statusView.icon
 
   return (
-    <section className="rounded-3xl border border-violet-500/15 bg-white/70 p-6 shadow-sm backdrop-blur-xl dark:bg-neutral-900/70 md:p-8">
+    <section className="rounded-3xl border border-primary-500/15 bg-white/70 p-6 shadow-sm backdrop-blur-xl dark:bg-neutral-900/70 md:p-8">
       <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
         <div className="max-w-2xl">
           <h3 className="flex items-center gap-2 text-xl font-bold">
-            <Award className="h-5 w-5 text-violet-500" />
+            <Award className="h-5 w-5 text-primary-500" />
             {copy.title}
           </h3>
           <p className="mt-2 text-sm leading-6 text-neutral-600 dark:text-neutral-400">
@@ -149,7 +149,7 @@ export function CertificateVerificationCard({
           type="button"
           onClick={() => inputRef.current?.click()}
           disabled={isUploading}
-          className="inline-flex items-center gap-2 rounded-xl bg-violet-600 px-4 py-3 text-sm font-bold text-white transition hover:bg-violet-700 disabled:cursor-not-allowed disabled:opacity-50"
+          className="inline-flex items-center gap-2 rounded-xl bg-primary-600 px-4 py-3 text-sm font-bold text-white transition hover:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-50"
         >
           <FileUp className="h-4 w-4" />
           {isUploading ? (isRussian ? 'Загрузка…' : 'Uploading…') : copy.upload}

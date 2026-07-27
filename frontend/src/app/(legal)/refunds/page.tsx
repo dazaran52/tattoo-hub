@@ -1,3 +1,10 @@
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Refund Policy | Tattoo HUB',
+  description: 'Find out when Tattoo HUB issues refunds for purchased credits and how to submit a refund request.',
+}
+
 export default function RefundsPage() {
   return (
     <div className="min-h-screen bg-white dark:bg-neutral-950 text-neutral-900 dark:text-white py-20 px-4 sm:px-6 lg:px-8">
@@ -44,7 +51,7 @@ export default function RefundsPage() {
         </div>
 
         <div className="mt-8">
-          <a href="/" className="text-cyan-600 dark:text-cyan-400 hover:underline">← Back to home page</a>
+          <a href="/" className="text-accent-600 dark:text-accent-400 hover:underline">← Back to home page</a>
         </div>
       </div>
     </div>

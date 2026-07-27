@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import { X, Calendar, Palette, User, MessageCircle, Send, Phone, Scale3d, PersonStanding } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useState } from 'react'
@@ -55,7 +56,7 @@ export function LeadDetailsModal({ isOpen, onClose, session, onAccept, onReject,
         >
           <div className="flex justify-between items-center p-6 border-b border-neutral-100 dark:border-white/5 bg-neutral-50/50 dark:bg-neutral-900/50">
             <h2 className="text-2xl font-bold text-neutral-900 dark:text-white flex items-center gap-2">
-              <User className="w-6 h-6 text-violet-500" />
+              <User className="w-6 h-6 text-primary-500" />
               Детали заявки
             </h2>
             <button onClick={onClose} className="p-2 text-neutral-500 hover:text-neutral-900 dark:hover:text-white rounded-full transition-colors bg-neutral-100 dark:bg-neutral-800">
@@ -69,15 +70,15 @@ export function LeadDetailsModal({ isOpen, onClose, session, onAccept, onReject,
             <div className="flex items-center gap-4">
               <div 
                 onClick={() => setIsClientModalOpen(true)}
-                className="w-16 h-16 bg-violet-100 dark:bg-violet-900/30 rounded-2xl flex items-center justify-center shrink-0 cursor-pointer hover:ring-2 hover:ring-violet-500 transition-all"
+                className="w-16 h-16 bg-primary-100 dark:bg-primary-900/30 rounded-2xl flex items-center justify-center shrink-0 cursor-pointer hover:ring-2 hover:ring-primary-500 transition-all"
                 title="Посмотреть профиль клиента"
               >
-                <User className="w-8 h-8 text-violet-500" />
+                <User className="w-8 h-8 text-primary-500" />
               </div>
               <div>
                 <h3 
                   onClick={() => setIsClientModalOpen(true)}
-                  className="text-xl font-bold text-neutral-900 dark:text-white mb-1 cursor-pointer hover:text-violet-600 transition-colors"
+                  className="text-xl font-bold text-neutral-900 dark:text-white mb-1 cursor-pointer hover:text-primary-600 transition-colors"
                 >
                   {clientName}
                 </h3>
@@ -96,7 +97,7 @@ export function LeadDetailsModal({ isOpen, onClose, session, onAccept, onReject,
             {/* Description */}
             <div className="bg-neutral-50 dark:bg-neutral-800/50 rounded-2xl p-5 border border-neutral-100 dark:border-white/5">
               <h4 className="text-sm font-bold text-neutral-900 dark:text-white mb-2 flex items-center gap-2">
-                <Palette className="w-4 h-4 text-violet-500" />
+                <Palette className="w-4 h-4 text-primary-500" />
                 Стиль и описание
               </h4>
               <div className="mb-3">
@@ -118,9 +119,9 @@ export function LeadDetailsModal({ isOpen, onClose, session, onAccept, onReject,
                     <div 
                       key={idx} 
                       onClick={() => setSelectedImage(img)}
-                      className="aspect-square rounded-xl overflow-hidden cursor-pointer border border-neutral-200 dark:border-white/10 hover:ring-2 hover:ring-violet-500 transition-all"
+                      className="aspect-square rounded-xl overflow-hidden cursor-pointer border border-neutral-200 dark:border-white/10 hover:ring-2 hover:ring-primary-500 transition-all"
                     >
-                      <img src={img} alt="reference" className="w-full h-full object-cover hover:scale-110 transition-transform duration-500" />
+                      <Image src={img || ''} alt="reference" className="w-full h-full object-cover hover:scale-110 transition-transform duration-500"  width={800} height={800} />
                     </div>
                   ))}
                 </div>
@@ -171,7 +172,7 @@ export function LeadDetailsModal({ isOpen, onClose, session, onAccept, onReject,
                 </button>
                 <button 
                   onClick={() => { onClose(); onAccept(); }}
-                  className="flex-1 py-3.5 px-4 bg-violet-600 hover:bg-violet-700 text-white shadow-lg shadow-violet-500/25 rounded-xl font-bold transition-all hover:scale-[1.02]"
+                  className="flex-1 py-3.5 px-4 bg-primary-600 hover:bg-primary-700 text-white shadow-lg shadow-primary-500/25 rounded-xl font-bold transition-all hover:scale-[1.02]"
                 >
                   Принять заявку
                 </button>
@@ -187,7 +188,7 @@ export function LeadDetailsModal({ isOpen, onClose, session, onAccept, onReject,
                 {onEdit && (
                   <button 
                     onClick={() => { onClose(); onEdit(); }}
-                    className="flex-1 py-3.5 px-4 bg-violet-600 hover:bg-violet-700 text-white shadow-lg shadow-violet-500/25 rounded-xl font-bold transition-all hover:scale-[1.02]"
+                    className="flex-1 py-3.5 px-4 bg-primary-600 hover:bg-primary-700 text-white shadow-lg shadow-primary-500/25 rounded-xl font-bold transition-all hover:scale-[1.02]"
                   >
                     Редактировать
                   </button>

@@ -5,6 +5,7 @@ import { motion, useMotionValue, useSpring } from 'framer-motion'
 
 export function CustomCursor() {
   const [isHovering, setIsHovering] = useState(false)
+  const [isInput, setIsInput] = useState(false)
   const [isDesktop, setIsDesktop] = useState(false)
 
   // Использование motion values позволяет обновлять позицию без ре-рендера React,
@@ -37,13 +38,20 @@ export function CustomCursor() {
 
     const handleMouseOver = (e: MouseEvent) => {
       const target = e.target as HTMLElement
+      const isInputField = target.tagName.toLowerCase() === 'input' ||
+                           target.tagName.toLowerCase() === 'textarea' ||
+                           target.tagName.toLowerCase() === 'select' ||
+                           target.isContentEditable ||
+                           !!target.closest('input, textarea, select, [contenteditable]')
+      setIsInput(!!isInputField)
+
       // Проверка на кликабельные элементы
       const isClickable = window.getComputedStyle(target).cursor === 'pointer' || 
                           target.tagName.toLowerCase() === 'button' ||
                           target.tagName.toLowerCase() === 'a' ||
                           target.closest('button') || target.closest('a')
       
-      setIsHovering(!!isClickable)
+      setIsHovering(!!isClickable && !isInputField)
     }
 
     if (isDesktop) {
@@ -72,7 +80,8 @@ export function CustomCursor() {
           y: ringY
         }}
         animate={{
-          scale: isHovering ? 1.5 : 1,
+          scale: isInput ? 0 : (isHovering ? 1.5 : 1),
+          opacity: isInput ? 0 : 1,
           backgroundColor: isHovering ? 'rgba(255,255,255,1)' : 'rgba(255,255,255,0)',
         }}
         transition={{ type: "spring", stiffness: 400, damping: 25 }}
@@ -85,8 +94,8 @@ export function CustomCursor() {
           y: dotMouseY
         }}
         animate={{
-          scale: isHovering ? 0 : 1,
-          opacity: isHovering ? 0 : 1
+          scale: (isHovering || isInput) ? 0 : 1,
+          opacity: (isHovering || isInput) ? 0 : 1
         }}
         transition={{ type: "spring", stiffness: 400, damping: 25 }}
       />

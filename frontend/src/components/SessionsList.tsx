@@ -1,8 +1,13 @@
+import Image from 'next/image'
 import { useState, useMemo } from 'react'
 import { Search, ChevronDown, ChevronUp, Trash2, Edit3, Image as ImageIcon } from 'lucide-react'
 import { CRMSession } from './CRMBoard'
 import { supabase } from '@/lib/supabase'
 import { toast } from 'react-hot-toast'
+import { useLanguage } from '@/i18n/LanguageContext'
+import { EmptyState } from './EmptyState'
+
+const DATE_LOCALES: Record<string, string> = { ru: 'ru-RU', en: 'en-US', cs: 'cs-CZ', uk: 'uk-UA' }
 
 interface SessionsListProps {
   sessions: CRMSession[]
@@ -18,6 +23,19 @@ type SortField = 'date' | 'client' | 'price'
 type SortOrder = 'asc' | 'desc'
 
 export function SessionsList({ sessions, searchQuery, setSearchQuery, onStatusChange, onSessionClick, onUpdate, cardView = 'normal' }: SessionsListProps) {
+  const { t, lang } = useLanguage()
+  const dateLocale = DATE_LOCALES[lang] || 'en-US'
+
+  // Lightweight helper to interpolate simple {token} placeholders into
+  // translated strings, since the shared t() function only does key lookup.
+  const tc = (key: string, replacements: Record<string, string | number>) => {
+    let result = t(key)
+    Object.entries(replacements).forEach(([k, v]) => {
+      result = result.replace(`{${k}}`, String(v))
+    })
+    return result
+  }
+
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [sortField, setSortField] = useState<SortField>('date')
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc')
@@ -148,10 +166,10 @@ export function SessionsList({ sessions, searchQuery, setSearchQuery, onStatusCh
 
         {selectedIds.size > 0 && (
           <div className="flex items-center gap-3 animate-in fade-in zoom-in duration-200">
-            <span className="text-sm font-bold text-violet-600 dark:text-violet-400">Выбрано: {selectedIds.size}</span>
+            <span className="text-sm font-bold text-primary-600 dark:text-primary-400">Выбрано: {selectedIds.size}</span>
             <select 
               onChange={(e) => { if(e.target.value) handleBulkStatusChange(e.target.value); e.target.value=''; }}
-              className="bg-violet-50 dark:bg-violet-900/20 text-violet-700 dark:text-violet-400 border border-violet-200 dark:border-violet-800 rounded-xl px-3 py-1.5 text-sm outline-none font-bold"
+              className="bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-400 border border-primary-200 dark:border-primary-800 rounded-xl px-3 py-1.5 text-sm outline-none font-bold"
             >
               <option value="">Сменить статус...</option>
               <option value="new">Новые</option>
@@ -184,7 +202,7 @@ export function SessionsList({ sessions, searchQuery, setSearchQuery, onStatusCh
                       onChange={toggleSelectAll}
                       className="peer absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                     />
-                    <div className="w-5 h-5 rounded-md border-2 border-neutral-300 dark:border-neutral-600 bg-transparent peer-checked:bg-violet-500 peer-checked:border-violet-500 transition-colors flex items-center justify-center">
+                    <div className="w-5 h-5 rounded-md border-2 border-neutral-300 dark:border-neutral-600 bg-transparent peer-checked:bg-primary-500 peer-checked:border-primary-500 transition-colors flex items-center justify-center">
                       <svg className="w-3.5 h-3.5 text-white opacity-0 peer-checked:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                       </svg>
@@ -208,7 +226,7 @@ export function SessionsList({ sessions, searchQuery, setSearchQuery, onStatusCh
               {paginated.map(session => (
                 <tr 
                   key={session.id} 
-                  className={`border-b border-neutral-100 dark:border-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-800/30 transition-colors cursor-pointer ${selectedIds.has(session.id) ? 'bg-violet-50/50 dark:bg-violet-900/10' : session.status === 'new' ? 'bg-emerald-50/50 dark:bg-emerald-900/10 border-l-2 border-l-emerald-500' : ''}`}
+                  className={`border-b border-neutral-100 dark:border-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-800/30 transition-colors cursor-pointer ${selectedIds.has(session.id) ? 'bg-primary-50/50 dark:bg-primary-900/10' : session.status === 'new' ? 'bg-emerald-50/50 dark:bg-emerald-900/10 border-l-2 border-l-emerald-500' : ''}`}
                   onClick={(e) => {
                     // Prevent opening modal if clicking checkbox or select
                     if ((e.target as HTMLElement).tagName !== 'INPUT' && (e.target as HTMLElement).tagName !== 'SELECT' && (e.target as HTMLElement).tagName !== 'BUTTON') {
@@ -224,7 +242,7 @@ export function SessionsList({ sessions, searchQuery, setSearchQuery, onStatusCh
                         onChange={() => toggleSelect(session.id)}
                         className="peer absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                       />
-                      <div className="w-5 h-5 rounded-md border-2 border-neutral-300 dark:border-neutral-600 bg-transparent peer-checked:bg-violet-500 peer-checked:border-violet-500 transition-colors flex items-center justify-center">
+                      <div className="w-5 h-5 rounded-md border-2 border-neutral-300 dark:border-neutral-600 bg-transparent peer-checked:bg-primary-500 peer-checked:border-primary-500 transition-colors flex items-center justify-center">
                         <svg className="w-3.5 h-3.5 text-white opacity-0 peer-checked:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                         </svg>
@@ -237,7 +255,7 @@ export function SessionsList({ sessions, searchQuery, setSearchQuery, onStatusCh
                       {(session.source === 'direct' || (!session.source && (session.master_clients?.source === 'direct' || session.master_clients?.leads?.is_personal))) ? (
                         <span className="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-[10px] px-2 py-0.5 rounded font-bold">Личная</span>
                       ) : (session.source === 'marketplace' || (!session.source && (session.master_clients?.source === 'marketplace' || (session.master_clients?.lead_id && !session.master_clients?.leads?.is_personal)))) ? (
-                        <span className="bg-cyan-100 dark:bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 text-[10px] px-2 py-0.5 rounded font-bold">Маркетплейс</span>
+                        <span className="bg-accent-100 dark:bg-accent-500/20 text-accent-600 dark:text-accent-400 text-[10px] px-2 py-0.5 rounded font-bold">Маркетплейс</span>
                       ) : null}
                     </div>
                     <div className="text-sm text-neutral-500">{session.master_clients?.phone || session.master_clients?.telegram || session.master_clients?.email || session.master_clients?.contact_info || 'Нет контактов'}</div>
@@ -264,7 +282,7 @@ export function SessionsList({ sessions, searchQuery, setSearchQuery, onStatusCh
                   <td className="p-4">
                     {session.reference_images && session.reference_images.length > 0 ? (
                       <div className="relative w-10 h-10 rounded-lg overflow-hidden border border-neutral-200 dark:border-neutral-700 group">
-                        <img src={session.reference_images[0]} alt="" className="w-full h-full object-cover" />
+                        <Image src={session.reference_images[0] || ''} alt="" className="w-full h-full object-cover"  width={800} height={800} />
                         {session.reference_images.length > 1 && (
                           <div className="absolute inset-0 bg-black/40 flex items-center justify-center text-white text-xs font-bold">
                             +{session.reference_images.length - 1}
@@ -295,14 +313,13 @@ export function SessionsList({ sessions, searchQuery, setSearchQuery, onStatusCh
                 </tr>
               ))}
               {paginated.length === 0 && (
-                <tr>
-                  <td colSpan={6} className="p-12 text-center text-neutral-500">
-                    <div className="flex flex-col items-center gap-3">
-                      <Search className="w-8 h-8 text-neutral-300 dark:text-neutral-700" />
-                      <div>Ничего не найдено</div>
-                    </div>
-                  </td>
-                </tr>
+                <EmptyState
+                  variant="table"
+                  colSpan={6}
+                  icon={<Search className="w-8 h-8" />}
+                  title="Сеансы не найдены"
+                  description={searchQuery ? "По вашему поисковому запросу нет сеансов." : "У вас пока нет ни одного запланированного сеанса."}
+                />
               )}
             </tbody>
           </table>

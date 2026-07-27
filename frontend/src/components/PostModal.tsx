@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import { useState } from 'react'
 import { X, ChevronLeft, ChevronRight, Trash2, Edit2, Check, Loader2 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
@@ -120,11 +121,11 @@ export function PostModal({ isOpen, post, onClose, isEditable = false, onPostDel
               className="max-w-full max-h-full object-contain"
             />
           ) : (
-            <img 
-              src={currentMedia?.url} 
+            <Image 
+              src={currentMedia?.url || ''} 
               alt="Post media" 
               className="max-w-full max-h-full object-contain"
-            />
+             width={800} height={800} />
           )}
 
           {/* Navigation Arrows */}
@@ -167,7 +168,7 @@ export function PostModal({ isOpen, post, onClose, isEditable = false, onPostDel
                 <button 
                   onClick={startEditing}
                   disabled={isEditing}
-                  className="p-2 text-neutral-500 hover:text-cyan-500 hover:bg-cyan-500/10 rounded-full transition-colors disabled:opacity-50"
+                  className="p-2 text-neutral-500 hover:text-accent-500 hover:bg-accent-500/10 rounded-full transition-colors disabled:opacity-50"
                   title="Редактировать"
                 >
                   <Edit2 className="w-4 h-4" />
@@ -190,7 +191,7 @@ export function PostModal({ isOpen, post, onClose, isEditable = false, onPostDel
                 <textarea 
                   value={editDescription}
                   onChange={(e) => setEditDescription(e.target.value)}
-                  className="w-full h-32 bg-neutral-100 dark:bg-neutral-800 border-none rounded-xl p-3 text-neutral-900 dark:text-white focus:ring-2 focus:ring-cyan-500 resize-none"
+                  className="w-full h-32 bg-neutral-100 dark:bg-neutral-800 border-none rounded-xl p-3 text-neutral-900 dark:text-white focus:ring-2 focus:ring-accent-500 resize-none"
                   placeholder="Добавьте описание..."
                 />
                 <div className="flex gap-2 justify-end">
@@ -203,7 +204,7 @@ export function PostModal({ isOpen, post, onClose, isEditable = false, onPostDel
                   <button 
                     onClick={handleSaveDescription}
                     disabled={isSaving}
-                    className="px-4 py-2 text-sm font-bold bg-cyan-500 text-white hover:bg-cyan-600 rounded-lg transition-colors flex items-center gap-2"
+                    className="px-4 py-2 text-sm font-bold bg-accent-500 text-white hover:bg-accent-600 rounded-lg transition-colors flex items-center gap-2"
                   >
                     {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
                     Сохранить

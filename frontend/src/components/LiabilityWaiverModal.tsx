@@ -67,7 +67,7 @@ export function LiabilityWaiverModal({ isOpen, onClose, sessionId, clientName, o
         >
           <div className="p-6 border-b border-neutral-100 dark:border-neutral-800 flex justify-between items-center">
             <div className="flex items-center gap-3">
-              <div className="bg-violet-100 dark:bg-violet-900/30 p-2 rounded-xl text-violet-600 dark:text-violet-400">
+              <div className="bg-primary-100 dark:bg-primary-900/30 p-2 rounded-xl text-primary-600 dark:text-primary-400">
                 <FileText className="w-5 h-5" />
               </div>
               <h2 className="text-xl font-bold">Информационное согласие</h2>
@@ -100,7 +100,7 @@ export function LiabilityWaiverModal({ isOpen, onClose, sessionId, clientName, o
                   type="checkbox" 
                   checked={agreed}
                   onChange={e => setAgreed(e.target.checked)}
-                  className="w-5 h-5 mt-0.5 rounded border-neutral-300 text-violet-600 focus:ring-violet-500"
+                  className="w-5 h-5 mt-0.5 rounded border-neutral-300 text-primary-600 focus:ring-primary-500"
                 />
                 <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
                   Я внимательно прочитал(а) текст согласия и подтверждаю все вышеперечисленное.
@@ -116,14 +116,14 @@ export function LiabilityWaiverModal({ isOpen, onClose, sessionId, clientName, o
                   value={signature}
                   onChange={e => setSignature(e.target.value)}
                   placeholder="Иванов Иван Иванович"
-                  className="w-full bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-violet-500 outline-none transition-shadow"
+                  className="w-full bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-primary-500 outline-none transition-shadow"
                 />
               </div>
 
               <button
                 onClick={handleSign}
                 disabled={loading || !agreed || !signature}
-                className="w-full py-3 bg-violet-600 hover:bg-violet-700 disabled:bg-neutral-300 dark:disabled:bg-neutral-800 text-white rounded-xl font-bold flex items-center justify-center gap-2 transition-colors"
+                className="w-full py-3 bg-primary-600 hover:bg-primary-700 disabled:bg-neutral-300 dark:disabled:bg-neutral-800 text-white rounded-xl font-bold flex items-center justify-center gap-2 transition-colors"
               >
                 {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <CheckCircle className="w-5 h-5" />}
                 Подписать и Начать Сеанс

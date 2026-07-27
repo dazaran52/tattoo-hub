@@ -60,7 +60,7 @@ export function WithdrawalModal({ isOpen, onClose, withdrawableBalance, onSucces
       <div className="bg-white dark:bg-neutral-900 w-full max-w-sm rounded-2xl shadow-xl overflow-hidden animate-in zoom-in-95 duration-200">
         <div className="flex justify-between items-center p-4 border-b border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800/50">
           <div className="flex items-center gap-2 text-neutral-900 dark:text-white font-bold">
-            <Wallet className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
+            <Wallet className="w-5 h-5 text-accent-600 dark:text-accent-400" />
             Вывод средств
           </div>
           <button onClick={onClose} className="p-2 text-neutral-500 hover:text-neutral-900 dark:hover:text-white rounded-full transition-colors">
@@ -69,9 +69,9 @@ export function WithdrawalModal({ isOpen, onClose, withdrawableBalance, onSucces
         </div>
         
         <form onSubmit={handleSubmit} className="p-4 space-y-4">
-          <div className="bg-cyan-50 dark:bg-cyan-900/20 p-3 rounded-lg border border-cyan-100 dark:border-cyan-900/50">
-            <p className="text-xs text-cyan-600 dark:text-cyan-400 font-medium mb-1">Доступно для вывода</p>
-            <p className="text-2xl font-bold text-cyan-700 dark:text-cyan-300">{withdrawableBalance} кредитов</p>
+          <div className="bg-accent-50 dark:bg-accent-900/20 p-3 rounded-lg border border-accent-100 dark:border-accent-900/50">
+            <p className="text-xs text-accent-600 dark:text-accent-400 font-medium mb-1">Доступно для вывода</p>
+            <p className="text-2xl font-bold text-accent-700 dark:text-accent-300">{withdrawableBalance} кредитов</p>
           </div>
           
           <div>
@@ -81,7 +81,7 @@ export function WithdrawalModal({ isOpen, onClose, withdrawableBalance, onSucces
               min="1"
               max={withdrawableBalance}
               required
-              className="w-full bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white border border-neutral-200 dark:border-neutral-700 rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-500 outline-none"
+              className="w-full bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white border border-neutral-200 dark:border-neutral-700 rounded-lg px-4 py-2 focus:ring-2 focus:ring-accent-500 outline-none"
               value={amount}
               onChange={(e) => setAmount(Number(e.target.value))}
             />
@@ -91,7 +91,7 @@ export function WithdrawalModal({ isOpen, onClose, withdrawableBalance, onSucces
             <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Реквизиты</label>
             <textarea
               required
-              className="w-full bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white border border-neutral-200 dark:border-neutral-700 rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-500 outline-none"
+              className="w-full bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white border border-neutral-200 dark:border-neutral-700 rounded-lg px-4 py-2 focus:ring-2 focus:ring-accent-500 outline-none"
               placeholder="Номер карты, IBAN или крипто-кошелек USDT TRC20"
               rows={3}
               value={paymentDetails}
@@ -102,7 +102,7 @@ export function WithdrawalModal({ isOpen, onClose, withdrawableBalance, onSucces
           <button
             type="submit"
             disabled={loading}
-            className="w-full mt-4 bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-3 px-4 rounded-xl shadow-lg transition-colors flex items-center justify-center gap-2"
+            className="w-full mt-4 bg-accent-600 hover:bg-accent-700 text-white font-bold py-3 px-4 rounded-xl shadow-lg transition-colors flex items-center justify-center gap-2"
           >
             {loading ? 'Создание заявки...' : 'Создать заявку на вывод'}
           </button>

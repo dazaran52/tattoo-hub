@@ -110,7 +110,7 @@ export default function ReviewPage() {
               onChange={(e) => setText(e.target.value)}
               placeholder="Всё прошло отлично! Мастер супер..."
               rows={4}
-              className="w-full rounded-xl px-4 py-3 bg-neutral-100 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 resize-none transition-all"
+              className="w-full rounded-xl px-4 py-3 bg-neutral-100 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-accent-500/20 focus:border-accent-500 resize-none transition-all"
             />
           </div>
 

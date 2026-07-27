@@ -3,6 +3,8 @@ import { CheckCircle, XCircle, Clock, Loader2, RefreshCw } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 import { getTranslation, Language } from '@/lib/i18n'
 import { supabase } from '@/lib/supabase'
+import { SkeletonTable } from '@/components/SkeletonCard'
+import { EmptyState } from '@/components/EmptyState'
 
 
 interface WithdrawalRequest {
@@ -73,7 +75,7 @@ export function AdminWithdrawals() {
   }
 
   if (loading) {
-    return <div className="flex justify-center p-12"><Loader2 className="w-8 h-8 animate-spin text-cyan-500" /></div>
+    return <SkeletonTable rows={3} />
   }
 
   return (
@@ -86,9 +88,11 @@ export function AdminWithdrawals() {
       </div>
 
       {requests.length === 0 ? (
-        <div className="text-center p-12 bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800">
-          <p className="text-neutral-500">Нет заявок на вывод</p>
-        </div>
+        <EmptyState
+          icon={<Clock className="w-10 h-10" />}
+          title="Нет заявок на вывод"
+          description="Здесь появятся заявки от мастеров на вывод средств."
+        />
       ) : (
         <div className="grid grid-cols-1 gap-4">
           {requests.map(req => (
@@ -101,7 +105,7 @@ export function AdminWithdrawals() {
                   {req.status === 'approved' && <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded text-xs font-bold">Выплачено</span>}
                   {req.status === 'rejected' && <span className="px-2 py-0.5 bg-red-100 text-red-700 rounded text-xs font-bold">Отклонено</span>}
                 </div>
-                <div className="text-2xl font-bold text-cyan-600 dark:text-cyan-400 mb-2">
+                <div className="text-2xl font-bold text-accent-600 dark:text-accent-400 mb-2">
                   {req.amount} кредитов
                 </div>
                 <div className="text-sm bg-neutral-100 dark:bg-neutral-800 p-2 rounded font-mono break-all">

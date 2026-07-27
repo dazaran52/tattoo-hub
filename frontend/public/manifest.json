@@ -14,10 +14,42 @@
       "purpose": "any maskable"
     },
     {
+      "src": "/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
       "src": "/icon-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Новый лид",
+      "short_name": "Новый лид",
+      "description": "Создать новую заявку / лида",
+      "url": "/new-lead",
+      "icons": [
+        {
+          "src": "/icon-192x192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Сообщения",
+      "short_name": "Сообщения",
+      "description": "Перейти к чатам и сообщениям",
+      "url": "/dashboard?tab=messages",
+      "icons": [
+        {
+          "src": "/icon-192x192.png",
+          "sizes": "192x192"
+        }
+      ]
     }
   ]
 }

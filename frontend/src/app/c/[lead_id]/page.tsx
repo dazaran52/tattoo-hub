@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { useState, useEffect, useRef } from 'react'
 import { useParams, useSearchParams } from 'next/navigation'
 import { Check, MessageCircle, Send } from 'lucide-react'
@@ -122,7 +123,7 @@ export default function ClientPortalPage() {
         <div className="bg-white dark:bg-neutral-800 rounded-3xl p-6 shadow-sm border border-neutral-200 dark:border-white/5">
           <h1 className="text-2xl font-bold text-neutral-900 dark:text-white mb-2">{leadData.title}</h1>
           <p className="text-neutral-600 dark:text-neutral-400">{leadData.description}</p>
-          <div className="mt-4 inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 text-sm font-bold">
+          <div className="mt-4 inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 text-sm font-bold">
             {leadData.client_priority === 'cheap' ? '💵 Важна низкая цена' :
              leadData.client_priority === 'fast' ? '⚡️ Сделать как можно скорее' : '✨ Качество важнее всего'}
           </div>
@@ -150,16 +151,16 @@ export default function ClientPortalPage() {
                 }}
                 className={`p-5 rounded-3xl border cursor-pointer transition-all ${
                   selectedProposal?.master_id === p.master_id 
-                    ? 'border-violet-500 bg-violet-50 dark:bg-violet-900/10 ring-2 ring-violet-500/20' 
-                    : 'border-neutral-200 dark:border-white/5 bg-white dark:bg-neutral-800 hover:border-violet-300'
+                    ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/10 ring-2 ring-primary-500/20' 
+                    : 'border-neutral-200 dark:border-white/5 bg-white dark:bg-neutral-800 hover:border-primary-300'
                 } ${p.status === 'rejected' ? 'opacity-50' : ''}`}
               >
                 <div className="flex justify-between items-start mb-3">
                   <div className="flex items-center gap-3">
                     {p.master_avatar ? (
-                      <img src={p.master_avatar} className="w-10 h-10 rounded-full object-cover" />
+                      <Image src={p.master_avatar || ''} className="w-10 h-10 rounded-full object-cover"  alt="" width={40} height={40} />
                     ) : (
-                      <div className="w-10 h-10 rounded-full bg-violet-100 flex items-center justify-center text-violet-600 font-bold text-lg">
+                      <div className="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center text-primary-600 font-bold text-lg">
                         {p.master_name[0]}
                       </div>
                     )}
@@ -204,7 +205,7 @@ export default function ClientPortalPage() {
               <div className="bg-white dark:bg-neutral-800 rounded-3xl border border-neutral-200 dark:border-white/5 flex flex-col h-[600px] overflow-hidden sticky top-8">
                 <div className="p-4 border-b border-neutral-100 dark:border-white/5 bg-neutral-50/50 dark:bg-neutral-900/50 flex justify-between items-center">
                   <h3 className="font-bold text-neutral-900 dark:text-white flex items-center gap-2">
-                    <MessageCircle className="w-5 h-5 text-violet-500" /> 
+                    <MessageCircle className="w-5 h-5 text-primary-500" /> 
                     Чат с {selectedProposal.master_name}
                   </h3>
                 </div>
@@ -222,7 +223,7 @@ export default function ClientPortalPage() {
                       <div key={msg.id} className={`flex ${msg.sender_type === 'client' ? 'justify-end' : 'justify-start'}`}>
                         <div className={`max-w-[80%] rounded-2xl px-4 py-2 ${
                           msg.sender_type === 'client' 
-                            ? 'bg-violet-500 text-white rounded-br-sm' 
+                            ? 'bg-primary-500 text-white rounded-br-sm' 
                             : 'bg-neutral-100 dark:bg-neutral-700 text-neutral-900 dark:text-white rounded-bl-sm'
                         }`}>
                           <p className="whitespace-pre-wrap text-sm">{msg.content}</p>
@@ -243,12 +244,12 @@ export default function ClientPortalPage() {
                       placeholder="Написать сообщение..."
                       value={newMessage}
                       onChange={e => setNewMessage(e.target.value)}
-                      className="flex-1 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white border border-transparent focus:border-violet-500 rounded-xl px-4 py-2 outline-none text-sm transition-all"
+                      className="flex-1 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white border border-transparent focus:border-primary-500 rounded-xl px-4 py-2 outline-none text-sm transition-all"
                     />
                     <button 
                       type="submit"
                       disabled={!newMessage.trim()}
-                      className="bg-violet-500 hover:bg-violet-600 disabled:bg-neutral-300 disabled:dark:bg-neutral-700 text-white p-2.5 rounded-xl transition-all"
+                      className="bg-primary-500 hover:bg-primary-600 disabled:bg-neutral-300 disabled:dark:bg-neutral-700 text-white p-2.5 rounded-xl transition-all"
                     >
                       <Send className="w-4 h-4" />
                     </button>

@@ -98,8 +98,8 @@ export default function TopUpPage() {
       name: 'Standard Pack',
       amounts: { CZK: 500, EUR: 20, USD: 22 },
       popular: true,
-      color: 'from-cyan-500/10 to-purple-500/10 dark:from-cyan-900/20 dark:to-purple-900/20',
-      borderColor: 'border-cyan-400 dark:border-cyan-500 shadow-lg shadow-cyan-500/20'
+      color: 'from-accent-500/10 to-primary-500/10 dark:from-accent-900/20 dark:to-primary-900/20',
+      borderColor: 'border-accent-400 dark:border-accent-500 shadow-lg shadow-accent-500/20'
     },
     {
       id: 'pro',
@@ -121,8 +121,8 @@ export default function TopUpPage() {
     <div className="min-h-screen bg-neutral-50 dark:bg-[#050505] text-neutral-900 dark:text-white transition-colors duration-300 relative overflow-x-hidden pb-12">
       {/* Premium ambient glows */}
       <div className="absolute top-0 left-0 w-full h-full pointer-events-none overflow-hidden z-0">
-        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-cyan-500/5 dark:bg-cyan-500/10 blur-[120px]" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-purple-500/5 dark:bg-purple-500/10 blur-[120px]" />
+        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-accent-500/5 dark:bg-accent-500/10 blur-[120px]" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-primary-500/5 dark:bg-primary-500/10 blur-[120px]" />
       </div>
 
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 relative z-10">
@@ -135,7 +135,7 @@ export default function TopUpPage() {
         </button>
 
         <div className="text-center mb-12">
-          <div className="w-20 h-20 bg-gradient-to-br from-cyan-400 to-cyan-600 rounded-full mx-auto flex items-center justify-center shadow-lg shadow-cyan-500/30 mb-6">
+          <div className="w-20 h-20 bg-gradient-to-br from-accent-400 to-accent-600 rounded-full mx-auto flex items-center justify-center shadow-lg shadow-accent-500/30 mb-6">
             <Gem className="w-10 h-10 text-white" />
           </div>
 
@@ -161,14 +161,14 @@ export default function TopUpPage() {
               className={`relative bg-gradient-to-br ${pkg.color} border ${pkg.borderColor} rounded-3xl p-6 sm:p-8 flex flex-col items-center text-center hover:scale-[1.02] transition-all duration-300 transform-gpu`}
             >
               {pkg.popular && (
-                <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-cyan-500 to-purple-500 text-white text-xs font-black uppercase px-4 py-1.5 rounded-full shadow-lg">
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-accent-500 to-primary-500 text-white text-xs font-black uppercase px-4 py-1.5 rounded-full shadow-lg">
                   Хит продаж
                 </div>
               )}
 
               <h3 className="text-xl font-bold text-neutral-900 dark:text-white mb-2 mt-2">{pkg.name}</h3>
               
-              <div className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-500 to-purple-500 my-6">
+              <div className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-accent-500 to-primary-500 my-6">
                 {walletCurrency ? `${pkg.amounts[walletCurrency]} ${walletCurrency}` : '—'}
               </div>
 
@@ -192,7 +192,7 @@ export default function TopUpPage() {
                 disabled={isLoadingPackage === pkg.id || !walletCurrency || Boolean(walletError)}
                 className={`w-full py-4 px-4 font-bold rounded-2xl transition-all flex items-center justify-center gap-2 shadow-md ${
                   pkg.popular 
-                    ? 'bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-400 hover:to-purple-400 text-white shadow-cyan-500/25' 
+                    ? 'bg-gradient-to-r from-accent-500 to-primary-500 hover:from-accent-400 hover:to-primary-400 text-white shadow-accent-500/25' 
                     : 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 hover:opacity-90'
                 } ${isLoadingPackage === pkg.id ? 'opacity-70 cursor-not-allowed' : ''}`}
               >

@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { 
@@ -9,10 +10,12 @@ import {
   Sparkles, AlertTriangle, Check, ChevronDown, ChevronUp, ExternalLink, Share2, ShieldCheck, Mail
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+import { api } from '@/lib/api'
 import { DayPicker } from 'react-day-picker'
 import 'react-day-picker/dist/style.css'
 import { format } from 'date-fns'
-import { ru } from 'date-fns/locale'
+import { ru, enUS, cs, uk } from 'date-fns/locale'
+import { useLanguage } from '@/i18n/LanguageContext'
 import { TATTOO_STYLES, BODY_PLACES, TATTOO_SIZES } from '@/lib/constants'
 import imageCompression from 'browser-image-compression'
 import { toast } from 'react-hot-toast'
@@ -25,6 +28,7 @@ export interface LeadWizardProps {
     full_name?: string;
     avatar_url?: string;
   };
+  masterId?: string;
   source?: 'platform' | 'personal';
   themeClasses?: {
     card?: string;
@@ -32,47 +36,74 @@ export interface LeadWizardProps {
     buttonPrimary?: string;
   };
   onSuccess?: () => void;
+  initialData?: any;
 }
 
 const defaultThemeClasses = {
   card: 'bg-neutral-900/80 backdrop-blur-2xl border border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.5)] text-white',
-  input: 'bg-black/50 border border-neutral-800 text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/30 focus:border-cyan-500',
-  buttonPrimary: 'bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 text-white shadow-lg shadow-cyan-500/25 hover:shadow-cyan-500/40',
+  input: 'bg-black/50 border border-neutral-800 text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-accent-500/30 focus:border-accent-500',
+  buttonPrimary: 'bg-gradient-to-r from-accent-500 via-blue-600 to-primary-600 text-white shadow-lg shadow-accent-500/25 hover:shadow-accent-500/40',
 };
 
 function ImagePreview({ file, onRemove }: { file: File; onRemove: () => void }) {
+  const { t } = useLanguage()
   const previewUrl = React.useMemo(() => URL.createObjectURL(file), [file])
 
   useEffect(() => () => URL.revokeObjectURL(previewUrl), [previewUrl])
 
   return (
     <div className="relative group aspect-square rounded-2xl overflow-hidden border border-white/20 bg-black/50 shadow-md">
-      <img
-        src={previewUrl}
+      <Image
+        src={previewUrl || ''}
         alt={file.name}
         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-      />
+       width={800} height={800} />
       <button
         type="button"
         onClick={onRemove}
-        aria-label={`Удалить ${file.name}`}
+        aria-label={`${t('leadWizard.deleteBtn', 'Удалить')} ${file.name}`}
         className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-all duration-200 flex flex-col items-center justify-center text-red-400 hover:text-red-300 cursor-pointer gap-1"
       >
         <X className="w-7 h-7" />
-        <span className="text-[11px] font-bold">Удалить</span>
+        <span className="text-[11px] font-bold">{t('leadWizard.deleteBtn', 'Удалить')}</span>
       </button>
     </div>
   )
 }
 
-export function LeadWizard({ master, source = 'platform', themeClasses, onSuccess }: LeadWizardProps) {
+export function LeadWizard({ master, masterId, source = 'platform', themeClasses, onSuccess, initialData }: LeadWizardProps) {
   const router = useRouter()
+  const { t, lang } = useLanguage()
+  const dateLocale = lang === 'en' ? enUS : lang === 'cs' ? cs : lang === 'uk' ? uk : ru
   const tClasses = { ...defaultThemeClasses, ...themeClasses }
 
   // Гарантированные структурные классы, которые никогда не затираются внешними темами
   const baseCardClass = `w-full rounded-3xl p-6 sm:p-8 md:p-10 transition-all duration-500 relative overflow-hidden ${tClasses.card}`
   const baseInputClass = `w-full rounded-2xl px-4 py-3.5 text-sm sm:text-base transition-all shadow-inner focus:outline-none focus:ring-2 ${tClasses.input}`
   const baseButtonClass = `w-full sm:w-auto min-w-[220px] px-8 py-4 rounded-2xl font-extrabold text-base flex items-center justify-center gap-3 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] cursor-pointer disabled:opacity-50 disabled:pointer-events-none ${tClasses.buttonPrimary}`
+
+  const [resolvedMaster, setResolvedMaster] = useState(master)
+  useEffect(() => {
+    if (master) {
+      setResolvedMaster(master)
+    } else if (masterId) {
+      fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/public/masters/${masterId}`)
+        .then(res => res.ok ? res.json() : null)
+        .then(data => {
+          if (data) {
+            setResolvedMaster({
+              id: data.id || masterId,
+              username: data.username,
+              full_name: data.display_name || data.full_name || data.name,
+              avatar_url: data.avatar_url
+            })
+          } else {
+            setResolvedMaster({ id: masterId })
+          }
+        })
+        .catch(() => setResolvedMaster({ id: masterId }))
+    }
+  }, [master, masterId])
 
   // Wizard Step State
   const [step, setStep] = useState<1 | 2 | 3>(1)
@@ -95,6 +126,14 @@ export function LeadWizard({ master, source = 'platform', themeClasses, onSucces
   const [sessionDate, setSessionDate] = useState<Date | undefined>(undefined)
   const [sessionTime, setSessionTime] = useState('')
 
+  // Countries and Cities State
+  const [countries, setCountries] = useState<any[]>([])
+  const [cities, setCities] = useState<any[]>([])
+  const [selectedCountry, setSelectedCountry] = useState('')
+  const [city, setCity] = useState('')
+  const [locationPrefilled, setLocationPrefilled] = useState(false)
+  const [showLocationSelect, setShowLocationSelect] = useState(true)
+
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [contact, setContact] = useState('')
@@ -114,10 +153,10 @@ export function LeadWizard({ master, source = 'platform', themeClasses, onSucces
   const [unavailableDates, setUnavailableDates] = useState<Date[]>([])
 
   useEffect(() => {
-    if (!master?.id) return
+    if (!resolvedMaster?.id) return
     const fetchUnavailable = async () => {
       try {
-        const identifier = master.username || master.id
+        const identifier = resolvedMaster.username || resolvedMaster.id
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/leads/public/master/${identifier}/unavailable-dates`)
         if (res.ok) {
           const data: string[] = await res.json()
@@ -128,7 +167,107 @@ export function LeadWizard({ master, source = 'platform', themeClasses, onSucces
       }
     }
     fetchUnavailable()
-  }, [master?.id, master?.username])
+  }, [resolvedMaster?.id, resolvedMaster?.username])
+
+  // Fetch countries and prefill from profile/initialData/localStorage
+  useEffect(() => {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/locations/countries`)
+      .then(res => res.json())
+      .then(data => setCountries(data))
+      .catch(err => console.error(err))
+
+    if (initialData) {
+      if (initialData.description) setDescription(initialData.description)
+      if (initialData.style) setStyles(typeof initialData.style === 'string' ? initialData.style.split(',').map((s: string) => s.trim()).filter(Boolean) : initialData.style)
+      if (initialData.body_place) setBodyPlace(initialData.body_place)
+      if (initialData.size) setSize(initialData.size)
+      if (initialData.client_priority || initialData.priority) setClientPriority(initialData.client_priority || initialData.priority)
+      if (initialData.budget || initialData.client_budget) {
+        const b = String(initialData.budget || initialData.client_budget)
+        if (b.toLowerCase().includes('договор') || b.toLowerCase().includes('negotiable')) {
+          setIsNegotiable(true)
+        } else {
+          setBudgetVal(String(parseInt(b, 10) || ''))
+        }
+      } else if (initialData.budget_val) {
+        setBudgetVal(String(initialData.budget_val))
+      }
+      if (initialData.country_id) setSelectedCountry(initialData.country_id)
+      if (initialData.city) setCity(initialData.city)
+      if (initialData.name || initialData.client_name) setName(initialData.name || initialData.client_name)
+      if (initialData.email || initialData.contact) {
+        const c = initialData.email || initialData.contact
+        if (String(c).includes('@')) setEmail(c)
+        else setContact(c)
+      }
+      if (initialData.instagram) setInstagram(initialData.instagram)
+      if (initialData.image_urls && Array.isArray(initialData.image_urls)) setUploadedUrls(initialData.image_urls)
+    } else {
+      const pendingLeadStr = localStorage.getItem('pending_lead')
+      if (pendingLeadStr) {
+        try {
+          const pending = JSON.parse(pendingLeadStr)
+          if (pending.description) setDescription(pending.description)
+          if (pending.style) setStyles(typeof pending.style === 'string' ? pending.style.split(',').map((s: string) => s.trim()).filter(Boolean) : pending.style)
+          if (pending.body_place) setBodyPlace(pending.body_place)
+          if (pending.size) setSize(pending.size)
+          if (pending.client_priority || pending.priority) setClientPriority(pending.client_priority || pending.priority)
+          if (pending.is_negotiable_budget || (typeof pending.budget === 'string' && (pending.budget.toLowerCase().includes('договор') || pending.budget.toLowerCase().includes('negotiable')))) {
+            setIsNegotiable(true)
+          } else if (pending.budget_val) {
+            setBudgetVal(String(pending.budget_val))
+          } else if (pending.budget) {
+            setBudgetVal(String(parseInt(String(pending.budget), 10) || ''))
+          }
+          if (pending.country_id) setSelectedCountry(pending.country_id)
+          if (pending.city) setCity(pending.city)
+          if (pending.name || pending.client_name) setName(pending.name || pending.client_name)
+          if (pending.email || pending.contact) {
+            const c = pending.email || pending.contact
+            if (String(c).includes('@')) setEmail(c)
+            else setContact(c)
+          }
+          if (pending.instagram) setInstagram(pending.instagram)
+          if (pending.image_urls && Array.isArray(pending.image_urls)) setUploadedUrls(pending.image_urls)
+        } catch (e) {
+          console.error('Failed to parse pending_lead:', e)
+        }
+      }
+    }
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.access_token) {
+        api.getProfile().then(p => {
+          if (p.country_ids && p.country_ids.length > 0 && !selectedCountry && !initialData?.country_id) {
+            setSelectedCountry(p.country_ids[0])
+            setLocationPrefilled(true)
+            setShowLocationSelect(false)
+          }
+          if (p.display_name && !name && !initialData?.name) setName(p.display_name)
+          if (p.email && !email && !initialData?.email) setEmail(p.email)
+          if (p.phone && !contact && !initialData?.contact) setContact(p.phone)
+          if ((p as any).instagram && !instagram && !initialData?.instagram) setInstagram((p as any).instagram)
+        }).catch(err => console.error(err))
+      }
+    })
+  }, [])
+
+  useEffect(() => {
+    if (selectedCountry) {
+      fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/locations/countries/${selectedCountry}/cities`)
+        .then(res => res.json())
+        .then(data => {
+          setCities(data)
+          if (data.length > 0 && !city) {
+            const defaultCity = data[0].name_ru || data[0].name
+            setCity(defaultCity)
+          }
+        })
+        .catch(err => console.error(err))
+    } else {
+      setCities([])
+    }
+  }, [selectedCountry])
 
   useEffect(() => {
     if (styles.length > 0 || bodyPlace || size) setOpenStep1Details(true)
@@ -147,7 +286,7 @@ export function LeadWizard({ master, source = 'platform', themeClasses, onSucces
     
     const newFiles = Array.from(e.target.files)
     if (images.length + newFiles.length > 10) {
-      toast.error('Можно загрузить не более 10 фотографий')
+      toast.error(t('leadWizard.errorMaxPhotos', 'Можно загрузить не более 10 фотографий'))
       return
     }
 
@@ -167,7 +306,7 @@ export function LeadWizard({ master, source = 'platform', themeClasses, onSucces
       setImages(prev => [...prev, ...compressedFiles])
     } catch (err) {
       console.error(err)
-      toast.error('Ошибка при обработке изображения')
+      toast.error(t('leadWizard.errorPhotoProcess', 'Ошибка при обработке изображения'))
     } finally {
       setIsUploading(false)
     }
@@ -179,15 +318,19 @@ export function LeadWizard({ master, source = 'platform', themeClasses, onSucces
 
   const validateStep1 = () => {
     if (!description.trim()) {
-      toast.error('Пожалуйста, опишите вашу идею татуировки')
+      toast.error(t('leadWizard.errorIdeaReq', 'Пожалуйста, опишите вашу идею татуировки'))
       return false
     }
     return true
   }
 
   const validateStep2 = () => {
+    if (!selectedCountry || !city) {
+      toast.error(t('leadWizard.errorCityReq', 'Пожалуйста, выберите страну и город'))
+      return false
+    }
     if (!isNegotiable && (!budgetVal || !budgetVal.trim() || isNaN(parseInt(budgetVal, 10)) || parseInt(budgetVal, 10) <= 0)) {
-      toast.error('Пожалуйста, укажите ориентировочный бюджет или выберите опцию "Договорная цена"')
+      toast.error(t('leadWizard.errorBudgetReq', 'Пожалуйста, укажите ориентировочный бюджет или выберите опцию "Договорная цена"'))
       return false
     }
     return true
@@ -195,11 +338,11 @@ export function LeadWizard({ master, source = 'platform', themeClasses, onSucces
 
   const validateStep3 = () => {
     if (!name.trim()) {
-      toast.error('Пожалуйста, укажите ваше имя')
+      toast.error(t('leadWizard.errorNameReq', 'Пожалуйста, укажите ваше имя'))
       return false
     }
     if (!email.trim() || !email.includes('@')) {
-      toast.error('Пожалуйста, укажите корректный email для создания личного кабинета')
+      toast.error(t('leadWizard.errorEmailReq', 'Пожалуйста, укажите корректный email для создания личного кабинета'))
       return false
     }
     return true
@@ -252,13 +395,13 @@ export function LeadWizard({ master, source = 'platform', themeClasses, onSucces
   const executeSubmit = async () => {
     setShowWarningModal(false)
     setIsSubmitting(true)
-    const toastId = toast.loading('Отправляем заявку и создаем личный кабинет...')
+    const toastId = toast.loading(t('leadWizard.submittingLead', 'Отправляем заявку и создаем личный кабинет...'))
 
     try {
       const finalImageUrls = await uploadPhotosToSupabase()
 
       const parsedVal = budgetVal && !isNaN(parseInt(budgetVal, 10)) ? parseInt(budgetVal, 10) : null
-      const budgetStr = isNegotiable ? 'Договорная цена' : (budgetVal ? `${budgetVal} CZK` : null)
+      const budgetStr = isNegotiable ? t('leadWizard.negotiablePriceText', 'Договорная цена') : (budgetVal ? `${budgetVal} CZK` : null)
 
       const payload = {
         description: description.trim(),
@@ -271,9 +414,9 @@ export function LeadWizard({ master, source = 'platform', themeClasses, onSucces
         budget_val: isNegotiable ? null : parsedVal,
         budget_currency: 'CZK',
         client_priority: clientPriority,
-        city: null,
-        country_id: null,
-        name: name.trim() || 'Без имени',
+        city: city || null,
+        country_id: selectedCountry || null,
+        name: name.trim() || t('leadWizard.noNameDefault', 'Без имени'),
         contact: contact.trim() || email.trim() || null,
         instagram: instagram.trim() || null,
         is_negotiable_budget: isNegotiable,
@@ -283,20 +426,21 @@ export function LeadWizard({ master, source = 'platform', themeClasses, onSucces
         client_name: name.trim() || null,
       }
 
-      const isDirectBooking = Boolean(master && source === 'personal')
+      const isDirectBooking = Boolean(resolvedMaster && source === 'personal')
+      const targetMasterId = resolvedMaster?.id || masterId
       const endpoint = isDirectBooking
-        ? `/api/leads/client/direct/${master!.id}`
+        ? `/api/leads/client/direct/${targetMasterId}`
         : '/api/leads/client'
       const { data: { session } } = await supabase.auth.getSession()
       if (isDirectBooking && !session) {
-        throw new Error('Войдите в аккаунт, чтобы записаться к выбранному мастеру')
+        throw new Error(t('leadWizard.errorLoginRequired', 'Войдите в аккаунт, чтобы записаться к выбранному мастеру'))
       }
       if (!session) {
         localStorage.setItem('pending_lead', JSON.stringify({
           ...payload,
           created_at: Date.now()
         }))
-        toast.success('Заявка сохранена. Войдите, чтобы безопасно опубликовать её.', { id: toastId })
+        toast.success(t('leadWizard.leadSentSuccess', 'Заявка сохранена. Войдите, чтобы безопасно опубликовать её.'), { id: toastId })
         window.location.href = '/login?next=/dashboard'
         return
       }
@@ -310,7 +454,7 @@ export function LeadWizard({ master, source = 'platform', themeClasses, onSucces
 
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}))
-        throw new Error(errData.detail || 'Не удалось отправить заявку')
+        throw new Error(errData.detail || t('leadWizard.errorSubmitFailed', 'Не удалось отправить заявку'))
       }
 
       const resData = await res.json()
@@ -318,12 +462,13 @@ export function LeadWizard({ master, source = 'platform', themeClasses, onSucces
         setLoginLink(resData.login_link)
       }
 
-      toast.success('Заявка успешно отправлена!', { id: toastId })
+      localStorage.removeItem('pending_lead')
+      toast.success(t('leadWizard.leadSentSuccess', 'Заявка успешно отправлена! 🎉'), { id: toastId })
       setIsSuccess(true)
       if (onSuccess) onSuccess()
     } catch (err: any) {
       console.error(err)
-      toast.error(err.message || 'Произошла ошибка при отправке', { id: toastId })
+      toast.error(err.message || t('leadWizard.errorSubmitGeneral', 'Произошла ошибка при отправке'), { id: toastId })
     } finally {
       setIsSubmitting(false)
     }
@@ -332,11 +477,11 @@ export function LeadWizard({ master, source = 'platform', themeClasses, onSucces
   const submitToMarketplace = async () => {
     if (isPublishedToMarketplace || isPublishingMarketplace) return
     setIsPublishingMarketplace(true)
-    const toastId = toast.loading('Публикуем заявку на маркетплейсе...')
+    const toastId = toast.loading(t('leadWizard.submittingLead', 'Публикуем заявку на маркетплейсе...'))
 
     try {
       const parsedVal = budgetVal && !isNaN(parseInt(budgetVal, 10)) ? parseInt(budgetVal, 10) : null
-      const budgetStr = isNegotiable ? 'Договорная цена' : (budgetVal ? `${budgetVal} CZK` : null)
+      const budgetStr = isNegotiable ? t('leadWizard.negotiablePriceText', 'Договорная цена') : (budgetVal ? `${budgetVal} CZK` : null)
 
       const payload = {
         description: description.trim(),
@@ -349,9 +494,9 @@ export function LeadWizard({ master, source = 'platform', themeClasses, onSucces
         budget_val: isNegotiable ? null : parsedVal,
         budget_currency: 'CZK',
         client_priority: clientPriority,
-        city: null,
-        country_id: null,
-        name: name.trim() || 'Без имени',
+        city: city || null,
+        country_id: selectedCountry || null,
+        name: name.trim() || t('leadWizard.noNameDefault', 'Без имени'),
         contact: contact.trim() || email.trim() || null,
         instagram: instagram.trim() || null,
         is_negotiable_budget: isNegotiable,
@@ -367,13 +512,13 @@ export function LeadWizard({ master, source = 'platform', themeClasses, onSucces
         body: JSON.stringify(payload)
       })
 
-      if (!res.ok) throw new Error('Ошибка публикации на маркетплейсе')
+      if (!res.ok) throw new Error(t('leadWizard.errorMarketplacePublish', 'Ошибка публикации на маркетплейсе'))
 
-      toast.success('Заявка опубликована на маркетплейсе! Другие мастера смогут откликнуться.', { id: toastId })
+      toast.success(t('leadWizard.alsoPublishedSuccess', 'Заявка опубликована на маркетплейсе! Другие мастера смогут откликнуться.'), { id: toastId })
       setIsPublishedToMarketplace(true)
     } catch (err: any) {
       console.error(err)
-      toast.error(err.message || 'Ошибка при публикации', { id: toastId })
+      toast.error(err.message || t('leadWizard.errorPublishGeneral', 'Ошибка при публикации'), { id: toastId })
     } finally {
       setIsPublishingMarketplace(false)
     }
@@ -404,38 +549,38 @@ export function LeadWizard({ master, source = 'platform', themeClasses, onSucces
           <CheckCircle className="w-12 h-12 animate-bounce" />
         </div>
 
-        <h3 className="text-3xl sm:text-4xl font-extrabold mb-3 tracking-tight">Заявка принята! 🎉</h3>
+        <h3 className="text-3xl sm:text-4xl font-extrabold mb-3 tracking-tight">{t('leadWizard.leadSentSuccess', 'Заявка принята! 🎉')}</h3>
         <p className="text-neutral-300 text-base mb-8 max-w-md mx-auto leading-relaxed">
-          {master && source === 'personal' ? (
-            <>Ваша идея направлена мастеру <strong className="text-white font-bold">{master.full_name || master.username}</strong>. Мы уже создали для вас личный кабинет для общения и отслеживания статуса сеанса.</>
+          {resolvedMaster && source === 'personal' ? (
+            <>{t('leadWizard.ideaSentToMasterDesc', 'Ваша идея направлена мастеру')} <strong className="text-white font-bold">{resolvedMaster.full_name || resolvedMaster.username || 'Мастеру'}</strong>. {t('leadWizard.ideaSentToMasterSub', 'Мы уже создали для вас личный кабинет для общения и отслеживания статуса сеанса.')}</>
           ) : (
-            <>Ваша идея успешно опубликована на маркетплейсе! Проверенные мастера со всей платформы изучат её и предложат вам свои условия в личном кабинете.</>
+            <>{t('leadWizard.ideaPublishedToMarketplace', 'Ваша идея успешно опубликована на маркетплейсе! Проверенные мастера со всей платформы изучат её и предложат вам свои условия в личном кабинете.')}</>
           )}
         </p>
 
-        {master && source === 'personal' && !isPublishedToMarketplace && (
-          <div className="bg-gradient-to-r from-purple-500/15 via-indigo-500/15 to-cyan-500/15 border border-purple-500/40 rounded-3xl p-6 mb-8 text-left transition-all hover:border-purple-500/60 shadow-xl">
+        {resolvedMaster && source === 'personal' && !isPublishedToMarketplace && (
+          <div className="bg-gradient-to-r from-primary-500/15 via-primary-500/15 to-accent-500/15 border border-primary-500/40 rounded-3xl p-6 mb-8 text-left transition-all hover:border-primary-500/60 shadow-xl">
             <div className="flex items-start gap-4">
-              <div className="p-3 bg-purple-500/20 text-purple-300 rounded-2xl mt-0.5 shadow-inner">
+              <div className="p-3 bg-primary-500/20 text-primary-300 rounded-2xl mt-0.5 shadow-inner">
                 <Sparkles className="w-6 h-6" />
               </div>
               <div className="flex-1">
                 <h4 className="font-bold text-white text-base sm:text-lg mb-1 flex items-center flex-wrap gap-2">
-                  Отправить также на маркетплейс
-                  <span className="text-[10px] bg-purple-500/30 text-purple-300 border border-purple-500/40 px-2.5 py-0.5 rounded-full font-extrabold uppercase tracking-wider">Бесплатно</span>
+                  {t('leadWizard.sendAlsoToMarketplace', 'Отправить также на маркетплейс')}
+                  <span className="text-[10px] bg-primary-500/30 text-primary-300 border border-primary-500/40 px-2.5 py-0.5 rounded-full font-extrabold uppercase tracking-wider">{t('leadWizard.freeBadge', 'Бесплатно')}</span>
                 </h4>
                 <p className="text-xs sm:text-sm text-neutral-300 leading-relaxed mb-5">
-                  Хотите получить предложения от других топовых мастеров площадки? Мы продублируем вашу идею в общую ленту маркетплейса в 1 клик.
+                  {t('leadWizard.sendAlsoDesc', 'Хотите получить предложения от других топовых мастеров площадки? Мы продублируем вашу идею в общую ленту маркетплейса в 1 клик.')}
                 </p>
                 <button
                   type="button"
                   onClick={submitToMarketplace}
                   disabled={isPublishingMarketplace}
-                  className="w-full sm:w-auto px-6 py-3.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-sm font-bold rounded-2xl shadow-lg shadow-purple-600/30 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer"
+                  className="w-full sm:w-auto px-6 py-3.5 bg-gradient-to-r from-primary-600 to-primary-600 hover:from-primary-500 hover:to-primary-500 text-white text-sm font-bold rounded-2xl shadow-lg shadow-primary-600/30 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer"
                 >
                   {isPublishingMarketplace && <Loader2 className="w-4 h-4 animate-spin" />}
                   <Share2 className="w-4 h-4" />
-                  Опубликовать на маркетплейсе
+                  {t('leadWizard.publishOnMarketplaceBtn', 'Опубликовать на маркетплейсе')}
                 </button>
               </div>
             </div>
@@ -445,7 +590,7 @@ export function LeadWizard({ master, source = 'platform', themeClasses, onSucces
         {isPublishedToMarketplace && (
           <div className="bg-green-500/10 border border-green-500/30 text-green-300 rounded-2xl p-4 mb-8 flex items-center justify-center gap-2 text-sm sm:text-base font-semibold shadow-inner">
             <Check className="w-5 h-5 text-green-400 shrink-0" />
-            Заявка также успешно опубликована на маркетплейсе!
+            {t('leadWizard.alsoPublishedSuccess', 'Заявка также успешно опубликована на маркетплейсе!')}
           </div>
         )}
 
@@ -453,13 +598,13 @@ export function LeadWizard({ master, source = 'platform', themeClasses, onSucces
           <button
             type="button"
             onClick={handleTrackLead}
-            className="w-full py-5 px-8 bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-white font-extrabold text-base sm:text-lg rounded-2xl shadow-2xl shadow-cyan-500/30 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3 cursor-pointer"
+            className="w-full py-5 px-8 bg-gradient-to-r from-accent-500 via-blue-600 to-primary-600 hover:from-accent-400 hover:to-primary-500 text-white font-extrabold text-base sm:text-lg rounded-2xl shadow-2xl shadow-accent-500/30 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3 cursor-pointer"
           >
             <ShieldCheck className="w-6 h-6" />
-            Перейти к заявке и чату с мастером ➔
+            {t('leadWizard.goToLeadAndChat', 'Перейти к заявке и чату с мастером ➔')}
           </button>
           <p className="text-xs sm:text-sm text-neutral-400">
-            Вход выполнится мгновенно и безопасно по защищенной ссылке для <span className="text-cyan-400 font-semibold underline">{email}</span>
+            {t('leadWizard.safeLoginFor', 'Вход выполнится мгновенно и безопасно по защищенной ссылке для')} <span className="text-accent-400 font-semibold underline">{email}</span>
           </p>
         </div>
       </div>
@@ -481,9 +626,9 @@ export function LeadWizard({ master, source = 'platform', themeClasses, onSucces
               <div className="w-16 h-16 bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 rounded-2xl flex items-center justify-center mb-5 mx-auto shadow-lg">
                 <AlertTriangle className="w-9 h-9" />
               </div>
-              <h3 className="text-2xl font-bold text-center mb-2 tracking-tight">Заполнены не все детали</h3>
+              <h3 className="text-2xl font-bold text-center mb-2 tracking-tight">{t('leadWizard.warningModalTitle', 'Заполнены не все детали')}</h3>
               <p className="text-sm sm:text-base text-neutral-300 text-center mb-8 leading-relaxed">
-                Вы не указали некоторые рекомендуемые параметры (стиль, место, размер или дату сеанса). С ними мастеру будет гораздо проще оценить время и стоимость работы.
+                {t('leadWizard.warningModalDesc', 'Вы не указали некоторые рекомендуемые параметры (стиль, место, размер или дату сеанса). С ними мастеру будет гораздо проще оценить время и стоимость работы.')}
               </p>
               <div className="flex flex-col sm:flex-row gap-3">
                 <button
@@ -491,14 +636,14 @@ export function LeadWizard({ master, source = 'platform', themeClasses, onSucces
                   onClick={() => setShowWarningModal(false)}
                   className="flex-1 py-4 px-5 bg-white/10 hover:bg-white/20 text-white text-sm font-bold rounded-2xl transition-all text-center cursor-pointer"
                 >
-                  Вернуться и дополнить
+                  {t('leadWizard.warningModalBack', 'Вернуться и дополнить')}
                 </button>
                 <button
                   type="button"
                   onClick={executeSubmit}
                   className="flex-1 py-4 px-5 bg-gradient-to-r from-yellow-500 to-amber-600 hover:from-yellow-400 hover:to-amber-500 text-black font-extrabold text-sm rounded-2xl shadow-lg shadow-yellow-500/20 transition-all text-center cursor-pointer"
                 >
-                  Отправить как есть
+                  {t('leadWizard.warningModalSubmit', 'Отправить как есть')}
                 </button>
               </div>
             </motion.div>
@@ -511,9 +656,9 @@ export function LeadWizard({ master, source = 'platform', themeClasses, onSucces
         <div className="mb-8 sm:mb-10">
           <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-4">
             {[
-              { num: 1, title: 'Идея', subtitle: 'Эскиз и стиль' },
-              { num: 2, title: 'Условия', subtitle: 'Бюджет и дата' },
-              { num: 3, title: 'Контакты', subtitle: 'Личный кабинет' }
+              { num: 1, title: t('leadWizard.step1Title', 'Идея'), subtitle: t('leadWizard.step1Sub', 'Эскиз и стиль') },
+              { num: 2, title: t('leadWizard.step2Title', 'Условия'), subtitle: t('leadWizard.step2Sub', 'Бюджет и дата') },
+              { num: 3, title: t('leadWizard.step3Title', 'Контакты'), subtitle: t('leadWizard.step3Sub', 'Личный кабинет') }
             ].map((st) => {
               const isActive = step === st.num
               const isDone = step > st.num
@@ -523,14 +668,14 @@ export function LeadWizard({ master, source = 'platform', themeClasses, onSucces
                   onClick={() => isDone && setStep(st.num as any)}
                   className={`p-3 sm:p-4 rounded-2xl border transition-all flex items-center gap-3 ${
                     isActive 
-                      ? 'bg-cyan-500/15 border-cyan-500 text-white shadow-[0_0_20px_rgba(6,182,212,0.2)]' 
+                      ? 'bg-accent-500/15 border-accent-500 text-white shadow-[0_0_20px_rgba(6,182,212,0.2)]' 
                       : isDone 
                         ? 'bg-white/5 border-white/10 text-neutral-300 hover:bg-white/10 cursor-pointer' 
                         : 'bg-black/20 border-white/5 text-neutral-500 opacity-60'
                   }`}
                 >
                   <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center font-extrabold text-sm sm:text-base shrink-0 transition-colors ${
-                    isActive ? 'bg-cyan-500 text-black' : isDone ? 'bg-green-500 text-black' : 'bg-neutral-800 text-neutral-400'
+                    isActive ? 'bg-accent-500 text-black' : isDone ? 'bg-green-500 text-black' : 'bg-neutral-800 text-neutral-400'
                   }`}>
                     {isDone ? <Check className="w-5 h-5 stroke-[3]" /> : st.num}
                   </div>
@@ -545,7 +690,7 @@ export function LeadWizard({ master, source = 'platform', themeClasses, onSucces
 
           <div className="w-full bg-black/40 h-2.5 rounded-full overflow-hidden p-0.5 border border-white/10">
             <motion.div
-              className="bg-gradient-to-r from-cyan-500 via-blue-500 to-indigo-500 h-full rounded-full shadow-[0_0_12px_rgba(6,182,212,0.8)]"
+              className="bg-gradient-to-r from-accent-500 via-blue-500 to-primary-500 h-full rounded-full shadow-[0_0_12px_rgba(6,182,212,0.8)]"
               initial={{ width: '33%' }}
               animate={{ width: `${(step / 3) * 100}%` }}
               transition={{ duration: 0.4, ease: 'easeInOut' }}
@@ -565,10 +710,10 @@ export function LeadWizard({ master, source = 'platform', themeClasses, onSucces
             >
               <div>
                 <label className="block text-base sm:text-lg font-bold text-white mb-2">
-                  Опишите вашу идею татуировки <span className="text-red-500">*</span>
+                  {t('leadWizard.ideaLabel', 'Опишите вашу идею татуировки')} <span className="text-red-500">*</span>
                 </label>
                 <p className="text-xs sm:text-sm text-neutral-400 mb-4 leading-relaxed">
-                  Что именно вы хотите набить? Есть ли пожелания по элементам, атмосфере или деталям?
+                  {t('leadWizard.ideaDesc', 'Что именно вы хотите набить? Есть ли пожелания по элементам, атмосфере или деталям?')}
                 </p>
                 <div className="relative">
                   <FileText className="absolute right-4 top-4 w-5 h-5 text-neutral-500 pointer-events-none" />
@@ -576,7 +721,7 @@ export function LeadWizard({ master, source = 'platform', themeClasses, onSucces
                     required
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    placeholder="Например: Хочу реалистичного волка на плече с элементами хвойного леса на заднем плане. Желательно сделать акцент на взгляд..."
+                    placeholder={t('leadWizard.ideaPlaceholder', 'Например: Хочу реалистичного волка на плече с элементами хвойного леса на заднем плане. Желательно сделать акцент на взгляд...')}
                     rows={5}
                     className={`${baseInputClass} pr-12 min-h-[140px] resize-none leading-relaxed text-base`}
                   />
@@ -586,32 +731,32 @@ export function LeadWizard({ master, source = 'platform', themeClasses, onSucces
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <label className="block text-base sm:text-lg font-bold text-white">
-                    Фото-референсы или эскизы <span className="text-neutral-400 font-normal text-sm">(до 10 шт)</span>
+                    {t('leadWizard.referencesLabel', 'Фото-референсы или эскизы')} <span className="text-neutral-400 font-normal text-sm">{t('leadWizard.referencesMax', '(до 10 шт)')}</span>
                   </label>
                   {images.length > 0 && (
-                    <span className="text-xs font-semibold text-cyan-400 bg-cyan-500/10 px-2.5 py-1 rounded-full border border-cyan-500/20">
-                      Загружено: {images.length} / 10
+                    <span className="text-xs font-semibold text-accent-400 bg-accent-500/10 px-2.5 py-1 rounded-full border border-accent-500/20">
+                      {t('leadWizard.uploadedCount', 'Загружено:')} {images.length} / 10
                     </span>
                   )}
                 </div>
                 <p className="text-xs sm:text-sm text-neutral-400 mb-4 leading-relaxed">
-                  Прикрепите примеры работ, стиль или то, что вас вдохновляет. Мастеру будет проще понять вашу задумку.
+                  {t('leadWizard.referencesDesc', 'Прикрепите примеры работ, стиль или то, что вас вдохновляет. Мастеру будет проще понять вашу задумку.')}
                 </p>
 
                 {images.length === 0 ? (
-                  <label className="w-full p-8 sm:p-12 rounded-3xl border-2 border-dashed border-white/20 hover:border-cyan-500/60 bg-gradient-to-b from-white/[0.03] to-transparent hover:from-cyan-500/[0.05] transition-all duration-300 flex flex-col items-center justify-center cursor-pointer group text-center shadow-lg">
-                    <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-3xl bg-gradient-to-tr from-cyan-500/20 via-blue-500/20 to-purple-500/20 border border-white/10 flex items-center justify-center mb-4 group-hover:scale-110 group-hover:border-cyan-500/50 transition-all duration-300 shadow-xl">
+                  <label className="w-full p-8 sm:p-12 rounded-3xl border-2 border-dashed border-white/20 hover:border-accent-500/60 bg-gradient-to-b from-white/[0.03] to-transparent hover:from-accent-500/[0.05] transition-all duration-300 flex flex-col items-center justify-center cursor-pointer group text-center shadow-lg">
+                    <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-3xl bg-gradient-to-tr from-accent-500/20 via-blue-500/20 to-primary-500/20 border border-white/10 flex items-center justify-center mb-4 group-hover:scale-110 group-hover:border-accent-500/50 transition-all duration-300 shadow-xl">
                       {isUploading ? (
-                        <Loader2 className="w-8 h-8 sm:w-10 sm:h-10 text-cyan-400 animate-spin" />
+                        <Loader2 className="w-8 h-8 sm:w-10 sm:h-10 text-accent-400 animate-spin" />
                       ) : (
-                        <Upload className="w-8 h-8 sm:w-10 sm:h-10 text-cyan-400 group-hover:text-cyan-300 transition-colors" />
+                        <Upload className="w-8 h-8 sm:w-10 sm:h-10 text-accent-400 group-hover:text-accent-300 transition-colors" />
                       )}
                     </div>
-                    <span className="text-base sm:text-lg font-extrabold text-white group-hover:text-cyan-300 transition-colors mb-1.5">
-                      Нажмите для выбора или перетащите фото сюда
+                    <span className="text-base sm:text-lg font-extrabold text-white group-hover:text-accent-300 transition-colors mb-1.5">
+                      {t('leadWizard.dragDropText', 'Нажмите для выбора или перетащите фото сюда')}
                     </span>
                     <span className="text-xs sm:text-sm text-neutral-400 max-w-sm leading-relaxed">
-                      Поддерживаются JPG, PNG, WEBP. Мы автоматически оптимизируем размер для быстрой отправки.
+                      {t('leadWizard.supportedFormats', 'Поддерживаются JPG, PNG, WEBP. Мы автоматически оптимизируем размер для быстрой отправки.')}
                     </span>
                     <input
                       type="file"
@@ -632,13 +777,13 @@ export function LeadWizard({ master, source = 'platform', themeClasses, onSucces
                       />
                     ))}
                     {images.length < 10 && (
-                      <label className="aspect-square rounded-2xl border-2 border-dashed border-white/20 hover:border-cyan-500/50 bg-white/[0.02] hover:bg-white/[0.06] transition-all flex flex-col items-center justify-center cursor-pointer text-neutral-400 hover:text-cyan-400 group">
+                      <label className="aspect-square rounded-2xl border-2 border-dashed border-white/20 hover:border-accent-500/50 bg-white/[0.02] hover:bg-white/[0.06] transition-all flex flex-col items-center justify-center cursor-pointer text-neutral-400 hover:text-accent-400 group">
                         {isUploading ? (
-                          <Loader2 className="w-7 h-7 animate-spin mb-1 text-cyan-400" />
+                          <Loader2 className="w-7 h-7 animate-spin mb-1 text-accent-400" />
                         ) : (
                           <>
                             <Upload className="w-7 h-7 mb-1.5 group-hover:scale-110 transition-transform" />
-                            <span className="text-xs font-bold">Добавить ещё</span>
+                            <span className="text-xs font-bold">{t('leadWizard.addMoreBtn', 'Добавить ещё')}</span>
                           </>
                         )}
                         <input
@@ -661,28 +806,28 @@ export function LeadWizard({ master, source = 'platform', themeClasses, onSucces
                   onClick={() => setOpenStep1Details(!openStep1Details)}
                   className={`w-full p-5 sm:p-6 rounded-3xl border transition-all cursor-pointer flex items-center justify-between text-left group ${
                     openStep1Details || styles.length > 0 || bodyPlace || size
-                      ? 'bg-gradient-to-br from-cyan-500/10 via-purple-500/10 to-transparent border-cyan-500/40 shadow-lg'
+                      ? 'bg-gradient-to-br from-accent-500/10 via-primary-500/10 to-transparent border-accent-500/40 shadow-lg'
                       : 'bg-white/[0.03] hover:bg-white/[0.06] border-white/10'
                   }`}
                 >
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-cyan-500/20 to-purple-500/20 border border-white/10 flex items-center justify-center text-2xl shrink-0 group-hover:scale-110 transition-transform">
+                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-accent-500/20 to-primary-500/20 border border-white/10 flex items-center justify-center text-2xl shrink-0 group-hover:scale-110 transition-transform">
                       🎨
                     </div>
                     <div>
-                      <div className="text-base font-bold text-white group-hover:text-cyan-300 transition-colors flex items-center flex-wrap gap-2 mb-1">
-                        Уточнить стиль, место на теле и размер
-                        <span className="bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase tracking-wider">
-                          Рекомендуется
+                      <div className="text-base font-bold text-white group-hover:text-accent-300 transition-colors flex items-center flex-wrap gap-2 mb-1">
+                        {t('leadWizard.step1AccordionTitle', 'Уточнить стиль, место на теле и размер')}
+                        <span className="bg-accent-500/20 text-accent-300 border border-accent-500/30 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+                          {t('leadWizard.recommendedBadge', 'Рекомендуется')}
                         </span>
                       </div>
                       <div className="text-xs sm:text-sm text-neutral-400 leading-normal">
                         {styles.length > 0 || bodyPlace || size ? (
-                          <span className="text-cyan-400 font-semibold flex items-center gap-1.5">
-                            <Check className="w-4 h-4 inline" /> Заполнены детали ({[styles.length > 0 ? 'Стиль' : '', bodyPlace ? 'Место' : '', size ? 'Размер' : ''].filter(Boolean).join(', ')})
+                          <span className="text-accent-400 font-semibold flex items-center gap-1.5">
+                            <Check className="w-4 h-4 inline" /> {t('leadWizard.detailsFilled', 'Заполнены детали')} ({[styles.length > 0 ? t('leadWizard.detailStyle', 'Стиль') : '', bodyPlace ? t('leadWizard.detailPlace', 'Место') : '', size ? t('leadWizard.detailSize', 'Размер') : ''].filter(Boolean).join(', ')})
                           </span>
                         ) : (
-                          'Поможет мастеру сразу назвать точную цену и время сеанса'
+                          t('leadWizard.step1AccordionDesc', 'Поможет мастеру сразу назвать точную цену и время сеанса')
                         )}
                       </div>
                     </div>
@@ -703,7 +848,7 @@ export function LeadWizard({ master, source = 'platform', themeClasses, onSucces
                     >
                       <div>
                         <label className="block text-xs font-extrabold uppercase tracking-widest text-neutral-300 mb-3">
-                          Стиль татуировки
+                          {t('leadWizard.tattooStyleLabel', 'Стиль татуировки')}
                         </label>
                         <div className="flex flex-wrap gap-2 mb-3.5">
                           {TATTOO_STYLES.map(s => {
@@ -717,7 +862,7 @@ export function LeadWizard({ master, source = 'platform', themeClasses, onSucces
                                 }}
                                 className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all border cursor-pointer ${
                                   isSel
-                                    ? 'bg-gradient-to-r from-cyan-500 to-blue-600 border-cyan-400 text-white shadow-lg shadow-cyan-500/25 scale-[1.03]'
+                                    ? 'bg-gradient-to-r from-accent-500 to-blue-600 border-accent-400 text-white shadow-lg shadow-accent-500/25 scale-[1.03]'
                                     : 'bg-black/40 border-white/10 hover:bg-white/10 text-neutral-300 hover:text-white hover:border-white/20'
                                 }`}
                               >
@@ -730,14 +875,14 @@ export function LeadWizard({ master, source = 'platform', themeClasses, onSucces
                           type="text"
                           value={styles.join(', ')}
                           onChange={(e) => setStyles(e.target.value.split(',').map(s => s.trim()).filter(Boolean))}
-                          placeholder="Или введите свой вариант через запятую..."
+                          placeholder={t('leadWizard.stylePlaceholder', 'Или введите свой вариант через запятую...')}
                           className={baseInputClass}
                         />
                       </div>
 
                       <div>
                         <label className="block text-xs font-extrabold uppercase tracking-widest text-neutral-300 mb-3">
-                          Место на теле
+                          {t('leadWizard.bodyPlaceLabel', 'Место на теле')}
                         </label>
                         <div className="flex flex-wrap gap-2 mb-3.5">
                           {BODY_PLACES.map(place => {
@@ -749,7 +894,7 @@ export function LeadWizard({ master, source = 'platform', themeClasses, onSucces
                                 onClick={() => setBodyPlace(place)}
                                 className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all border cursor-pointer ${
                                   isSel
-                                    ? 'bg-gradient-to-r from-cyan-500 to-blue-600 border-cyan-400 text-white shadow-lg shadow-cyan-500/25 scale-[1.03]'
+                                    ? 'bg-gradient-to-r from-accent-500 to-blue-600 border-accent-400 text-white shadow-lg shadow-accent-500/25 scale-[1.03]'
                                     : 'bg-black/40 border-white/10 hover:bg-white/10 text-neutral-300 hover:text-white hover:border-white/20'
                                 }`}
                               >
@@ -764,7 +909,7 @@ export function LeadWizard({ master, source = 'platform', themeClasses, onSucces
                             type="text"
                             value={bodyPlace}
                             onChange={(e) => setBodyPlace(e.target.value)}
-                            placeholder="Уточнение (например: Внутренняя сторона предплечья ближе к запястью)"
+                            placeholder={t('leadWizard.placePlaceholder', 'Уточнение (например: Внутренняя сторона предплечья ближе к запястью)')}
                             className={`${baseInputClass} pl-12`}
                           />
                         </div>
@@ -772,7 +917,7 @@ export function LeadWizard({ master, source = 'platform', themeClasses, onSucces
 
                       <div>
                         <label className="block text-xs font-extrabold uppercase tracking-widest text-neutral-300 mb-3">
-                          Примерный размер
+                          {t('leadWizard.approxSizeLabel', 'Примерный размер')}
                         </label>
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3.5">
                           {TATTOO_SIZES.map(sz => {
@@ -784,7 +929,7 @@ export function LeadWizard({ master, source = 'platform', themeClasses, onSucces
                                 onClick={() => setSize(sz.id)}
                                 className={`p-3.5 rounded-2xl flex flex-col items-center justify-center gap-1.5 transition-all border text-center cursor-pointer ${
                                   isSel
-                                    ? 'bg-gradient-to-br from-cyan-500/20 to-blue-600/20 border-cyan-400 text-white shadow-lg shadow-cyan-500/15 scale-[1.03]'
+                                    ? 'bg-gradient-to-br from-accent-500/20 to-blue-600/20 border-accent-400 text-white shadow-lg shadow-accent-500/15 scale-[1.03]'
                                     : 'bg-black/40 border-white/10 hover:bg-white/10 text-neutral-300 hover:text-white hover:border-white/20'
                                 }`}
                               >
@@ -798,7 +943,7 @@ export function LeadWizard({ master, source = 'platform', themeClasses, onSucces
                           type="text"
                           value={size}
                           onChange={(e) => setSize(e.target.value)}
-                          placeholder="Или укажите точные размеры в сантиметрах (например: 15x10 см)"
+                          placeholder={t('leadWizard.sizePlaceholder', 'Или укажите точные размеры в сантиметрах (например: 15x10 см)')}
                           className={baseInputClass}
                         />
                       </div>
@@ -813,7 +958,7 @@ export function LeadWizard({ master, source = 'platform', themeClasses, onSucces
                   onClick={handleNext}
                   className={baseButtonClass}
                 >
-                  <span>Продолжить ко 2 шагу</span>
+                  <span>{t('leadWizard.continueToStep2', 'Продолжить ко 2 шагу')}</span>
                   <ChevronRight className="w-5 h-5" />
                 </button>
               </div>
@@ -831,16 +976,16 @@ export function LeadWizard({ master, source = 'platform', themeClasses, onSucces
             >
               <div>
                 <label className="block text-base sm:text-lg font-bold text-white mb-2">
-                  Что для вас важнее всего?
+                  {t('leadWizard.priorityQuestion', 'Что для вас важнее всего?')}
                 </label>
                 <p className="text-xs sm:text-sm text-neutral-400 mb-4">
-                  Выберите ключевой приоритет для мастера при планировании сеанса
+                  {t('leadWizard.priorityDesc', 'Выберите ключевой приоритет для мастера при планировании сеанса')}
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   {[
-                    { id: 'fast', icon: '⚡', label: 'В кратчайшие сроки', desc: 'Найти ближайшее окно' },
-                    { id: 'quality', icon: '💎', label: 'Максимальное качество', desc: 'Детальная проработка' },
-                    { id: 'cheap', icon: '💸', label: 'Уложиться в бюджет', desc: 'Оптимизировать цену' }
+                    { id: 'fast', icon: '⚡', label: t('leadWizard.fastestTime', 'В кратчайшие сроки'), desc: t('leadWizard.findNearestSlot', 'Найти ближайшее окно') },
+                    { id: 'quality', icon: '💎', label: t('leadWizard.maxQuality', 'Максимальное качество'), desc: t('leadWizard.detailedWork', 'Детальная проработка') },
+                    { id: 'cheap', icon: '💸', label: t('leadWizard.fitBudget', 'Уложиться в бюджет'), desc: t('leadWizard.optimizePrice', 'Оптимизировать цену') }
                   ].map(p => {
                     const isSel = clientPriority === p.id
                     return (
@@ -850,7 +995,7 @@ export function LeadWizard({ master, source = 'platform', themeClasses, onSucces
                         onClick={() => setClientPriority(p.id as any)}
                         className={`p-5 rounded-3xl border-2 transition-all cursor-pointer flex flex-col items-center text-center gap-2.5 ${
                           isSel
-                            ? 'border-cyan-500 bg-gradient-to-b from-cyan-500/20 to-transparent text-white shadow-[0_0_30px_rgba(6,182,212,0.2)] scale-[1.03]'
+                            ? 'border-accent-500 bg-gradient-to-b from-accent-500/20 to-transparent text-white shadow-[0_0_30px_rgba(6,182,212,0.2)] scale-[1.03]'
                             : 'border-white/10 bg-black/40 hover:bg-white/5 hover:border-white/20 text-neutral-300 hover:text-white'
                         }`}
                       >
@@ -863,9 +1008,62 @@ export function LeadWizard({ master, source = 'platform', themeClasses, onSucces
                 </div>
               </div>
 
+              {/* Choice of Country and City */}
               <div>
                 <label className="block text-base sm:text-lg font-bold text-white mb-3">
-                  Ориентировочный бюджет
+                  {t('leadWizard.locationLabel', 'Локация (Страна и город)')} <span className="text-red-500">*</span>
+                </label>
+                {locationPrefilled && !showLocationSelect ? (
+                  <div className="flex items-center justify-between p-4 bg-black/40 border border-white/10 rounded-2xl">
+                    <div className="flex items-center gap-3 text-neutral-300">
+                      <MapPin className="w-5 h-5 text-accent-400" />
+                      <div>
+                        <p className="font-semibold text-sm">{t('leadWizard.cityFromProfile', 'Ваш город из профиля')}</p>
+                        <p className="text-xs text-neutral-400">{city}</p>
+                      </div>
+                    </div>
+                    <button 
+                      type="button" 
+                      onClick={() => setShowLocationSelect(true)}
+                      className="text-sm font-bold text-accent-400 hover:text-accent-300 transition-colors cursor-pointer"
+                    >
+                      {t('leadWizard.changeLocation', 'Изменить')}
+                    </button>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <select
+                        value={selectedCountry}
+                        onChange={e => setSelectedCountry(e.target.value)}
+                        className={baseInputClass}
+                      >
+                        <option value="" disabled>{t('leadWizard.selectCountry', 'Выберите страну')}</option>
+                        {countries.map(c => (
+                          <option key={c.id} value={c.id} className="bg-neutral-900 text-white">{lang === 'ru' ? c.name_ru : c.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <select
+                        value={city}
+                        onChange={e => setCity(e.target.value)}
+                        className={baseInputClass}
+                        disabled={!selectedCountry}
+                      >
+                        <option value="" disabled>{countries.length === 0 ? t('leadWizard.loading', 'Загрузка...') : t('leadWizard.selectCity', 'Выберите город')}</option>
+                        {cities.map(c => (
+                          <option key={c.id} value={lang === 'ru' ? c.name_ru : c.name} className="bg-neutral-900 text-white">{lang === 'ru' ? c.name_ru : c.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-base sm:text-lg font-bold text-white mb-3">
+                  {t('leadWizard.budgetLabel', 'Ориентировочный бюджет')}
                 </label>
                 
                 <div 
@@ -875,19 +1073,19 @@ export function LeadWizard({ master, source = 'platform', themeClasses, onSucces
                   }}
                   className={`p-4 rounded-2xl border transition-all cursor-pointer flex items-center gap-3.5 mb-4 w-full sm:w-fit ${
                     isNegotiable 
-                      ? 'bg-cyan-500/15 border-cyan-500 text-white shadow-md' 
+                      ? 'bg-accent-500/15 border-accent-500 text-white shadow-md' 
                       : 'bg-black/40 border-white/10 hover:bg-white/5 text-neutral-300'
                   }`}
                 >
                   <div className={`flex items-center justify-center w-6 h-6 rounded-lg border transition-all shrink-0 ${
                     isNegotiable
-                      ? 'bg-cyan-500 border-cyan-500 text-black'
+                      ? 'bg-accent-500 border-accent-500 text-black'
                       : 'bg-black/60 border-neutral-700'
                   }`}>
                     {isNegotiable && <Check className="w-4 h-4 stroke-[3]" />}
                   </div>
                   <span className="text-sm sm:text-base font-bold select-none">
-                    Договорная цена / Обсудить лично с мастером
+                    {t('leadWizard.negotiableOption', 'Договорная цена / Обсудить лично с мастером')}
                   </span>
                 </div>
 
@@ -898,7 +1096,7 @@ export function LeadWizard({ master, source = 'platform', themeClasses, onSucces
                       type="number"
                       value={budgetVal}
                       onChange={(e) => setBudgetVal(e.target.value)}
-                      placeholder="Например: 5000"
+                      placeholder={t('leadWizard.budgetPlaceholder', 'Например: 5000')}
                       className={`${baseInputClass} pl-12 pr-20 text-lg font-bold`}
                     />
                     <div className="absolute right-4 top-1/2 -translate-y-1/2 font-bold text-neutral-400 text-sm bg-neutral-800/80 px-2.5 py-1 rounded-lg">
@@ -914,28 +1112,28 @@ export function LeadWizard({ master, source = 'platform', themeClasses, onSucces
                   onClick={() => setOpenStep2Details(!openStep2Details)}
                   className={`w-full p-5 sm:p-6 rounded-3xl border transition-all cursor-pointer flex items-center justify-between text-left group ${
                     openStep2Details || sessionDate
-                      ? 'bg-gradient-to-br from-cyan-500/10 via-blue-500/10 to-transparent border-cyan-500/40 shadow-lg'
+                      ? 'bg-gradient-to-br from-accent-500/10 via-blue-500/10 to-transparent border-accent-500/40 shadow-lg'
                       : 'bg-white/[0.03] hover:bg-white/[0.06] border-white/10'
                   }`}
                 >
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-cyan-500/20 to-blue-500/20 border border-white/10 flex items-center justify-center text-2xl shrink-0 group-hover:scale-110 transition-transform">
+                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-accent-500/20 to-blue-500/20 border border-white/10 flex items-center justify-center text-2xl shrink-0 group-hover:scale-110 transition-transform">
                       📅
                     </div>
                     <div>
-                      <div className="text-base font-bold text-white group-hover:text-cyan-300 transition-colors flex items-center flex-wrap gap-2 mb-1">
-                        Выбрать желаемую дату и время сеанса
+                      <div className="text-base font-bold text-white group-hover:text-accent-300 transition-colors flex items-center flex-wrap gap-2 mb-1">
+                        {t('leadWizard.step2AccordionTitle', 'Выбрать желаемую дату и время сеанса')}
                         <span className="bg-neutral-800 text-neutral-400 border border-neutral-700 text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wide">
-                          Необязательно
+                          {t('leadWizard.optionalBadge', 'Необязательно')}
                         </span>
                       </div>
                       <div className="text-xs sm:text-sm text-neutral-400 leading-normal">
                         {sessionDate ? (
-                          <span className="text-cyan-400 font-semibold flex items-center gap-1.5">
-                            <Check className="w-4 h-4 inline" /> Выбрано: {format(sessionDate, 'dd MMMM yyyy', { locale: ru })} {sessionTime ? `в ${sessionTime}` : ''}
+                          <span className="text-accent-400 font-semibold flex items-center gap-1.5">
+                            <Check className="w-4 h-4 inline" /> {t('leadWizard.selectedDatePrefix', 'Выбрано:')} {format(sessionDate, 'dd MMMM yyyy', { locale: dateLocale })} {sessionTime ? `${t('leadWizard.atTime', 'в')} ${sessionTime}` : ''}
                           </span>
                         ) : (
-                          'Если у вас есть конкретные пожелания по датам или расписанию'
+                          t('leadWizard.step2AccordionDesc', 'Если у вас есть конкретные пожелания по датам или расписанию')
                         )}
                       </div>
                     </div>
@@ -956,7 +1154,7 @@ export function LeadWizard({ master, source = 'platform', themeClasses, onSucces
                     >
                       <div>
                         <label className="block text-xs font-extrabold uppercase tracking-widest text-neutral-300 mb-3">
-                          Календарь свободных дней
+                          {t('leadWizard.calendarLabel', 'Календарь свободных дней')}
                         </label>
                         <div className="bg-black/50 p-6 rounded-3xl border border-white/10 flex justify-center overflow-x-auto shadow-inner">
                           <style>{`
@@ -981,7 +1179,7 @@ export function LeadWizard({ master, source = 'platform', themeClasses, onSucces
                             selected={sessionDate}
                             onSelect={setSessionDate}
                             disabled={[{ before: new Date() }, ...unavailableDates]}
-                            locale={ru}
+                            locale={dateLocale}
                           />
                         </div>
                       </div>
@@ -989,7 +1187,7 @@ export function LeadWizard({ master, source = 'platform', themeClasses, onSucces
                       {sessionDate && (
                         <div>
                           <label className="block text-xs font-extrabold uppercase tracking-widest text-neutral-300 mb-3">
-                            Желаемое время начала сеанса <span className="text-neutral-500 font-normal">(Необязательно)</span>
+                            {t('leadWizard.timeLabel', 'Желаемое время начала сеанса')} <span className="text-neutral-500 font-normal">{t('leadWizard.optionalBadgeText', '(Необязательно)')}</span>
                           </label>
                           <div className="relative max-w-xs">
                             <Clock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500" />
@@ -1014,14 +1212,14 @@ export function LeadWizard({ master, source = 'platform', themeClasses, onSucces
                   className="w-full sm:w-auto px-6 py-4 bg-white/5 hover:bg-white/10 text-neutral-300 font-bold rounded-2xl transition-all text-base flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <ArrowLeft className="w-5 h-5" />
-                  Назад к 1 шагу
+                  {t('leadWizard.backToStep1', 'Назад к 1 шагу')}
                 </button>
                 <button
                   type="button"
                   onClick={handleNext}
                   className={baseButtonClass}
                 >
-                  <span>Продолжить к 3 шагу</span>
+                  <span>{t('leadWizard.continueToStep3', 'Продолжить к 3 шагу')}</span>
                   <ChevronRight className="w-5 h-5" />
                 </button>
               </div>
@@ -1037,20 +1235,20 @@ export function LeadWizard({ master, source = 'platform', themeClasses, onSucces
               exit={{ opacity: 0, x: 15 }}
               className="space-y-8"
             >
-              <div className="bg-gradient-to-r from-cyan-500/15 via-blue-500/15 to-indigo-500/15 border border-cyan-500/40 rounded-3xl p-5 sm:p-6 flex items-start gap-4 shadow-xl">
-                <div className="p-3 bg-cyan-500/20 text-cyan-300 rounded-2xl shrink-0 mt-0.5 shadow-inner">
+              <div className="bg-gradient-to-r from-accent-500/15 via-blue-500/15 to-primary-500/15 border border-accent-500/40 rounded-3xl p-5 sm:p-6 flex items-start gap-4 shadow-xl">
+                <div className="p-3 bg-accent-500/20 text-accent-300 rounded-2xl shrink-0 mt-0.5 shadow-inner">
                   <Sparkles className="w-6 h-6" />
                 </div>
                 <div className="text-xs sm:text-sm text-neutral-300 leading-relaxed">
-                  <strong className="text-white text-base font-extrabold block mb-1">Мгновенный доступ без паролей</strong>
-                  Мы создадим для вас безопасный личный кабинет по вашему Email. Входить в него можно будет в один клик по ссылке из письма или прямо с экрана завершения заявки!
+                  <strong className="text-white text-base font-extrabold block mb-1">{t('leadWizard.instantAccessTitle', 'Мгновенный доступ без паролей')}</strong>
+                  {t('leadWizard.instantAccessDesc', 'Мы создадим для вас безопасный личный кабинет по вашему Email. Входить в него можно будет в один клик по ссылке из письма или прямо с экрана завершения заявки!')}
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-base font-bold text-white mb-2">
-                    Ваше имя <span className="text-red-500">*</span>
+                    {t('leadWizard.yourNameLabel', 'Ваше имя')} <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
                     <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500" />
@@ -1059,7 +1257,7 @@ export function LeadWizard({ master, source = 'platform', themeClasses, onSucces
                       required
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      placeholder="Иван"
+                      placeholder={t('leadWizard.namePlaceholder', 'Иван')}
                       className={`${baseInputClass} pl-12 text-base font-medium`}
                     />
                   </div>
@@ -1067,7 +1265,7 @@ export function LeadWizard({ master, source = 'platform', themeClasses, onSucces
 
                 <div>
                   <label className="block text-base font-bold text-white mb-2">
-                    Email для входа в кабинет <span className="text-red-500">*</span>
+                    {t('leadWizard.emailLabel', 'Email для входа в кабинет')} <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
                     <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500" />
@@ -1089,28 +1287,28 @@ export function LeadWizard({ master, source = 'platform', themeClasses, onSucces
                   onClick={() => setOpenStep3Details(!openStep3Details)}
                   className={`w-full p-5 sm:p-6 rounded-3xl border transition-all cursor-pointer flex items-center justify-between text-left group ${
                     openStep3Details || contact || instagram
-                      ? 'bg-gradient-to-br from-cyan-500/10 via-purple-500/10 to-transparent border-cyan-500/40 shadow-lg'
+                      ? 'bg-gradient-to-br from-accent-500/10 via-primary-500/10 to-transparent border-accent-500/40 shadow-lg'
                       : 'bg-white/[0.03] hover:bg-white/[0.06] border-white/10'
                   }`}
                 >
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-cyan-500/20 to-purple-500/20 border border-white/10 flex items-center justify-center text-2xl shrink-0 group-hover:scale-110 transition-transform">
+                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-accent-500/20 to-primary-500/20 border border-white/10 flex items-center justify-center text-2xl shrink-0 group-hover:scale-110 transition-transform">
                       📱
                     </div>
                     <div>
-                      <div className="text-base font-bold text-white group-hover:text-cyan-300 transition-colors flex items-center flex-wrap gap-2 mb-1">
-                        Добавить Telegram, Instagram или телефон
+                      <div className="text-base font-bold text-white group-hover:text-accent-300 transition-colors flex items-center flex-wrap gap-2 mb-1">
+                        {t('leadWizard.step3AccordionTitle', 'Добавить Telegram, Instagram или телефон')}
                         <span className="bg-neutral-800 text-neutral-400 border border-neutral-700 text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wide">
-                          Необязательно
+                          {t('leadWizard.optionalBadge', 'Необязательно')}
                         </span>
                       </div>
                       <div className="text-xs sm:text-sm text-neutral-400 leading-normal">
                         {contact || instagram ? (
-                          <span className="text-cyan-400 font-semibold flex items-center gap-1.5">
-                            <Check className="w-4 h-4 inline" /> Указаны доп. контакты ({[contact ? 'Телеграм/Телефон' : '', instagram ? 'Instagram' : ''].filter(Boolean).join(', ')})
+                          <span className="text-accent-400 font-semibold flex items-center gap-1.5">
+                            <Check className="w-4 h-4 inline" /> {t('leadWizard.addedContacts', 'Указаны доп. контакты')} ({[contact ? t('leadWizard.contactPhone', 'Телеграм/Телефон') : '', instagram ? 'Instagram' : ''].filter(Boolean).join(', ')})
                           </span>
                         ) : (
-                          'Если вам удобнее обсуждать детали эскиза в мессенджерах'
+                          t('leadWizard.step3AccordionDesc', 'Если вам удобнее обсуждать детали эскиза в мессенджерах')
                         )}
                       </div>
                     </div>
@@ -1132,7 +1330,7 @@ export function LeadWizard({ master, source = 'platform', themeClasses, onSucces
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                         <div>
                           <label className="block text-xs font-extrabold uppercase tracking-widest text-neutral-300 mb-2.5">
-                            Телефон или Telegram
+                            {t('leadWizard.phoneOrTelegramLabel', 'Телефон или Telegram')}
                           </label>
                           <div className="relative">
                             <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500" />
@@ -1140,7 +1338,7 @@ export function LeadWizard({ master, source = 'platform', themeClasses, onSucces
                               type="text"
                               value={contact}
                               onChange={(e) => setContact(e.target.value)}
-                              placeholder="+420... или @username"
+                              placeholder={t('leadWizard.phonePlaceholder', '+420... или @username')}
                               className={`${baseInputClass} pl-12 text-base font-medium`}
                             />
                           </div>
@@ -1148,7 +1346,7 @@ export function LeadWizard({ master, source = 'platform', themeClasses, onSucces
 
                         <div>
                           <label className="block text-xs font-extrabold uppercase tracking-widest text-neutral-300 mb-2.5">
-                            Instagram профиль
+                            {t('leadWizard.instagramLabel', 'Instagram профиль')}
                           </label>
                           <div className="relative">
                             <AtSign className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500" />
@@ -1174,22 +1372,22 @@ export function LeadWizard({ master, source = 'platform', themeClasses, onSucces
                   className="w-full sm:w-auto px-6 py-4 bg-white/5 hover:bg-white/10 text-neutral-300 font-bold rounded-2xl transition-all text-base flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <ArrowLeft className="w-5 h-5" />
-                  Назад ко 2 шагу
+                  {t('leadWizard.backToStep2', 'Назад ко 2 шагу')}
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting || isUploading}
-                  className={`${baseButtonClass} shadow-cyan-500/30 hover:shadow-cyan-500/50`}
+                  className={`${baseButtonClass} shadow-accent-500/30 hover:shadow-accent-500/50`}
                 >
                   {isSubmitting ? (
                     <>
                       <Loader2 className="w-6 h-6 animate-spin" />
-                      <span>Отправка заявки...</span>
+                      <span>{t('leadWizard.submittingBtn', 'Отправка заявки...')}</span>
                     </>
                   ) : (
                     <>
                       <Send className="w-5 h-5" />
-                      <span>Отправить заявку мастеру 🚀</span>
+                      <span>{t('leadWizard.submitBtn', 'Отправить заявку мастеру 🚀')}</span>
                     </>
                   )}
                 </button>

@@ -175,6 +175,7 @@ export function NotificationsMenu() {
     <div className="relative" ref={menuRef}>
       <button 
         onClick={() => setIsOpen(!isOpen)}
+        aria-label="Уведомления"
         className="p-2 relative rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
       >
         <Bell className="w-5 h-5" />
@@ -192,6 +193,7 @@ export function NotificationsMenu() {
               <div className="flex items-center gap-2">
                 <button 
                   onClick={() => setActiveTab('active')}
+                  aria-label="Назад к активным уведомлениям"
                   className="p-1 -ml-1 text-neutral-500 hover:text-neutral-900 dark:hover:text-white transition-colors"
                 >
                   <ArrowLeft className="w-4 h-4" />
@@ -204,7 +206,7 @@ export function NotificationsMenu() {
               {activeTab === 'active' && unreadCount > 0 && (
                 <button 
                   onClick={markAllAsRead}
-                  className="text-xs font-medium text-cyan-600 dark:text-cyan-400 hover:text-cyan-700 transition-colors flex items-center gap-1"
+                  className="text-xs font-medium text-accent-600 dark:text-accent-400 hover:text-accent-700 transition-colors flex items-center gap-1"
                 >
                   <Check className="w-3 h-3" /> Прочитать все
                 </button>
@@ -220,6 +222,7 @@ export function NotificationsMenu() {
               {activeTab === 'active' && (
                 <button 
                   onClick={() => setActiveTab('archived')}
+                  aria-label="Перейти в архив"
                   className="p-1 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
                   title="Перейти в архив"
                 >
@@ -249,7 +252,7 @@ export function NotificationsMenu() {
                 <div 
                   key={n.id} 
                   onClick={() => activeTab === 'active' && !n.is_read && markAsRead(n.id)}
-                  className={`group relative p-4 border-b border-neutral-100 dark:border-neutral-800/50 transition-colors flex gap-3 ${activeTab === 'active' ? 'hover:bg-neutral-50 dark:hover:bg-neutral-800/50 cursor-pointer' : ''} ${!n.is_read && activeTab === 'active' ? 'bg-cyan-50/50 dark:bg-cyan-900/10' : ''}`}
+                  className={`group relative p-4 border-b border-neutral-100 dark:border-neutral-800/50 transition-colors flex gap-3 ${activeTab === 'active' ? 'hover:bg-neutral-50 dark:hover:bg-neutral-800/50 cursor-pointer' : ''} ${!n.is_read && activeTab === 'active' ? 'bg-accent-50/50 dark:bg-accent-900/10' : ''}`}
                 >
                   <div className={`mt-0.5 w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${!n.is_read && activeTab === 'active' ? 'bg-white dark:bg-neutral-800 shadow-sm' : 'bg-neutral-100 dark:bg-neutral-800/50'}`}>
                     {getIcon(n.type)}
@@ -266,11 +269,12 @@ export function NotificationsMenu() {
                     </span>
                   </div>
                   {!n.is_read && activeTab === 'active' && (
-                    <div className="w-2 h-2 rounded-full bg-cyan-500 mt-1.5 ml-auto shrink-0"></div>
+                    <div className="w-2 h-2 rounded-full bg-accent-500 mt-1.5 ml-auto shrink-0"></div>
                   )}
                   {activeTab === 'active' && n.is_read && (
                     <button 
                       onClick={(e) => archiveNotification(e, n.id)}
+                      aria-label="В архив"
                       className="absolute top-4 right-4 p-1.5 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
                       title="В архив"
                     >
@@ -283,14 +287,14 @@ export function NotificationsMenu() {
           </div>
           
           {!pushEnabled && !pushDenied && !hideBanner && activeTab === 'active' && (
-            <div className="p-3 bg-violet-50 dark:bg-violet-900/20 border-t border-violet-100 dark:border-violet-900/30 flex items-center justify-between">
+            <div className="p-3 bg-primary-50 dark:bg-primary-900/20 border-t border-primary-100 dark:border-primary-900/30 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <BellRing className="w-4 h-4 text-violet-600 dark:text-violet-400" />
-                <span className="text-xs font-medium text-violet-700 dark:text-violet-300">Включить пуш-уведомления?</span>
+                <BellRing className="w-4 h-4 text-primary-600 dark:text-primary-400" />
+                <span className="text-xs font-medium text-primary-700 dark:text-primary-300">Включить пуш-уведомления?</span>
               </div>
               <button 
                 onClick={requestPushPermission}
-                className="text-xs font-bold px-3 py-1.5 bg-violet-600 hover:bg-violet-700 text-white rounded-lg transition-colors shadow-sm"
+                className="text-xs font-bold px-3 py-1.5 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors shadow-sm"
               >
                 Включить
               </button>

@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import { X, Download, Printer } from 'lucide-react'
 
 interface ImageViewerModalProps {
@@ -89,11 +90,11 @@ export function ImageViewerModal({ isOpen, imageUrl, onClose, showActions = fals
             <X className="w-6 h-6" />
           </button>
         </div>
-        <img 
-          src={imageUrl} 
+        <Image 
+          src={imageUrl || ''} 
           alt="Full screen view" 
           className="max-w-full max-h-full object-contain rounded-xl shadow-2xl" 
-        />
+         width={800} height={800} />
       </div>
     </div>
   )

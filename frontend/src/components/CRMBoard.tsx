@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import { useState, useEffect, useRef, useMemo } from 'react'
 import { createPortal } from 'react-dom'
 import { motion, AnimatePresence, useMotionValue } from 'framer-motion'
@@ -15,6 +16,8 @@ import { LeadAcceptWizardModal } from '@/components/LeadAcceptWizardModal'
 import { KanbanColumnEditor } from '@/components/KanbanColumnEditor'
 import { LeadDetailsModal } from '@/components/LeadDetailsModal'
 import { ImageViewerModal } from '@/components/ImageViewerModal'
+import { SkeletonKanban, SkeletonTable } from '@/components/SkeletonCard'
+import { useLanguage } from '@/i18n/LanguageContext'
 
 export interface CRMSession {
   id: string
@@ -59,6 +62,15 @@ export interface KanbanColumn {
   color: string
 }
 
+// NOTE: `title` here intentionally stays in Russian and is NOT read directly
+// by the UI. It is only used as an internal "factory default" signature: at
+// render time, getColumnTitle() compares a column's title against this array
+// to decide whether to show it translated (t('crmBoard.columns.<id>')) or, if
+// the master has renamed the column via the column editor, the custom title
+// exactly as saved on the backend (kanban_columns on the profile). This keeps
+// the persisted `id`/`title` values fully backend-compatible while still
+// letting the board render localized labels for anyone who hasn't customized
+// their columns.
 const DEFAULT_COLUMNS: KanbanColumn[] = [
   { id: 'new', title: 'Новые', iconName: 'UserPlus', color: 'emerald' },
   { id: 'discussing', title: 'В диалоге', iconName: 'MessageCircle', color: 'violet' },
@@ -70,23 +82,57 @@ const DEFAULT_COLUMNS: KanbanColumn[] = [
 
 const COLOR_STYLES: Record<string, { bg: string, border: string, leftBorder: string, ring: string, checkboxBg: string, checkboxHover: string, cardBg: string }> = {
   emerald: { bg: 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border-emerald-200', border: 'border-emerald-500/50', leftBorder: 'border-l-emerald-500', ring: 'ring-emerald-500', checkboxBg: 'bg-emerald-500', checkboxHover: 'hover:border-emerald-400', cardBg: 'bg-emerald-50/50 dark:bg-emerald-900/10' },
-  violet: { bg: 'bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-400 border-violet-200', border: 'border-violet-500/50', leftBorder: 'border-l-violet-500', ring: 'ring-violet-500', checkboxBg: 'bg-violet-500', checkboxHover: 'hover:border-violet-400', cardBg: 'bg-violet-50/50 dark:bg-violet-900/10' },
+  violet: { bg: 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400 border-primary-200', border: 'border-primary-500/50', leftBorder: 'border-l-primary-500', ring: 'ring-primary-500', checkboxBg: 'bg-primary-500', checkboxHover: 'hover:border-primary-400', cardBg: 'bg-primary-50/50 dark:bg-primary-900/10' },
   blue: { bg: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border-blue-200', border: 'border-blue-500/50', leftBorder: 'border-l-blue-500', ring: 'ring-blue-500', checkboxBg: 'bg-blue-500', checkboxHover: 'hover:border-blue-400', cardBg: 'bg-blue-50/50 dark:bg-blue-900/10' },
   yellow: { bg: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 border-yellow-200', border: 'border-yellow-500/50', leftBorder: 'border-l-yellow-500', ring: 'ring-yellow-500', checkboxBg: 'bg-yellow-500', checkboxHover: 'hover:border-yellow-400', cardBg: 'bg-yellow-50/50 dark:bg-yellow-900/10' },
   green: { bg: 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-green-200', border: 'border-green-500/50', leftBorder: 'border-l-green-500', ring: 'ring-green-500', checkboxBg: 'bg-green-500', checkboxHover: 'hover:border-green-400', cardBg: 'bg-green-50/50 dark:bg-green-900/10' },
   red: { bg: 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border-red-200', border: 'border-red-500/50', leftBorder: 'border-l-red-500', ring: 'ring-red-500', checkboxBg: 'bg-red-500', checkboxHover: 'hover:border-red-400', cardBg: 'bg-red-50/50 dark:bg-red-900/10' },
   pink: { bg: 'bg-pink-100 dark:bg-pink-900/30 text-pink-700 dark:text-pink-400 border-pink-200', border: 'border-pink-500/50', leftBorder: 'border-l-pink-500', ring: 'ring-pink-500', checkboxBg: 'bg-pink-500', checkboxHover: 'hover:border-pink-400', cardBg: 'bg-pink-50/50 dark:bg-pink-900/10' },
   orange: { bg: 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 border-orange-200', border: 'border-orange-500/50', leftBorder: 'border-l-orange-500', ring: 'ring-orange-500', checkboxBg: 'bg-orange-500', checkboxHover: 'hover:border-orange-400', cardBg: 'bg-orange-50/50 dark:bg-orange-900/10' },
-  cyan: { bg: 'bg-cyan-100 dark:bg-cyan-900/30 text-cyan-700 dark:text-cyan-400 border-cyan-200', border: 'border-cyan-500/50', leftBorder: 'border-l-cyan-500', ring: 'ring-cyan-500', checkboxBg: 'bg-cyan-500', checkboxHover: 'hover:border-cyan-400', cardBg: 'bg-cyan-50/50 dark:bg-cyan-900/10' },
+  cyan: { bg: 'bg-accent-100 dark:bg-accent-900/30 text-accent-700 dark:text-accent-400 border-accent-200', border: 'border-accent-500/50', leftBorder: 'border-l-accent-500', ring: 'ring-accent-500', checkboxBg: 'bg-accent-500', checkboxHover: 'hover:border-accent-400', cardBg: 'bg-accent-50/50 dark:bg-accent-900/10' },
   slate: { bg: 'bg-slate-100 dark:bg-slate-900/30 text-slate-700 dark:text-slate-400 border-slate-200', border: 'border-slate-500/50', leftBorder: 'border-l-slate-500', ring: 'ring-slate-500', checkboxBg: 'bg-slate-500', checkboxHover: 'hover:border-slate-400', cardBg: 'bg-slate-50/50 dark:bg-slate-900/10' },
 }
 
+const DATE_LOCALES: Record<string, string> = { ru: 'ru-RU', en: 'en-US', cs: 'cs-CZ', uk: 'uk-UA' }
+
 export function CRMBoard() {
+  const { t, lang } = useLanguage()
+  const dateLocale = DATE_LOCALES[lang] || 'en-US'
+
+  // Lightweight helper to interpolate simple {token} placeholders into
+  // translated strings, since the shared t() function only does key lookup.
+  const tc = (key: string, replacements: Record<string, string | number>) => {
+    let result = t(key)
+    Object.entries(replacements).forEach(([k, v]) => {
+      result = result.replace(`{${k}}`, String(v))
+    })
+    return result
+  }
+
+  // Default (non-customized) columns keep their canonical Russian title from
+  // DEFAULT_COLUMNS as a signature. If a column's title still matches that
+  // signature we show the translated label; custom titles set by the master
+  // via the column editor are always shown verbatim.
+  const getColumnTitle = (col: KanbanColumn) => {
+    const defaultCol = DEFAULT_COLUMNS.find(d => d.id === col.id)
+    if (defaultCol && defaultCol.title === col.title) {
+      return t(`crmBoard.columns.${col.id}`)
+    }
+    return col.title
+  }
+
   const [sessions, setSessions] = useState<CRMSession[]>([])
   const [loading, setLoading] = useState(true)
   
   const [mainTab, setMainTab] = useState<'sessions' | 'clients'>('sessions')
-  const [sessionView, setSessionView] = useState<'kanban' | 'list' | 'calendar'>('kanban')
+  // Default to list view on mobile (< md breakpoint): the Kanban board's wide
+  // multi-column layout and native HTML5 drag-and-drop are unusable on
+  // touchscreens. Desktop keeps the previous 'kanban' default. Users can still
+  // manually switch to Kanban on mobile via the view switcher.
+  const [sessionView, setSessionView] = useState<'kanban' | 'list' | 'calendar'>(() => {
+    if (typeof window !== 'undefined' && window.innerWidth < 768) return 'list'
+    return 'kanban'
+  })
   const [draggingGroupId, setDraggingGroupId] = useState<string | null>(null)
   
   // Custom drag ghost position tracking
@@ -186,7 +232,7 @@ export function CRMBoard() {
         })
         if (!sessionsResponse.ok) {
           console.error('Failed to load CRM sessions', sessionsResponse.status)
-          toast.error('Не удалось загрузить сеансы. Остальные данные CRM остаются доступны.')
+          toast.error(t('crmBoard.loadSessionsError'))
           sessionsData = []
         } else {
           sessionsData = await sessionsResponse.json()
@@ -219,8 +265,8 @@ export function CRMBoard() {
                 reference_images: lead.image_urls || [],
                 master_clients: {
                   id: lead.id,
-                  name: lead.title || 'Новая заявка',
-                  phone: lead.contacts || 'Скрыто',
+                  name: lead.title || t('crmBoard.newLeadFallbackName'),
+                  phone: lead.contacts || t('crmBoard.hiddenContact'),
                   notes: lead.description,
                   is_lead: true,
                   lead_id: lead.id,
@@ -280,10 +326,10 @@ export function CRMBoard() {
       if (newStatus === 'completed') {
         setSessionToComplete(sessionId)
       } else {
-        toast.success('Статус обновлен')
+        toast.success(t('crmBoard.statusUpdated'))
       }
     } catch (err) {
-      toast.error('Ошибка обновления статуса')
+      toast.error(t('crmBoard.statusUpdateError'))
     }
   }
 
@@ -297,7 +343,7 @@ export function CRMBoard() {
       dragGhostY.set(e.clientY)
       
       // Hide the default browser drag image
-      const emptyImage = new Image()
+      const emptyImage = new window.Image()
       emptyImage.src = 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs='
       e.dataTransfer.setDragImage(emptyImage, 0, 0)
     } else {
@@ -310,6 +356,25 @@ export function CRMBoard() {
     if (scrollContainerRef.current && direction !== 'none') {
       const scrollAmount = direction === 'right' ? 10 : -10
       scrollContainerRef.current.scrollLeft += scrollAmount
+    }
+  }
+
+  // Shared status-change logic used both by drag-and-drop (handleDrop) and by
+  // the click-based "move to status" menu shown on touch devices, where native
+  // HTML5 drag-and-drop does not work.
+  const moveSessionToStatus = (item: CRMSession, colId: string) => {
+    if (item.status === colId) return
+    if (item.status === 'new' && colId !== 'cancelled' && colId !== 'rejected') {
+      setSessionDetails(item)
+    } else if (colId === 'cancelled' || colId === 'rejected') {
+      const reason = window.prompt(t('crmBoard.cancelReasonPrompt'))
+      if (!reason || !reason.trim()) {
+        toast.error(t('crmBoard.reasonRequired'))
+        return
+      }
+      updateSessionStatus(item.id, colId, reason.trim())
+    } else {
+      updateSessionStatus(item.id, colId)
     }
   }
 
@@ -327,19 +392,11 @@ export function CRMBoard() {
     sessionIds.forEach(sessionId => {
       const item = sessions.find(i => i.id === sessionId)
       if (item && item.status !== colId) {
-        if (item.status === 'new' && colId !== 'cancelled' && colId !== 'rejected') {
-          // If moving multiple new leads, we can only safely accept one via modal right now
-          if (sessionIds.length === 1) setSessionDetails(item)
-        } else if (colId === 'cancelled' || colId === 'rejected') {
-          const reason = window.prompt('Укажите причину отмены/отказа (обязательно):')
-          if (!reason || !reason.trim()) {
-            toast.error('Необходимо указать причину')
-            return
-          }
-          updateSessionStatus(sessionId, colId, reason.trim())
-        } else {
-          updateSessionStatus(sessionId, colId)
+        // If moving multiple new leads, we can only safely accept one via modal right now
+        if (item.status === 'new' && colId !== 'cancelled' && colId !== 'rejected' && sessionIds.length > 1) {
+          return
         }
+        moveSessionToStatus(item, colId)
       }
     })
     setSelectedKanbanIds(new Set())
@@ -368,20 +425,20 @@ export function CRMBoard() {
       if (res.ok) {
         setColumns(newCols)
         setIsEditingColumns(false)
-        toast.success('Настройки колонок сохранены')
+        toast.success(t('crmBoard.columnsSaved'))
       } else {
         throw new Error('Failed to save columns')
       }
     } catch (err) {
-      toast.error('Ошибка при сохранении колонок')
+      toast.error(t('crmBoard.columnsSaveError'))
     }
   }
 
   if (loading) {
-    return (
-      <div className="flex justify-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-violet-500"></div>
-      </div>
+    return sessionView === 'kanban' && mainTab === 'sessions' ? (
+      <SkeletonKanban columns={3} />
+    ) : (
+      <SkeletonTable rows={5} />
     )
   }
 
@@ -391,15 +448,15 @@ export function CRMBoard() {
       <div className="flex gap-4 mb-6 border-b border-neutral-200 dark:border-neutral-800 pb-2">
         <button
           onClick={() => setMainTab('sessions')}
-          className={`text-lg font-bold pb-2 border-b-2 transition-all ${mainTab === 'sessions' ? 'border-violet-500 text-violet-600 dark:text-violet-400' : 'border-transparent text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'}`}
+          className={`text-lg font-bold pb-2 border-b-2 transition-all ${mainTab === 'sessions' ? 'border-primary-500 text-primary-600 dark:text-primary-400' : 'border-transparent text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'}`}
         >
-          Сеансы
+          {t('crmBoard.tabSessions')}
         </button>
         <button
           onClick={() => setMainTab('clients')}
-          className={`text-lg font-bold pb-2 border-b-2 transition-all ${mainTab === 'clients' ? 'border-violet-500 text-violet-600 dark:text-violet-400' : 'border-transparent text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'}`}
+          className={`text-lg font-bold pb-2 border-b-2 transition-all ${mainTab === 'clients' ? 'border-primary-500 text-primary-600 dark:text-primary-400' : 'border-transparent text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'}`}
         >
-          База клиентов
+          {t('crmBoard.tabClients')}
         </button>
       </div>
 
@@ -413,21 +470,21 @@ export function CRMBoard() {
                   className={`px-4 py-2 text-sm font-bold rounded-lg transition-all flex items-center gap-2 ${sessionView === 'kanban' ? 'bg-white dark:bg-neutral-900 shadow-sm text-neutral-900 dark:text-white' : 'text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'}`}
                 >
                   <LayoutGrid className="w-4 h-4"/>
-                  Канбан
+                  {t('crmBoard.viewKanban')}
                 </button>
                 <button 
                   onClick={() => setSessionView('list')}
                   className={`px-4 py-2 text-sm font-bold rounded-lg transition-all flex items-center gap-2 ${sessionView === 'list' ? 'bg-white dark:bg-neutral-900 shadow-sm text-neutral-900 dark:text-white' : 'text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'}`}
                 >
                   <Users className="w-4 h-4"/>
-                  Список
+                  {t('crmBoard.viewList')}
                 </button>
                 <button 
                   onClick={() => setSessionView('calendar')}
                   className={`px-4 py-2 text-sm font-bold rounded-lg transition-all flex items-center gap-2 ${sessionView === 'calendar' ? 'bg-white dark:bg-neutral-900 shadow-sm text-neutral-900 dark:text-white' : 'text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'}`}
                 >
                   <CalendarDays className="w-4 h-4"/>
-                  Календарь
+                  {t('crmBoard.viewCalendar')}
                 </button>
               </div>
               
@@ -436,10 +493,10 @@ export function CRMBoard() {
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
                   <input 
                     type="text" 
-                    placeholder="Поиск сеансов..." 
+                    placeholder={t('crmBoard.searchPlaceholder')} 
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl pl-9 pr-4 py-2 text-sm focus:ring-2 focus:ring-violet-500/20 outline-none w-64 transition-all"
+                    className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl pl-9 pr-4 py-2 text-sm focus:ring-2 focus:ring-primary-500/20 outline-none w-64 transition-all"
                   />
                 </div>
               )}
@@ -447,12 +504,12 @@ export function CRMBoard() {
                 <select 
                   value={dateFilter}
                   onChange={(e) => setDateFilter(e.target.value as any)}
-                  className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-violet-500/20 outline-none font-medium"
+                  className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-primary-500/20 outline-none font-medium"
                 >
-                  <option value="today">Сегодня</option>
-                  <option value="this_week">Эта неделя</option>
-                  <option value="this_month">Этот месяц</option>
-                  <option value="all">Все время</option>
+                  <option value="today">{t('crmBoard.filterToday')}</option>
+                  <option value="this_week">{t('crmBoard.filterThisWeek')}</option>
+                  <option value="this_month">{t('crmBoard.filterThisMonth')}</option>
+                  <option value="all">{t('crmBoard.filterAllTime')}</option>
                 </select>
               )}
 
@@ -462,7 +519,7 @@ export function CRMBoard() {
                   className="px-3 py-1.5 text-xs font-bold text-neutral-500 bg-neutral-200/50 hover:bg-neutral-200 dark:bg-neutral-800/50 dark:hover:bg-neutral-800 rounded-lg transition-colors flex items-center gap-1.5"
                 >
                   <Settings2 className="w-4 h-4" />
-                  Настроить колонки
+                  {t('crmBoard.configureColumns')}
                 </button>
               )}
             </>
@@ -473,10 +530,10 @@ export function CRMBoard() {
           <div className="flex items-center gap-3">
             <button
               onClick={() => setIsSessionModalOpen(true)}
-              className="flex items-center gap-2 px-5 py-2.5 bg-violet-600 hover:bg-violet-700 text-white rounded-xl font-bold shadow-md hover:shadow-lg transition-all hover:-translate-y-0.5"
+              className="flex items-center gap-2 px-5 py-2.5 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-bold shadow-md hover:shadow-lg transition-all hover:-translate-y-0.5"
             >
               <Calendar className="w-4 h-4" />
-              Новый сеанс
+              {t('crmBoard.newSession')}
             </button>
           </div>
         )}
@@ -547,7 +604,7 @@ export function CRMBoard() {
                     <div className={`px-4 py-3 rounded-2xl border flex items-center justify-between mb-4 ${styles.bg}`}>
                       <div className="flex items-center gap-2 font-bold text-sm">
                         <Icon className="w-4 h-4" />
-                        {col.title}
+                        {getColumnTitle(col)}
                       </div>
                       <span className="bg-white/50 dark:bg-black/20 px-2 py-0.5 rounded-full text-xs font-bold">
                         {colItems.length}
@@ -557,14 +614,14 @@ export function CRMBoard() {
                     <div className="flex-1 overflow-y-auto overflow-x-hidden space-y-3 pr-1 custom-scrollbar">
                       {colItems.length === 0 ? (
                         <div className="text-center py-8 text-neutral-400 text-sm italic border-2 border-dashed border-neutral-200 dark:border-neutral-800 rounded-2xl">
-                          Перетащите сюда
+                          {t('crmBoard.dropHere')}
                         </div>
                       ) : (
                         colItems.map(item => {
                           const isNewLead = item.status === 'new'
                           const isSelected = selectedKanbanIds.has(item.id)
                           const isDraggedGroupItem = draggingGroupId && selectedKanbanIds.has(item.id) && draggingGroupId !== item.id
-                          const clientName = item.master_clients?.name || 'Неизвестный'
+                          const clientName = item.master_clients?.name || t('crmBoard.unknownClient')
                           const initial = clientName.charAt(0).toUpperCase()
                           const images = item.reference_images && item.reference_images.length > 0 ? item.reference_images : (item.master_clients?.leads?.image_urls || [])
                           
@@ -628,12 +685,12 @@ export function CRMBoard() {
                                 </h4>
                                 <div className="flex items-center gap-1.5 min-w-0">
                                   {(item.source === 'direct' || (!item.source && (item.master_clients?.source === 'direct' || item.master_clients?.leads?.is_personal))) ? (
-                                    <span className="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-[9px] px-1.5 py-0.5 rounded font-bold shrink-0">Личная</span>
+                                    <span className="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-[9px] px-1.5 py-0.5 rounded font-bold shrink-0">{t('crmBoard.sourceDirect')}</span>
                                   ) : (item.source === 'marketplace' || (!item.source && (item.master_clients?.source === 'marketplace' || (item.master_clients?.lead_id && !item.master_clients?.leads?.is_personal)))) ? (
-                                    <span className="bg-cyan-100 dark:bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 text-[9px] px-1.5 py-0.5 rounded font-bold shrink-0">Маркетплейс</span>
+                                    <span className="bg-accent-100 dark:bg-accent-500/20 text-accent-600 dark:text-accent-400 text-[9px] px-1.5 py-0.5 rounded font-bold shrink-0">{t('crmBoard.sourceMarketplace')}</span>
                                   ) : null}
                                   <p className="text-xs text-neutral-500 truncate flex-1 min-w-0">
-                                    {item.master_clients?.phone || item.master_clients?.telegram || item.master_clients?.email || 'Нет контактов'}
+                                    {item.master_clients?.phone || item.master_clients?.telegram || item.master_clients?.email || t('crmBoard.noContacts')}
                                   </p>
                                 </div>
                               </div>
@@ -643,13 +700,13 @@ export function CRMBoard() {
                               <div className={`grid gap-2 mb-3 ${images.length > 1 ? 'grid-cols-2' : 'grid-cols-1'}`}>
                                 {images.slice(0, 2).map((img, idx) => (
                                   <div key={idx} className="aspect-square rounded-xl overflow-hidden bg-neutral-200 dark:bg-neutral-800">
-                                    <img 
-                                      src={img} 
+                                    <Image 
+                                      src={img || ''} 
                                       alt="" 
                                       className="w-full h-full object-cover hover:scale-105 transition-transform duration-500 cursor-pointer" 
                                       draggable={false} 
                                       onClick={(e) => { e.stopPropagation(); setViewerImage(img); }}
-                                    />
+                                     width={800} height={800} />
                                   </div>
                                 ))}
                               </div>
@@ -658,11 +715,11 @@ export function CRMBoard() {
                             <div className="flex flex-col gap-2 mt-3 pt-3 border-t border-neutral-100 dark:border-white/5">
                               <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
                                 <div className="flex flex-col gap-1 min-w-0">
-                                  <div className="flex items-center gap-2 text-xs font-bold text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-900/20 px-2 py-1.5 rounded-lg w-fit max-w-full">
+                                  <div className="flex items-center gap-2 text-xs font-bold text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20 px-2 py-1.5 rounded-lg w-fit max-w-full">
                                     <Calendar className="w-4 h-4 shrink-0 mt-0.5 self-start sm:self-auto sm:my-auto" />
                                     <div className="flex flex-col gap-0.5">
                                       <span className="whitespace-normal break-words leading-none">
-                                        {new Date(item.session_date).toLocaleDateString('ru-RU')}
+                                        {new Date(item.session_date).toLocaleDateString(dateLocale)}
                                       </span>
                                       {(item.start_time || item.end_time) && (
                                         <span className="opacity-75 font-medium leading-none mt-1">
@@ -672,7 +729,7 @@ export function CRMBoard() {
                                     </div>
                                   </div>
                                   <span className="text-[10px] text-neutral-400 font-medium ml-1">
-                                    Создано: {new Date(item.created_at).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute:'2-digit' })}
+                                    {t('crmBoard.createdLabel')}: {new Date(item.created_at).toLocaleDateString(dateLocale, { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute:'2-digit' })}
                                   </span>
                                 </div>
                                 <div className="font-bold text-neutral-900 dark:text-white text-sm whitespace-nowrap mt-1 sm:mt-0 sm:text-right shrink-0">
@@ -690,12 +747,12 @@ export function CRMBoard() {
                                   )}
                                   {item.body_place && (
                                     <div className="text-xs font-medium text-neutral-700 dark:text-neutral-300">
-                                      Место: {item.body_place}
+                                      {t('crmBoard.placeLabel')}: {item.body_place}
                                     </div>
                                   )}
                                   {item.size && (
                                     <span className="text-neutral-500 dark:text-neutral-400">
-                                      Размер: {item.size}
+                                      {t('crmBoard.sizeLabel')}: {item.size}
                                     </span>
                                   )}
                                   {item.notes && (
@@ -707,16 +764,36 @@ export function CRMBoard() {
                               )}
                             </div>
 
-                            <div className="mt-4 pt-4 border-t border-neutral-100 dark:border-white/5 flex">
+                            <div className="mt-4 pt-4 border-t border-neutral-100 dark:border-white/5 flex flex-col gap-2">
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   setSessionDetails(item);
                                 }}
-                                className={`w-full py-2.5 text-xs font-bold text-white rounded-xl shadow-md transition-colors ${isNewLead ? 'bg-emerald-500 hover:bg-emerald-600' : 'bg-violet-600 hover:bg-violet-700 dark:bg-violet-600/90 dark:hover:bg-violet-600'}`}
+                                className={`w-full py-2.5 text-xs font-bold text-white rounded-xl shadow-md transition-colors ${isNewLead ? 'bg-emerald-500 hover:bg-emerald-600' : 'bg-primary-600 hover:bg-primary-700 dark:bg-primary-600/90 dark:hover:bg-primary-600'}`}
                               >
-                                Посмотреть
+                                {t('crmBoard.viewBtn')}
                               </button>
+                              {/* Touch-friendly alternative to drag-and-drop: native HTML5 DnD
+                                  does not work on mobile browsers, so expose the same status
+                                  change as a dropdown menu on small screens. */}
+                              <div className="no-select-click md:hidden">
+                                <select
+                                  value=""
+                                  onClick={(e) => e.stopPropagation()}
+                                  onChange={(e) => {
+                                    const newColId = e.target.value
+                                    if (newColId) moveSessionToStatus(item, newColId)
+                                    e.target.value = ''
+                                  }}
+                                  className="w-full bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl px-3 py-2 text-xs font-bold outline-none text-neutral-600 dark:text-neutral-300"
+                                >
+                                  <option value="">{t('crmBoard.moveToStatus')}</option>
+                                  {columns.filter(c => c.id !== item.status).map(c => (
+                                    <option key={c.id} value={c.id}>{getColumnTitle(c)}</option>
+                                  ))}
+                                </select>
+                              </div>
                             </div>
                           </motion.div>
                         )})
@@ -797,7 +874,7 @@ export function CRMBoard() {
             <div className="absolute w-full h-full bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 top-3 left-3 -z-20"></div>
             <div className="absolute w-full h-full bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 top-1.5 left-1.5 -z-10"></div>
             <div className="absolute w-full h-full bg-white dark:bg-neutral-800 rounded-xl border-2 border-emerald-500 z-10 flex items-center justify-center font-bold text-emerald-600 dark:text-emerald-400">
-              Заявок: {selectedKanbanIds.size}
+              {t('crmBoard.leadsCountLabel')} {selectedKanbanIds.size}
             </div>
           </div>
         </motion.div>,
@@ -831,7 +908,7 @@ export function CRMBoard() {
 
       {sessionView === 'kanban' && selectedKanbanIds.size > 0 && (
         <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[99999] bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-4 shadow-2xl flex items-center gap-4 animate-in slide-in-from-bottom-10">
-          <span className="font-bold text-violet-600 dark:text-violet-400">Выбрано: {selectedKanbanIds.size}</span>
+          <span className="font-bold text-primary-600 dark:text-primary-400">{t('crmBoard.selectedCountLabel')} {selectedKanbanIds.size}</span>
           <select 
             onChange={(e) => { 
               if(e.target.value) {
@@ -842,18 +919,18 @@ export function CRMBoard() {
             }}
             className="bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl px-4 py-2 text-sm outline-none font-bold"
           >
-            <option value="">Сменить статус...</option>
-            <option value="new">Новые</option>
-            <option value="discussing">В диалоге</option>
-            <option value="booked">Записан</option>
-            <option value="in_progress">В процессе</option>
-            <option value="completed">Завершено</option>
-            <option value="cancelled">Отмена</option>
+            <option value="">{t('crmBoard.changeStatusPlaceholder')}</option>
+            <option value="new">{t('crmBoard.columns.new')}</option>
+            <option value="discussing">{t('crmBoard.columns.discussing')}</option>
+            <option value="booked">{t('crmBoard.columns.booked')}</option>
+            <option value="in_progress">{t('crmBoard.columns.in_progress')}</option>
+            <option value="completed">{t('crmBoard.columns.completed')}</option>
+            <option value="cancelled">{t('crmBoard.columns.cancelled')}</option>
           </select>
           <div className="w-px h-6 bg-neutral-200 dark:bg-neutral-800"></div>
           <button
             onClick={async () => {
-              if (!window.confirm(`Вы уверены, что хотите удалить ${selectedKanbanIds.size} выбранных сеансов?`)) return;
+              if (!window.confirm(tc('crmBoard.confirmDeleteSessions', { count: selectedKanbanIds.size }))) return;
               try {
                 const { data: { session } } = await supabase.auth.getSession()
                 const token = session?.access_token
@@ -865,22 +942,22 @@ export function CRMBoard() {
                     headers: { 'Authorization': `Bearer ${token}` }
                   })
                 }
-                toast.success(`Удалено сеансов: ${selectedKanbanIds.size}`)
+                toast.success(tc('crmBoard.deletedSessionsCount', { count: selectedKanbanIds.size }))
                 setSelectedKanbanIds(new Set())
                 fetchData()
               } catch (err) {
-                toast.error('Ошибка при удалении')
+                toast.error(t('crmBoard.deleteError'))
               }
             }}
             className="flex items-center justify-center p-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-xl hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors"
-            title="Удалить выбранные"
+            title={t('crmBoard.deleteSelectedTitle')}
           >
             <Trash2 className="w-5 h-5" />
           </button>
           <button
             onClick={() => setSelectedKanbanIds(new Set())}
             className="flex items-center justify-center p-2 bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 rounded-xl hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
-            title="Отменить выбор"
+            title={t('crmBoard.clearSelectionTitle')}
           >
             <X className="w-5 h-5" />
           </button>

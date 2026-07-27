@@ -15,6 +15,8 @@ import { getTranslation, Language } from '@/lib/i18n'
 import toast from 'react-hot-toast'
 import { useLanguage } from '@/i18n/LanguageContext'
 import { CertificateReviewModal, CertificateReviewUser } from '@/components/CertificateReviewModal'
+import { SkeletonTable } from '@/components/SkeletonCard'
+import { EmptyState } from '@/components/EmptyState'
 
 interface AdminUserResponse {
   id: string
@@ -286,7 +288,7 @@ export default function AdminPage() {
         <div className="bg-white dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800 h-16 animate-pulse" />
         <main className="max-w-7xl mx-auto px-4 py-8">
           <div className="h-8 w-64 bg-neutral-200 dark:bg-neutral-800 rounded animate-pulse mb-8" />
-          <div className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 h-96 animate-pulse" />
+          <SkeletonTable rows={8} />
         </main>
       </div>
     )
@@ -300,8 +302,8 @@ export default function AdminPage() {
     <div className="min-h-screen bg-neutral-50 dark:bg-[#050505] text-neutral-900 dark:text-white transition-colors duration-300 relative overflow-hidden">
       {/* Premium ambient glows */}
       <div className="absolute top-0 left-0 w-full h-full pointer-events-none overflow-hidden z-0">
-        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-cyan-500/5 dark:bg-cyan-500/10 blur-[120px]" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-purple-500/5 dark:bg-purple-500/10 blur-[120px]" />
+        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-accent-500/5 dark:bg-accent-500/10 blur-[120px]" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-primary-500/5 dark:bg-primary-500/10 blur-[120px]" />
       </div>
 
       <Header profile={profile} onLogout={handleLogout} />
@@ -312,7 +314,7 @@ export default function AdminPage() {
             <h2 className="text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-white">Admin Panel</h2>
             <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400 font-medium">Manage users and leads</p>
           </div>
-          <div className="bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-400 px-4 py-2 rounded-xl font-bold text-sm border border-purple-200 dark:border-purple-800/50 shadow-sm">
+          <div className="bg-primary-100 dark:bg-primary-900/50 text-primary-700 dark:text-primary-400 px-4 py-2 rounded-xl font-bold text-sm border border-primary-200 dark:border-primary-800/50 shadow-sm">
             Admin Access
           </div>
         </div>
@@ -398,7 +400,7 @@ export default function AdminPage() {
                     key={role}
                     onClick={() => { setUserRoleTab(role); setUserPage(1); }}
                     className={`px-4 py-1.5 rounded-full text-xs font-bold transition-colors whitespace-nowrap ${
-                      userRoleTab === role ? 'bg-cyan-600 text-white' : 'bg-neutral-200/50 hover:bg-neutral-300 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-600 dark:text-neutral-400'
+                      userRoleTab === role ? 'bg-accent-600 text-white' : 'bg-neutral-200/50 hover:bg-neutral-300 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-600 dark:text-neutral-400'
                     }`}
                   >
                     {role === 'all' ? 'Все' : role === 'master' ? 'Мастера' : role === 'client' ? 'Клиенты' : 'Админы'}
@@ -413,14 +415,14 @@ export default function AdminPage() {
                   placeholder="Поиск по email или имени..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 bg-white/40 dark:bg-neutral-950/40 border border-neutral-200 dark:border-white/10 rounded-xl text-sm text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 transition-all shadow-inner"
+                  className="w-full pl-10 pr-4 py-2.5 bg-white/40 dark:bg-neutral-950/40 border border-neutral-200 dark:border-white/10 rounded-xl text-sm text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-accent-500/20 focus:border-accent-500 transition-all shadow-inner"
                 />
               </div>
               <div className="w-full sm:w-auto">
                 <select
                   value={sortOrder}
                   onChange={(e: any) => setSortOrder(e.target.value)}
-                  className="w-full sm:w-auto px-4 py-2.5 bg-white/60 dark:bg-neutral-950/80 border border-neutral-200 dark:border-white/10 rounded-xl text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/20 font-semibold cursor-pointer transition-all shadow-sm"
+                  className="w-full sm:w-auto px-4 py-2.5 bg-white/60 dark:bg-neutral-950/80 border border-neutral-200 dark:border-white/10 rounded-xl text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-accent-500/20 font-semibold cursor-pointer transition-all shadow-sm"
                 >
                   <option value="newest">Сначала новые</option>
                   <option value="oldest">Сначала старые</option>
@@ -447,7 +449,7 @@ export default function AdminPage() {
                       <td className="px-6 py-4">
                         <div className="font-bold text-neutral-900 dark:text-white">{user.email}</div>
                         {user.role && (
-                          <div className="text-[10px] font-black uppercase tracking-wider text-cyan-600 dark:text-cyan-400 mt-1">
+                          <div className="text-[10px] font-black uppercase tracking-wider text-accent-600 dark:text-accent-400 mt-1">
                             {user.role}
                           </div>
                         )}
@@ -455,7 +457,7 @@ export default function AdminPage() {
                           {user.display_name ? `${user.display_name}` : <span className="text-red-500 font-medium text-[10px] uppercase">Не завершил онбординг</span>} 
                           {user.phone && ` • ${user.phone}`}
                           {user.portfolio_url && (
-                            <a href={user.portfolio_url} target="_blank" rel="noopener noreferrer" className="ml-2 inline-flex items-center text-purple-600 dark:text-purple-400 hover:underline font-semibold">
+                            <a href={user.portfolio_url} target="_blank" rel="noopener noreferrer" className="ml-2 inline-flex items-center text-primary-600 dark:text-primary-400 hover:underline font-semibold">
                               <LinkIcon className="w-3 h-3 mr-1" /> Портфолио
                             </a>
                           )}
@@ -469,7 +471,7 @@ export default function AdminPage() {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-500 dark:text-neutral-400">
                         {(user.role === 'master' || user.is_admin || user.is_verified_master) ? (
                           <>
-                            <div className="font-bold text-cyan-600 dark:text-cyan-400">{user.credits} CR</div>
+                            <div className="font-bold text-accent-600 dark:text-accent-400">{user.credits} CR</div>
                             <div className="text-xs text-neutral-500 dark:text-neutral-400">{user.balance} CZK</div>
                           </>
                         ) : (
@@ -515,7 +517,7 @@ export default function AdminPage() {
                             {user.role === 'master' && user.certificate_url && (
                               <button
                                 onClick={() => setCertificateReviewUser(user)}
-                                className="px-3.5 py-2 bg-violet-500/10 text-violet-600 dark:text-violet-400 border border-violet-500/20 rounded-xl text-xs font-bold hover:bg-violet-500/20 transition-all"
+                                className="px-3.5 py-2 bg-primary-500/10 text-primary-600 dark:text-primary-400 border border-primary-500/20 rounded-xl text-xs font-bold hover:bg-primary-500/20 transition-all"
                               >
                                 {user.certificate_status === 'pending' ? 'Проверить сертификат' : 'Сертификат'}
                               </button>
@@ -578,8 +580,13 @@ export default function AdminPage() {
                   ))}
                   {users.length === 0 && (
                     <tr>
-                      <td colSpan={5} className="px-6 py-8 text-center text-neutral-500 dark:text-neutral-400 font-medium">
-                        No users found
+                      <td colSpan={5} className="py-8">
+                        <EmptyState
+                          variant="compact"
+                          icon={<Search className="w-7 h-7" />}
+                          title="Пользователи не найдены"
+                          description="Попробуйте изменить фильтр или выбрать другую вкладку."
+                        />
                       </td>
                     </tr>
                   )}
@@ -631,7 +638,7 @@ export default function AdminPage() {
               <input
                 type="number"
                 min="0"
-                className="w-full bg-white/40 dark:bg-neutral-950/40 text-neutral-900 dark:text-white border border-neutral-200 dark:border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 transition-all shadow-inner"
+                className="w-full bg-white/40 dark:bg-neutral-950/40 text-neutral-900 dark:text-white border border-neutral-200 dark:border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-accent-500/20 focus:border-accent-500 transition-all shadow-inner"
                 value={newBalanceValue}
                 onChange={(e) => setNewBalanceValue(e.target.value)}
               />
@@ -646,7 +653,7 @@ export default function AdminPage() {
               </button>
               <button
                 onClick={submitUpdateCredits}
-                className="px-5 py-3 bg-cyan-600 hover:bg-cyan-500 text-white font-bold rounded-xl transition-all shadow-md shadow-cyan-600/20"
+                className="px-5 py-3 bg-accent-600 hover:bg-accent-500 text-white font-bold rounded-xl transition-all shadow-md shadow-accent-600/20"
               >
                 Сохранить
               </button>

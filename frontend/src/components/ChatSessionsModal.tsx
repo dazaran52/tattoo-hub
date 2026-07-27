@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import { useState, useEffect } from 'react'
 import { X } from 'lucide-react'
 import { supabase } from '../lib/supabase'
@@ -67,10 +68,10 @@ export function ChatSessionsModal({ chatId, clientInfo, userRole, onClose, onUpd
 
         {userRole === 'master' && (
           <div className="flex gap-4 p-4 border-b border-neutral-100 dark:border-white/10 overflow-x-auto no-scrollbar">
-            <button onClick={() => setActiveTab('new')} className={`px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-colors ${activeTab === 'new' ? 'bg-violet-600 text-white' : 'bg-neutral-100 dark:bg-white/5 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-white/10'}`}>
+            <button onClick={() => setActiveTab('new')} className={`px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-colors ${activeTab === 'new' ? 'bg-primary-600 text-white' : 'bg-neutral-100 dark:bg-white/5 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-white/10'}`}>
               Новые заявки
             </button>
-            <button onClick={() => setActiveTab('all')} className={`px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-colors ${activeTab === 'all' ? 'bg-violet-600 text-white' : 'bg-neutral-100 dark:bg-white/5 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-white/10'}`}>
+            <button onClick={() => setActiveTab('all')} className={`px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-colors ${activeTab === 'all' ? 'bg-primary-600 text-white' : 'bg-neutral-100 dark:bg-white/5 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-white/10'}`}>
               Все сеансы
             </button>
           </div>
@@ -85,12 +86,12 @@ export function ChatSessionsModal({ chatId, clientInfo, userRole, onClose, onUpd
             filteredSessions.map(session => (
               <div key={session.id} className="bg-neutral-50 dark:bg-white/5 border border-neutral-100 dark:border-white/10 p-4 rounded-2xl flex flex-col sm:flex-row gap-4">
                 {session.reference_images && session.reference_images.length > 0 && (
-                  <img src={session.reference_images[0]} className="w-full sm:w-24 h-32 sm:h-24 object-cover rounded-xl shrink-0" />
+                  <Image src={session.reference_images[0] || ''} className="w-full sm:w-24 h-32 sm:h-24 object-cover rounded-xl shrink-0"  alt="" width={800} height={800} />
                 )}
                 <div className="flex-1 min-w-0">
                   <div className="flex justify-between items-start mb-2">
                     <h3 className="font-bold dark:text-white truncate pr-2">{session.master_clients?.leads?.title || 'Сеанс тату'}</h3>
-                    <span className="text-xs px-2 py-1 bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300 rounded-lg shrink-0">
+                    <span className="text-xs px-2 py-1 bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300 rounded-lg shrink-0">
                       {session.status || 'new'}
                     </span>
                   </div>
@@ -116,7 +117,7 @@ export function ChatSessionsModal({ chatId, clientInfo, userRole, onClose, onUpd
                     <div className="flex gap-2">
                       <button 
                         onClick={() => setSelectedSessionForAccept(session)}
-                        className="flex-1 py-2 bg-violet-600 hover:bg-violet-700 text-white text-sm font-medium rounded-xl transition-colors"
+                        className="flex-1 py-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-medium rounded-xl transition-colors"
                       >
                         Принять заявку
                       </button>

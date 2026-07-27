@@ -70,8 +70,8 @@ export function InstallPrompt() {
     <div className="fixed top-4 left-4 right-4 md:top-auto md:bottom-6 md:left-auto md:right-6 md:w-[400px] z-[9999] animate-fade-in-up">
       <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-2xl rounded-2xl p-4 flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 bg-indigo-100 dark:bg-indigo-900/30 rounded-xl flex items-center justify-center flex-shrink-0">
-            <Download className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
+          <div className="w-12 h-12 bg-primary-100 dark:bg-primary-900/30 rounded-xl flex items-center justify-center flex-shrink-0">
+            <Download className="w-6 h-6 text-primary-600 dark:text-primary-400" />
           </div>
           <div>
             <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
@@ -85,7 +85,7 @@ export function InstallPrompt() {
         <div className="flex items-center gap-2">
           <button
             onClick={handleInstallClick}
-            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-bold rounded-lg transition-colors whitespace-nowrap"
+            className="px-4 py-2 bg-primary-600 hover:bg-primary-500 text-white text-sm font-bold rounded-lg transition-colors whitespace-nowrap"
           >
             {copy.action}
           </button>

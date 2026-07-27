@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { useState, useEffect, useRef } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Header } from '@/components/Header'
@@ -151,8 +152,8 @@ export default function ProfilePage() {
       }
       
       const fileExt = file.name.split('.').pop()
-      const fileName = `${profile?.id}-${Math.random()}.${fileExt}`
-      const filePath = `avatars/${fileName}`
+      const fileName = `avatar-${Math.random()}.${fileExt}`
+      const filePath = `${profile?.id}/${fileName}`
 
       const compressedFile = await imageCompression(file, compressionOptions)
       const { error: uploadError } = await supabase.storage.from('avatars').upload(filePath, compressedFile)
@@ -230,8 +231,8 @@ export default function ProfilePage() {
       
       {/* Cool Background Gradients */}
       <div className="absolute top-0 left-0 w-full h-[500px] overflow-hidden pointer-events-none -z-10">
-        <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[80%] bg-violet-500/20 dark:bg-violet-600/20 blur-[120px] rounded-full mix-blend-multiply dark:mix-blend-screen opacity-70 animate-blob"></div>
-        <div className="absolute top-[10%] right-[-10%] w-[40%] h-[60%] bg-cyan-400/20 dark:bg-cyan-500/20 blur-[100px] rounded-full mix-blend-multiply dark:mix-blend-screen opacity-70 animate-blob animation-delay-2000"></div>
+        <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[80%] bg-primary-500/20 dark:bg-primary-600/20 blur-[120px] rounded-full mix-blend-multiply dark:mix-blend-screen opacity-70 animate-blob"></div>
+        <div className="absolute top-[10%] right-[-10%] w-[40%] h-[60%] bg-accent-400/20 dark:bg-accent-500/20 blur-[100px] rounded-full mix-blend-multiply dark:mix-blend-screen opacity-70 animate-blob animation-delay-2000"></div>
       </div>
 
       <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10">
@@ -251,8 +252,8 @@ export default function ProfilePage() {
             disabled={isSaving}
             className={`px-6 py-2.5 rounded-full font-bold transition-all shadow-lg ${
               isEditing 
-                ? 'bg-violet-600 hover:bg-violet-700 text-white shadow-violet-500/25 scale-105'
-                : 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white border border-neutral-200 dark:border-neutral-700 hover:border-violet-500/50 hover:shadow-violet-500/10'
+                ? 'bg-primary-600 hover:bg-primary-700 text-white shadow-primary-500/25 scale-105'
+                : 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white border border-neutral-200 dark:border-neutral-700 hover:border-primary-500/50 hover:shadow-primary-500/10'
             }`}
           >
             {isSaving ? '...' : isEditing ? (language === 'ru' ? 'Сохранить' : 'Save') : (language === 'ru' ? 'Редактировать' : 'Edit')}
@@ -270,14 +271,14 @@ export default function ProfilePage() {
           {/* Left Column: Avatar & Public Link */}
           <div className="space-y-6">
             <div className="bg-white/60 dark:bg-neutral-900/60 backdrop-blur-xl border border-white/40 dark:border-white/5 rounded-3xl p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.2)] text-center relative overflow-hidden group">
-              <div className="absolute inset-0 bg-gradient-to-br from-violet-500/5 to-cyan-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              <div className="absolute inset-0 bg-gradient-to-br from-primary-500/5 to-accent-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               
               <div className="relative inline-block mb-6">
                 <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-white dark:border-neutral-800 shadow-xl mx-auto">
                   {profile.avatar_url ? (
-                    <img src={profile.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
+                    <Image src={profile.avatar_url || ''} alt="Avatar" className="w-full h-full object-cover"  width={800} height={800} />
                   ) : (
-                    <div className="w-full h-full bg-gradient-to-br from-violet-100 to-cyan-100 dark:from-violet-900/30 dark:to-cyan-900/30 flex items-center justify-center text-violet-500">
+                    <div className="w-full h-full bg-gradient-to-br from-primary-100 to-accent-100 dark:from-primary-900/30 dark:to-accent-900/30 flex items-center justify-center text-primary-500">
                       <User className="w-12 h-12" />
                     </div>
                   )}
@@ -285,7 +286,7 @@ export default function ProfilePage() {
                 <button
                   onClick={() => avatarInputRef.current?.click()}
                   disabled={isUploading}
-                  className="absolute bottom-0 right-0 w-10 h-10 bg-violet-600 hover:bg-violet-700 text-white rounded-full flex items-center justify-center shadow-lg transition-transform hover:scale-110 disabled:opacity-50"
+                  className="absolute bottom-0 right-0 w-10 h-10 bg-primary-600 hover:bg-primary-700 text-white rounded-full flex items-center justify-center shadow-lg transition-transform hover:scale-110 disabled:opacity-50"
                 >
                   <Camera className="w-5 h-5" />
                 </button>
@@ -301,7 +302,7 @@ export default function ProfilePage() {
               <h2 className="text-2xl font-black text-neutral-900 dark:text-white mb-1">
                 {profile.display_name || 'Твое имя'}
               </h2>
-              <p className="text-violet-600 dark:text-violet-400 font-bold mb-4">
+              <p className="text-primary-600 dark:text-primary-400 font-bold mb-4">
                 @{profile.username || 'username'}
               </p>
               
@@ -317,13 +318,13 @@ export default function ProfilePage() {
               )}
             </div>
 
-            <div className="bg-gradient-to-br from-violet-600 to-indigo-600 rounded-3xl p-6 shadow-xl shadow-violet-500/20 text-white relative overflow-hidden">
+            <div className="bg-gradient-to-br from-primary-600 to-primary-600 rounded-3xl p-6 shadow-xl shadow-primary-500/20 text-white relative overflow-hidden">
               <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2" />
               <h3 className="font-bold text-lg mb-2 flex items-center gap-2">
                 <Globe className="w-5 h-5" />
                 Публичная ссылка
               </h3>
-              <p className="text-violet-100 text-sm mb-4">
+              <p className="text-primary-100 text-sm mb-4">
                 Это твоя страница-визитка для клиентов. Отправь им ссылку для записи.
               </p>
               
@@ -369,7 +370,7 @@ export default function ProfilePage() {
             
             <div className="bg-white/60 dark:bg-neutral-900/60 backdrop-blur-xl border border-white/40 dark:border-white/5 rounded-3xl p-6 md:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.2)]">
               <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
-                <User className="w-5 h-5 text-violet-500" />
+                <User className="w-5 h-5 text-primary-500" />
                 Основная информация
               </h3>
               
@@ -381,7 +382,7 @@ export default function ProfilePage() {
                     value={displayName}
                     onChange={e => setDisplayName(e.target.value)}
                     disabled={!isEditing}
-                    className="w-full bg-white dark:bg-black/50 border border-neutral-200 dark:border-neutral-800 rounded-xl px-4 py-3 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all disabled:opacity-70 font-medium"
+                    className="w-full bg-white dark:bg-black/50 border border-neutral-200 dark:border-neutral-800 rounded-xl px-4 py-3 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all disabled:opacity-70 font-medium"
                   />
                 </div>
                 <div>
@@ -393,7 +394,7 @@ export default function ProfilePage() {
                       value={username}
                       onChange={e => setUsername(e.target.value.replace(/[^a-zA-Z0-9_-]/g, ''))}
                       disabled={!isEditing}
-                      className="w-full bg-white dark:bg-black/50 border border-neutral-200 dark:border-neutral-800 rounded-xl pl-9 pr-4 py-3 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all disabled:opacity-70 font-medium"
+                      className="w-full bg-white dark:bg-black/50 border border-neutral-200 dark:border-neutral-800 rounded-xl pl-9 pr-4 py-3 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all disabled:opacity-70 font-medium"
                     />
                   </div>
                 </div>
@@ -405,7 +406,7 @@ export default function ProfilePage() {
                     disabled={!isEditing}
                     rows={3}
                     placeholder="Пара слов о вас и вашем стиле работы..."
-                    className="w-full bg-white dark:bg-black/50 border border-neutral-200 dark:border-neutral-800 rounded-xl px-4 py-3 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all disabled:opacity-70 font-medium resize-none"
+                    className="w-full bg-white dark:bg-black/50 border border-neutral-200 dark:border-neutral-800 rounded-xl px-4 py-3 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all disabled:opacity-70 font-medium resize-none"
                   />
                 </div>
                 <div>
@@ -418,7 +419,7 @@ export default function ProfilePage() {
                     onChange={e => setPortfolioUrl(e.target.value)}
                     disabled={!isEditing}
                     placeholder="instagram.com/your_nick"
-                    className="w-full bg-white dark:bg-black/50 border border-neutral-200 dark:border-neutral-800 rounded-xl px-4 py-3 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all disabled:opacity-70 font-medium"
+                    className="w-full bg-white dark:bg-black/50 border border-neutral-200 dark:border-neutral-800 rounded-xl px-4 py-3 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all disabled:opacity-70 font-medium"
                   />
                 </div>
                 <div>
@@ -429,7 +430,7 @@ export default function ProfilePage() {
                     onChange={e => setPhone(e.target.value)}
                     disabled={!isEditing}
                     placeholder="+420..."
-                    className="w-full bg-white dark:bg-black/50 border border-neutral-200 dark:border-neutral-800 rounded-xl px-4 py-3 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all disabled:opacity-70 font-medium"
+                    className="w-full bg-white dark:bg-black/50 border border-neutral-200 dark:border-neutral-800 rounded-xl px-4 py-3 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all disabled:opacity-70 font-medium"
                   />
                 </div>
 
@@ -441,7 +442,7 @@ export default function ProfilePage() {
                       value={selectedCountry}
                       onChange={(e) => setSelectedCountry(e.target.value)}
                       disabled={!isEditing}
-                      className="w-full bg-white dark:bg-black/50 border border-neutral-200 dark:border-neutral-800 rounded-xl px-4 py-3 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all disabled:opacity-70 font-medium cursor-pointer"
+                      className="w-full bg-white dark:bg-black/50 border border-neutral-200 dark:border-neutral-800 rounded-xl px-4 py-3 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all disabled:opacity-70 font-medium cursor-pointer"
                     >
                       <option value="">{t('selectCountry')}</option>
                       {countries.map(country => (
@@ -456,7 +457,7 @@ export default function ProfilePage() {
                       value={selectedCity}
                       onChange={(e) => setSelectedCity(e.target.value)}
                       disabled={!isEditing || !selectedCountry}
-                      className="w-full bg-white dark:bg-black/50 border border-neutral-200 dark:border-neutral-800 rounded-xl px-4 py-3 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all disabled:opacity-70 font-medium cursor-pointer"
+                      className="w-full bg-white dark:bg-black/50 border border-neutral-200 dark:border-neutral-800 rounded-xl px-4 py-3 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all disabled:opacity-70 font-medium cursor-pointer"
                     >
                       <option value="">{t('selectCity')}</option>
                       {cities.map(city => (
@@ -476,8 +477,8 @@ export default function ProfilePage() {
                       { id: 'system', name: 'Системная', classes: 'bg-gradient-to-r from-neutral-200 to-neutral-800 text-black dark:text-white border-neutral-300 dark:border-neutral-700' },
                       { id: 'light', name: 'Светлая', classes: 'bg-white text-black border-neutral-200 shadow-sm' },
                       { id: 'dark', name: 'Темная', classes: 'bg-neutral-900 text-white border-neutral-700' },
-                      { id: 'violet', name: 'Violet', classes: 'bg-gradient-to-br from-violet-600 to-purple-900 text-white border-violet-500' },
-                      { id: 'cyberpunk', name: 'Cyberpunk', classes: 'bg-gradient-to-br from-yellow-400 via-pink-500 to-cyan-500 text-white border-pink-500' },
+                      { id: 'violet', name: 'Violet', classes: 'bg-gradient-to-br from-primary-600 to-primary-900 text-white border-primary-500' },
+                      { id: 'cyberpunk', name: 'Cyberpunk', classes: 'bg-gradient-to-br from-yellow-400 via-pink-500 to-accent-500 text-white border-pink-500' },
                     ].map(t => (
                       <button
                         key={t.id}
@@ -485,7 +486,7 @@ export default function ProfilePage() {
                         disabled={!isEditing}
                         onClick={() => setTheme(t.id)}
                         className={`flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-all ${t.classes} ${
-                          theme === t.id ? 'ring-2 ring-offset-2 ring-violet-500 scale-105' : 'opacity-70 hover:opacity-100'
+                          theme === t.id ? 'ring-2 ring-offset-2 ring-primary-500 scale-105' : 'opacity-70 hover:opacity-100'
                         } ${!isEditing && 'cursor-not-allowed opacity-50'}`}
                       >
                         <span className="font-bold text-sm mix-blend-difference text-white">{t.name}</span>

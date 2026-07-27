@@ -228,8 +228,8 @@ export default function DashboardPage() {
           </>
         ) : (
           <>
-            <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-indigo-500/5 dark:bg-indigo-500/10 blur-[120px]" />
-            <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-purple-500/5 dark:bg-purple-500/10 blur-[120px]" />
+            <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-primary-500/5 dark:bg-primary-500/10 blur-[120px]" />
+            <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-primary-500/5 dark:bg-primary-500/10 blur-[120px]" />
           </>
         )}
       </div>
@@ -250,7 +250,7 @@ export default function DashboardPage() {
                 <div className="mt-2 flex items-center gap-3">
                   <button 
                     onClick={copyPublicLink}
-                    className="inline-flex items-center gap-1.5 text-xs font-bold bg-violet-100 dark:bg-violet-500/20 text-violet-700 dark:text-violet-300 px-3 py-1.5 rounded-full hover:bg-violet-200 dark:hover:bg-violet-500/30 transition-colors"
+                    className="inline-flex items-center gap-1.5 text-xs font-bold bg-primary-100 dark:bg-primary-500/20 text-primary-700 dark:text-primary-300 px-3 py-1.5 rounded-full hover:bg-primary-200 dark:hover:bg-primary-500/30 transition-colors"
                   >
                     <Share2 className="w-3.5 h-3.5" />
                     {language === 'ru' ? 'Поделиться визиткой' : 'Share Booking Link'}
@@ -261,10 +261,11 @@ export default function DashboardPage() {
               {/* Tabs */}
                 <div className="mt-4 md:mt-0 flex overflow-x-auto p-1 bg-white/40 dark:bg-neutral-900/40 backdrop-blur-md border border-neutral-200/50 dark:border-white/5 rounded-xl shadow-sm gap-1 no-scrollbar">
                   <button
+                    id="tour-crm"
                     onClick={() => setActiveTab('crm')}
                     className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all whitespace-nowrap flex items-center gap-2 ${
                       activeTab === 'crm'
-                        ? 'bg-violet-600 text-white shadow-md scale-[1.02]'
+                        ? 'bg-primary-600 text-white shadow-md scale-[1.02]'
                         : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200 hover:bg-white/50 dark:hover:bg-neutral-800/50'
                     }`}
                   >
@@ -272,10 +273,11 @@ export default function DashboardPage() {
                     {t('myCrm')}
                   </button>
                   <button
+                    id="tour-feed"
                     onClick={() => setActiveTab('feed')}
                     className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all whitespace-nowrap flex items-center gap-2 ${
                       activeTab === 'feed'
-                        ? 'bg-violet-600 text-white shadow-md scale-[1.02]'
+                        ? 'bg-primary-600 text-white shadow-md scale-[1.02]'
                         : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200 hover:bg-white/50 dark:hover:bg-neutral-800/50'
                     }`}
                   >
@@ -283,10 +285,11 @@ export default function DashboardPage() {
                     Маркетплейс
                   </button>
                   <button
+                    id="tour-portfolio"
                     onClick={() => setActiveTab('portfolio')}
                     className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all whitespace-nowrap flex items-center gap-2 ${
                       activeTab === 'portfolio'
-                        ? 'bg-violet-600 text-white shadow-md scale-[1.02]'
+                        ? 'bg-primary-600 text-white shadow-md scale-[1.02]'
                         : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200 hover:bg-white/50 dark:hover:bg-neutral-800/50'
                     }`}
                   >
@@ -294,10 +297,11 @@ export default function DashboardPage() {
                     {language === 'ru' ? 'Портфолио' : 'Portfolio'}
                   </button>
                   <button
+                    id="tour-messages"
                     onClick={() => setActiveTab('messages')}
                     className={`relative px-4 py-2 rounded-lg text-sm font-semibold transition-all whitespace-nowrap flex items-center gap-2 ${
                       activeTab === 'messages'
-                        ? 'bg-violet-600 text-white shadow-md scale-[1.02]'
+                        ? 'bg-primary-600 text-white shadow-md scale-[1.02]'
                         : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200 hover:bg-white/50 dark:hover:bg-neutral-800/50'
                     }`}
                   >

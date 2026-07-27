@@ -261,7 +261,7 @@ function LoginContent() {
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 1.1 }}
                   transition={{ duration: 1 }}
-                  className="absolute inset-0 rounded-full bg-gradient-to-tr from-indigo-600 via-purple-500 to-fuchsia-400 blur-[100px] md:blur-[140px]"
+                  className="absolute inset-0 rounded-full bg-gradient-to-tr from-primary-600 via-primary-500 to-fuchsia-400 blur-[100px] md:blur-[140px]"
                 />
               )}
             </AnimatePresence>
@@ -337,7 +337,7 @@ function LoginContent() {
                 className="relative flex p-1.5 bg-neutral-200/50 dark:bg-neutral-900/80 backdrop-blur-xl rounded-full border border-neutral-300/50 dark:border-neutral-800/60 shadow-inner overflow-hidden mb-8"
               >
             <motion.div
-              className={`absolute top-1.5 bottom-1.5 w-[calc(50%-6px)] rounded-full shadow-lg ${role === 'master' ? 'bg-gradient-to-r from-orange-600 to-amber-500' : 'bg-gradient-to-r from-indigo-600 to-purple-500'}`}
+              className={`absolute top-1.5 bottom-1.5 w-[calc(50%-6px)] rounded-full shadow-lg ${role === 'master' ? 'bg-gradient-to-r from-orange-600 to-amber-500' : 'bg-gradient-to-r from-primary-600 to-primary-500'}`}
               animate={{
                 left: role === 'master' ? '6px' : 'calc(50%)',
               }}
@@ -374,14 +374,14 @@ function LoginContent() {
               <button
                 type="button"
                 onClick={() => { setAuthMode('login'); setError(''); setSuccessMsg('') }}
-                className={`flex-1 py-5 text-sm font-bold uppercase tracking-widest transition-all ${!isSignUp && !isForgotPassword ? `text-neutral-900 dark:text-white bg-neutral-900/5 dark:bg-white/5 border-b-2 ${role === 'master' ? 'border-orange-500' : 'border-indigo-500'}` : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-300 hover:bg-neutral-900/5 dark:hover:bg-white/5'}`}
+                className={`flex-1 py-5 text-sm font-bold uppercase tracking-widest transition-all ${!isSignUp && !isForgotPassword ? `text-neutral-900 dark:text-white bg-neutral-900/5 dark:bg-white/5 border-b-2 ${role === 'master' ? 'border-orange-500' : 'border-primary-500'}` : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-300 hover:bg-neutral-900/5 dark:hover:bg-white/5'}`}
               >
                 {t('loginTab')}
               </button>
               <button
                 type="button"
                 onClick={() => { setAuthMode('signup'); setError(''); setSuccessMsg('') }}
-                className={`flex-1 py-5 text-sm font-bold uppercase tracking-widest transition-all ${isSignUp ? `text-neutral-900 dark:text-white bg-neutral-900/5 dark:bg-white/5 border-b-2 ${role === 'master' ? 'border-orange-500' : 'border-indigo-500'}` : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-300 hover:bg-neutral-900/5 dark:hover:bg-white/5'}`}
+                className={`flex-1 py-5 text-sm font-bold uppercase tracking-widest transition-all ${isSignUp ? `text-neutral-900 dark:text-white bg-neutral-900/5 dark:bg-white/5 border-b-2 ${role === 'master' ? 'border-orange-500' : 'border-primary-500'}` : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-300 hover:bg-neutral-900/5 dark:hover:bg-white/5'}`}
               >
                 {t('registerTab')}
               </button>
@@ -431,7 +431,7 @@ function LoginContent() {
                 <div className="space-y-5">
                   <motion.div layout>
                     <div className="relative group">
-                      <Mail className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500 transition-all duration-300 ${role === 'master' ? 'group-focus-within:text-orange-400' : 'group-focus-within:text-indigo-400'}`} />
+                      <Mail className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500 transition-all duration-300 ${role === 'master' ? 'group-focus-within:text-orange-400' : 'group-focus-within:text-primary-400'}`} />
                       <input
                         id="email"
                         type="text"
@@ -439,7 +439,7 @@ function LoginContent() {
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         disabled={needsCode}
-                        className={`block w-full pl-12 pr-4 py-4 bg-white/40 dark:bg-neutral-950/40 border border-neutral-200 dark:border-white/10 rounded-2xl text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-offset-0 transition-all backdrop-blur-md shadow-inner disabled:opacity-50 ${role === 'master' ? 'focus:border-orange-500 focus:ring-orange-500/20 focus:bg-orange-950/10' : 'focus:border-indigo-500 focus:ring-indigo-500/20 focus:bg-indigo-950/10'}`}
+                        className={`block w-full pl-12 pr-4 py-4 bg-white/40 dark:bg-neutral-950/40 border border-neutral-200 dark:border-white/10 rounded-2xl text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-offset-0 transition-all backdrop-blur-md shadow-inner disabled:opacity-50 ${role === 'master' ? 'focus:border-orange-500 focus:ring-orange-500/20 focus:bg-orange-950/10' : 'focus:border-primary-500 focus:ring-primary-500/20 focus:bg-primary-950/10'}`}
                         placeholder="E-mail"
                       />
                     </div>
@@ -448,14 +448,14 @@ function LoginContent() {
                   {!needsCode && authMode !== 'forgot_password' && (
                     <motion.div layout>
                       <div className="relative group">
-                        <Lock className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500 transition-all duration-300 ${role === 'master' ? 'group-focus-within:text-orange-400' : 'group-focus-within:text-indigo-400'}`} />
+                        <Lock className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500 transition-all duration-300 ${role === 'master' ? 'group-focus-within:text-orange-400' : 'group-focus-within:text-primary-400'}`} />
                         <input
                           id="password"
                           type={showPassword ? 'text' : 'password'}
                           required
                           value={password}
                           onChange={(e) => setPassword(e.target.value)}
-                          className={`block w-full pl-12 pr-12 py-4 bg-white/40 dark:bg-neutral-950/40 border border-neutral-200 dark:border-white/10 rounded-2xl text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-offset-0 transition-all backdrop-blur-md shadow-inner ${role === 'master' ? 'focus:border-orange-500 focus:ring-orange-500/20 focus:bg-orange-950/10' : 'focus:border-indigo-500 focus:ring-indigo-500/20 focus:bg-indigo-950/10'}`}
+                          className={`block w-full pl-12 pr-12 py-4 bg-white/40 dark:bg-neutral-950/40 border border-neutral-200 dark:border-white/10 rounded-2xl text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-offset-0 transition-all backdrop-blur-md shadow-inner ${role === 'master' ? 'focus:border-orange-500 focus:ring-orange-500/20 focus:bg-orange-950/10' : 'focus:border-primary-500 focus:ring-primary-500/20 focus:bg-primary-950/10'}`}
                           placeholder={t('passwordAuth')}
                         />
                         <button
@@ -472,14 +472,14 @@ function LoginContent() {
                   {needsCode && (
                     <motion.div layout initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}>
                       <div className="relative group">
-                        <KeyRound className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500 transition-all duration-300 ${role === 'master' ? 'group-focus-within:text-orange-400' : 'group-focus-within:text-indigo-400'}`} />
+                        <KeyRound className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500 transition-all duration-300 ${role === 'master' ? 'group-focus-within:text-orange-400' : 'group-focus-within:text-primary-400'}`} />
                         <input
                           id="code"
                           type="text"
                           required
                           value={code}
                           onChange={(e) => setCode(e.target.value.replace(/\s+/g, ''))}
-                          className={`block w-full pl-12 pr-4 py-4 bg-white/40 dark:bg-neutral-950/40 border border-neutral-200 dark:border-white/10 rounded-2xl text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-offset-0 transition-all backdrop-blur-md shadow-inner tracking-widest font-mono text-center text-lg ${role === 'master' ? 'focus:border-orange-500 focus:ring-orange-500/20 focus:bg-orange-950/10' : 'focus:border-indigo-500 focus:ring-indigo-500/20 focus:bg-indigo-950/10'}`}
+                          className={`block w-full pl-12 pr-4 py-4 bg-white/40 dark:bg-neutral-950/40 border border-neutral-200 dark:border-white/10 rounded-2xl text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-offset-0 transition-all backdrop-blur-md shadow-inner tracking-widest font-mono text-center text-lg ${role === 'master' ? 'focus:border-orange-500 focus:ring-orange-500/20 focus:bg-orange-950/10' : 'focus:border-primary-500 focus:ring-primary-500/20 focus:bg-primary-950/10'}`}
                           placeholder="------"
                           maxLength={6}
                         />
@@ -495,13 +495,13 @@ function LoginContent() {
                       exit={{ opacity: 0, height: 0, y: -10 }}
                     >
                       <div className="relative group">
-                        <Tag className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500 transition-all duration-300 ${role === 'master' ? 'group-focus-within:text-orange-400' : 'group-focus-within:text-indigo-400'}`} />
+                        <Tag className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500 transition-all duration-300 ${role === 'master' ? 'group-focus-within:text-orange-400' : 'group-focus-within:text-primary-400'}`} />
                         <input
                           id="referredBy"
                           type="text"
                           value={referredBy}
                           onChange={(e) => setReferredBy(e.target.value)}
-                          className={`block w-full pl-12 pr-4 py-4 bg-white/40 dark:bg-neutral-950/40 border border-neutral-200 dark:border-white/10 rounded-2xl text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-offset-0 transition-all backdrop-blur-md shadow-inner ${role === 'master' ? 'focus:border-orange-500 focus:ring-orange-500/20 focus:bg-orange-950/10' : 'focus:border-indigo-500 focus:ring-indigo-500/20 focus:bg-indigo-950/10'}`}
+                          className={`block w-full pl-12 pr-4 py-4 bg-white/40 dark:bg-neutral-950/40 border border-neutral-200 dark:border-white/10 rounded-2xl text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-offset-0 transition-all backdrop-blur-md shadow-inner ${role === 'master' ? 'focus:border-orange-500 focus:ring-orange-500/20 focus:bg-orange-950/10' : 'focus:border-primary-500 focus:ring-primary-500/20 focus:bg-primary-950/10'}`}
                           placeholder={t('referralCode')}
                         />
                       </div>
@@ -523,7 +523,7 @@ function LoginContent() {
                               required 
                               className="peer sr-only"
                             />
-                            <div className={`w-5 h-5 rounded-md border-2 border-neutral-300 dark:border-neutral-600 flex items-center justify-center transition-colors peer-checked:bg-neutral-900 dark:peer-checked:bg-white peer-checked:border-neutral-900 dark:peer-checked:border-white ${role === 'master' ? 'group-hover:border-orange-500' : 'group-hover:border-indigo-500'}`}>
+                            <div className={`w-5 h-5 rounded-md border-2 border-neutral-300 dark:border-neutral-600 flex items-center justify-center transition-colors peer-checked:bg-neutral-900 dark:peer-checked:bg-white peer-checked:border-neutral-900 dark:peer-checked:border-white ${role === 'master' ? 'group-hover:border-orange-500' : 'group-hover:border-primary-500'}`}>
                               <svg className="w-3 h-3 text-white dark:text-black opacity-0 peer-checked:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="4"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"></path></svg>
                             </div>
                           </div>
@@ -548,7 +548,7 @@ function LoginContent() {
                   className={`w-full flex items-center justify-center gap-3 py-4 px-6 text-white text-lg font-bold rounded-2xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed ${
                     role === 'master' 
                       ? 'bg-gradient-to-r from-orange-600 to-amber-500 hover:from-orange-500 hover:to-amber-400 shadow-[0_10px_30px_rgba(234,88,12,0.3)] hover:shadow-[0_10px_40px_rgba(234,88,12,0.5)] border border-orange-500/50' 
-                      : 'bg-gradient-to-r from-indigo-600 to-purple-500 hover:from-indigo-500 hover:to-purple-400 shadow-[0_10px_30px_rgba(99,102,241,0.3)] hover:shadow-[0_10px_40px_rgba(99,102,241,0.5)] border border-indigo-500/50'
+                      : 'bg-gradient-to-r from-primary-600 to-primary-500 hover:from-primary-500 hover:to-primary-400 shadow-[0_10px_30px_rgba(99,102,241,0.3)] hover:shadow-[0_10px_40px_rgba(99,102,241,0.5)] border border-primary-500/50'
                   }`}
                 >
                   {isLoading ? (

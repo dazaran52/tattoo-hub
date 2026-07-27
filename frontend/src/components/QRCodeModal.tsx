@@ -65,7 +65,7 @@ export function QRCodeModal({ isOpen, onClose, url }: QRCodeModalProps) {
 
         <button
           onClick={downloadQR}
-          className="w-full flex items-center justify-center gap-2 bg-violet-600 hover:bg-violet-700 text-white font-bold py-3 rounded-xl transition-colors"
+          className="w-full flex items-center justify-center gap-2 bg-primary-600 hover:bg-primary-700 text-white font-bold py-3 rounded-xl transition-colors"
         >
           <Download className="w-5 h-5" />
           Скачать PNG

@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import toast from 'react-hot-toast'
@@ -126,7 +127,7 @@ export function AdminDisputes() {
                   <div className="flex gap-2 overflow-x-auto pb-2">
                     {dispute.screenshots.map((url: string, i: number) => (
                       <a key={i} href={url} target="_blank" rel="noopener noreferrer" className="shrink-0 relative group block w-16 h-16 rounded-lg overflow-hidden bg-neutral-100 dark:bg-neutral-800">
-                        <img src={url} alt="screenshot" className="w-full h-full object-cover" />
+                        <Image src={url || ''} alt="screenshot" className="w-full h-full object-cover"  width={800} height={800} />
                         <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                           <ExternalLink className="w-4 h-4 text-white" />
                         </div>
@@ -172,7 +173,7 @@ export function AdminDisputes() {
                   value={adminComment}
                   onChange={e => setAdminComment(e.target.value)}
                   placeholder="Ваша жалоба была рассмотрена..."
-                  className="w-full bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-xl p-3 text-sm min-h-[100px] outline-none focus:ring-2 focus:ring-cyan-500"
+                  className="w-full bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-xl p-3 text-sm min-h-[100px] outline-none focus:ring-2 focus:ring-accent-500"
                 />
               </div>
             </div>

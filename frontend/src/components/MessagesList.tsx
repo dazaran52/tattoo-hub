@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import { useState, useEffect, useRef } from 'react'
 import { MessageCircle, Clock, Send, AlertCircle, Search, ChevronLeft, Image as ImageIcon, Calendar, Paperclip, Check, CheckCheck } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -6,6 +7,8 @@ import { toast } from 'react-hot-toast'
 import { ClientDetailsModal } from '@/components/ClientDetailsModal'
 import { ImageViewerModal } from '@/components/ImageViewerModal'
 import { ChatSessionsModal } from '@/components/ChatSessionsModal'
+import { SkeletonList } from '@/components/SkeletonCard'
+import { EmptyState } from '@/components/EmptyState'
 
 interface Message {
   id: string
@@ -350,35 +353,24 @@ export function MessagesList({ userRole = 'master' }: MessagesListProps) {
 
   if (loading) {
     return (
-      <div className="bg-white dark:bg-neutral-900 rounded-3xl border border-neutral-200 dark:border-white/5 overflow-hidden flex items-center justify-center h-[calc(100vh-140px)] min-h-[600px] shadow-sm">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-violet-500"></div>
+      <div className="bg-white dark:bg-neutral-900 rounded-3xl border border-neutral-200 dark:border-white/5 p-6 h-[calc(100vh-140px)] min-h-[600px] shadow-sm">
+        <SkeletonList count={6} />
       </div>
     )
   }
 
   if (chats.length === 0) {
     return (
-      <div className="bg-white dark:bg-neutral-900 rounded-3xl border border-neutral-200 dark:border-white/5 overflow-hidden flex flex-col items-center justify-center h-[calc(100vh-140px)] min-h-[600px] shadow-sm text-center p-8">
-        <div className="w-20 h-20 bg-violet-100 dark:bg-violet-900/30 rounded-full flex items-center justify-center mb-6 shadow-sm">
-          <MessageCircle className="w-10 h-10 text-violet-500" />
-        </div>
-        <h3 className="text-2xl font-extrabold text-neutral-900 dark:text-white mb-3">
-          {userRole === 'client' ? 'У вас пока нет диалогов' : 'Нет активных чатов'}
-        </h3>
-        <p className="text-neutral-500 text-base max-w-md mx-auto mb-8 leading-relaxed">
-          {userRole === 'client' 
-            ? 'Здесь будут отображаться ваши переписки с мастерами. Чтобы начать общение, выберите мастера или оставьте новую заявку на маркетплейсе.'
-            : 'Откликайтесь на заявки или принимайте персональные заказы, чтобы начать общение с клиентами.'}
-        </p>
-        {userRole === 'client' && (
-          <button 
-            onClick={() => window.location.href = '/dashboard'}
-            className="px-8 py-3.5 bg-violet-600 hover:bg-violet-500 text-white font-bold rounded-xl transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5"
-          >
-            Найти мастера
-          </button>
-        )}
-      </div>
+      <EmptyState
+        className="h-[calc(100vh-140px)] min-h-[600px] rounded-3xl border-0"
+        icon={<MessageCircle className="w-10 h-10 text-primary-500" />}
+        title={userRole === 'client' ? 'У вас пока нет диалогов' : 'Нет активных чатов'}
+        description={userRole === 'client' 
+          ? 'Здесь будут отображаться ваши переписки с мастерами. Чтобы начать общение, выберите мастера или оставьте новую заявку на маркетплейсе.'
+          : 'Откликайтесь на заявки или принимайте персональные заказы, чтобы начать общение с клиентами.'}
+        actionLabel={userRole === 'client' ? 'Найти мастера' : undefined}
+        onAction={userRole === 'client' ? () => window.location.href = '/dashboard' : undefined}
+      />
     )
   }
 
@@ -389,7 +381,7 @@ export function MessagesList({ userRole = 'master' }: MessagesListProps) {
       <div className={`w-full md:w-80 lg:w-96 border-r border-neutral-200 dark:border-white/5 flex flex-col transition-all duration-300 ${showMobileChat ? 'hidden md:flex' : 'flex'}`}>
         <div className="p-4 sm:p-6 border-b border-neutral-200 dark:border-white/5 shrink-0 bg-neutral-50/50 dark:bg-neutral-900/50">
           <h2 className="text-xl font-bold text-neutral-900 dark:text-white flex items-center gap-2 mb-4">
-            <MessageCircle className="w-5 h-5 text-violet-500" />
+            <MessageCircle className="w-5 h-5 text-primary-500" />
             Сообщения
             {chats.reduce((sum, c: any) => sum + (c.unread_count || 0), 0) > 0 && (
               <span className="w-2 h-2 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.6)] animate-pulse ml-1" />
@@ -402,7 +394,7 @@ export function MessagesList({ userRole = 'master' }: MessagesListProps) {
               placeholder="Поиск по имени или стилю..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white pl-9 pr-4 py-2 rounded-xl text-sm border border-neutral-200 dark:border-white/10 focus:border-violet-500 outline-none transition-colors"
+              className="w-full bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white pl-9 pr-4 py-2 rounded-xl text-sm border border-neutral-200 dark:border-white/10 focus:border-primary-500 outline-none transition-colors"
             />
           </div>
         </div>
@@ -422,13 +414,13 @@ export function MessagesList({ userRole = 'master' }: MessagesListProps) {
                     setShowMobileChat(true)
                   }
                 }}
-                className={`p-4 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 cursor-pointer transition-colors flex items-center gap-3 ${isSelected ? 'bg-violet-50/50 dark:bg-violet-900/10 border-l-4 border-violet-500' : 'border-l-4 border-transparent'}`}
+                className={`p-4 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 cursor-pointer transition-colors flex items-center gap-3 ${isSelected ? 'bg-primary-50/50 dark:bg-primary-900/10 border-l-4 border-primary-500' : 'border-l-4 border-transparent'}`}
               >
                 <div className="w-12 h-12 bg-neutral-100 dark:bg-neutral-800 rounded-full flex items-center justify-center shrink-0 overflow-hidden border border-neutral-200 dark:border-white/10">
                   {chat.client_info?.avatar_url ? (
-                    <img src={chat.client_info.avatar_url} alt="avatar" className="w-full h-full object-cover" />
+                    <Image src={chat.client_info.avatar_url || ''} alt="avatar" className="w-full h-full object-cover"  width={800} height={800} />
                   ) : chat.leads?.image_urls && chat.leads.image_urls.length > 0 ? (
-                    <img src={chat.leads.image_urls[0]} alt="tattoo" className="w-full h-full object-cover" />
+                    <Image src={chat.leads.image_urls[0] || ''} alt="tattoo" className="w-full h-full object-cover"  width={800} height={800} />
                   ) : (
                     <MessageCircle className="w-6 h-6 text-neutral-400" />
                   )}
@@ -540,9 +532,9 @@ export function MessagesList({ userRole = 'master' }: MessagesListProps) {
                 </button>
                 <div className="w-10 h-10 bg-neutral-100 dark:bg-neutral-800 rounded-full flex items-center justify-center shrink-0 overflow-hidden border border-neutral-200 dark:border-white/10">
                     {selectedChat.client_info?.avatar_url ? (
-                      <img src={selectedChat.client_info.avatar_url} alt="avatar" className="w-full h-full object-cover" />
+                      <Image src={selectedChat.client_info.avatar_url || ''} alt="avatar" className="w-full h-full object-cover"  width={800} height={800} />
                     ) : selectedChat.leads?.image_urls && selectedChat.leads.image_urls.length > 0 ? (
-                      <img src={selectedChat.leads.image_urls[0]} alt="tattoo" className="w-full h-full object-cover" />
+                      <Image src={selectedChat.leads.image_urls[0] || ''} alt="tattoo" className="w-full h-full object-cover"  width={800} height={800} />
                     ) : (
                       <MessageCircle className="w-5 h-5 text-neutral-400" />
                     )}
@@ -570,7 +562,7 @@ export function MessagesList({ userRole = 'master' }: MessagesListProps) {
                   setShowSessionsModal(true);
                 }}
               >
-                <span className="text-xs font-semibold px-3 py-1.5 bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 rounded-lg whitespace-nowrap hover:bg-violet-200 dark:hover:bg-violet-900/50 transition-colors">
+                <span className="text-xs font-semibold px-3 py-1.5 bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 rounded-lg whitespace-nowrap hover:bg-primary-200 dark:hover:bg-primary-900/50 transition-colors">
                   Сеансы ({selectedChat.sessions_count || 1})
                 </span>
               </div>
@@ -583,10 +575,12 @@ export function MessagesList({ userRole = 'master' }: MessagesListProps) {
               </div>
 
               {messages.length === 0 ? (
-                <div className="text-center text-neutral-400 py-12 text-sm">
-                  <MessageCircle className="w-12 h-12 text-neutral-200 dark:text-neutral-800 mx-auto mb-4" />
-                  Здесь пока нет сообщений.<br/>Напишите клиенту первым!
-                </div>
+                <EmptyState
+                  variant="compact"
+                  icon={<MessageCircle className="w-8 h-8" />}
+                  title="Здесь пока нет сообщений"
+                  description="Напишите клиенту первым!"
+                />
               ) : (
                 messages.map(msg => {
                   const isSystemCard = msg.content.startsWith('[SYSTEM_CARD]:')
@@ -601,7 +595,7 @@ export function MessagesList({ userRole = 'master' }: MessagesListProps) {
                       <div key={msg.id} className="flex justify-center w-full my-4 shrink-0">
                         {cardData ? (
                           <div className="bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-white/10 p-5 rounded-2xl shadow-sm text-center max-w-sm w-full">
-                             <Calendar className="w-8 h-8 text-violet-500 mx-auto mb-3" />
+                             <Calendar className="w-8 h-8 text-primary-500 mx-auto mb-3" />
                              <h4 className="font-bold text-neutral-900 dark:text-white mb-2">
                                {cardData.type === 'session_created' ? 'Сеанс назначен' : cardData.type === 'new_lead' ? 'Новая заявка' : cardData.type === 'master_rejected' ? 'Отказ' : cardData.type === 'master_accepted' ? 'Сеанс принят в работу' : 'Системное уведомление'}
                              </h4>
@@ -653,15 +647,15 @@ export function MessagesList({ userRole = 'master' }: MessagesListProps) {
                   <div key={msg.id} className={`flex ${msg.sender_type === userRole ? 'justify-end' : 'justify-start'} shrink-0 animate-in slide-in-from-bottom-2 fade-in duration-300`}>
                     <div className={`max-w-[85%] sm:max-w-[70%] rounded-2xl px-4 py-2 ${
                       msg.sender_type === userRole 
-                        ? 'bg-violet-600 text-white rounded-br-sm shadow-sm' 
+                        ? 'bg-primary-600 text-white rounded-br-sm shadow-sm' 
                         : 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white rounded-bl-sm border border-neutral-100 dark:border-white/5 shadow-sm'
                     }`}>
                       {msg.content.startsWith('http') && msg.content.includes('supabase') ? (
-                        <img src={msg.content} alt="chat attachment" className="max-w-full rounded-lg mt-1 mb-2 max-h-48 object-cover cursor-pointer hover:opacity-90 transition-opacity" onClick={() => setViewerImage(msg.content)} />
+                        <Image src={msg.content || ''} alt="chat attachment" className="max-w-full rounded-lg mt-1 mb-2 max-h-48 object-cover cursor-pointer hover:opacity-90 transition-opacity" onClick={() => setViewerImage(msg.content)}  width={800} height={800} />
                       ) : (
                         <p className="whitespace-pre-wrap text-sm leading-relaxed">{msg.content}</p>
                       )}
-                      <div className={`flex items-center justify-end gap-1 text-[10px] mt-1 ${msg.sender_type === userRole ? 'text-violet-200' : 'text-neutral-400'}`}>
+                      <div className={`flex items-center justify-end gap-1 text-[10px] mt-1 ${msg.sender_type === userRole ? 'text-primary-200' : 'text-neutral-400'}`}>
                         <span>{new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                         {msg.sender_type === userRole && (
                           msg.is_error ? (
@@ -687,7 +681,7 @@ export function MessagesList({ userRole = 'master' }: MessagesListProps) {
                 <button 
                   type="button" 
                   onClick={() => fileInputRef.current?.click()}
-                  className="cursor-pointer p-2 text-neutral-400 hover:text-violet-500 transition-colors"
+                  className="cursor-pointer p-2 text-neutral-400 hover:text-primary-500 transition-colors"
                 >
                   <Paperclip className="w-5 h-5" />
                 </button>
@@ -707,12 +701,12 @@ export function MessagesList({ userRole = 'master' }: MessagesListProps) {
                   placeholder="Написать сообщение..."
                   value={newMessage}
                   onChange={e => setNewMessage(e.target.value)}
-                  className="flex-1 bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white border border-transparent focus:border-violet-500 focus:bg-white dark:focus:bg-neutral-900 rounded-xl px-4 py-3 outline-none text-sm transition-all"
+                  className="flex-1 bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white border border-transparent focus:border-primary-500 focus:bg-white dark:focus:bg-neutral-900 rounded-xl px-4 py-3 outline-none text-sm transition-all"
                 />
                 <button 
                   type="submit"
                   disabled={!newMessage.trim()}
-                  className="bg-violet-600 hover:bg-violet-700 disabled:bg-neutral-300 disabled:dark:bg-neutral-800 text-white p-3 rounded-xl transition-all shadow-sm flex items-center justify-center min-w-[48px]"
+                  className="bg-primary-600 hover:bg-primary-700 disabled:bg-neutral-300 disabled:dark:bg-neutral-800 text-white p-3 rounded-xl transition-all shadow-sm flex items-center justify-center min-w-[48px]"
                 >
                   <Send className="w-5 h-5" />
                 </button>
@@ -720,10 +714,13 @@ export function MessagesList({ userRole = 'master' }: MessagesListProps) {
             </div>
           </>
         ) : (
-          <div className="flex-1 flex flex-col items-center justify-center text-center p-8 hidden md:flex text-neutral-400">
-            <MessageCircle className="w-16 h-16 text-neutral-200 dark:text-neutral-800 mb-4" />
-            <p className="text-lg font-medium text-neutral-500">Выберите чат слева</p>
-            <p className="text-sm">Чтобы просмотреть историю сообщений</p>
+          <div className="flex-1 hidden md:flex items-center justify-center p-8">
+            <EmptyState
+              variant="compact"
+              icon={<MessageCircle className="w-10 h-10" />}
+              title="Выберите чат слева"
+              description="Чтобы просмотреть историю сообщений"
+            />
           </div>
         )}
       </div>

@@ -85,7 +85,7 @@ export function KanbanColumnEditor({ columns, onSave, onCancel }: Props) {
           <button onClick={onCancel} className="px-5 py-2.5 text-sm font-bold text-neutral-500 hover:text-neutral-700 bg-neutral-100 dark:bg-white/5 hover:bg-neutral-200 dark:hover:bg-white/10 rounded-xl transition-colors">
             Отмена
           </button>
-          <button onClick={() => onSave(cols)} className="px-5 py-2.5 text-sm font-bold text-white bg-violet-600 hover:bg-violet-700 rounded-xl transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5 flex items-center gap-2">
+          <button onClick={() => onSave(cols)} className="px-5 py-2.5 text-sm font-bold text-white bg-primary-600 hover:bg-primary-700 rounded-xl transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5 flex items-center gap-2">
             <Check className="w-4 h-4" />
             Сохранить
           </button>
@@ -98,7 +98,7 @@ export function KanbanColumnEditor({ columns, onSave, onCancel }: Props) {
           const isSystem = c.id === 'new' || c.id === 'cancelled'
           
           return (
-            <div key={c.id} className="relative group bg-neutral-50/50 dark:bg-white/[0.02] border border-neutral-200/50 dark:border-white/5 rounded-2xl p-6 transition-all hover:border-violet-500/30 hover:shadow-md">
+            <div key={c.id} className="relative group bg-neutral-50/50 dark:bg-white/[0.02] border border-neutral-200/50 dark:border-white/5 rounded-2xl p-6 transition-all hover:border-primary-500/30 hover:shadow-md">
               <div className="absolute right-4 top-1/2 -translate-y-1/2 flex flex-col gap-1 z-10">
                 <button onClick={() => moveUp(index)} disabled={index === 0} className="p-1.5 rounded-lg text-neutral-400 hover:text-neutral-900 hover:bg-white dark:hover:bg-neutral-800 dark:hover:text-white shadow-sm opacity-50 hover:opacity-100 disabled:opacity-20 disabled:hover:bg-transparent transition-all">
                   <ChevronUp className="w-5 h-5" />
@@ -117,7 +117,7 @@ export function KanbanColumnEditor({ columns, onSave, onCancel }: Props) {
                     type="text"
                     value={c.title}
                     onChange={(e) => updateCol(c.id, { title: e.target.value })}
-                    className="flex-1 bg-white dark:bg-[#111] border border-neutral-200 dark:border-white/10 rounded-xl px-4 py-3 text-base font-bold outline-none focus:ring-2 focus:ring-violet-500 transition-all placeholder:font-normal"
+                    className="flex-1 bg-white dark:bg-[#111] border border-neutral-200 dark:border-white/10 rounded-xl px-4 py-3 text-base font-bold outline-none focus:ring-2 focus:ring-primary-500 transition-all placeholder:font-normal"
                     placeholder="Название колонки"
                   />
                   {!isSystem && (
@@ -163,7 +163,7 @@ export function KanbanColumnEditor({ columns, onSave, onCancel }: Props) {
                             onClick={() => updateCol(c.id, { color: color.value })}
                             title={color.label}
                             style={{ backgroundColor: color.hex }}
-                            className={`w-9 h-9 rounded-full transition-all relative ${isSelected ? 'ring-2 ring-offset-2 ring-offset-neutral-50 dark:ring-offset-neutral-900 ring-violet-500 scale-110' : 'opacity-80 hover:opacity-100 hover:scale-110'}`}
+                            className={`w-9 h-9 rounded-full transition-all relative ${isSelected ? 'ring-2 ring-offset-2 ring-offset-neutral-50 dark:ring-offset-neutral-900 ring-primary-500 scale-110' : 'opacity-80 hover:opacity-100 hover:scale-110'}`}
                           >
                             {isSelected && (
                               <Check className="absolute inset-0 m-auto w-4 h-4 text-white drop-shadow-md" />
@@ -182,7 +182,7 @@ export function KanbanColumnEditor({ columns, onSave, onCancel }: Props) {
 
       <button
         onClick={handleAdd}
-        className="w-full py-4 border-2 border-dashed border-neutral-300 dark:border-white/10 hover:border-violet-500 hover:bg-violet-50 dark:hover:bg-violet-500/10 text-neutral-500 dark:text-neutral-400 dark:hover:text-violet-300 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all hover:shadow-sm"
+        className="w-full py-4 border-2 border-dashed border-neutral-300 dark:border-white/10 hover:border-primary-500 hover:bg-primary-50 dark:hover:bg-primary-500/10 text-neutral-500 dark:text-neutral-400 dark:hover:text-primary-300 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all hover:shadow-sm"
       >
         <Plus className="w-5 h-5" />
         Добавить колонку

@@ -12,8 +12,8 @@ export default function NewLeadPage() {
 
   const themeClasses = {
     card: 'bg-transparent border-0 p-0 shadow-none',
-    input: 'bg-black/50 border border-white/10 text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 shadow-inner',
-    buttonPrimary: 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white hover:from-indigo-400 hover:to-purple-400 shadow-lg shadow-indigo-500/25 hover:scale-[1.01] transition-all'
+    input: 'bg-black/50 border border-white/10 text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 shadow-inner',
+    buttonPrimary: 'bg-gradient-to-r from-primary-500 to-primary-500 text-white hover:from-primary-400 hover:to-primary-400 shadow-lg shadow-primary-500/25 hover:scale-[1.01] transition-all'
   }
 
   return (

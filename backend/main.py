@@ -6,6 +6,7 @@ from contextlib import asynccontextmanager
 
 from app.config import get_settings
 from app.database import get_supabase_client
+from app.middleware.error_handling import register_exception_handlers
 from app.routers.profile import router as profile_router
 from app.routers.leads import router as leads_router
 from app.routers.webhooks import router as webhooks_router
@@ -18,7 +19,6 @@ from app.routers.analytics import router as analytics_router
 from app.routers.chat import router as chat_router
 from app.routers.client_portal import router as client_portal_router
 from app.routers.public import router as public_router
-from app.routers.instagram import router as instagram_router
 from app.routers.reviews import router as reviews_router
 from app.routers import crm, favorites
 
@@ -69,7 +69,11 @@ def create_application() -> FastAPI:
         allow_headers=["*"],
         expose_headers=["*"]
     )
-    
+
+    # Hide internal error details (SQL/table names, tracebacks) from API
+    # responses in production, while still logging them in full server-side.
+    register_exception_handlers(app, settings)
+
     # Include routers
     app.include_router(profile_router)
     app.include_router(leads_router)
@@ -83,7 +87,6 @@ def create_application() -> FastAPI:
     app.include_router(chat_router)
     app.include_router(client_portal_router)
     app.include_router(public_router)
-    app.include_router(instagram_router)
     app.include_router(reviews_router)
     app.include_router(crm.router, prefix="/api/crm", tags=["CRM"])
     app.include_router(favorites.router)

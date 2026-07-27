@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import { useState, useEffect } from 'react'
 import { ChevronLeft, ChevronRight, Clock, Coffee, Plus, Calendar as CalendarIcon, PlayCircle, CheckCircle, Trash2, Edit3, Loader2, Maximize2, Minimize2 } from 'lucide-react'
 import toast from 'react-hot-toast'
@@ -7,6 +8,7 @@ import { CRMSession } from './CRMBoard'
 import { LiabilityWaiverModal } from './LiabilityWaiverModal'
 import { CompleteSessionModal } from './CompleteSessionModal'
 import { ImageViewerModal } from './ImageViewerModal'
+import { EmptyState } from '@/components/EmptyState'
 
 interface DayOff {
   id: string
@@ -158,7 +160,7 @@ export function CalendarView({ sessions, onUpdate, onSessionClick, onCreateSessi
             onClick={() => setCalendarMode('normal')}
             className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
               calendarMode === 'normal' 
-                ? 'bg-white dark:bg-neutral-900 text-violet-600 dark:text-violet-400 shadow-sm' 
+                ? 'bg-white dark:bg-neutral-900 text-primary-600 dark:text-primary-400 shadow-sm' 
                 : 'text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'
             }`}
           >
@@ -194,8 +196,13 @@ export function CalendarView({ sessions, onUpdate, onSessionClick, onCreateSessi
       </div>
 
       {isLoading ? (
-        <div className="flex justify-center items-center h-64">
-          <Loader2 className="w-8 h-8 animate-spin text-violet-500" />
+        <div className="grid grid-cols-7 gap-2 sm:gap-4 animate-pulse">
+          {[...Array(35)].map((_, i) => (
+            <div key={i} className="aspect-square rounded-2xl bg-neutral-100 dark:bg-neutral-800/60 border border-neutral-200/50 dark:border-neutral-800 p-2 sm:p-3 flex flex-col justify-between">
+              <div className="h-4 bg-neutral-200 dark:bg-neutral-700 rounded w-6"></div>
+              <div className="h-3 bg-neutral-200/60 dark:bg-neutral-700/60 rounded w-3/4"></div>
+            </div>
+          ))}
         </div>
       ) : (
         <div className="grid grid-cols-7 gap-2 sm:gap-4">
@@ -220,13 +227,13 @@ export function CalendarView({ sessions, onUpdate, onSessionClick, onCreateSessi
                 onClick={() => toggleDayOff(dateStr)}
                 className={`
                   relative aspect-square rounded-2xl p-2 sm:p-3 border transition-all flex flex-col items-start justify-between
-                  ${isToday ? 'border-violet-500 shadow-sm' : 'border-neutral-200 dark:border-neutral-800'}
-                  ${dayOff ? 'bg-red-50 dark:bg-red-900/10 border-red-200 dark:border-red-900/30' : 'bg-white dark:bg-neutral-900 hover:border-violet-300 dark:hover:border-violet-700'}
+                  ${isToday ? 'border-primary-500 shadow-sm' : 'border-neutral-200 dark:border-neutral-800'}
+                  ${dayOff ? 'bg-red-50 dark:bg-red-900/10 border-red-200 dark:border-red-900/30' : 'bg-white dark:bg-neutral-900 hover:border-primary-300 dark:hover:border-primary-700'}
                   ${calendarMode === 'day_off' ? 'cursor-pointer hover:bg-red-50 dark:hover:bg-red-900/20' : ''}
                 `}
               >
                 <span className={`font-bold text-sm sm:text-base ${
-                  isToday ? 'text-violet-600 dark:text-violet-400' : 
+                  isToday ? 'text-primary-600 dark:text-primary-400' : 
                   dayOff ? 'text-red-500' : 'text-neutral-700 dark:text-neutral-300'
                 }`}>
                   {date.getDate()}
@@ -241,7 +248,7 @@ export function CalendarView({ sessions, onUpdate, onSessionClick, onCreateSessi
                 {daySessions.length > 0 && !dayOff && (
                   <div className="w-full mt-auto space-y-1">
                     {daySessions.slice(0, 2).map((s, idx) => (
-                      <div key={idx} className={`flex items-center gap-1 text-[10px] sm:text-xs px-1 sm:px-2 py-0.5 sm:py-1 rounded-md font-medium truncate w-full ${s.status === 'new' ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400' : 'bg-violet-50 dark:bg-violet-900/30 text-violet-700 dark:text-violet-400'}`}>
+                      <div key={idx} className={`flex items-center gap-1 text-[10px] sm:text-xs px-1 sm:px-2 py-0.5 sm:py-1 rounded-md font-medium truncate w-full ${s.status === 'new' ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400' : 'bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400'}`}>
                         <Clock className="w-3 h-3 shrink-0" />
                         <span className="truncate">{s.start_time ? s.start_time.substring(0,5) : 'Без времени'}</span>
                       </div>
@@ -272,7 +279,7 @@ export function CalendarView({ sessions, onUpdate, onSessionClick, onCreateSessi
             >
               <div className="p-6 border-b border-neutral-100 dark:border-neutral-800 flex justify-between items-center">
                 <div className="flex items-center gap-3">
-                  <div className="bg-violet-100 dark:bg-violet-900/30 p-2 rounded-xl text-violet-600 dark:text-violet-400">
+                  <div className="bg-primary-100 dark:bg-primary-900/30 p-2 rounded-xl text-primary-600 dark:text-primary-400">
                     <CalendarIcon className="w-5 h-5" />
                   </div>
                   <div>
@@ -292,16 +299,19 @@ export function CalendarView({ sessions, onUpdate, onSessionClick, onCreateSessi
 
               <div className="flex-1 overflow-y-auto p-6 bg-neutral-50 dark:bg-neutral-900/50">
                 {selectedDateSessions.length === 0 ? (
-                  <div className="text-center py-12 text-neutral-400">
-                    На этот день нет записей
-                  </div>
+                  <EmptyState
+                    variant="compact"
+                    icon={<CalendarIcon className="w-8 h-8" />}
+                    title="На этот день нет записей"
+                    description="Вы можете добавить сеанс вручную кнопкой ниже."
+                  />
                 ) : (
                   <div className={isSidebarExpanded ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" : "flex flex-col gap-4"}>
                     {selectedDateSessions.map(s => (
                       <div 
                         key={s.id} 
                         onClick={() => onSessionClick(s)}
-                        className={`bg-white dark:bg-neutral-800 border rounded-2xl p-4 shadow-sm h-full flex flex-col cursor-pointer transition-transform hover:scale-[1.02] active:scale-[0.98] ${s.status === 'new' ? 'border-emerald-500/50 bg-emerald-50/30 dark:bg-emerald-900/10' : 'border-neutral-200 dark:border-neutral-700 hover:border-violet-300 dark:hover:border-violet-700'}`}
+                        className={`bg-white dark:bg-neutral-800 border rounded-2xl p-4 shadow-sm h-full flex flex-col cursor-pointer transition-transform hover:scale-[1.02] active:scale-[0.98] ${s.status === 'new' ? 'border-emerald-500/50 bg-emerald-50/30 dark:bg-emerald-900/10' : 'border-neutral-200 dark:border-neutral-700 hover:border-primary-300 dark:hover:border-primary-700'}`}
                       >
                       <div className="flex justify-between items-start mb-3">
                         <div>
@@ -325,7 +335,7 @@ export function CalendarView({ sessions, onUpdate, onSessionClick, onCreateSessi
                       {s.reference_images && s.reference_images.length > 0 && (
                         <div className="flex gap-2 overflow-x-auto mb-4 custom-scrollbar pb-2" onClick={(e) => e.stopPropagation()}>
                           {s.reference_images.map((url, idx) => (
-                            <img key={idx} src={url} alt="ref" onClick={() => setViewerImage(url)} className="w-16 h-16 rounded-lg object-cover shrink-0 border border-neutral-200 dark:border-neutral-700 cursor-pointer" />
+                            <Image key={idx} src={url || ''} alt="ref" onClick={() => setViewerImage(url)} className="w-16 h-16 rounded-lg object-cover shrink-0 border border-neutral-200 dark:border-neutral-700 cursor-pointer"  width={64} height={64} />
                           ))}
                         </div>
                       )}
@@ -347,7 +357,7 @@ export function CalendarView({ sessions, onUpdate, onSessionClick, onCreateSessi
                                   setClientNameForWaiver(s.master_clients?.name || '')
                                   setSessionToStart(s.id)
                                 }}
-                                className="px-3 py-1.5 bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400 font-bold text-xs rounded-lg flex items-center gap-1 hover:bg-violet-200 transition-colors"
+                                className="px-3 py-1.5 bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-400 font-bold text-xs rounded-lg flex items-center gap-1 hover:bg-primary-200 transition-colors"
                               >
                                 <PlayCircle className="w-3.5 h-3.5" /> Начать
                               </button>
@@ -363,7 +373,7 @@ export function CalendarView({ sessions, onUpdate, onSessionClick, onCreateSessi
                           </div>
                           <div className="flex gap-2">
                             {s.status !== 'new' && (
-                              <button onClick={() => onSessionClick(s)} className="p-1.5 text-neutral-400 hover:text-violet-500 rounded-md transition-colors" title="Редактировать">
+                              <button onClick={() => onSessionClick(s)} className="p-1.5 text-neutral-400 hover:text-primary-500 rounded-md transition-colors" title="Редактировать">
                                 <Edit3 className="w-4 h-4" />
                               </button>
                             )}

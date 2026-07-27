@@ -125,7 +125,7 @@ export function PhoneInput({ value, onChange, placeholder = "Номер теле
 
   return (
     <div className="relative w-full" ref={dropdownRef}>
-      <div className="flex items-center w-full bg-neutral-100 dark:bg-neutral-800 rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-violet-500/20 transition-all">
+      <div className="flex items-center w-full bg-neutral-100 dark:bg-neutral-800 rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-primary-500/20 transition-all">
         {/* Country Selector Dropdown Trigger */}
         <button
           type="button"

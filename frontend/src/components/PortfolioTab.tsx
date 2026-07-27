@@ -1,9 +1,11 @@
+import Image from 'next/image'
 import { useState, useEffect } from 'react'
 import { Plus, Image as ImageIcon, Video, Trash2, Edit2, Loader2, X } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { PostModal, PortfolioPost } from './PostModal'
 import { useLanguage } from '@/i18n/LanguageContext'
 import imageCompression from 'browser-image-compression'
+import { EmptyState } from '@/components/EmptyState'
 
 interface PortfolioTabProps {
   profile: any
@@ -76,7 +78,7 @@ export function PortfolioTab({ profile }: PortfolioTabProps) {
           fileExt = fileToUpload.name.split('.').pop() || 'webp'
         }
 
-        const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`
+        const fileName = `${profile.id}/${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`
         
         const { error: uploadError } = await supabase.storage
           .from('portfolio')
@@ -150,21 +152,20 @@ export function PortfolioTab({ profile }: PortfolioTabProps) {
       </div>
 
       {isLoading ? (
-        <div className="flex justify-center items-center h-48">
-          <Loader2 className="w-8 h-8 animate-spin text-cyan-500" />
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 animate-pulse">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="aspect-square rounded-2xl bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-800"></div>
+          ))}
         </div>
       ) : posts.length === 0 ? (
-        <div className="text-center py-16 bg-neutral-50 dark:bg-neutral-950 rounded-2xl border border-dashed border-neutral-300 dark:border-neutral-800">
-          <ImageIcon className="w-12 h-12 text-neutral-400 mx-auto mb-4" />
-          <h3 className="text-lg font-bold text-neutral-900 dark:text-white mb-2">У вас еще нет постов</h3>
-          <p className="text-neutral-500 max-w-sm mx-auto mb-6">Создайте первый пост, чтобы клиенты могли оценить ваши работы.</p>
-          <button
-            onClick={() => setIsCreating(true)}
-            className="bg-cyan-500 hover:bg-cyan-600 text-white px-6 py-3 rounded-xl font-bold transition-colors shadow-lg shadow-cyan-500/25"
-          >
-            Создать пост
-          </button>
-        </div>
+        <EmptyState
+          className="py-16 border-dashed"
+          icon={<ImageIcon className="w-10 h-10 text-neutral-400" />}
+          title="У вас еще нет постов"
+          description="Создайте первый пост, чтобы клиенты могли оценить ваши работы."
+          actionLabel="Создать пост"
+          onAction={() => setIsCreating(true)}
+        />
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {posts.map(post => {
@@ -181,7 +182,7 @@ export function PortfolioTab({ profile }: PortfolioTabProps) {
                 {firstMedia?.type === 'video' ? (
                   <video src={firstMedia.url} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
                 ) : (
-                  <img src={firstMedia?.url} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
+                  <Image src={firstMedia?.url || ''} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"  alt="" width={800} height={800} />
                 )}
                 
                 {/* Icons overlay */}
@@ -218,7 +219,7 @@ export function PortfolioTab({ profile }: PortfolioTabProps) {
                         {isVid ? (
                           <video src={url} className="w-full h-full object-cover" />
                         ) : (
-                          <img src={url} className="w-full h-full object-cover" />
+                          <Image src={url || ''} className="w-full h-full object-cover"  alt="" width={800} height={800} />
                         )}
                         <button
                           onClick={() => removeFile(idx)}
@@ -251,7 +252,7 @@ export function PortfolioTab({ profile }: PortfolioTabProps) {
                   value={newDescription}
                   onChange={e => setNewDescription(e.target.value)}
                   placeholder="Опишите вашу работу..."
-                  className="w-full h-32 bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-xl p-4 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 resize-none"
+                  className="w-full h-32 bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-xl p-4 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-accent-500 resize-none"
                 />
               </div>
             </div>
@@ -267,7 +268,7 @@ export function PortfolioTab({ profile }: PortfolioTabProps) {
               <button 
                 onClick={handleCreatePost}
                 disabled={isUploading || newFiles.length === 0}
-                className="flex items-center gap-2 px-6 py-2.5 bg-cyan-500 hover:bg-cyan-600 text-white rounded-xl font-bold transition-colors disabled:opacity-50 shadow-lg shadow-cyan-500/25"
+                className="flex items-center gap-2 px-6 py-2.5 bg-accent-500 hover:bg-accent-600 text-white rounded-xl font-bold transition-colors disabled:opacity-50 shadow-lg shadow-accent-500/25"
               >
                 {isUploading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Plus className="w-5 h-5" />}
                 Опубликовать

@@ -150,3 +150,17 @@ def test_pwa_generated_files_are_not_tracked_source_assets():
         text=True,
     )
     assert tracked.strip() == ""
+
+
+def test_secure_storage_policies_migration():
+    sql = source(BACKEND / "migrations" / "054_secure_storage_policies.sql")
+    workflow = source(ROOT / ".github" / "workflows" / "deploy.yml")
+    next_config = source(FRONTEND / "next.config.js")
+    assert "054_secure_storage_policies.sql" in workflow
+    assert "file_size_limit = 5242880" in sql
+    assert "allowed_mime_types = ARRAY[" in sql
+    assert "(storage.foldername(name))[1] = auth.uid()::text" in sql
+    assert "owner = auth.uid()" in sql
+    assert "fallbacks:" in next_config
+    assert "document: '/~offline'" in next_config
+

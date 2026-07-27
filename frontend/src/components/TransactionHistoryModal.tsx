@@ -95,7 +95,7 @@ export function TransactionHistoryModal({ isOpen, onClose, withdrawableBalance =
         </button>
 
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-12 h-12 bg-cyan-100 dark:bg-cyan-900/30 text-cyan-600 dark:text-cyan-400 rounded-2xl flex items-center justify-center">
+          <div className="w-12 h-12 bg-accent-100 dark:bg-accent-900/30 text-accent-600 dark:text-accent-400 rounded-2xl flex items-center justify-center">
             <Gem className="w-6 h-6" />
           </div>
           <div>
@@ -107,14 +107,14 @@ export function TransactionHistoryModal({ isOpen, onClose, withdrawableBalance =
         </div>
 
         {withdrawableBalance > 0 && (
-          <div className="mx-4 mb-4 bg-cyan-50 dark:bg-cyan-900/20 p-4 rounded-xl border border-cyan-100 dark:border-cyan-900/50 flex items-center justify-between">
+          <div className="mx-4 mb-4 bg-accent-50 dark:bg-accent-900/20 p-4 rounded-xl border border-accent-100 dark:border-accent-900/50 flex items-center justify-between">
             <div>
-              <p className="text-xs font-bold text-cyan-600 dark:text-cyan-400">Доступно для вывода</p>
+              <p className="text-xs font-bold text-accent-600 dark:text-accent-400">Доступно для вывода</p>
               <p className="text-lg font-bold text-neutral-900 dark:text-white">{withdrawableBalance} кредитов</p>
             </div>
             <button
               onClick={() => setShowWithdraw(true)}
-              className="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg text-sm font-bold shadow-md transition-colors"
+              className="px-4 py-2 bg-accent-600 hover:bg-accent-700 text-white rounded-lg text-sm font-bold shadow-md transition-colors"
             >
               Вывести
             </button>

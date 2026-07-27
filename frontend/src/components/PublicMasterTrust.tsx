@@ -11,7 +11,7 @@ export function VerifiedMasterBadge({ verified }: { verified?: boolean }) {
     <span
       aria-label="Сертификат об обучении проверен Tattoo HUB"
       title="Сертификат об обучении проверен Tattoo HUB"
-      className="inline-flex items-center gap-1.5 rounded-full border border-cyan-500/30 bg-cyan-500/10 px-2.5 py-1 text-xs font-semibold text-cyan-500"
+      className="inline-flex items-center gap-1.5 rounded-full border border-accent-500/30 bg-accent-500/10 px-2.5 py-1 text-xs font-semibold text-accent-500"
     >
       <BadgeCheck className="h-4 w-4" aria-hidden="true" />
       <span>Сертификат проверен</span>
@@ -78,7 +78,7 @@ export function WhatHappensNext({ className = '' }: { className?: string }) {
       <ol className="space-y-4">
         {steps.map(({ icon: Icon, text }, index) => (
           <li key={text} className="flex items-start gap-3">
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-cyan-500/10 text-cyan-500">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-accent-500/10 text-accent-500">
               <Icon className="h-4 w-4" aria-hidden="true" />
             </span>
             <div>

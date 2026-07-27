@@ -76,7 +76,7 @@ export function MasterLeadModal({ isOpen, onClose, onSuccess, language, cities, 
             <input
               type="text"
               required
-              className="w-full bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white border border-neutral-200 dark:border-neutral-700 rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-500 outline-none"
+              className="w-full bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white border border-neutral-200 dark:border-neutral-700 rounded-lg px-4 py-2 focus:ring-2 focus:ring-accent-500 outline-none"
               placeholder="Например: Аня (Хочет рукав)"
               value={formData.title}
               onChange={(e) => setFormData({...formData, title: e.target.value})}
@@ -87,7 +87,7 @@ export function MasterLeadModal({ isOpen, onClose, onSuccess, language, cities, 
             <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">{t('description')}</label>
             <textarea
               required
-              className="w-full bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white border border-neutral-200 dark:border-neutral-700 rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-500 outline-none"
+              className="w-full bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white border border-neutral-200 dark:border-neutral-700 rounded-lg px-4 py-2 focus:ring-2 focus:ring-accent-500 outline-none"
               placeholder="Детали: стиль, размер, бюджет..."
               rows={3}
               value={formData.description}
@@ -100,7 +100,7 @@ export function MasterLeadModal({ isOpen, onClose, onSuccess, language, cities, 
             <input
               type="text"
               required
-              className="w-full bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white border border-neutral-200 dark:border-neutral-700 rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-500 outline-none"
+              className="w-full bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white border border-neutral-200 dark:border-neutral-700 rounded-lg px-4 py-2 focus:ring-2 focus:ring-accent-500 outline-none"
               placeholder="@telegram_username или телефон"
               value={formData.contacts}
               onChange={(e) => setFormData({...formData, contacts: e.target.value})}
@@ -112,7 +112,7 @@ export function MasterLeadModal({ isOpen, onClose, onSuccess, language, cities, 
               <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Страна</label>
               <select
                 required
-                className="w-full bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white border border-neutral-200 dark:border-neutral-700 rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-500 outline-none"
+                className="w-full bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white border border-neutral-200 dark:border-neutral-700 rounded-lg px-4 py-2 focus:ring-2 focus:ring-accent-500 outline-none"
                 value={formData.country_id}
                 onChange={(e) => setFormData({...formData, country_id: e.target.value, city_id: ''})}
               >
@@ -124,7 +124,7 @@ export function MasterLeadModal({ isOpen, onClose, onSuccess, language, cities, 
               <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Город</label>
               <select
                 required
-                className="w-full bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white border border-neutral-200 dark:border-neutral-700 rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-500 outline-none"
+                className="w-full bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white border border-neutral-200 dark:border-neutral-700 rounded-lg px-4 py-2 focus:ring-2 focus:ring-accent-500 outline-none"
                 value={formData.city_id}
                 onChange={(e) => setFormData({...formData, city_id: e.target.value})}
               >
@@ -139,7 +139,7 @@ export function MasterLeadModal({ isOpen, onClose, onSuccess, language, cities, 
           <button
             type="submit"
             disabled={loading}
-            className="w-full mt-4 bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-3 px-4 rounded-xl shadow-lg transition-colors flex items-center justify-center gap-2"
+            className="w-full mt-4 bg-accent-600 hover:bg-accent-700 text-white font-bold py-3 px-4 rounded-xl shadow-lg transition-colors flex items-center justify-center gap-2"
           >
             {loading ? 'Создание...' : 'Добавить Лида'}
           </button>

@@ -34,7 +34,8 @@ export const viewport = {
   themeColor: '#000000',
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1,
+  maximumScale: 5,
+  userScalable: true,
 }
 
 export default function RootLayout({
@@ -43,7 +44,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
+    <html lang="ru">
       <head>
         <script
           dangerouslySetInnerHTML={{
@@ -54,6 +55,20 @@ export default function RootLayout({
                   document.documentElement.classList.add('dark');
                 } else {
                   document.documentElement.classList.remove('dark');
+                }
+                const supportedLanguages = ['ru', 'en', 'cs', 'uk'];
+                const appLang = localStorage.getItem('app_lang');
+                const legacyLang = localStorage.getItem('language');
+                const savedLang = appLang && supportedLanguages.includes(appLang)
+                  ? appLang
+                  : legacyLang && supportedLanguages.includes(legacyLang)
+                    ? legacyLang
+                    : null;
+                if (savedLang) {
+                  document.documentElement.lang = savedLang;
+                } else if (typeof navigator !== 'undefined' && navigator.language) {
+                  const browserLang = navigator.language.slice(0, 2);
+                  document.documentElement.lang = (browserLang === 'ru' || browserLang === 'uk' || browserLang === 'cs') ? browserLang : 'en';
                 }
               })();
             `,

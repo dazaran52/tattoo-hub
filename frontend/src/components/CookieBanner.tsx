@@ -59,14 +59,14 @@ export function CookieBanner() {
           className="fixed bottom-4 left-4 z-[9999] max-w-sm w-[calc(100%-2rem)] md:w-auto"
         >
           <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-2xl rounded-2xl p-4 flex flex-col sm:flex-row gap-4 items-start sm:items-center relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-1 h-full bg-cyan-500" />
+            <div className="absolute top-0 left-0 w-1 h-full bg-accent-500" />
             
             <div className="flex items-center gap-3 flex-1 pl-2">
-              <div className="w-8 h-8 rounded-full bg-cyan-50 dark:bg-cyan-500/10 flex items-center justify-center shrink-0 text-cyan-600 dark:text-cyan-400">
+              <div className="w-8 h-8 rounded-full bg-accent-50 dark:bg-accent-500/10 flex items-center justify-center shrink-0 text-accent-600 dark:text-accent-400">
                 <Cookie className="w-4 h-4" />
               </div>
               <p className="text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed">
-                {copy.before}<a href="/privacy" className="text-cyan-600 dark:text-cyan-400 hover:underline">{copy.policy}</a>.
+                {copy.before}<a href="/privacy" className="text-accent-600 dark:text-accent-400 hover:underline">{copy.policy}</a>.
               </p>
             </div>
 

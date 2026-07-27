@@ -1,3 +1,10 @@
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Privacy Policy | Tattoo HUB',
+  description: 'Learn how Tattoo HUB collects, uses and protects your personal data, and what rights you have under GDPR.',
+}
+
 export default function PrivacyPage() {
   return (
     <div className="min-h-screen bg-white dark:bg-neutral-950 text-neutral-900 dark:text-white py-20 px-4 sm:px-6 lg:px-8">
@@ -51,7 +58,7 @@ export default function PrivacyPage() {
         </div>
 
         <div className="mt-8">
-          <a href="/" className="text-cyan-600 dark:text-cyan-400 hover:underline">← Back to home page</a>
+          <a href="/" className="text-accent-600 dark:text-accent-400 hover:underline">← Back to home page</a>
         </div>
       </div>
     </div>

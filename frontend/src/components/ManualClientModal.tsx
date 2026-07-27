@@ -102,7 +102,7 @@ export function ManualClientModal({ isOpen, onClose, onSuccess, initialDate }: M
                 type="text"
                 value={formData.client_name}
                 onChange={e => setFormData(p => ({ ...p, client_name: e.target.value }))}
-                className="w-full bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-xl pl-10 pr-4 py-3 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500"
+                className="w-full bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-xl pl-10 pr-4 py-3 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
                 placeholder="Иван Иванов"
               />
             </div>
@@ -116,7 +116,7 @@ export function ManualClientModal({ isOpen, onClose, onSuccess, initialDate }: M
                 type="text"
                 value={formData.contact}
                 onChange={e => setFormData(p => ({ ...p, contact: e.target.value }))}
-                className="w-full bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-xl pl-10 pr-4 py-3 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500"
+                className="w-full bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-xl pl-10 pr-4 py-3 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
                 placeholder="@username или +123456789"
               />
             </div>
@@ -130,7 +130,7 @@ export function ManualClientModal({ isOpen, onClose, onSuccess, initialDate }: M
                 rows={3}
                 value={formData.notes}
                 onChange={e => setFormData(p => ({ ...p, notes: e.target.value }))}
-                className="w-full bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-xl pl-10 px-4 py-3 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500"
+                className="w-full bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-xl pl-10 px-4 py-3 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
                 placeholder="Что будем бить?"
               />
             </div>
@@ -144,7 +144,7 @@ export function ManualClientModal({ isOpen, onClose, onSuccess, initialDate }: M
                 type="date"
                 value={formData.session_date}
                 onChange={e => setFormData(p => ({ ...p, session_date: e.target.value }))}
-                className="w-full bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-xl pl-10 pr-4 py-3 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500"
+                className="w-full bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-xl pl-10 pr-4 py-3 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
               />
             </div>
           </div>
@@ -152,7 +152,7 @@ export function ManualClientModal({ isOpen, onClose, onSuccess, initialDate }: M
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-4 bg-violet-600 hover:bg-violet-700 text-white font-bold rounded-xl shadow-lg transition-colors disabled:opacity-50 mt-4"
+            className="w-full py-4 bg-primary-600 hover:bg-primary-700 text-white font-bold rounded-xl shadow-lg transition-colors disabled:opacity-50 mt-4"
           >
             {loading ? 'Добавление...' : 'Добавить клиента в CRM'}
           </button>

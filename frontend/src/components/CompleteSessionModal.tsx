@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, Upload, Loader2, Image as ImageIcon } from 'lucide-react'
@@ -166,7 +167,7 @@ export function CompleteSessionModal({ isOpen, onClose, sessionId, onSuccess }: 
                           {isVid ? (
                             <video src={url} className="w-full h-full object-cover" />
                           ) : (
-                            <img src={url} alt="" className="w-full h-full object-cover" />
+                            <Image src={url || ''} alt="" className="w-full h-full object-cover"  width={800} height={800} />
                           )}
                           <button 
                             onClick={() => removeImage(i)}
@@ -190,7 +191,7 @@ export function CompleteSessionModal({ isOpen, onClose, sessionId, onSuccess }: 
                     value={description}
                     onChange={e => setDescription(e.target.value)}
                     placeholder="Например: Зажившая работа, 1 сеанс..."
-                    className="w-full h-24 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl p-3 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500 resize-none text-sm"
+                    className="w-full h-24 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl p-3 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none text-sm"
                   />
                 </div>
               )}
@@ -200,7 +201,7 @@ export function CompleteSessionModal({ isOpen, onClose, sessionId, onSuccess }: 
                   type="checkbox" 
                   checked={publishToPortfolio}
                   onChange={e => setPublishToPortfolio(e.target.checked)}
-                  className="w-5 h-5 rounded border-neutral-300 text-violet-600 focus:ring-violet-500"
+                  className="w-5 h-5 rounded border-neutral-300 text-primary-600 focus:ring-primary-500"
                 />
                 <span className="text-sm font-medium">Опубликовать фото в моем публичном портфолио</span>
               </label>
@@ -210,7 +211,7 @@ export function CompleteSessionModal({ isOpen, onClose, sessionId, onSuccess }: 
                   type="checkbox" 
                   checked={sendReviewRequest}
                   onChange={e => setSendReviewRequest(e.target.checked)}
-                  className="w-5 h-5 rounded border-neutral-300 text-violet-600 focus:ring-violet-500"
+                  className="w-5 h-5 rounded border-neutral-300 text-primary-600 focus:ring-primary-500"
                 />
                 <span className="text-sm font-medium">Отправить клиенту письмо с просьбой оставить отзыв</span>
               </label>
@@ -218,7 +219,7 @@ export function CompleteSessionModal({ isOpen, onClose, sessionId, onSuccess }: 
               <button
                 onClick={handleSubmit}
                 disabled={loading}
-                className="w-full py-3 bg-violet-600 hover:bg-violet-700 text-white rounded-xl font-bold flex items-center justify-center gap-2 transition-colors disabled:opacity-50"
+                className="w-full py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-bold flex items-center justify-center gap-2 transition-colors disabled:opacity-50"
               >
                 {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <ImageIcon className="w-5 h-5" />}
                 Завершить сеанс

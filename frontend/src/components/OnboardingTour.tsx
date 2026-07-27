@@ -31,26 +31,44 @@ export function OnboardingTour({ startTour, onTourEnd }: OnboardingTourProps) {
           element: '#tour-balance',
           popover: {
             title: 'Ваш баланс',
-            description: 'Здесь отображается ваш текущий баланс кредитов. Кредиты используются для получения лидов.',
+            description: 'Здесь отображается ваш текущий баланс кредитов и средств. Они используются для отклика на заявки клиентов.',
             side: 'bottom',
             align: 'start'
           }
         },
         {
-          element: '#tour-auctions',
+          element: '#tour-crm',
           popover: {
-            title: 'Аукционы',
-            description: 'В этом разделе вы можете делать ставки на самых горячих лидов, которых выкладывают другие мастера.',
+            title: 'Моя CRM-доска',
+            description: 'Управляйте всеми вашими клиентами, сеансами и этапами работы на удобной канбан-доске.',
             side: 'bottom',
             align: 'start'
           }
         },
         {
-          element: '#tour-leads',
+          element: '#tour-feed',
           popover: {
-            title: 'Доступные лиды',
-            description: 'Здесь появляются свежие лиды. Будьте быстрыми — кто первый заберёт лид, тот и будет работать с клиентом!',
-            side: 'top',
+            title: 'Маркетплейс лидов',
+            description: 'Здесь появляются свежие заявки и заказы от клиентов. Откликайтесь первыми и предлагайте свои условия!',
+            side: 'bottom',
+            align: 'start'
+          }
+        },
+        {
+          element: '#tour-portfolio',
+          popover: {
+            title: 'Ваше портфолио',
+            description: 'Загружайте фотографии лучших работ. Качественное портфолио привлекает больше внимания клиентов.',
+            side: 'bottom',
+            align: 'start'
+          }
+        },
+        {
+          element: '#tour-messages',
+          popover: {
+            title: 'Сообщения и чаты',
+            description: 'Здесь вы можете общаться с клиентами напрямую, обсуждать эскизы и назначать даты сеансов.',
+            side: 'bottom',
             align: 'start'
           }
         },
@@ -58,7 +76,7 @@ export function OnboardingTour({ startTour, onTourEnd }: OnboardingTourProps) {
           element: '#tour-profile',
           popover: {
             title: 'Профиль и настройки',
-            description: 'Заполните свой профиль и настройте уведомления, чтобы не пропустить ни одной новой заявки.',
+            description: 'Заполните свой профиль, настройте уведомления и переключайте режимы работы в любое время.',
             side: 'left',
             align: 'start'
           }

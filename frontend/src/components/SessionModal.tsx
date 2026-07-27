@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import { useState, useEffect } from 'react'
 import { X, User, Clock, FileText, Upload, Calendar as CalendarIcon, Tag, Plus, Trash2 } from 'lucide-react'
 import imageCompression from 'browser-image-compression'
@@ -332,7 +333,7 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
       <div className="bg-white dark:bg-neutral-900 rounded-3xl w-full max-w-2xl shadow-2xl overflow-hidden my-8">
         <div className="flex justify-between items-center p-6 border-b border-neutral-200 dark:border-neutral-800">
           <h2 className="text-xl font-bold flex items-center gap-2 text-neutral-900 dark:text-white">
-            <CalendarIcon className="w-5 h-5 text-cyan-500" />
+            <CalendarIcon className="w-5 h-5 text-accent-500" />
             {editSession ? 'Редактировать сеанс' : 'Создать сеанс'}
           </h2>
           <button onClick={onClose} className="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-full transition-colors text-neutral-500">
@@ -349,7 +350,7 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
                 <button
                   type="button"
                   onClick={() => setIsNewClient(!isNewClient)}
-                  className="text-xs font-bold flex items-center gap-1 text-cyan-600 dark:text-cyan-400 hover:text-cyan-700 transition-colors"
+                  className="text-xs font-bold flex items-center gap-1 text-accent-600 dark:text-accent-400 hover:text-accent-700 transition-colors"
                 >
                   {isNewClient ? 'Выбрать существующего' : <><Plus className="w-3 h-3"/> Добавить нового</>}
                 </button>
@@ -366,7 +367,7 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
                     value={formData.client_name}
                     onChange={(e) => setFormData(p => ({ ...p, client_name: e.target.value }))}
                     placeholder="Имя клиента *"
-                    className="w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-xl pl-9 pr-4 py-2.5 text-sm focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 transition-all outline-none"
+                    className="w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-xl pl-9 pr-4 py-2.5 text-sm focus:ring-2 focus:ring-accent-500/20 focus:border-accent-500 transition-all outline-none"
                   />
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -383,7 +384,7 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
                       value={formData.email}
                       onChange={(e) => setFormData(p => ({ ...p, email: e.target.value }))}
                       placeholder="Email"
-                      className="w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 transition-all outline-none"
+                      className="w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-accent-500/20 focus:border-accent-500 transition-all outline-none"
                     />
                   </div>
                 </div>
@@ -394,7 +395,7 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
                       value={formData.telegram}
                       onChange={(e) => setFormData(p => ({ ...p, telegram: e.target.value }))}
                       placeholder="Telegram"
-                      className="w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 transition-all outline-none"
+                      className="w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-accent-500/20 focus:border-accent-500 transition-all outline-none"
                     />
                   </div>
                   <div className="relative">
@@ -403,7 +404,7 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
                       value={formData.instagram}
                       onChange={(e) => setFormData(p => ({ ...p, instagram: e.target.value }))}
                       placeholder="Instagram"
-                      className="w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 transition-all outline-none"
+                      className="w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-accent-500/20 focus:border-accent-500 transition-all outline-none"
                     />
                   </div>
                 </div>
@@ -431,7 +432,7 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
                       onFocus={() => setIsClientDropdownOpen(true)}
                       onBlur={() => setTimeout(() => setIsClientDropdownOpen(false), 300)}
                       placeholder="Поиск по имени, почте или контактам..."
-                      className="w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 outline-none"
+                      className="w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-accent-500/20 focus:border-accent-500 outline-none"
                     />
                     {isClientDropdownOpen && (
                       <div className="absolute z-10 w-full mt-1 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl shadow-xl max-h-60 overflow-y-auto">
@@ -475,7 +476,7 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
                 required
                 value={formData.session_date}
                 onChange={(e) => setFormData(p => ({ ...p, session_date: e.target.value }))}
-                className="w-full bg-neutral-100 dark:bg-neutral-800 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-cyan-500/20 outline-none font-medium"
+                className="w-full bg-neutral-100 dark:bg-neutral-800 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-accent-500/20 outline-none font-medium"
               />
             </div>
             <div className="grid grid-cols-2 gap-2">
@@ -485,7 +486,7 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
                   type="time"
                   value={formData.start_time}
                   onChange={(e) => setFormData(p => ({ ...p, start_time: e.target.value }))}
-                  className="w-full bg-neutral-100 dark:bg-neutral-800 border-none rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-cyan-500/20 outline-none"
+                  className="w-full bg-neutral-100 dark:bg-neutral-800 border-none rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-accent-500/20 outline-none"
                 />
               </div>
               <div>
@@ -494,7 +495,7 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
                   type="time"
                   value={formData.end_time}
                   onChange={(e) => setFormData(p => ({ ...p, end_time: e.target.value }))}
-                  className="w-full bg-neutral-100 dark:bg-neutral-800 border-none rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-cyan-500/20 outline-none"
+                  className="w-full bg-neutral-100 dark:bg-neutral-800 border-none rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-accent-500/20 outline-none"
                 />
               </div>
             </div>
@@ -517,7 +518,7 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
                       }}
                       className={`px-3 py-1.5 rounded-xl border text-xs font-semibold transition-all ${
                         formData.style.includes(s)
-                          ? 'bg-cyan-500/10 border-cyan-500 text-cyan-600 dark:text-cyan-400'
+                          ? 'bg-accent-500/10 border-accent-500 text-accent-600 dark:text-accent-400'
                           : 'bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800'
                       }`}
                     >
@@ -534,7 +535,7 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
                      setFormData(p => ({ ...p, style: [...builtinStyles, ...customStyles] }))
                   }}
                   placeholder="Или введите свой вариант..."
-                  className="w-full bg-neutral-100 dark:bg-neutral-800 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-cyan-500/20 outline-none"
+                  className="w-full bg-neutral-100 dark:bg-neutral-800 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-accent-500/20 outline-none"
                 />
               </div>
             </div>
@@ -545,7 +546,7 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
                 value={formData.price}
                 onChange={(e) => setFormData(p => ({ ...p, price: e.target.value }))}
                 placeholder="0.00"
-                className="w-full bg-neutral-100 dark:bg-neutral-800 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-cyan-500/20 outline-none"
+                className="w-full bg-neutral-100 dark:bg-neutral-800 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-accent-500/20 outline-none"
               />
             </div>
           </div>
@@ -562,7 +563,7 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
                       onClick={() => setFormData(p => ({ ...p, body_place: place }))}
                       className={`px-3 py-1.5 rounded-xl border text-xs font-semibold transition-all ${
                         formData.body_place === place
-                          ? 'bg-cyan-500/10 border-cyan-500 text-cyan-600 dark:text-cyan-400'
+                          ? 'bg-accent-500/10 border-accent-500 text-accent-600 dark:text-accent-400'
                           : 'bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800'
                       }`}
                     >
@@ -575,7 +576,7 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
                   value={formData.body_place}
                   onChange={(e) => setFormData(p => ({ ...p, body_place: e.target.value }))}
                   placeholder="Уточнение (напр. Внутренняя сторона)"
-                  className="w-full bg-neutral-100 dark:bg-neutral-800 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-cyan-500/20 outline-none"
+                  className="w-full bg-neutral-100 dark:bg-neutral-800 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-accent-500/20 outline-none"
                 />
               </div>
             </div>
@@ -589,7 +590,7 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
                     onClick={() => setFormData(p => ({ ...p, size: sz.id }))}
                     className={`p-2 rounded-xl border text-xs font-semibold transition-all ${
                       formData.size === sz.id
-                        ? 'bg-cyan-500/10 border-cyan-500 text-cyan-600 dark:text-cyan-400'
+                        ? 'bg-accent-500/10 border-accent-500 text-accent-600 dark:text-accent-400'
                         : 'bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800'
                     }`}
                   >
@@ -602,7 +603,7 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
                 value={formData.size}
                 onChange={(e) => setFormData(p => ({ ...p, size: e.target.value }))}
                 placeholder="Или введите размер (напр. 15x10 см)"
-                className="w-full bg-neutral-100 dark:bg-neutral-800 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-cyan-500/20 outline-none"
+                className="w-full bg-neutral-100 dark:bg-neutral-800 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-accent-500/20 outline-none"
               />
             </div>
           </div>
@@ -617,7 +618,7 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
                     className="relative w-16 h-16 rounded-lg overflow-hidden border border-neutral-200 dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-800 cursor-pointer"
                     onClick={() => { setViewerImage(url); setViewerShowActions(true); }}
                   >
-                    <img src={url} alt="ref" className="w-full h-full object-cover" />
+                    <Image src={url || ''} alt="ref" className="w-full h-full object-cover"  width={800} height={800} />
                     <button 
                       type="button" 
                       onClick={(e) => { e.stopPropagation(); setExistingImages(prev => prev.filter((_, i) => i !== idx)); }}
@@ -633,7 +634,7 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
                     className="relative w-16 h-16 rounded-lg overflow-hidden border border-neutral-200 dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-800 cursor-pointer"
                     onClick={() => { setViewerImage(URL.createObjectURL(file)); setViewerShowActions(true); }}
                   >
-                    <img src={URL.createObjectURL(file)} alt="ref" className="w-full h-full object-cover" />
+                    <Image src={URL.createObjectURL(file) || ''} alt="ref" className="w-full h-full object-cover"  width={800} height={800} unoptimized />
                     <button 
                       type="button" 
                       onClick={(e) => { e.stopPropagation(); setImages(prev => prev.filter((_, i) => i !== idx)); }}
@@ -643,7 +644,7 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
                     </button>
                   </div>
                 ))}
-                <label className="w-16 h-16 rounded-lg border-2 border-dashed border-neutral-300 dark:border-neutral-700 flex flex-col items-center justify-center text-neutral-500 hover:text-cyan-500 hover:border-cyan-500 transition-colors cursor-pointer bg-neutral-50 dark:bg-neutral-800/50">
+                <label className="w-16 h-16 rounded-lg border-2 border-dashed border-neutral-300 dark:border-neutral-700 flex flex-col items-center justify-center text-neutral-500 hover:text-accent-500 hover:border-accent-500 transition-colors cursor-pointer bg-neutral-50 dark:bg-neutral-800/50">
                   <Upload className="w-4 h-4 mb-0.5" />
                   <span className="text-[9px] font-medium uppercase tracking-wider">Добавить</span>
                   <input 
@@ -672,7 +673,7 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
                     className="relative w-16 h-16 rounded-lg overflow-hidden border border-neutral-200 dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-800 cursor-pointer"
                     onClick={() => { setViewerImage(url); setViewerShowActions(false); }}
                   >
-                    <img src={url} alt="res" className="w-full h-full object-cover" />
+                    <Image src={url || ''} alt="res" className="w-full h-full object-cover"  width={800} height={800} />
                     <button 
                       type="button" 
                       onClick={(e) => { e.stopPropagation(); setExistingResultImages(prev => prev.filter((_, i) => i !== idx)); }}
@@ -688,7 +689,7 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
                     className="relative w-16 h-16 rounded-lg overflow-hidden border border-neutral-200 dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-800 cursor-pointer"
                     onClick={() => { setViewerImage(URL.createObjectURL(file)); setViewerShowActions(false); }}
                   >
-                    <img src={URL.createObjectURL(file)} alt="res" className="w-full h-full object-cover" />
+                    <Image src={URL.createObjectURL(file) || ''} alt="res" className="w-full h-full object-cover"  width={800} height={800} unoptimized />
                     <button 
                       type="button" 
                       onClick={(e) => { e.stopPropagation(); setResultImages(prev => prev.filter((_, i) => i !== idx)); }}
@@ -698,7 +699,7 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
                     </button>
                   </div>
                 ))}
-                <label className="w-16 h-16 rounded-lg border-2 border-dashed border-neutral-300 dark:border-neutral-700 flex flex-col items-center justify-center text-neutral-500 hover:text-cyan-500 hover:border-cyan-500 transition-colors cursor-pointer bg-neutral-50 dark:bg-neutral-800/50">
+                <label className="w-16 h-16 rounded-lg border-2 border-dashed border-neutral-300 dark:border-neutral-700 flex flex-col items-center justify-center text-neutral-500 hover:text-accent-500 hover:border-accent-500 transition-colors cursor-pointer bg-neutral-50 dark:bg-neutral-800/50">
                   <Upload className="w-4 h-4 mb-0.5" />
                   <span className="text-[9px] font-medium uppercase tracking-wider">Добавить</span>
                   <input 

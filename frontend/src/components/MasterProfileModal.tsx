@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { useState, useEffect } from 'react'
 import { X, User, Star, ImageIcon, Video } from 'lucide-react'
 import { format, parseISO } from 'date-fns'
@@ -68,11 +69,11 @@ export function MasterProfileModal({ username, onClose, onBook }: { username: st
             <>
               {/* Profile Info */}
               <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 mb-8 text-center sm:text-left">
-                <img 
+                <Image 
                   src={master.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(master.display_name || master.username || 'M')}`} 
                   alt="Avatar" 
                   className="w-24 h-24 rounded-full object-cover border-4 border-white dark:border-neutral-900 shadow-lg"
-                />
+                 width={96} height={96} />
                 <div className="flex-1">
                   <h1 className="text-2xl font-bold text-neutral-900 dark:text-white mb-1">
                     {master.display_name || master.username}
@@ -101,7 +102,7 @@ export function MasterProfileModal({ username, onClose, onBook }: { username: st
                   onClose()
                   onBook(master.id)
                 }}
-                className="w-full py-4 mb-8 bg-violet-600 hover:bg-violet-700 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all"
+                className="w-full py-4 mb-8 bg-primary-600 hover:bg-primary-700 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all"
               >
                 Оставить заявку этому мастеру
               </button>
@@ -148,7 +149,7 @@ export function MasterProfileModal({ username, onClose, onBook }: { username: st
                           {firstMedia?.type === 'video' ? (
                             <video src={firstMedia.url} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
                           ) : (
-                            <img src={firstMedia?.url} alt="Portfolio item" className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500" />
+                            <Image src={firstMedia?.url || ''} alt="Portfolio item" className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500"  width={800} height={800} />
                           )}
                           
                           <div className="absolute top-2 right-2 flex gap-1">

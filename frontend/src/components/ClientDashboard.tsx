@@ -1,9 +1,10 @@
 'use client'
 
+import Image from 'next/image'
 import { useState, useEffect } from 'react'
 import { Profile, supabase } from '@/lib/supabase'
 import { PlusCircle, Heart, Clock, X, MoreVertical, Edit2, Pause, Play, Trash2, MessageCircle, DollarSign, ShieldCheck, Loader2 } from 'lucide-react'
-import { LeadForm } from '@/components/LeadForm'
+import { LeadWizard } from '@/components/LeadWizard'
 import { ChatModal } from '@/components/ChatModal'
 import { MessagesList } from '@/components/MessagesList'
 import { MasterProfileModal } from '@/components/MasterProfileModal'
@@ -310,7 +311,7 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
           <div className="col-span-1 md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="bg-neutral-100 dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 rounded-2xl p-8 flex flex-col items-center justify-center text-center shadow-sm">
               <div className="w-16 h-16 bg-white dark:bg-neutral-800 rounded-full flex items-center justify-center mb-4 shadow-sm">
-                <PlusCircle className="w-8 h-8 text-indigo-500" />
+                <PlusCircle className="w-8 h-8 text-primary-500" />
               </div>
               <h3 className="text-lg font-bold text-neutral-900 dark:text-white mb-2">Найти мне мастера</h3>
               <p className="text-neutral-500 dark:text-neutral-400 mb-6 text-sm">
@@ -318,15 +319,15 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
               </p>
               <button 
                 onClick={() => { setSelectedMasterForDirectBooking(null); setIsFormOpen(true) }}
-                className="px-6 py-3 w-full max-w-[200px] bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl transition-colors"
+                className="px-6 py-3 w-full max-w-[200px] bg-primary-600 hover:bg-primary-500 text-white font-bold rounded-xl transition-colors"
               >
                 Создать заявку
               </button>
             </div>
             
-            <div className="bg-violet-50 dark:bg-violet-900/10 border border-violet-200 dark:border-violet-800 rounded-2xl p-8 flex flex-col items-center justify-center text-center shadow-sm">
+            <div className="bg-primary-50 dark:bg-primary-900/10 border border-primary-200 dark:border-primary-800 rounded-2xl p-8 flex flex-col items-center justify-center text-center shadow-sm">
               <div className="w-16 h-16 bg-white dark:bg-neutral-800 rounded-full flex items-center justify-center mb-4 shadow-sm">
-                <Heart className="w-8 h-8 text-violet-500" />
+                <Heart className="w-8 h-8 text-primary-500" />
               </div>
               <h3 className="text-lg font-bold text-neutral-900 dark:text-white mb-2">Записаться к конкретному</h3>
               <p className="text-neutral-500 dark:text-neutral-400 mb-6 text-sm">
@@ -334,7 +335,7 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
               </p>
               <button 
                 onClick={() => { setActiveTab('top_masters') }}
-                className="px-6 py-3 w-full max-w-[200px] bg-violet-600 hover:bg-violet-500 text-white font-bold rounded-xl transition-colors shadow-md shadow-violet-500/20"
+                className="px-6 py-3 w-full max-w-[200px] bg-primary-600 hover:bg-primary-500 text-white font-bold rounded-xl transition-colors shadow-md shadow-primary-500/20"
               >
                 Выбрать мастера
               </button>
@@ -348,7 +349,7 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
           ) : leads.map(lead => (
             <div key={lead.id} className="bg-white dark:bg-[#0a0a0a] border border-neutral-200 dark:border-white/5 rounded-3xl p-6 shadow-xl shadow-black/5 hover:shadow-2xl hover:shadow-black/10 transition-all duration-300 relative overflow-hidden group">
               {/* Background accent */}
-              <div className="absolute top-0 right-0 w-32 h-32 bg-violet-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:bg-violet-500/10 transition-colors" />
+              <div className="absolute top-0 right-0 w-32 h-32 bg-primary-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:bg-primary-500/10 transition-colors" />
               
               <div className="relative z-10">
                 <div className="flex justify-between items-start mb-5">
@@ -418,7 +419,7 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
                 <div className="flex flex-wrap gap-2 mb-5">
                   {lead.style && lead.style !== 'Не определился' && (
                     <span className="px-3 py-1.5 bg-neutral-100 dark:bg-neutral-800/50 text-neutral-700 dark:text-neutral-300 text-xs font-semibold rounded-lg flex items-center gap-1.5 border border-neutral-200/50 dark:border-white/5">
-                      <div className="w-1.5 h-1.5 rounded-full bg-violet-500" />
+                      <div className="w-1.5 h-1.5 rounded-full bg-primary-500" />
                       {lead.style}
                     </span>
                   )}
@@ -430,7 +431,7 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
                   )}
                   {lead.size && (
                     <span className="px-3 py-1.5 bg-neutral-100 dark:bg-neutral-800/50 text-neutral-700 dark:text-neutral-300 text-xs font-semibold rounded-lg flex items-center gap-1.5 border border-neutral-200/50 dark:border-white/5">
-                      <div className="w-1.5 h-1.5 rounded-full bg-cyan-500" />
+                      <div className="w-1.5 h-1.5 rounded-full bg-accent-500" />
                       {lead.size}
                     </span>
                   )}
@@ -443,7 +444,7 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
                       if (!imgSrc) return null;
                       return (
                         <div key={i} className="snap-center shrink-0 w-28 h-28 relative rounded-2xl overflow-hidden border border-neutral-200 dark:border-neutral-800 shadow-sm group/img cursor-pointer">
-                          <img src={imgSrc} alt="Reference" className="w-full h-full object-cover transition-transform duration-500 group-hover/img:scale-110" />
+                          <Image src={imgSrc || ''} alt="Reference" className="w-full h-full object-cover transition-transform duration-500 group-hover/img:scale-110"  width={800} height={800} />
                           <div className="absolute inset-0 bg-black/0 group-hover/img:bg-black/10 transition-colors" />
                         </div>
                       )
@@ -459,21 +460,21 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
                 </div>
 
                 {lead.master && (
-                  <div className="mb-6 p-1 rounded-2xl bg-gradient-to-r from-indigo-500/10 via-purple-500/10 to-fuchsia-500/10">
+                  <div className="mb-6 p-1 rounded-2xl bg-gradient-to-r from-primary-500/10 via-primary-500/10 to-fuchsia-500/10">
                     <div className="bg-white/50 dark:bg-[#0a0a0a]/50 backdrop-blur-md rounded-[14px] p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border border-white/20 dark:border-white/5">
                       <div className="flex items-center gap-4">
                         <div className="relative">
-                          <img 
+                          <Image 
                             src={lead.master.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(lead.master.name || 'Master')}`} 
                             alt="Master" 
                             className="w-14 h-14 rounded-full object-cover shadow-md border-2 border-white dark:border-neutral-800"
-                          />
+                           width={56} height={56} />
                           <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-white dark:border-[#0a0a0a] rounded-full" />
                         </div>
                         <div>
-                          <p className="text-xs font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-purple-500 uppercase tracking-wider mb-1">{t('assignedMaster') || 'Ваш мастер'}</p>
+                          <p className="text-xs font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-primary-500 to-primary-500 uppercase tracking-wider mb-1">{t('assignedMaster') || 'Ваш мастер'}</p>
                           <h5 className="font-bold text-base text-neutral-900 dark:text-white leading-tight">{lead.master.name}</h5>
-                          <a href={`/book/${lead.master.username}`} target="_blank" rel="noopener noreferrer" className="text-xs font-medium text-neutral-500 hover:text-indigo-500 transition-colors">@{lead.master.username}</a>
+                          <a href={`/book/${lead.master.username}`} target="_blank" rel="noopener noreferrer" className="text-xs font-medium text-neutral-500 hover:text-primary-500 transition-colors">@{lead.master.username}</a>
                         </div>
                       </div>
                       <div className="flex flex-col sm:flex-row items-end sm:items-center gap-3">
@@ -481,7 +482,7 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
                           <div className="text-left sm:text-right bg-white dark:bg-neutral-900 px-4 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-800 shadow-sm flex flex-col items-start sm:items-end">
                             <p className="text-[10px] font-extrabold text-neutral-500 uppercase tracking-wider mb-1">{t('sessionDate') || 'Сеанс'}</p>
                             <p className="text-sm font-bold text-neutral-900 dark:text-white flex items-center gap-1.5">
-                              <Clock className="w-4 h-4 text-indigo-500" />
+                              <Clock className="w-4 h-4 text-primary-500" />
                               {new Date(lead.session.session_date).toLocaleDateString()}
                               {lead.session.start_time && <span className="text-neutral-500 font-medium ml-1">{lead.session.start_time}</span>}
                             </p>
@@ -499,7 +500,7 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
                               setSelectedChatTitle(lead.title)
                               setSelectedChatMaster(lead.master.name)
                             }}
-                            className="px-5 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-bold shadow-lg shadow-indigo-500/20 transition-all hover:-translate-y-0.5 flex items-center gap-2"
+                            className="px-5 py-3 bg-primary-600 hover:bg-primary-500 text-white rounded-xl text-sm font-bold shadow-lg shadow-primary-500/20 transition-all hover:-translate-y-0.5 flex items-center gap-2"
                           >
                             <MessageCircle className="w-5 h-5" />
                             Перейти в чат
@@ -511,13 +512,13 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
                 )}
 
                 {!lead.master && Array.isArray(lead.proposals) && lead.proposals.length > 0 && (
-                  <div className="mb-6 rounded-2xl border border-violet-200 bg-violet-50/70 p-4 dark:border-violet-500/20 dark:bg-violet-500/5">
+                  <div className="mb-6 rounded-2xl border border-primary-200 bg-primary-50/70 p-4 dark:border-primary-500/20 dark:bg-primary-500/5">
                     <div className="mb-3 flex items-center justify-between gap-3">
                       <div>
                         <p className="text-sm font-extrabold text-neutral-900 dark:text-white">Предложения мастеров</p>
                         <p className="text-xs text-neutral-500">Сравните условия и выберите одного мастера</p>
                       </div>
-                      <span className="rounded-full bg-white px-2.5 py-1 text-xs font-bold text-violet-700 shadow-sm dark:bg-neutral-900 dark:text-violet-300">{lead.proposals.length} / 5</span>
+                      <span className="rounded-full bg-white px-2.5 py-1 text-xs font-bold text-primary-700 shadow-sm dark:bg-neutral-900 dark:text-primary-300">{lead.proposals.length} / 5</span>
                     </div>
                     <div className="space-y-3">
                       {lead.proposals.map((proposal: any) => {
@@ -525,7 +526,7 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
                         return (
                           <div key={proposalKey} className="rounded-2xl border border-neutral-200 bg-white p-4 shadow-sm dark:border-neutral-800 dark:bg-neutral-950">
                             <div className="flex items-start gap-3">
-                              <img src={proposal.master_avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(proposal.master_name)}`} alt="" className="h-11 w-11 rounded-xl object-cover" />
+                              <Image src={proposal.master_avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(proposal.master_name)}`} alt="" className="h-11 w-11 rounded-xl object-cover"  width={44} height={44} />
                               <div className="min-w-0 flex-1">
                                 <div className="flex flex-wrap items-center gap-2">
                                   <p className="truncate text-sm font-extrabold text-neutral-900 dark:text-white">{proposal.master_name}</p>
@@ -537,7 +538,7 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
                             </div>
                             <div className="mt-4 flex gap-2">
                               {proposal.master_username && <button onClick={() => setSelectedMasterUsernameForModal(proposal.master_username)} className="flex-1 rounded-xl bg-neutral-100 px-3 py-2 text-xs font-bold text-neutral-700 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-200">Портфолио</button>}
-                              <button disabled={acceptingProposalId !== null} onClick={() => setProposalToConfirm({ leadId: lead.id, proposal })} className="flex-1 rounded-xl bg-violet-600 px-3 py-2 text-xs font-bold text-white hover:bg-violet-500 disabled:opacity-60">
+                              <button disabled={acceptingProposalId !== null} onClick={() => setProposalToConfirm({ leadId: lead.id, proposal })} className="flex-1 rounded-xl bg-primary-600 px-3 py-2 text-xs font-bold text-white hover:bg-primary-500 disabled:opacity-60">
                                 {acceptingProposalId === proposalKey ? <span className="inline-flex items-center gap-1"><Loader2 className="h-3.5 w-3.5 animate-spin" /> Выбираем</span> : 'Выбрать мастера'}
                               </button>
                             </div>
@@ -566,8 +567,8 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
                       <span className="relative flex h-2 w-2 mr-1">
                         {(lead.unlock_count || 0) > 0 ? (
                           <>
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
-                            <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary-400 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-2 w-2 bg-primary-500"></span>
                           </>
                         ) : (
                           <span className="relative inline-flex rounded-full h-2 w-2 bg-neutral-400"></span>
@@ -596,16 +597,16 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
         </div>
       ) : (
         <div className="space-y-6">
-          <div className="bg-gradient-to-r from-violet-600 to-indigo-600 rounded-3xl p-8 text-white shadow-xl relative overflow-hidden">
+          <div className="bg-gradient-to-r from-primary-600 to-primary-600 rounded-3xl p-8 text-white shadow-xl relative overflow-hidden">
             <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
             <div className="relative z-10 max-w-2xl">
               <h3 className="text-3xl font-extrabold mb-4">Найти идеального мастера стало проще</h3>
-              <p className="text-indigo-100 font-medium mb-6 text-lg">
+              <p className="text-primary-100 font-medium mb-6 text-lg">
                 Оставьте одну заявку, и лучшие мастера вашего города сами предложат вам свои условия, цены и эскизы. Выбирайте того, кто подходит именно вам!
               </p>
               <button 
                 onClick={() => setIsFormOpen(true)}
-                className="px-8 py-4 bg-white text-indigo-900 font-extrabold rounded-xl hover:bg-indigo-50 transition-colors shadow-lg hover:shadow-xl hover:scale-105"
+                className="px-8 py-4 bg-white text-primary-900 font-extrabold rounded-xl hover:bg-primary-50 transition-colors shadow-lg hover:shadow-xl hover:scale-105"
               >
                 Оставить заявку всем мастерам
               </button>
@@ -648,13 +649,13 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
                     >
                       <Heart className={`w-5 h-5 transition-colors ${favoriteMasterIds.has(master.id) ? 'fill-red-500 text-red-500' : 'text-neutral-400'}`} />
                     </button>
-                    <img 
+                    <Image 
                       src={master.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(master.display_name || master.username || 'M')}`}
                       alt="Avatar"
                       className="w-16 h-16 rounded-2xl object-cover border-2 border-neutral-100 dark:border-neutral-800"
-                    />
+                     width={64} height={64} />
                     <div>
-                      <h4 className="font-bold text-lg text-neutral-900 dark:text-white group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors">
+                      <h4 className="font-bold text-lg text-neutral-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
                         {master.display_name || master.username}
                       </h4>
                       <p className="text-sm text-neutral-500 mb-2">@{master.username}</p>
@@ -670,7 +671,7 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
                     <div className="grid grid-cols-3 gap-1 px-6 mb-4">
                       {master.portfolio_posts.map((post: any) => (
                         <div key={post.id} className="aspect-square bg-neutral-100 dark:bg-neutral-800 rounded-lg overflow-hidden">
-                          <img src={post.media?.[0]?.url} className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity" alt="Portfolio" />
+                          <Image src={post.media?.[0]?.url || ''} className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity" alt="Portfolio"  width={800} height={800} />
                         </div>
                       ))}
                     </div>
@@ -679,7 +680,7 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
                   <div className="px-6 pb-6 mt-auto">
                     <button 
                       onClick={() => setSelectedMasterUsernameForModal(master.username)}
-                      className="block w-full py-3 text-center bg-neutral-100 dark:bg-neutral-800 hover:bg-violet-600 hover:text-white dark:hover:bg-violet-600 text-neutral-900 dark:text-white font-bold rounded-xl transition-all"
+                      className="block w-full py-3 text-center bg-neutral-100 dark:bg-neutral-800 hover:bg-primary-600 hover:text-white dark:hover:bg-primary-600 text-neutral-900 dark:text-white font-bold rounded-xl transition-all"
                     >
                       Смотреть портфолио
                     </button>
@@ -711,9 +712,24 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
               <X className="w-5 h-5" />
             </button>
             <div className="mt-4">
-              <LeadForm
+              <LeadWizard
                 masterId={selectedMasterForDirectBooking || undefined}
                 source={selectedMasterForDirectBooking ? 'personal' : 'platform'}
+                onSuccess={() => {
+                  setIsFormOpen(false)
+                  supabase.auth.getSession().then(({ data: { session } }) => {
+                    if (session) {
+                      fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/leads/client`, {
+                        headers: {
+                          'Authorization': `Bearer ${session.access_token}`,
+                          'Content-Type': 'application/json',
+                        },
+                      }).then(res => res.ok ? res.json() : null).then(data => {
+                        if (data) setLeads(data)
+                      }).catch(err => console.error(err))
+                    }
+                  })
+                }}
               />
             </div>
           </div>
@@ -724,9 +740,9 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
         <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm" onClick={(event) => { if (event.target === event.currentTarget) setProposalToConfirm(null) }}>
           <div role="dialog" aria-modal="true" aria-labelledby="confirm-master-title" className="w-full max-w-md rounded-[2rem] border border-white/10 bg-white p-7 shadow-2xl dark:bg-neutral-950">
             <div className="mb-5 flex items-center gap-4">
-              <img src={proposalToConfirm.proposal.master_avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(proposalToConfirm.proposal.master_name)}`} alt="" className="h-14 w-14 rounded-2xl object-cover" />
+              <Image src={proposalToConfirm.proposal.master_avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(proposalToConfirm.proposal.master_name)}`} alt="" className="h-14 w-14 rounded-2xl object-cover"  width={56} height={56} />
               <div>
-                <p className="text-xs font-extrabold uppercase tracking-wider text-violet-600">Финальный выбор</p>
+                <p className="text-xs font-extrabold uppercase tracking-wider text-primary-600">Финальный выбор</p>
                 <h3 id="confirm-master-title" className="text-xl font-extrabold text-neutral-900 dark:text-white">Выбрать {proposalToConfirm.proposal.master_name}?</h3>
               </div>
             </div>
@@ -734,7 +750,7 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
             <p className="mb-6 text-sm font-bold text-neutral-900 dark:text-white">Стоимость: {proposalToConfirm.proposal.price_offer} {proposalToConfirm.proposal.offer_currency}</p>
             <div className="flex gap-3">
               <button onClick={() => setProposalToConfirm(null)} className="flex-1 rounded-2xl bg-neutral-100 px-4 py-3 font-bold text-neutral-700 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-200">Отмена</button>
-              <button onClick={() => { const choice = proposalToConfirm; setProposalToConfirm(null); handleAcceptProposal(choice.leadId, choice.proposal) }} className="flex-1 rounded-2xl bg-violet-600 px-4 py-3 font-bold text-white shadow-lg shadow-violet-500/20 hover:bg-violet-500">Подтвердить выбор</button>
+              <button onClick={() => { const choice = proposalToConfirm; setProposalToConfirm(null); handleAcceptProposal(choice.leadId, choice.proposal) }} className="flex-1 rounded-2xl bg-primary-600 px-4 py-3 font-bold text-white shadow-lg shadow-primary-500/20 hover:bg-primary-500">Подтвердить выбор</button>
             </div>
           </div>
         </div>
@@ -766,11 +782,11 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
                 topMasters.map(master => (
                   <div key={master.id} className="flex items-center justify-between p-4 bg-neutral-50 dark:bg-neutral-800/50 rounded-2xl border border-neutral-100 dark:border-neutral-800">
                     <div className="flex items-center gap-4">
-                      <img 
+                      <Image 
                         src={master.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(master.display_name || master.username || 'M')}`}
                         alt="Avatar"
                         className="w-12 h-12 rounded-full object-cover"
-                      />
+                       width={48} height={48} />
                       <div>
                         <h4 className="font-bold text-neutral-900 dark:text-white">{master.display_name || master.username}</h4>
                         <p className="text-xs text-neutral-500">@{master.username} • ★ {master.rating}</p>
@@ -782,7 +798,7 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
                         setIsMasterSelectModalOpen(false)
                         setIsFormOpen(true)
                       }}
-                      className="px-4 py-2 bg-violet-600 hover:bg-violet-500 text-white rounded-lg text-sm font-bold shadow-sm transition-colors"
+                      className="px-4 py-2 bg-primary-600 hover:bg-primary-500 text-white rounded-lg text-sm font-bold shadow-sm transition-colors"
                     >
                       Выбрать
                     </button>

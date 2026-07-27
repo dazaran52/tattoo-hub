@@ -144,7 +144,7 @@ export default function OnboardingPage() {
             transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
             className="relative w-full h-full max-w-2xl opacity-40 mix-blend-normal"
           >
-            <div className={`absolute inset-0 rounded-full blur-[120px] ${profile?.role === 'master' ? 'bg-gradient-to-tr from-orange-600 via-amber-500 to-yellow-400' : 'bg-gradient-to-tr from-indigo-600 via-purple-500 to-fuchsia-400'}`} />
+            <div className={`absolute inset-0 rounded-full blur-[120px] ${profile?.role === 'master' ? 'bg-gradient-to-tr from-orange-600 via-amber-500 to-yellow-400' : 'bg-gradient-to-tr from-primary-600 via-primary-500 to-fuchsia-400'}`} />
           </motion.div>
         </div>
         <div className="absolute inset-0 bg-[linear-gradient(rgba(0,0,0,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(0,0,0,0.03)_1px,transparent_1px)] dark:bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] z-0 pointer-events-none" />
@@ -187,7 +187,7 @@ export default function OnboardingPage() {
                 </p>
                 <button
                   onClick={() => router.push(profile?.role === 'master' ? '/dashboard' : '/')}
-                  className="w-full py-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold rounded-2xl flex items-center justify-center gap-2 transition-all shadow-[0_10px_30px_rgba(99,102,241,0.3)]"
+                  className="w-full py-4 bg-gradient-to-r from-primary-600 to-primary-600 hover:from-primary-500 hover:to-primary-500 text-white font-bold rounded-2xl flex items-center justify-center gap-2 transition-all shadow-[0_10px_30px_rgba(99,102,241,0.3)]"
                 >
                   {profile?.role === 'master' ? 'Перейти в CRM' : 'На главную'} <ArrowRight className="w-5 h-5" />
                 </button>
@@ -203,7 +203,7 @@ export default function OnboardingPage() {
                 {/* Progress Bar */}
                 <div className="flex items-center gap-2 mb-8">
                   {Array.from({ length: totalSteps }).map((_, i) => (
-                    <div key={i} className={`flex-1 h-1.5 rounded-full transition-colors duration-500 ${step > i ? (profile?.role === 'master' ? 'bg-orange-500' : 'bg-indigo-500') : 'bg-neutral-200 dark:bg-neutral-800'}`} />
+                    <div key={i} className={`flex-1 h-1.5 rounded-full transition-colors duration-500 ${step > i ? (profile?.role === 'master' ? 'bg-orange-500' : 'bg-primary-500') : 'bg-neutral-200 dark:bg-neutral-800'}`} />
                   ))}
                 </div>
 
@@ -223,14 +223,14 @@ export default function OnboardingPage() {
                         {profile?.role === 'master' ? 'Ваше имя / Название студии' : 'Ваше имя'}
                       </label>
                       <div className="relative group">
-                        <User className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400 transition-colors ${profile?.role === 'master' ? 'group-focus-within:text-orange-500' : 'group-focus-within:text-indigo-500'}`} />
+                        <User className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400 transition-colors ${profile?.role === 'master' ? 'group-focus-within:text-orange-500' : 'group-focus-within:text-primary-500'}`} />
                         <input
                           required
                           type="text"
                           value={displayName}
                           onChange={e => setDisplayName(e.target.value)}
                           placeholder="Имя / Псевдоним"
-                          className={`w-full pl-12 pr-4 py-4 bg-white/50 dark:bg-neutral-950/50 border border-neutral-200 dark:border-white/10 rounded-2xl focus:outline-none focus:ring-2 transition-all ${profile?.role === 'master' ? 'focus:ring-orange-500/20 focus:border-orange-500' : 'focus:ring-indigo-500/20 focus:border-indigo-500'}`}
+                          className={`w-full pl-12 pr-4 py-4 bg-white/50 dark:bg-neutral-950/50 border border-neutral-200 dark:border-white/10 rounded-2xl focus:outline-none focus:ring-2 transition-all ${profile?.role === 'master' ? 'focus:ring-orange-500/20 focus:border-orange-500' : 'focus:ring-primary-500/20 focus:border-primary-500'}`}
                         />
                       </div>
                     </div>
@@ -239,12 +239,12 @@ export default function OnboardingPage() {
                       <div className="space-y-1.5">
                         <label className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 ml-1">Страна</label>
                         <div className="relative group">
-                          <Globe className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400 transition-colors ${profile?.role === 'master' ? 'group-focus-within:text-orange-500' : 'group-focus-within:text-indigo-500'}`} />
+                          <Globe className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400 transition-colors ${profile?.role === 'master' ? 'group-focus-within:text-orange-500' : 'group-focus-within:text-primary-500'}`} />
                           <select
                             required
                             value={selectedCountry}
                             onChange={e => setSelectedCountry(e.target.value)}
-                            className={`w-full pl-12 pr-4 py-4 bg-white/50 dark:bg-neutral-950/50 border border-neutral-200 dark:border-white/10 rounded-2xl focus:outline-none focus:ring-2 appearance-none cursor-pointer transition-all ${profile?.role === 'master' ? 'focus:ring-orange-500/20 focus:border-orange-500' : 'focus:ring-indigo-500/20 focus:border-indigo-500'}`}
+                            className={`w-full pl-12 pr-4 py-4 bg-white/50 dark:bg-neutral-950/50 border border-neutral-200 dark:border-white/10 rounded-2xl focus:outline-none focus:ring-2 appearance-none cursor-pointer transition-all ${profile?.role === 'master' ? 'focus:ring-orange-500/20 focus:border-orange-500' : 'focus:ring-primary-500/20 focus:border-primary-500'}`}
                           >
                             <option value="" disabled>Выберите страну</option>
                             {countries.map(c => (
@@ -257,12 +257,12 @@ export default function OnboardingPage() {
                       <div className="space-y-1.5">
                         <label className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 ml-1">Город</label>
                         <div className="relative group">
-                          <MapPin className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400 transition-colors ${profile?.role === 'master' ? 'group-focus-within:text-orange-500' : 'group-focus-within:text-indigo-500'}`} />
+                          <MapPin className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400 transition-colors ${profile?.role === 'master' ? 'group-focus-within:text-orange-500' : 'group-focus-within:text-primary-500'}`} />
                           <select
                             required
                             value={selectedCities[0] || ''}
                             onChange={e => setSelectedCities([e.target.value])}
-                            className={`w-full pl-12 pr-4 py-4 bg-white/50 dark:bg-neutral-950/50 border border-neutral-200 dark:border-white/10 rounded-2xl focus:outline-none focus:ring-2 appearance-none cursor-pointer transition-all ${profile?.role === 'master' ? 'focus:ring-orange-500/20 focus:border-orange-500' : 'focus:ring-indigo-500/20 focus:border-indigo-500'}`}
+                            className={`w-full pl-12 pr-4 py-4 bg-white/50 dark:bg-neutral-950/50 border border-neutral-200 dark:border-white/10 rounded-2xl focus:outline-none focus:ring-2 appearance-none cursor-pointer transition-all ${profile?.role === 'master' ? 'focus:ring-orange-500/20 focus:border-orange-500' : 'focus:ring-primary-500/20 focus:border-primary-500'}`}
                           >
                             <option value="" disabled>Выберите город</option>
                             {cities.map(c => (
@@ -275,7 +275,7 @@ export default function OnboardingPage() {
 
                     <button
                       type="submit"
-                      className={`w-full py-4 mt-4 text-white font-bold rounded-2xl flex items-center justify-center gap-2 transition-all mt-8 ${profile?.role === 'master' ? 'bg-gradient-to-r from-orange-600 to-amber-500 hover:from-orange-500 hover:to-amber-400 shadow-[0_10px_30px_rgba(234,88,12,0.3)]' : 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 shadow-[0_10px_30px_rgba(99,102,241,0.3)]'}`}
+                      className={`w-full py-4 mt-4 text-white font-bold rounded-2xl flex items-center justify-center gap-2 transition-all mt-8 ${profile?.role === 'master' ? 'bg-gradient-to-r from-orange-600 to-amber-500 hover:from-orange-500 hover:to-amber-400 shadow-[0_10px_30px_rgba(234,88,12,0.3)]' : 'bg-gradient-to-r from-primary-600 to-primary-600 hover:from-primary-500 hover:to-primary-500 shadow-[0_10px_30px_rgba(99,102,241,0.3)]'}`}
                     >
                       {totalSteps === 1 ? 'Завершить' : 'Далее'} <ArrowRight className="w-5 h-5" />
                     </button>

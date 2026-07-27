@@ -77,6 +77,12 @@ export function Header({ profile, onLogout, maxWidthClass = 'max-w-7xl' }: Heade
     if (typeof window !== 'undefined') {
       const savedTheme = localStorage.getItem('theme') || 'dark'
       setTheme(savedTheme as 'dark' | 'light')
+      
+      const urlParams = new URLSearchParams(window.location.search)
+      if (urlParams.get('tour') === 'true') {
+        setStartTour(true)
+        window.history.replaceState({}, '', window.location.pathname)
+      }
     }
   }, [])
 
@@ -106,6 +112,7 @@ export function Header({ profile, onLogout, maxWidthClass = 'max-w-7xl' }: Heade
           {/* Logo */}
           <button 
             onClick={() => router.push('/dashboard')}
+            aria-label="На главную"
             className="flex items-center gap-2 hover:opacity-80 transition-opacity cursor-pointer"
           >
             <Logo />
@@ -122,7 +129,7 @@ export function Header({ profile, onLogout, maxWidthClass = 'max-w-7xl' }: Heade
                 <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
                   profile.gamification_level === 'Elite' 
                     ? 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400 border border-amber-200 dark:border-amber-500/30'
-                    : 'bg-indigo-100 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-500/30'
+                    : 'bg-primary-100 text-primary-700 dark:bg-primary-500/20 dark:text-primary-400 border border-primary-200 dark:border-primary-500/30'
                 }`}>
                   {profile.gamification_level}
                 </span>
@@ -132,7 +139,13 @@ export function Header({ profile, onLogout, maxWidthClass = 'max-w-7xl' }: Heade
             {/* Help Button (Master only) */}
             {profile.role === 'master' && !profile.is_admin && (
               <button 
-                onClick={() => setStartTour(true)} 
+                onClick={() => {
+                  if (typeof window !== 'undefined' && window.location.pathname !== '/dashboard') {
+                    router.push('/dashboard?tour=true')
+                  } else {
+                    setStartTour(true)
+                  }
+                }} 
                 className="hidden sm:flex items-center gap-2 px-3 py-2 text-sm font-medium text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
               >
                 <HelpCircle className="w-4 h-4" />
@@ -148,7 +161,7 @@ export function Header({ profile, onLogout, maxWidthClass = 'max-w-7xl' }: Heade
                   title={t('topupHistory')}
                   className="flex items-center gap-2 px-3 py-1.5 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
                 >
-                  <Gem className="w-4 h-4 text-cyan-500 dark:text-cyan-400 shrink-0" />
+                  <Gem className="w-4 h-4 text-accent-500 dark:text-accent-400 shrink-0" />
                   <div className="flex items-baseline gap-1">
                     <span className="font-bold text-[15px] text-neutral-900 dark:text-white leading-none">{profile.balance ?? 0}</span>
                     <span className="font-semibold text-xs text-neutral-500 dark:text-neutral-400 leading-none uppercase tracking-wider">{profile.currency || 'CZK'}</span>
@@ -164,7 +177,8 @@ export function Header({ profile, onLogout, maxWidthClass = 'max-w-7xl' }: Heade
                 <div className="w-[1px] bg-neutral-200 dark:bg-neutral-700" />
                 <button
                   onClick={() => router.push('/top-up')}
-                  className="flex items-center justify-center bg-cyan-500 hover:bg-cyan-600 dark:bg-cyan-600 dark:hover:bg-cyan-500 text-white px-3 transition-colors group"
+                  aria-label={t('topupBalance')}
+                  className="flex items-center justify-center bg-accent-500 hover:bg-accent-600 dark:bg-accent-600 dark:hover:bg-accent-500 text-white px-3 transition-colors group"
                   title={t('topupBalance')}
                 >
                   <Plus className="w-4 h-4 group-hover:scale-110 transition-transform" />
@@ -179,6 +193,7 @@ export function Header({ profile, onLogout, maxWidthClass = 'max-w-7xl' }: Heade
             <div ref={menuRef} id="tour-profile" className="relative">
               <button
                 onClick={() => setMenuOpen(!menuOpen)}
+                aria-label={menuOpen ? "Закрыть меню" : "Открыть меню"}
                 className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
               >
                 {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -223,7 +238,7 @@ export function Header({ profile, onLogout, maxWidthClass = 'max-w-7xl' }: Heade
                       {t('settings')}
                     </a>
                     {profile.is_admin && (
-                      <a href="/admin" className="flex items-center gap-3 px-4 py-2 text-sm text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 hover:bg-neutral-100 dark:hover:bg-neutral-800">
+                      <a href="/admin" className="flex items-center gap-3 px-4 py-2 text-sm text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 hover:bg-neutral-100 dark:hover:bg-neutral-800">
                         <Shield className="w-4 h-4" />
                         {t('adminPanel')}
                       </a>

@@ -4,6 +4,8 @@ import { useState, useEffect, useRef, useMemo } from 'react'
 import { supabase } from '@/lib/supabase'
 import { MessageCircle, User, Bot, Loader2, CheckCircle2, PauseCircle, PlayCircle, Filter } from 'lucide-react'
 import toast from 'react-hot-toast'
+import { SkeletonList } from '@/components/SkeletonCard'
+import { EmptyState } from '@/components/EmptyState'
 
 interface AiConversation {
   id: string
@@ -115,10 +117,10 @@ export function AdminAiChats() {
         <div className="p-4 border-b border-neutral-200 dark:border-neutral-800 flex flex-col gap-3">
           <div className="flex items-center justify-between font-bold text-neutral-900 dark:text-white">
             <div className="flex items-center gap-2">
-              <Bot className="w-5 h-5 text-purple-500" />
+              <Bot className="w-5 h-5 text-primary-500" />
               ИИ Парсер
             </div>
-            <span className="text-xs bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-400 border border-purple-200 dark:border-purple-800 px-2 py-1 rounded-full">{filteredConversations.length}</span>
+            <span className="text-xs bg-primary-100 dark:bg-primary-900/50 text-primary-700 dark:text-primary-400 border border-primary-200 dark:border-primary-800 px-2 py-1 rounded-full">{filteredConversations.length}</span>
           </div>
           {uniqueCountries.length > 0 && (
             <div className="flex items-center gap-2">
@@ -126,7 +128,7 @@ export function AdminAiChats() {
               <select 
                 value={countryFilter}
                 onChange={e => setCountryFilter(e.target.value)}
-                className="flex-1 bg-white dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-lg text-xs py-1.5 px-2 outline-none focus:border-purple-500"
+                className="flex-1 bg-white dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-lg text-xs py-1.5 px-2 outline-none focus:border-primary-500"
               >
                 <option value="ALL">Все страны</option>
                 {uniqueCountries.map(code => (
@@ -138,19 +140,20 @@ export function AdminAiChats() {
         </div>
         <div className="flex-1 overflow-y-auto">
           {isLoadingChats ? (
-            <div className="flex justify-center p-8">
-              <Loader2 className="w-6 h-6 animate-spin text-neutral-400" />
-            </div>
+            <SkeletonList count={4} />
           ) : filteredConversations.length === 0 ? (
-            <div className="text-center p-8 text-neutral-500 text-sm">
-              Нет диалогов
-            </div>
+            <EmptyState
+              variant="compact"
+              icon={<Bot className="w-8 h-8" />}
+              title="Нет диалогов"
+              description="Здесь появятся ОИ-чаты."
+            />
           ) : (
             filteredConversations.map(c => (
               <button
                 key={c.id}
                 onClick={() => setSelectedConv(c)}
-                className={`w-full text-left p-4 border-b border-neutral-100 dark:border-neutral-800/50 hover:bg-white dark:hover:bg-neutral-800 transition-colors ${selectedConv?.id === c.id ? 'bg-white dark:bg-neutral-800 border-l-4 border-l-purple-500' : ''}`}
+                className={`w-full text-left p-4 border-b border-neutral-100 dark:border-neutral-800/50 hover:bg-white dark:hover:bg-neutral-800 transition-colors ${selectedConv?.id === c.id ? 'bg-white dark:bg-neutral-800 border-l-4 border-l-primary-500' : ''}`}
               >
                 <div className="flex justify-between items-center mb-1">
                   <div className="font-medium truncate text-neutral-700 dark:text-neutral-300 flex items-center gap-2">
@@ -224,8 +227,8 @@ export function AdminAiChats() {
             </div>
             
             {/* Context Header */}
-            <div className="bg-purple-50 dark:bg-purple-900/10 border-b border-purple-100 dark:border-purple-900/20 p-3 flex flex-wrap gap-x-6 gap-y-2 text-xs">
-              <div className="font-semibold text-purple-700 dark:text-purple-400 w-full mb-1">Собранные данные:</div>
+            <div className="bg-primary-50 dark:bg-primary-900/10 border-b border-primary-100 dark:border-primary-900/20 p-3 flex flex-wrap gap-x-6 gap-y-2 text-xs">
+              <div className="font-semibold text-primary-700 dark:text-primary-400 w-full mb-1">Собранные данные:</div>
               <div className="flex flex-col"><span className="text-neutral-500 mb-0.5">Стиль:</span> <span className="font-medium dark:text-white">{selectedConv.collected_data.style || '-'}</span></div>
               <div className="flex flex-col"><span className="text-neutral-500 mb-0.5">Место:</span> <span className="font-medium dark:text-white">{selectedConv.collected_data.location || '-'}</span></div>
               <div className="flex flex-col"><span className="text-neutral-500 mb-0.5">Размер:</span> <span className="font-medium dark:text-white">{selectedConv.collected_data.size || '-'}</span></div>
@@ -247,14 +250,14 @@ export function AdminAiChats() {
                         <div 
                           className={`relative min-w-[70px] rounded-2xl px-3.5 py-2 text-sm shadow-sm ${
                             isBot 
-                              ? 'bg-purple-500 text-white rounded-br-sm' 
+                              ? 'bg-primary-500 text-white rounded-br-sm' 
                               : 'bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-neutral-900 dark:text-white rounded-bl-sm'
                           }`}
                         >
                           <div className="break-words mb-1 whitespace-pre-wrap">
                             {msg.text}
                           </div>
-                          <div className={`text-[10px] leading-none flex items-center justify-end gap-0.5 whitespace-nowrap ${isBot ? 'text-purple-100' : 'text-neutral-400'}`}>
+                          <div className={`text-[10px] leading-none flex items-center justify-end gap-0.5 whitespace-nowrap ${isBot ? 'text-primary-100' : 'text-neutral-400'}`}>
                             <span>{msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}</span>
                             {isBot && (
                               <span className="opacity-80 tracking-tighter text-[11px] ml-1">

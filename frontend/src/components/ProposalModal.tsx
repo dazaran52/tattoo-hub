@@ -83,7 +83,7 @@ export function ProposalModal({ isOpen, onClose, lead, onSuccess }: ProposalModa
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5 p-4 lg:p-6">
-            <div className="flex items-start gap-3 rounded-2xl bg-violet-500/10 p-4 text-sm text-violet-600 dark:text-violet-400">
+            <div className="flex items-start gap-3 rounded-2xl bg-primary-500/10 p-4 text-sm text-primary-600 dark:text-primary-400">
               <AlertCircle className="mt-0.5 h-5 w-5 shrink-0" />
               <p>Отправка бесплатна. Комиссия спишется только если клиент выберет вас. Чат и контакты откроются после выбора.</p>
             </div>
@@ -100,7 +100,7 @@ export function ProposalModal({ isOpen, onClose, lead, onSuccess }: ProposalModa
                 type="number"
                 min="1"
                 required
-                className="w-full rounded-2xl border border-transparent bg-neutral-100 px-5 py-3 text-neutral-900 outline-none focus:border-violet-500 dark:bg-neutral-800 dark:text-white"
+                className="w-full rounded-2xl border border-transparent bg-neutral-100 px-5 py-3 text-neutral-900 outline-none focus:border-primary-500 dark:bg-neutral-800 dark:text-white"
                 placeholder="Например: 3500"
                 value={formData.price_offer}
                 onChange={(event) => setFormData({ ...formData, price_offer: event.target.value })}
@@ -119,7 +119,7 @@ export function ProposalModal({ isOpen, onClose, lead, onSuccess }: ProposalModa
               <label className="mb-2 block text-sm font-bold text-neutral-700 dark:text-neutral-300">Свободные даты</label>
               <textarea
                 required
-                className="w-full resize-none rounded-2xl border border-transparent bg-neutral-100 px-5 py-3 text-neutral-900 outline-none focus:border-violet-500 dark:bg-neutral-800 dark:text-white"
+                className="w-full resize-none rounded-2xl border border-transparent bg-neutral-100 px-5 py-3 text-neutral-900 outline-none focus:border-primary-500 dark:bg-neutral-800 dark:text-white"
                 placeholder="Например: четверг или пятница на этой неделе"
                 rows={3}
                 value={formData.proposed_dates}
@@ -127,7 +127,7 @@ export function ProposalModal({ isOpen, onClose, lead, onSuccess }: ProposalModa
               />
             </div>
 
-            <button type="submit" disabled={loading} className="flex w-full items-center justify-center gap-2 rounded-2xl bg-violet-500 py-4 font-bold text-white shadow-lg shadow-violet-500/25 hover:bg-violet-600 disabled:opacity-50">
+            <button type="submit" disabled={loading} className="flex w-full items-center justify-center gap-2 rounded-2xl bg-primary-500 py-4 font-bold text-white shadow-lg shadow-primary-500/25 hover:bg-primary-600 disabled:opacity-50">
               {loading ? <div className="h-6 w-6 animate-spin rounded-full border-2 border-white/20 border-t-white" /> : <><span>Отправить бесплатно</span><Send className="h-5 w-5" /></>}
             </button>
           </form>

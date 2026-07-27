@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { SkeletonCard } from '@/components/SkeletonCard'
@@ -498,12 +499,12 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
           >
             <XCircle className="w-8 h-8" />
           </button>
-          <img 
-            src={lightboxImage} 
+          <Image 
+            src={lightboxImage || ''} 
             alt="Fullscreen lead" 
             className="max-w-full max-h-full object-contain rounded-lg"
             onClick={e => e.stopPropagation()}
-          />
+           width={800} height={800} />
         </div>
       )}
 
@@ -533,7 +534,7 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
           ) : (
             <button
               onClick={() => setIsMasterModalOpen(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg text-sm font-bold shadow-md hover:shadow-lg transition-all whitespace-nowrap"
+              className="flex items-center gap-2 px-4 py-2 bg-accent-600 hover:bg-accent-700 text-white rounded-lg text-sm font-bold shadow-md hover:shadow-lg transition-all whitespace-nowrap"
             >
               <Plus className="w-4 h-4" />
               Разместить клиента
@@ -544,11 +545,11 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
               onClick={() => setShowOtherCities(!showOtherCities)}
               className={`flex items-center gap-2 px-4 py-2 border rounded-full text-sm font-semibold transition-all duration-300 shadow-sm hover:scale-[1.02] ${
                 !showOtherCities 
-                  ? 'bg-violet-500/10 dark:bg-violet-500/20 border-violet-500/30 dark:border-violet-500/50 text-violet-600 dark:text-violet-400' 
+                  ? 'bg-primary-500/10 dark:bg-primary-500/20 border-primary-500/30 dark:border-primary-500/50 text-primary-600 dark:text-primary-400' 
                   : 'bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 text-neutral-500 hover:text-neutral-950 dark:hover:text-white'
               }`}
             >
-              <MapPin className={`w-4 h-4 ${!showOtherCities ? 'text-violet-500 dark:text-violet-400' : ''}`} />
+              <MapPin className={`w-4 h-4 ${!showOtherCities ? 'text-primary-500 dark:text-primary-400' : ''}`} />
               {!showOtherCities ? 'Только мои города' : 'Все города'}
             </button>
           )}
@@ -652,12 +653,12 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
               {/* Image Carousel */}
               {hasImages && lead.image_urls && (
                 <div className="relative w-full h-48 bg-neutral-100 dark:bg-neutral-950 group/carousel">
-                  <img 
-                    src={lead.image_urls[currentImageIdx]} 
+                  <Image 
+                    src={lead.image_urls[currentImageIdx] || ''} 
                     alt={`Lead ${lead.title} photo`} 
                     className="w-full h-full object-cover cursor-pointer hover:opacity-90 transition-opacity"
                     onClick={() => setLightboxImage(lead.image_urls![currentImageIdx])}
-                  />
+                   width={800} height={800} />
                   {lead.image_urls.length > 1 && (
                     <>
                       <button 
@@ -700,7 +701,7 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
                         <span>💎 Максимальное качество</span>
                       </div>
                     )}
-                    <h3 className="font-bold text-lg text-neutral-900 dark:text-white leading-tight mb-2 group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors">
+                    <h3 className="font-bold text-lg text-neutral-900 dark:text-white leading-tight mb-2 group-hover:text-accent-600 dark:group-hover:text-accent-400 transition-colors">
                       {lead.title}
                     </h3>
                     <div className="flex flex-wrap gap-2 text-xs text-neutral-500 mb-3 font-medium">
@@ -804,7 +805,7 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
                     {lead.chat_id && (
                       <button
                         onClick={() => setSelectedChatLead(lead)}
-                        className="w-full py-3 px-4 bg-violet-100 hover:bg-violet-200 dark:bg-violet-900/30 dark:hover:bg-violet-900/50 text-violet-700 dark:text-violet-300 font-bold rounded-xl transition-colors flex items-center justify-center gap-2 text-sm"
+                        className="w-full py-3 px-4 bg-primary-100 hover:bg-primary-200 dark:bg-primary-900/30 dark:hover:bg-primary-900/50 text-primary-700 dark:text-primary-300 font-bold rounded-xl transition-colors flex items-center justify-center gap-2 text-sm"
                       >
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
                         Открыть чат
@@ -825,7 +826,7 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
                     {lead.chat_id && (
                       <button
                         onClick={() => setSelectedChatLead(lead)}
-                        className="w-full py-3 px-4 bg-violet-100 hover:bg-violet-200 dark:bg-violet-900/30 dark:hover:bg-violet-900/50 text-violet-700 dark:text-violet-300 font-bold rounded-xl transition-colors flex items-center justify-center gap-2 text-sm"
+                        className="w-full py-3 px-4 bg-primary-100 hover:bg-primary-200 dark:bg-primary-900/30 dark:hover:bg-primary-900/50 text-primary-700 dark:text-primary-300 font-bold rounded-xl transition-colors flex items-center justify-center gap-2 text-sm"
                       >
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
                         Открыть чат
@@ -1001,7 +1002,7 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
                   <div className="grid grid-cols-3 gap-2 mb-3">
                     {formData.image_urls.map((url, i) => (
                       <div key={i} className="relative aspect-square rounded-lg overflow-hidden group">
-                        <img src={url} className="w-full h-full object-cover" />
+                        <Image src={url || ''} className="w-full h-full object-cover"  alt="" width={800} height={800} />
                         <button 
                           type="button"
                           onClick={() => removeImage(i)}

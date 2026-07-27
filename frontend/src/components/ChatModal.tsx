@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import { useState, useEffect, useRef } from 'react'
 import { X, Send, AlertCircle, MessageCircle, Paperclip } from 'lucide-react'
 import { toast } from 'react-hot-toast'
@@ -199,7 +200,7 @@ export function ChatModal({ isOpen, onClose, chatId, leadTitle, currentUserRole 
           <div className="flex justify-between items-center p-4 lg:p-6 border-b border-neutral-100 dark:border-white/5 bg-neutral-50/50 dark:bg-neutral-900/50">
             <div>
               <h2 className="text-xl font-bold text-neutral-900 dark:text-white flex items-center gap-2">
-                <MessageCircle className="w-5 h-5 text-violet-500" />
+                <MessageCircle className="w-5 h-5 text-primary-500" />
                 {recipientName || leadTitle}
               </h2>
               <p className="text-xs text-neutral-500 mt-0.5">Внутренний чат</p>
@@ -225,7 +226,7 @@ export function ChatModal({ isOpen, onClose, chatId, leadTitle, currentUserRole 
                     <button
                       onClick={handleLoadMoreMessages}
                       disabled={isLoadingMore}
-                      className="px-4 py-2 text-xs font-medium text-violet-600 bg-white dark:bg-neutral-800 border border-violet-100 dark:border-violet-500/20 hover:bg-violet-50 dark:hover:bg-neutral-700 disabled:opacity-50 rounded-xl shadow-sm transition-all"
+                      className="px-4 py-2 text-xs font-medium text-primary-600 bg-white dark:bg-neutral-800 border border-primary-100 dark:border-primary-500/20 hover:bg-primary-50 dark:hover:bg-neutral-700 disabled:opacity-50 rounded-xl shadow-sm transition-all"
                     >
                       {isLoadingMore ? 'Загрузка...' : 'Загрузить предыдущие сообщения'}
                     </button>
@@ -254,7 +255,7 @@ export function ChatModal({ isOpen, onClose, chatId, leadTitle, currentUserRole 
                     <div key={msg.id} className="flex justify-center w-full my-4 shrink-0">
                       {cardData ? (
                         <div className="bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-white/10 p-5 rounded-2xl shadow-sm text-center max-w-sm w-full">
-                           <MessageCircle className="w-8 h-8 text-violet-500 mx-auto mb-3" />
+                           <MessageCircle className="w-8 h-8 text-primary-500 mx-auto mb-3" />
                            <h4 className="font-bold text-neutral-900 dark:text-white mb-2">
                              {cardData.type === 'session_created' ? 'Сеанс назначен' : cardData.type === 'master_rejected' ? 'Отказ' : cardData.type === 'master_accepted' ? 'Сеанс принят в работу' : cardData.type === 'new_lead' ? 'Новая заявка' : 'Системное уведомление'}
                            </h4>
@@ -306,11 +307,11 @@ export function ChatModal({ isOpen, onClose, chatId, leadTitle, currentUserRole 
                 <div key={msg.id} className={`flex ${msg.sender_type === currentUserRole ? 'justify-end' : 'justify-start'}`}>
                   <div className={`max-w-[80%] rounded-2xl px-4 py-2 ${
                     msg.sender_type === currentUserRole 
-                      ? 'bg-violet-500 text-white rounded-br-sm' 
+                      ? 'bg-primary-500 text-white rounded-br-sm' 
                       : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white rounded-bl-sm'
                   }`}>
                     {msg.content.startsWith('http') && msg.content.includes('supabase') ? (
-                      <img src={msg.content} alt="chat attachment" className="max-w-full rounded-lg object-cover cursor-pointer hover:opacity-90 transition-opacity" onClick={() => setViewerImage(msg.content)} />
+                      <Image src={msg.content || ''} alt="chat attachment" className="max-w-full rounded-lg object-cover cursor-pointer hover:opacity-90 transition-opacity" onClick={() => setViewerImage(msg.content)}  width={800} height={800} />
                     ) : (
                       <p className="whitespace-pre-wrap text-sm">{msg.content}</p>
                     )}
@@ -329,7 +330,7 @@ export function ChatModal({ isOpen, onClose, chatId, leadTitle, currentUserRole 
               <button 
                 type="button" 
                 onClick={() => fileInputRef.current?.click()}
-                className="cursor-pointer p-2 text-neutral-400 hover:text-violet-500 transition-colors"
+                className="cursor-pointer p-2 text-neutral-400 hover:text-primary-500 transition-colors"
               >
                 <Paperclip className="w-5 h-5" />
               </button>
@@ -349,12 +350,12 @@ export function ChatModal({ isOpen, onClose, chatId, leadTitle, currentUserRole 
                 placeholder="Написать сообщение..."
                 value={newMessage}
                 onChange={e => setNewMessage(e.target.value)}
-                className="flex-1 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white border border-transparent focus:border-violet-500 rounded-xl px-4 py-3 outline-none text-sm transition-all"
+                className="flex-1 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white border border-transparent focus:border-primary-500 rounded-xl px-4 py-3 outline-none text-sm transition-all"
               />
               <button 
                 type="submit"
                 disabled={!newMessage.trim() || sending}
-                className="bg-violet-500 hover:bg-violet-600 disabled:bg-neutral-300 disabled:dark:bg-neutral-700 text-white p-3 rounded-xl transition-all"
+                className="bg-primary-500 hover:bg-primary-600 disabled:bg-neutral-300 disabled:dark:bg-neutral-700 text-white p-3 rounded-xl transition-all"
               >
                 <Send className="w-5 h-5" />
               </button>

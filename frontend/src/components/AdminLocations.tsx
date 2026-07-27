@@ -3,6 +3,8 @@ import { Plus, Trash2, Loader2, Globe, MapPin } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import toast from 'react-hot-toast'
 import { ConfirmModal } from '@/components/ConfirmModal'
+import { SkeletonTable } from '@/components/SkeletonCard'
+import { EmptyState } from '@/components/EmptyState'
 
 export function AdminLocations() {
   const [countries, setCountries] = useState<any[]>([])
@@ -180,7 +182,12 @@ export function AdminLocations() {
   }
 
   if (isLoading) {
-    return <div className="flex justify-center p-12"><Loader2 className="w-8 h-8 animate-spin text-purple-600" /></div>
+    return (
+      <div className="space-y-8">
+        <SkeletonTable rows={4} />
+        <SkeletonTable rows={4} />
+      </div>
+    )
   }
 
   return (
@@ -188,7 +195,7 @@ export function AdminLocations() {
       {/* Countries Section */}
       <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 p-6">
         <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
-          <Globe className="w-6 h-6 text-purple-500" />
+          <Globe className="w-6 h-6 text-primary-500" />
           Countries
         </h3>
         
@@ -196,14 +203,21 @@ export function AdminLocations() {
           <input required type="text" placeholder="Code (e.g. CZ)" value={newCountryCode} onChange={e => setNewCountryCode(e.target.value)} className="px-4 py-2 rounded-xl border dark:bg-neutral-950 dark:border-neutral-800" />
           <input required type="text" placeholder="Name RU" value={newCountryRu} onChange={e => setNewCountryRu(e.target.value)} className="flex-1 px-4 py-2 rounded-xl border dark:bg-neutral-950 dark:border-neutral-800" />
           <input required type="text" placeholder="Name EN" value={newCountryEn} onChange={e => setNewCountryEn(e.target.value)} className="flex-1 px-4 py-2 rounded-xl border dark:bg-neutral-950 dark:border-neutral-800" />
-          <button disabled={actionLoadingId === 'new_country'} className="bg-purple-600 text-white px-6 py-2 rounded-xl font-bold hover:bg-purple-700 disabled:opacity-50 flex items-center gap-2">
+          <button disabled={actionLoadingId === 'new_country'} className="bg-primary-600 text-white px-6 py-2 rounded-xl font-bold hover:bg-primary-700 disabled:opacity-50 flex items-center gap-2">
             {actionLoadingId === 'new_country' ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
             Add
           </button>
         </form>
 
         <div className="space-y-2">
-          {countries.map(c => (
+          {countries.length === 0 ? (
+            <EmptyState
+              variant="compact"
+              icon={<Globe className="w-7 h-7" />}
+              title="Нет стран"
+              description="Добавьте первую страну через форму выше."
+            />
+          ) : countries.map(c => (
             <div key={c.id} className="flex justify-between items-center p-4 bg-neutral-50 dark:bg-neutral-800/50 rounded-xl border border-neutral-100 dark:border-neutral-800">
               <div className="flex items-center gap-4">
                 <span className="font-mono bg-neutral-200 dark:bg-neutral-700 px-2 py-1 rounded text-sm">{c.code}</span>
@@ -225,7 +239,7 @@ export function AdminLocations() {
       {/* Cities Section */}
       <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 p-6">
         <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
-          <MapPin className="w-6 h-6 text-purple-500" />
+          <MapPin className="w-6 h-6 text-primary-500" />
           Cities
         </h3>
         
@@ -236,21 +250,28 @@ export function AdminLocations() {
           </select>
           <input required type="text" placeholder="Name RU" value={newCityRu} onChange={e => setNewCityRu(e.target.value)} className="flex-1 px-4 py-2 rounded-xl border dark:bg-neutral-950 dark:border-neutral-800" />
           <input required type="text" placeholder="Name EN" value={newCityEn} onChange={e => setNewCityEn(e.target.value)} className="flex-1 px-4 py-2 rounded-xl border dark:bg-neutral-950 dark:border-neutral-800" />
-          <button disabled={actionLoadingId === 'new_city'} className="bg-purple-600 text-white px-6 py-2 rounded-xl font-bold hover:bg-purple-700 disabled:opacity-50 flex items-center gap-2">
+          <button disabled={actionLoadingId === 'new_city'} className="bg-primary-600 text-white px-6 py-2 rounded-xl font-bold hover:bg-primary-700 disabled:opacity-50 flex items-center gap-2">
             {actionLoadingId === 'new_city' ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
             Add
           </button>
         </form>
 
         <div className="space-y-2">
-          {cities.map(c => {
+          {cities.length === 0 ? (
+            <EmptyState
+              variant="compact"
+              icon={<MapPin className="w-7 h-7" />}
+              title="Нет городов"
+              description="Добавьте первый город через форму выше."
+            />
+          ) : cities.map(c => {
             const country = countries.find(co => co.id === c.country_id)
             return (
               <div key={c.id} className="flex justify-between items-center p-4 bg-neutral-50 dark:bg-neutral-800/50 rounded-xl border border-neutral-100 dark:border-neutral-800">
                 <div className="flex items-center gap-4">
                   <span className="font-semibold">{c.name_ru}</span>
                   <span className="text-neutral-500 text-sm">({c.name_en})</span>
-                  <span className="text-xs bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300 px-2 py-1 rounded-md">{country?.name_ru}</span>
+                  <span className="text-xs bg-primary-100 text-primary-800 dark:bg-primary-900/30 dark:text-primary-300 px-2 py-1 rounded-md">{country?.name_ru}</span>
                 </div>
                 <button 
                   onClick={() => handleDeleteCity(c.id)}

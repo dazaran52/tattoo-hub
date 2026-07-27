@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { useState, useEffect } from 'react'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import { User, Loader2, Image as ImageIcon, Video, Star, AtSign, Link as LinkIcon } from 'lucide-react'
@@ -20,7 +21,7 @@ const getThemeClasses = (theme: string) => {
       return {
         bg: 'bg-[#050505] text-white',
         card: 'bg-neutral-900/40 backdrop-blur-xl border border-white/5 shadow-2xl',
-        input: 'bg-neutral-950 border border-neutral-800 text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 shadow-inner',
+        input: 'bg-neutral-950 border border-neutral-800 text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-accent-500/20 focus:border-accent-500 shadow-inner',
         buttonPrimary: 'bg-white text-neutral-900 hover:bg-neutral-200 shadow-lg hover:shadow-xl hover:scale-[1.01] active:scale-[0.99] transition-all',
         tabsBg: 'bg-neutral-900 p-1.5',
         tabActive: 'bg-neutral-800 text-white',
@@ -30,7 +31,7 @@ const getThemeClasses = (theme: string) => {
       return {
         bg: 'bg-neutral-50 text-neutral-900',
         card: 'bg-white/60 backdrop-blur-xl border border-neutral-200/50 shadow-xl',
-        input: 'bg-white border border-neutral-200 text-neutral-900 placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 shadow-inner',
+        input: 'bg-white border border-neutral-200 text-neutral-900 placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-accent-500/20 focus:border-accent-500 shadow-inner',
         buttonPrimary: 'bg-neutral-900 text-white hover:bg-neutral-800 shadow-lg hover:shadow-xl hover:scale-[1.01] active:scale-[0.99] transition-all',
         tabsBg: 'bg-neutral-100 p-1.5',
         tabActive: 'bg-white text-neutral-900 shadow-sm',
@@ -39,29 +40,29 @@ const getThemeClasses = (theme: string) => {
     case 'violet':
       return {
         bg: 'bg-gradient-to-br from-[#0f0c29] via-[#302b63] to-[#24243e] text-white',
-        card: 'bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl shadow-violet-500/20',
-        input: 'bg-black/40 border border-violet-500/30 text-white placeholder-violet-300/50 focus:outline-none focus:ring-2 focus:ring-violet-500/40 focus:border-violet-500 shadow-inner',
-        buttonPrimary: 'bg-violet-600 text-white hover:bg-violet-700 shadow-lg shadow-violet-500/25 hover:shadow-xl hover:scale-[1.01] active:scale-[0.99] transition-all',
+        card: 'bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl shadow-primary-500/20',
+        input: 'bg-black/40 border border-primary-500/30 text-white placeholder-primary-300/50 focus:outline-none focus:ring-2 focus:ring-primary-500/40 focus:border-primary-500 shadow-inner',
+        buttonPrimary: 'bg-primary-600 text-white hover:bg-primary-700 shadow-lg shadow-primary-500/25 hover:shadow-xl hover:scale-[1.01] active:scale-[0.99] transition-all',
         tabsBg: 'bg-black/20 p-1.5',
-        tabActive: 'bg-violet-600/40 text-white border border-violet-500/50',
-        tabInactive: 'text-violet-300/60 hover:text-white hover:bg-white/5',
+        tabActive: 'bg-primary-600/40 text-white border border-primary-500/50',
+        tabInactive: 'text-primary-300/60 hover:text-white hover:bg-white/5',
       }
     case 'cyberpunk':
       return {
         bg: 'bg-neutral-950 text-white bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(120,119,198,0.3),rgba(255,255,255,0))]',
         card: 'bg-neutral-900/80 backdrop-blur-xl border border-pink-500/30 shadow-2xl shadow-pink-500/10',
-        input: 'bg-black/80 border border-cyan-500/30 text-white placeholder-cyan-700 focus:outline-none focus:ring-2 focus:ring-pink-500/40 focus:border-pink-500 shadow-inner',
-        buttonPrimary: 'bg-gradient-to-r from-pink-600 to-cyan-600 text-white hover:from-pink-500 hover:to-cyan-500 shadow-lg shadow-cyan-500/25 hover:shadow-xl hover:scale-[1.01] active:scale-[0.99] transition-all',
+        input: 'bg-black/80 border border-accent-500/30 text-white placeholder-accent-700 focus:outline-none focus:ring-2 focus:ring-pink-500/40 focus:border-pink-500 shadow-inner',
+        buttonPrimary: 'bg-gradient-to-r from-pink-600 to-accent-600 text-white hover:from-pink-500 hover:to-accent-500 shadow-lg shadow-accent-500/25 hover:shadow-xl hover:scale-[1.01] active:scale-[0.99] transition-all',
         tabsBg: 'bg-black/40 border border-white/5 p-1.5',
         tabActive: 'bg-pink-600/20 text-pink-400 border border-pink-500/50',
-        tabInactive: 'text-neutral-500 hover:text-cyan-400 hover:bg-cyan-500/10',
+        tabInactive: 'text-neutral-500 hover:text-accent-400 hover:bg-accent-500/10',
       }
     case 'system':
     default:
       return {
         bg: 'bg-neutral-50 dark:bg-[#050505] text-neutral-900 dark:text-white',
         card: 'bg-white/60 dark:bg-neutral-900/60 backdrop-blur-xl border border-neutral-200/50 dark:border-white/5 shadow-xl',
-        input: 'bg-white dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 shadow-inner',
+        input: 'bg-white dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-accent-500/20 focus:border-accent-500 shadow-inner',
         buttonPrimary: 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 hover:bg-neutral-800 dark:hover:bg-neutral-200 shadow-lg hover:shadow-xl hover:scale-[1.01] active:scale-[0.99] transition-all',
         tabsBg: 'bg-neutral-100 dark:bg-neutral-900 p-1.5',
         tabActive: 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white shadow-sm',
@@ -146,8 +147,8 @@ export default function BookMasterPage() {
     <div className={`min-h-screen py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden transition-colors duration-500 ${tClasses.bg}`}>
       {/* Background Effects */}
       <div className="absolute top-0 left-0 w-full h-full pointer-events-none overflow-hidden z-0">
-        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-cyan-500/10 blur-[120px]" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-purple-500/10 blur-[120px]" />
+        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-accent-500/10 blur-[120px]" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-primary-500/10 blur-[120px]" />
       </div>
 
       <div className="max-w-2xl mx-auto relative z-10">
@@ -155,7 +156,7 @@ export default function BookMasterPage() {
         <div className={`rounded-3xl p-8 mb-8 text-center transition-colors duration-500 ${tClasses.card}`}>
           <div className="w-28 h-28 bg-gradient-to-br from-neutral-200 dark:from-neutral-800 to-neutral-300 dark:to-neutral-700 rounded-full mx-auto mb-5 flex items-center justify-center border-4 border-white dark:border-neutral-950 shadow-xl overflow-hidden">
             {master.avatar_url ? (
-              <img src={master.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
+              <Image src={master.avatar_url || ''} alt="Avatar" className="w-full h-full object-cover"  width={800} height={800} />
             ) : (
               <User className="w-12 h-12 text-neutral-500" />
             )}
@@ -260,7 +261,7 @@ export default function BookMasterPage() {
                       {firstMedia?.type === 'video' ? (
                         <video src={firstMedia.url} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
                       ) : (
-                        <img src={firstMedia?.url} alt="Portfolio item" className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500" />
+                        <Image src={firstMedia?.url || ''} alt="Portfolio item" className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500"  width={800} height={800} />
                       )}
                       
                       <div className="absolute top-2 right-2 flex gap-1">

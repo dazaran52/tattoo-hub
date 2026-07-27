@@ -4,6 +4,8 @@ import { supabase } from '@/lib/supabase'
 import { toast } from 'react-hot-toast'
 import { ClientDetailsModal } from './ClientDetailsModal'
 import { AddClientModal } from './AddClientModal'
+import { SkeletonTable } from './SkeletonCard'
+import { EmptyState } from './EmptyState'
 
 export interface CRMClient {
   id: string
@@ -141,11 +143,7 @@ export function ClientsDatabase() {
   }
 
   if (loading) {
-    return (
-      <div className="flex justify-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-violet-500"></div>
-      </div>
-    )
+    return <SkeletonTable rows={5} />
   }
 
   const filteredClients = clients.filter(c => {
@@ -168,12 +166,12 @@ export function ClientsDatabase() {
             placeholder="Поиск по имени или номеру..." 
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl pl-10 pr-4 py-3 focus:ring-2 focus:ring-violet-500/20 outline-none"
+            className="w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl pl-10 pr-4 py-3 focus:ring-2 focus:ring-primary-500/20 outline-none"
           />
         </div>
         <button
           onClick={() => setIsAddModalOpen(true)}
-          className="flex items-center gap-2 px-5 py-3 bg-violet-600 hover:bg-violet-700 text-white rounded-xl font-bold shadow-md hover:shadow-lg transition-all hover:-translate-y-0.5 whitespace-nowrap"
+          className="flex items-center gap-2 px-5 py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-bold shadow-md hover:shadow-lg transition-all hover:-translate-y-0.5 whitespace-nowrap"
         >
           <UserPlus className="w-5 h-5" />
           Добавить клиента
@@ -217,7 +215,7 @@ export function ClientsDatabase() {
                             {(client.source === 'direct' || client.leads?.is_personal) ? (
                               <span className="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-[10px] px-2 py-0.5 rounded font-bold">Личная</span>
                             ) : (client.source === 'marketplace' || (client.lead_id && !client.leads?.is_personal)) ? (
-                              <span className="bg-cyan-100 dark:bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 text-[10px] px-2 py-0.5 rounded font-bold">Маркетплейс</span>
+                              <span className="bg-accent-100 dark:bg-accent-500/20 text-accent-600 dark:text-accent-400 text-[10px] px-2 py-0.5 rounded font-bold">Маркетплейс</span>
                             ) : null}
                           </div>
                           <div className="text-sm text-neutral-500">
@@ -227,7 +225,7 @@ export function ClientsDatabase() {
                       </div>
                     </td>
                     <td className="p-4">
-                      <div className="inline-flex items-center justify-center bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 px-3 py-1 rounded-full text-xs font-bold">
+                      <div className="inline-flex items-center justify-center bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 px-3 py-1 rounded-full text-xs font-bold">
                         {sessions.length}
                       </div>
                     </td>
@@ -255,7 +253,7 @@ export function ClientsDatabase() {
                             e.stopPropagation()
                             setSelectedClient(client)
                           }}
-                          className="p-2 text-neutral-400 hover:text-violet-500 hover:bg-violet-50 dark:hover:bg-violet-500/10 rounded-lg transition-colors"
+                          className="p-2 text-neutral-400 hover:text-primary-500 hover:bg-primary-50 dark:hover:bg-primary-500/10 rounded-lg transition-colors"
                         >
                           <Edit3 className="w-5 h-5" />
                         </button>
@@ -271,12 +269,15 @@ export function ClientsDatabase() {
                 )
               })}
               {filteredClients.length === 0 && (
-                <tr>
-                  <td colSpan={4} className="p-12 text-center text-neutral-500">
-                    <UserPlus className="w-12 h-12 mx-auto mb-4 opacity-20" />
-                    <p className="font-medium text-lg">Клиенты не найдены</p>
-                  </td>
-                </tr>
+                <EmptyState
+                  variant="table"
+                  colSpan={4}
+                  icon={<UserPlus className="w-8 h-8" />}
+                  title="Клиенты не найдены"
+                  description={searchQuery ? "По вашему поисковому запросу нет клиентов." : "В вашей базе пока нет ни одного клиента."}
+                  actionLabel={!searchQuery ? "Добавить клиента" : undefined}
+                  onAction={!searchQuery ? () => setIsAddModalOpen(true) : undefined}
+                />
               )}
             </tbody>
           </table>

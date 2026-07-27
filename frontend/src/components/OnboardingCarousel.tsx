@@ -14,7 +14,7 @@ export function OnboardingCarousel({ onComplete, forceShow = false }: { onComple
     {
       title: t('onboarding.onb_slide1_title'),
       description: t('onboarding.onb_slide1_desc'),
-      icon: <Sparkles className="w-16 h-16 text-indigo-400" />
+      icon: <Sparkles className="w-16 h-16 text-primary-400" />
     },
     {
       title: t('onboarding.onb_slide2_title'),
@@ -99,7 +99,7 @@ export function OnboardingCarousel({ onComplete, forceShow = false }: { onComple
               {slides.map((_, i) => (
                 <div 
                   key={i} 
-                  className={`h-2 rounded-full transition-all duration-300 ${i === currentSlide ? 'w-8 bg-indigo-500' : 'w-2 bg-neutral-800'}`}
+                  className={`h-2 rounded-full transition-all duration-300 ${i === currentSlide ? 'w-8 bg-primary-500' : 'w-2 bg-neutral-800'}`}
                 />
               ))}
             </div>

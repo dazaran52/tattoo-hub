@@ -35,7 +35,7 @@ export function LowBalanceModal({ isOpen, onClose, requiredAmount, currency }: L
           <div className="flex flex-col gap-3">
             <Link 
               href="/top-up"
-              className="w-full py-3.5 px-4 bg-cyan-500 hover:bg-cyan-600 text-white font-semibold rounded-xl transition-colors shadow-lg shadow-cyan-500/25"
+              className="w-full py-3.5 px-4 bg-accent-500 hover:bg-accent-600 text-white font-semibold rounded-xl transition-colors shadow-lg shadow-accent-500/25"
             >
               Пополнить баланс
             </Link>

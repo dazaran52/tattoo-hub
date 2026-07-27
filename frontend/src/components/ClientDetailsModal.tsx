@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, Calendar, Phone, Mail, FileText, Plus, MessageCircle, PlayCircle, Trash2, Edit3, CheckCircle } from 'lucide-react'
@@ -125,19 +126,19 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId: 
           <div className="flex border-b border-neutral-100 dark:border-neutral-800 shrink-0">
             <button 
               onClick={() => setActiveTab('info')}
-              className={`flex-1 py-3 text-sm font-bold border-b-2 transition-colors ${activeTab === 'info' ? 'border-violet-500 text-violet-600 dark:text-violet-400' : 'border-transparent text-neutral-500 hover:bg-neutral-50 dark:hover:bg-neutral-800'}`}
+              className={`flex-1 py-3 text-sm font-bold border-b-2 transition-colors ${activeTab === 'info' ? 'border-primary-500 text-primary-600 dark:text-primary-400' : 'border-transparent text-neutral-500 hover:bg-neutral-50 dark:hover:bg-neutral-800'}`}
             >
               Информация
             </button>
             <button 
               onClick={() => setActiveTab('sessions')}
-              className={`flex-1 py-3 text-sm font-bold border-b-2 transition-colors ${activeTab === 'sessions' ? 'border-violet-500 text-violet-600 dark:text-violet-400' : 'border-transparent text-neutral-500 hover:bg-neutral-50 dark:hover:bg-neutral-800'}`}
+              className={`flex-1 py-3 text-sm font-bold border-b-2 transition-colors ${activeTab === 'sessions' ? 'border-primary-500 text-primary-600 dark:text-primary-400' : 'border-transparent text-neutral-500 hover:bg-neutral-50 dark:hover:bg-neutral-800'}`}
             >
               Сеансы
             </button>
             <button 
               onClick={() => setActiveTab('chat')}
-              className={`flex-1 py-3 text-sm font-bold border-b-2 transition-colors ${activeTab === 'chat' ? 'border-violet-500 text-violet-600 dark:text-violet-400' : 'border-transparent text-neutral-500 hover:bg-neutral-50 dark:hover:bg-neutral-800'}`}
+              className={`flex-1 py-3 text-sm font-bold border-b-2 transition-colors ${activeTab === 'chat' ? 'border-primary-500 text-primary-600 dark:text-primary-400' : 'border-transparent text-neutral-500 hover:bg-neutral-50 dark:hover:bg-neutral-800'}`}
             >
               Чат
             </button>
@@ -175,7 +176,7 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId: 
                            toast.success('Имя сохранено')
                          }
                       }}
-                      className="mt-1 block text-lg font-bold text-neutral-900 dark:text-white bg-transparent border-b-2 border-transparent hover:border-neutral-200 dark:hover:border-neutral-700 focus:border-violet-500 outline-none w-full transition-colors pb-1 disabled:opacity-70 read-only:opacity-70"
+                      className="mt-1 block text-lg font-bold text-neutral-900 dark:text-white bg-transparent border-b-2 border-transparent hover:border-neutral-200 dark:hover:border-neutral-700 focus:border-primary-500 outline-none w-full transition-colors pb-1 disabled:opacity-70 read-only:opacity-70"
                     />
                   </div>
                   {!client.id.startsWith('temp-') && (
@@ -214,7 +215,7 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId: 
                              onUpdate()
                            }
                         }}
-                        className="w-full bg-neutral-50 dark:bg-neutral-800 border-none rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-violet-500/20 outline-none mt-1 disabled:opacity-70 read-only:opacity-70"
+                        className="w-full bg-neutral-50 dark:bg-neutral-800 border-none rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary-500/20 outline-none mt-1 disabled:opacity-70 read-only:opacity-70"
                       />
                     </div>
                     <div>
@@ -230,7 +231,7 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId: 
                              onUpdate()
                            }
                         }}
-                        className="w-full bg-neutral-50 dark:bg-neutral-800 border-none rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-violet-500/20 outline-none mt-1 disabled:opacity-70 read-only:opacity-70"
+                        className="w-full bg-neutral-50 dark:bg-neutral-800 border-none rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary-500/20 outline-none mt-1 disabled:opacity-70 read-only:opacity-70"
                       />
                     </div>
                     <div>
@@ -247,7 +248,7 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId: 
                              onUpdate()
                            }
                         }}
-                        className="w-full bg-neutral-50 dark:bg-neutral-800 border-none rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-violet-500/20 outline-none mt-1 disabled:opacity-70 read-only:opacity-70"
+                        className="w-full bg-neutral-50 dark:bg-neutral-800 border-none rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary-500/20 outline-none mt-1 disabled:opacity-70 read-only:opacity-70"
                       />
                     </div>
                   </div>
@@ -259,7 +260,7 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId: 
                     defaultValue={client.notes || ''}
                     readOnly={client.id.startsWith('temp-')}
                     placeholder="Добавьте заметку об этом клиенте..."
-                    className="mt-2 w-full p-4 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl focus:ring-2 focus:ring-violet-500 outline-none text-neutral-900 dark:text-white disabled:opacity-70 read-only:opacity-70"
+                    className="mt-2 w-full p-4 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl focus:ring-2 focus:ring-primary-500 outline-none text-neutral-900 dark:text-white disabled:opacity-70 read-only:opacity-70"
                     rows={4}
                     onBlur={async (e) => {
                        if (client.id.startsWith('temp-')) return;
@@ -278,7 +279,7 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId: 
                   {!client.id.startsWith('temp-') && (
                   <button 
                     onClick={() => setIsSessionModalOpen(true)}
-                    className="flex items-center gap-1 text-sm font-bold text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-900/20 px-3 py-1.5 rounded-lg hover:bg-violet-100 transition-colors"
+                    className="flex items-center gap-1 text-sm font-bold text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20 px-3 py-1.5 rounded-lg hover:bg-primary-100 transition-colors"
                   >
                     <Plus className="w-4 h-4"/> Добавить
                   </button>
@@ -305,7 +306,7 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId: 
                             {s.status === 'booked' && (
                               <button 
                                 onClick={(e) => { e.stopPropagation(); setSessionToStart(s.id); }}
-                                className="px-3 py-1.5 bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400 font-bold text-xs rounded-lg flex items-center gap-1"
+                                className="px-3 py-1.5 bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-400 font-bold text-xs rounded-lg flex items-center gap-1"
                               >
                                 <PlayCircle className="w-3 h-3" /> Начать
                               </button>
@@ -325,7 +326,7 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId: 
                               } else {
                                 setSessionToEdit({ ...s, master_clients: { id: client.id, name: client.name } });
                               }
-                            }} className="p-1.5 text-neutral-400 hover:text-violet-500 rounded-md">
+                            }} className="p-1.5 text-neutral-400 hover:text-primary-500 rounded-md">
                               <Edit3 className="w-4 h-4" />
                             </button>
                             <button onClick={(e) => { e.stopPropagation(); handleDeleteSession(s.id); }} className="p-1.5 text-neutral-400 hover:text-red-500 rounded-md">
@@ -337,7 +338,7 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId: 
                       {s.reference_images && s.reference_images.length > 0 && (
                         <div className="w-full flex gap-2 overflow-x-auto custom-scrollbar pb-1 border-t border-neutral-100 dark:border-neutral-800 pt-3">
                           {s.reference_images.map((url: string, idx: number) => (
-                            <img key={`ref-${idx}`} src={url} alt="ref" className="w-14 h-14 rounded-lg object-cover shrink-0 border border-neutral-200 dark:border-neutral-700" />
+                            <Image key={`ref-${idx}`} src={url || ''} alt="ref" className="w-14 h-14 rounded-lg object-cover shrink-0 border border-neutral-200 dark:border-neutral-700"  width={56} height={56} />
                           ))}
                         </div>
                       )}
@@ -350,7 +351,7 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId: 
                           </div>
                           <div className="w-full flex gap-2 overflow-x-auto custom-scrollbar pb-1">
                             {s.result_image_urls.map((url: string, idx: number) => (
-                              <img key={`res-${idx}`} src={url} alt="result" className="w-16 h-16 rounded-lg object-cover shrink-0 border border-green-200 dark:border-green-800" />
+                              <Image key={`res-${idx}`} src={url || ''} alt="result" className="w-16 h-16 rounded-lg object-cover shrink-0 border border-green-200 dark:border-green-800"  width={64} height={64} />
                             ))}
                           </div>
                         </div>
@@ -367,7 +368,7 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId: 
 
             {activeTab === 'chat' && (
               <div className="flex flex-col items-center justify-center h-full text-center space-y-4">
-                <div className="w-16 h-16 bg-violet-50 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 rounded-2xl flex items-center justify-center">
+                <div className="w-16 h-16 bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 rounded-2xl flex items-center justify-center">
                   <MessageCircle className="w-8 h-8" />
                 </div>
                 <div>
@@ -379,7 +380,7 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId: 
                 {client.lead_id && (
                   <button 
                     onClick={() => setIsChatOpen(true)}
-                    className="px-6 py-3 bg-violet-600 text-white font-bold rounded-xl shadow-lg shadow-violet-500/30 hover:bg-violet-700 transition-colors"
+                    className="px-6 py-3 bg-primary-600 text-white font-bold rounded-xl shadow-lg shadow-primary-500/30 hover:bg-primary-700 transition-colors"
                   >
                     Открыть чат
                   </button>

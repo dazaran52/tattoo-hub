@@ -7,6 +7,8 @@ import { supabase } from '@/lib/supabase'
 import { Profile } from '@/lib/supabase'
 import { api } from '@/lib/api'
 import { Loader2, TrendingUp, ShoppingCart, Activity } from 'lucide-react'
+import { SkeletonCard, SkeletonChart } from '@/components/SkeletonCard'
+import { EmptyState } from '@/components/EmptyState'
 import {
   AreaChart,
   Area,
@@ -78,17 +80,16 @@ export default function AnalyticsPage() {
     return (
       <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950">
         {profile ? <Header profile={profile} onLogout={handleLogout} /> : <div className="h-16 border-b border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900" />}
-        <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-24">
-          <div className="mb-8">
+        <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-24 space-y-8">
+          <div>
             <div className="h-8 w-48 bg-neutral-200 dark:bg-neutral-800 rounded animate-pulse mb-2"></div>
             <div className="h-4 w-64 bg-neutral-200 dark:bg-neutral-800 rounded animate-pulse"></div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-            {[...Array(2)].map((_, i) => (
-              <div key={i} className="bg-white dark:bg-neutral-900 rounded-2xl p-6 border border-neutral-200 dark:border-neutral-800 animate-pulse h-28"></div>
-            ))}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <SkeletonCard />
+            <SkeletonCard />
           </div>
-          <div className="bg-white dark:bg-neutral-900 rounded-2xl p-6 border border-neutral-200 dark:border-neutral-800 animate-pulse h-[350px]"></div>
+          <SkeletonChart />
         </main>
       </div>
     )
@@ -110,8 +111,8 @@ export default function AnalyticsPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           <div className="bg-white dark:bg-neutral-900 rounded-2xl p-6 border border-neutral-200 dark:border-neutral-800 shadow-sm relative overflow-hidden">
             <div className="relative z-10 flex items-center gap-4">
-              <div className="w-12 h-12 bg-cyan-100 dark:bg-cyan-900/40 rounded-xl flex items-center justify-center">
-                <TrendingUp className="w-6 h-6 text-cyan-500" />
+              <div className="w-12 h-12 bg-accent-100 dark:bg-accent-900/40 rounded-xl flex items-center justify-center">
+                <TrendingUp className="w-6 h-6 text-accent-500" />
               </div>
               <div>
                 <p className="text-sm text-neutral-500 dark:text-neutral-400 font-medium">Потрачено кредитов</p>
@@ -121,13 +122,13 @@ export default function AnalyticsPage() {
               </div>
             </div>
             {/* Background decoration */}
-            <div className="absolute -right-4 -bottom-4 w-24 h-24 bg-cyan-500/10 rounded-full blur-2xl" />
+            <div className="absolute -right-4 -bottom-4 w-24 h-24 bg-accent-500/10 rounded-full blur-2xl" />
           </div>
 
           <div className="bg-white dark:bg-neutral-900 rounded-2xl p-6 border border-neutral-200 dark:border-neutral-800 shadow-sm relative overflow-hidden">
             <div className="relative z-10 flex items-center gap-4">
-              <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/40 rounded-xl flex items-center justify-center">
-                <ShoppingCart className="w-6 h-6 text-purple-500" />
+              <div className="w-12 h-12 bg-primary-100 dark:bg-primary-900/40 rounded-xl flex items-center justify-center">
+                <ShoppingCart className="w-6 h-6 text-primary-500" />
               </div>
               <div>
                 <p className="text-sm text-neutral-500 dark:text-neutral-400 font-medium">Куплено лидов</p>
@@ -137,7 +138,7 @@ export default function AnalyticsPage() {
               </div>
             </div>
             {/* Background decoration */}
-            <div className="absolute -right-4 -bottom-4 w-24 h-24 bg-purple-500/10 rounded-full blur-2xl" />
+            <div className="absolute -right-4 -bottom-4 w-24 h-24 bg-primary-500/10 rounded-full blur-2xl" />
           </div>
         </div>
 
@@ -148,55 +149,63 @@ export default function AnalyticsPage() {
             Активность (последние 30 дней)
           </h3>
           
-          <div className="h-[300px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={analytics.activity_by_day} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                <defs>
-                  <linearGradient id="colorSpent" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.3}/>
-                    <stop offset="95%" stopColor="#06b6d4" stopOpacity={0}/>
-                  </linearGradient>
-                  <linearGradient id="colorBought" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#a855f7" stopOpacity={0.3}/>
-                    <stop offset="95%" stopColor="#a855f7" stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#333" opacity={0.2} />
-                <XAxis 
-                  dataKey="date" 
-                  tickFormatter={(val) => {
-                    const d = new Date(val)
-                    return `${d.getDate()}.${d.getMonth() + 1}`
-                  }}
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fill: '#888', fontSize: 12 }}
-                  dy={10}
-                />
-                <YAxis 
-                  yAxisId="left"
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fill: '#888', fontSize: 12 }}
-                />
-                <YAxis 
-                  yAxisId="right"
-                  orientation="right"
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fill: '#888', fontSize: 12 }}
-                />
-                <Tooltip 
-                  contentStyle={{ backgroundColor: '#171717', borderColor: '#333', borderRadius: '12px', color: '#fff' }}
-                  itemStyle={{ color: '#fff' }}
-                  labelStyle={{ color: '#888', marginBottom: '4px' }}
-                />
-                <Legend />
-                <Area yAxisId="left" type="monotone" name="Потрачено кредитов" dataKey="spent" stroke="#06b6d4" strokeWidth={3} fillOpacity={1} fill="url(#colorSpent)" />
-                <Area yAxisId="right" type="step" name="Куплено лидов" dataKey="bought" stroke="#a855f7" strokeWidth={3} fillOpacity={1} fill="url(#colorBought)" />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
+          {(!analytics.activity_by_day || analytics.activity_by_day.length === 0) ? (
+            <EmptyState
+              icon={<Activity className="w-8 h-8" />}
+              title="Нет данных об активности"
+              description="Здесь появится график вашей активности за последние 30 дней после совершения первых покупок или операций."
+            />
+          ) : (
+            <div className="h-[300px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={analytics.activity_by_day} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="colorSpent" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.3}/>
+                      <stop offset="95%" stopColor="#06b6d4" stopOpacity={0}/>
+                    </linearGradient>
+                    <linearGradient id="colorBought" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#a855f7" stopOpacity={0.3}/>
+                      <stop offset="95%" stopColor="#a855f7" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#333" opacity={0.2} />
+                  <XAxis 
+                    dataKey="date" 
+                    tickFormatter={(val) => {
+                      const d = new Date(val)
+                      return `${d.getDate()}.${d.getMonth() + 1}`
+                    }}
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fill: '#888', fontSize: 12 }}
+                    dy={10}
+                  />
+                  <YAxis 
+                    yAxisId="left"
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fill: '#888', fontSize: 12 }}
+                  />
+                  <YAxis 
+                    yAxisId="right"
+                    orientation="right"
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fill: '#888', fontSize: 12 }}
+                  />
+                  <Tooltip 
+                    contentStyle={{ backgroundColor: '#171717', borderColor: '#333', borderRadius: '12px', color: '#fff' }}
+                    itemStyle={{ color: '#fff' }}
+                    labelStyle={{ color: '#888', marginBottom: '4px' }}
+                  />
+                  <Legend />
+                  <Area yAxisId="left" type="monotone" name="Потрачено кредитов" dataKey="spent" stroke="#06b6d4" strokeWidth={3} fillOpacity={1} fill="url(#colorSpent)" />
+                  <Area yAxisId="right" type="step" name="Куплено лидов" dataKey="bought" stroke="#a855f7" strokeWidth={3} fillOpacity={1} fill="url(#colorBought)" />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          )}
         </div>
       </main>
     </div>

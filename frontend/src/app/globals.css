@@ -24,10 +24,16 @@
   }
 }
 
-/* Hide default cursor on desktop devices to show only custom cursor */
+/* Hide default cursor on desktop devices to show only custom cursor, except in form inputs */
 @media (pointer: fine) {
-  * {
+  *:not(input, textarea, select, [contenteditable], [contenteditable="true"]) {
     cursor: none !important;
+  }
+  input, textarea, [contenteditable], [contenteditable="true"] {
+    cursor: text !important;
+  }
+  select {
+    cursor: pointer !important;
   }
 }
 

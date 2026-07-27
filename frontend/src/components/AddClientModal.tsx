@@ -55,7 +55,7 @@ export function AddClientModal({ isOpen, onClose, onSuccess, onDuplicateFound }:
                     toast.dismiss(t.id);
                     if (onDuplicateFound) onDuplicateFound(errData.detail.client.id);
                   }}
-                  className="bg-violet-600 hover:bg-violet-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold w-fit transition-colors"
+                  className="bg-primary-600 hover:bg-primary-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold w-fit transition-colors"
                 >
                   Перейти к профилю
                 </button>
@@ -83,7 +83,7 @@ export function AddClientModal({ isOpen, onClose, onSuccess, onDuplicateFound }:
       <div className="bg-white dark:bg-neutral-900 rounded-3xl w-full max-w-md shadow-2xl overflow-hidden my-8">
         <div className="flex justify-between items-center p-6 border-b border-neutral-200 dark:border-neutral-800">
           <h2 className="text-xl font-bold flex items-center gap-2 text-neutral-900 dark:text-white">
-            <UserPlus className="w-5 h-5 text-violet-500" />
+            <UserPlus className="w-5 h-5 text-primary-500" />
             Добавить клиента
           </h2>
           <button onClick={onClose} className="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-full transition-colors text-neutral-500">
@@ -100,7 +100,7 @@ export function AddClientModal({ isOpen, onClose, onSuccess, onDuplicateFound }:
               value={formData.name}
               onChange={(e) => setFormData(p => ({ ...p, name: e.target.value }))}
               placeholder="Имя клиента"
-              className="w-full bg-neutral-100 dark:bg-neutral-800 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-violet-500/20 outline-none"
+              className="w-full bg-neutral-100 dark:bg-neutral-800 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary-500/20 outline-none"
             />
           </div>
 
@@ -120,7 +120,7 @@ export function AddClientModal({ isOpen, onClose, onSuccess, onDuplicateFound }:
               value={formData.email}
               onChange={(e) => setFormData(p => ({ ...p, email: e.target.value }))}
               placeholder="example@mail.com"
-              className="w-full bg-neutral-100 dark:bg-neutral-800 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-violet-500/20 outline-none"
+              className="w-full bg-neutral-100 dark:bg-neutral-800 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary-500/20 outline-none"
             />
           </div>
 
@@ -132,7 +132,7 @@ export function AddClientModal({ isOpen, onClose, onSuccess, onDuplicateFound }:
                 value={formData.telegram}
                 onChange={(e) => setFormData(p => ({ ...p, telegram: e.target.value }))}
                 placeholder="@username"
-                className="w-full bg-neutral-100 dark:bg-neutral-800 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-violet-500/20 outline-none"
+                className="w-full bg-neutral-100 dark:bg-neutral-800 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary-500/20 outline-none"
               />
             </div>
             <div>
@@ -142,7 +142,7 @@ export function AddClientModal({ isOpen, onClose, onSuccess, onDuplicateFound }:
                 value={formData.instagram}
                 onChange={(e) => setFormData(p => ({ ...p, instagram: e.target.value }))}
                 placeholder="@username"
-                className="w-full bg-neutral-100 dark:bg-neutral-800 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-violet-500/20 outline-none"
+                className="w-full bg-neutral-100 dark:bg-neutral-800 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary-500/20 outline-none"
               />
             </div>
           </div>
@@ -153,7 +153,7 @@ export function AddClientModal({ isOpen, onClose, onSuccess, onDuplicateFound }:
               value={formData.notes}
               onChange={(e) => setFormData(p => ({ ...p, notes: e.target.value }))}
               placeholder="Дополнительная информация..."
-              className="w-full bg-neutral-100 dark:bg-neutral-800 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-violet-500/20 outline-none min-h-[100px] resize-none"
+              className="w-full bg-neutral-100 dark:bg-neutral-800 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary-500/20 outline-none min-h-[100px] resize-none"
             />
           </div>
 
@@ -168,7 +168,7 @@ export function AddClientModal({ isOpen, onClose, onSuccess, onDuplicateFound }:
             <button
               type="submit"
               disabled={loading}
-              className="px-5 py-2.5 bg-violet-600 hover:bg-violet-700 text-white text-sm font-bold rounded-xl transition-colors disabled:opacity-50"
+              className="px-5 py-2.5 bg-primary-600 hover:bg-primary-700 text-white text-sm font-bold rounded-xl transition-colors disabled:opacity-50"
             >
               {loading ? 'Создание...' : 'Добавить клиента'}
             </button>

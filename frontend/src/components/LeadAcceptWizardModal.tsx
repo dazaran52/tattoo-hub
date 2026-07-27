@@ -274,7 +274,7 @@ export function LeadAcceptWizardModal({ isOpen, onClose, onSuccess, session, all
                           {daySessions.length > 0 && !isSelected && !dayOff && (
                             <div className="absolute bottom-1 flex gap-0.5">
                               {daySessions.slice(0, 3).map((_, idx) => (
-                                <div key={idx} className="w-1 h-1 rounded-full bg-violet-500" />
+                                <div key={idx} className="w-1 h-1 rounded-full bg-primary-500" />
                               ))}
                             </div>
                           )}
@@ -296,7 +296,7 @@ export function LeadAcceptWizardModal({ isOpen, onClose, onSuccess, session, all
                   {/* Selected Date Schedule */}
                   <div className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-700 p-4 flex-1">
                   <h4 className="text-sm font-bold text-neutral-900 dark:text-white mb-3 flex items-center gap-2">
-                    <Clock className="w-4 h-4 text-violet-500" />
+                    <Clock className="w-4 h-4 text-primary-500" />
                     Расписание на {new Date(selectedDate).toLocaleDateString('ru-RU')}
                   </h4>
                   {selectedDateSessions.length === 0 ? (
@@ -307,11 +307,11 @@ export function LeadAcceptWizardModal({ isOpen, onClose, onSuccess, session, all
                         <button 
                           key={s.id} 
                           onClick={() => onSessionClick?.(s)}
-                          className="w-full flex justify-between items-center bg-neutral-50 dark:bg-neutral-800 p-2.5 rounded-lg text-sm border border-neutral-100 dark:border-neutral-800 hover:border-violet-500 hover:shadow-sm transition-all"
+                          className="w-full flex justify-between items-center bg-neutral-50 dark:bg-neutral-800 p-2.5 rounded-lg text-sm border border-neutral-100 dark:border-neutral-800 hover:border-primary-500 hover:shadow-sm transition-all"
                         >
                           <div className="flex flex-col gap-1 items-start">
                             {s.start_time || s.end_time ? (
-                              <span className="font-bold text-violet-600 dark:text-violet-400 bg-violet-100 dark:bg-violet-900/30 px-2 py-1 rounded w-fit">
+                              <span className="font-bold text-primary-600 dark:text-primary-400 bg-primary-100 dark:bg-primary-900/30 px-2 py-1 rounded w-fit">
                                 {s.start_time ? s.start_time.slice(0, 5) : '...'} - {s.end_time ? s.end_time.slice(0, 5) : '...'}
                               </span>
                             ) : (

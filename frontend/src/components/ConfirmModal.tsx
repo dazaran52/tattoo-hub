@@ -40,8 +40,8 @@ export function ConfirmModal({
       case 'info':
       default:
         return {
-          iconBg: 'bg-cyan-100 dark:bg-cyan-900/30 text-cyan-500',
-          btnBg: 'bg-cyan-600 hover:bg-cyan-700 focus:ring-cyan-500/50 text-white shadow-lg shadow-cyan-500/25',
+          iconBg: 'bg-accent-100 dark:bg-accent-900/30 text-accent-500',
+          btnBg: 'bg-accent-600 hover:bg-accent-700 focus:ring-accent-500/50 text-white shadow-lg shadow-accent-500/25',
           icon: <Info className="w-10 h-10" />
         }
     }

@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react'
 import { RefreshCw, DollarSign, Loader2, Clock, CheckCircle, ShieldCheck } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import toast from 'react-hot-toast'
+import { SkeletonTable } from '@/components/SkeletonCard'
+import { EmptyState } from '@/components/EmptyState'
 
 interface CurrencyRate {
   currency_code: string
@@ -77,16 +79,16 @@ export function AdminCurrencies() {
   }
 
   if (isLoading) {
-    return <div className="flex justify-center p-12"><Loader2 className="w-8 h-8 animate-spin text-purple-600" /></div>
+    return <SkeletonTable rows={5} />
   }
 
   return (
     <div className="space-y-8">
       {/* Overview Banner */}
-      <div className="bg-gradient-to-r from-purple-900/20 to-neutral-900/50 dark:from-purple-950/40 dark:to-neutral-900 p-6 rounded-2xl border border-purple-500/20 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div className="bg-gradient-to-r from-primary-900/20 to-neutral-900/50 dark:from-primary-950/40 dark:to-neutral-900 p-6 rounded-2xl border border-primary-500/20 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <div className="flex items-center gap-2 mb-2">
-            <ShieldCheck className="w-6 h-6 text-purple-500" />
+            <ShieldCheck className="w-6 h-6 text-primary-500" />
             <h3 className="text-xl font-bold dark:text-white">Управление валютным курсом (ЕЦБ)</h3>
           </div>
           <p className="text-sm text-neutral-600 dark:text-neutral-400 max-w-2xl">
@@ -97,7 +99,7 @@ export function AdminCurrencies() {
         <button
           onClick={handleSync}
           disabled={isSyncing}
-          className="bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-purple-600/20 transition-all active:scale-95 whitespace-nowrap"
+          className="bg-primary-600 hover:bg-primary-700 disabled:opacity-50 text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-primary-600/20 transition-all active:scale-95 whitespace-nowrap"
         >
           {isSyncing ? <Loader2 className="w-5 h-5 animate-spin" /> : <RefreshCw className="w-5 h-5" />}
           Синхронизировать с ЕЦБ
@@ -116,7 +118,7 @@ export function AdminCurrencies() {
       {/* Rates Table */}
       <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 p-6 shadow-sm">
         <h4 className="text-lg font-bold mb-6 flex items-center gap-2 dark:text-white">
-          <DollarSign className="w-5 h-5 text-purple-500" />
+          <DollarSign className="w-5 h-5 text-primary-500" />
           Актуальные курсы (к 1 EUR)
         </h4>
 
@@ -143,7 +145,7 @@ export function AdminCurrencies() {
                   <tr key={r.currency_code} className="hover:bg-neutral-50 dark:hover:bg-neutral-800/30 transition-colors">
                     <td className="py-4 font-medium flex items-center gap-2 dark:text-white">
                       <span>{r.currency_code}</span>
-                      {isBase && <span className="bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-300 text-xs px-2 py-0.5 rounded-md font-bold">Базовая</span>}
+                      {isBase && <span className="bg-primary-100 text-primary-800 dark:bg-primary-900/40 dark:text-primary-300 text-xs px-2 py-0.5 rounded-md font-bold">Базовая</span>}
                       {isLaunchDefault && <span className="bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300 text-xs px-2 py-0.5 rounded-md font-bold">Рынок старта (Чехия)</span>}
                     </td>
                     <td className="py-4 font-mono text-sm text-neutral-500 dark:text-neutral-400">{r.currency_code}</td>
@@ -171,8 +173,13 @@ export function AdminCurrencies() {
               })}
               {rates.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="text-center py-8 text-neutral-500">
-                    Таблица курсов в БД пуста. Нажмите кнопку «Синхронизировать с ЕЦБ» или выполните миграцию 051.
+                  <td colSpan={6} className="py-8">
+                    <EmptyState
+                      variant="compact"
+                      icon={<DollarSign className="w-7 h-7" />}
+                      title="Таблица курсов пуста"
+                      description="Нажмите «Синхронизировать с ЕЦБ» или выполните миграцию 051."
+                    />
                   </td>
                 </tr>
               )}

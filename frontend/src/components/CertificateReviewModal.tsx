@@ -93,7 +93,7 @@ export function CertificateReviewModal({ user, onClose, onReviewed }: Certificat
         <div className="flex items-start justify-between gap-4">
           <div>
             <h2 id="certificate-review-title" className="flex items-center gap-2 text-xl font-black">
-              <FileCheck2 className="h-5 w-5 text-violet-500" />
+              <FileCheck2 className="h-5 w-5 text-primary-500" />
               Проверка сертификата
             </h2>
             <p className="mt-1 text-sm text-neutral-500">{user.display_name || user.email}</p>
@@ -105,9 +105,9 @@ export function CertificateReviewModal({ user, onClose, onReviewed }: Certificat
 
         <div className="mt-5 flex min-h-48 items-center justify-center rounded-2xl border border-neutral-200 bg-neutral-50 p-4 dark:border-neutral-800 dark:bg-black/30">
           {isLoading ? (
-            <Loader2 className="h-7 w-7 animate-spin text-violet-500" />
+            <Loader2 className="h-7 w-7 animate-spin text-primary-500" />
           ) : previewUrl ? (
-            <a href={previewUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-xl bg-violet-600 px-5 py-3 font-bold text-white hover:bg-violet-700">
+            <a href={previewUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-xl bg-primary-600 px-5 py-3 font-bold text-white hover:bg-primary-700">
               Открыть приватный документ
               <ExternalLink className="h-4 w-4" />
             </a>
@@ -123,7 +123,7 @@ export function CertificateReviewModal({ user, onClose, onReviewed }: Certificat
             onChange={(event) => setReason(event.target.value)}
             rows={3}
             placeholder="Например: документ нечитаемый или не содержит имени мастера"
-            className="mt-2 w-full resize-none rounded-2xl border border-neutral-200 bg-white px-4 py-3 font-normal outline-none focus:border-violet-500 dark:border-neutral-700 dark:bg-neutral-950"
+            className="mt-2 w-full resize-none rounded-2xl border border-neutral-200 bg-white px-4 py-3 font-normal outline-none focus:border-primary-500 dark:border-neutral-700 dark:bg-neutral-950"
           />
         </label>
 
