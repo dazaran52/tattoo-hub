@@ -104,9 +104,20 @@ def test_deploy_is_fail_closed_and_migrations_have_a_ledger():
     workflow = source(ROOT / ".github" / "workflows" / "deploy.yml")
     runner = source(BACKEND / "run_migration.py")
     assert "set -euo pipefail" in workflow
+    assert "053_fix_exchange_rates_rls.sql" in workflow
     assert "schema_migrations" in runner
     assert "pg_advisory_xact_lock" in runner
     assert "checksum mismatch" in runner.lower()
+
+
+def test_exchange_rates_rls_does_not_trust_user_metadata_for_admin_writes():
+    sql = source(BACKEND / "migrations" / "053_fix_exchange_rates_rls.sql")
+    policy_sql = sql.split("CREATE POLICY", 1)[1]
+    assert 'CREATE POLICY "Allow admin and service role write on exchange_rates"' in sql
+    assert "user_metadata" not in policy_sql
+    assert "FROM public.users AS u" in sql
+    assert "u.is_admin = TRUE" in sql
+    assert "WITH CHECK" in sql
 
 
 def test_readiness_checks_required_marketplace_schema_without_leaking_errors():

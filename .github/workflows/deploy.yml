@@ -55,6 +55,7 @@ jobs:
               migrations/049_manual_certificate_verification.sql \
               migrations/050_marketplace_success_fee.sql \
               migrations/051_create_exchange_rates.sql \
-              migrations/052_security_stabilization.sql
+              migrations/052_security_stabilization.sql \
+              migrations/053_fix_exchange_rates_rls.sql
             # Restart the service
             systemctl restart tattoohub.service
