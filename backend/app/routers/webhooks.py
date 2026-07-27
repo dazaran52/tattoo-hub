@@ -1,4 +1,5 @@
 import stripe
+from decimal import Decimal
 from fastapi import APIRouter, Request, HTTPException, Depends, Header
 from app.database import get_supabase_client
 from supabase import Client
@@ -41,48 +42,30 @@ async def stripe_webhook(
         if not user_id:
             return {"status": "ignored", "reason": "No client_reference_id found"}
             
-        # Get custom metadata
-        metadata = session.get('metadata', {})
-        credits_to_add = int(metadata.get('credits', 0))
-        
-        if credits_to_add <= 0:
-            return {"status": "ignored", "reason": "Invalid credits amount in metadata"}
-            
-        # Check if transaction was already processed
         session_id = session.get('id')
-        existing = supabase.table("transactions").select("id").eq("provider_tx_id", f"stripe_{session_id}").execute()
-        if existing.data and len(existing.data) > 0:
+        amount_total = session.get('amount_total')
+        if not session_id or not isinstance(amount_total, int) or amount_total <= 0:
+            return {"status": "ignored", "reason": "Invalid Stripe session amount"}
+        if session.get('payment_status') != 'paid':
+            return {"status": "ignored", "reason": "Payment is not paid"}
+
+        amount_paid = Decimal(amount_total) / Decimal(100)
+        currency = session.get('currency', 'czk').upper()
+        fulfillment = supabase.rpc("credit_stripe_balance", {
+            "p_user_id": user_id,
+            "p_amount": format(amount_paid, 'f'),
+            "p_currency": currency,
+            "p_provider_tx_id": f"stripe_{session_id}",
+        }).execute()
+        result = fulfillment.data or {}
+        if not result.get("processed"):
             return {"status": "already processed"}
 
-        # Add credits
-        user_res = supabase.table("users").select("credits").eq("id", user_id).execute()
-        if not user_res.data:
-            return {"status": "failed", "reason": "User not found"}
-            
-        current_credits = user_res.data[0].get("credits", 0)
-        
-        amount_paid = session.get('amount_total', 0) / 100.0
-        currency = session.get('currency', 'czk').upper()
-        
-        supabase.table("transactions").insert({
-            "user_id": user_id,
-            "amount": amount_paid,
-            "currency": currency,
-            "credits_added": credits_to_add,
-            "provider": "stripe",
-            "provider_tx_id": f"stripe_{session_id}",
-            "status": "completed"
-        }).execute()
-        
-        supabase.table("users").update({
-            "credits": current_credits + credits_to_add
-        }).eq("id", user_id).execute()
-        
         # Add notification
         supabase.table("notifications").insert({
             "user_id": user_id,
             "title": "Баланс пополнен",
-            "message": f"Ваш баланс успешно пополнен на {credits_to_add} кредитов через Stripe.",
+            "message": f"Ваш баланс успешно пополнен на {amount_paid} {currency} через Stripe.",
             "type": "payment"
         }).execute()
         

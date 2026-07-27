@@ -335,8 +335,7 @@ async def get_my_chats(
 async def send_message(
     chat_id: str,
     message: MessageCreate,
-    client_token: Optional[str] = Header(None),
-    current_user: Optional[AuthUser] = Depends(get_optional_user),
+    current_user: AuthUser = Depends(get_current_user),
     supabase: Client = Depends(get_supabase_client)
 ):
     chat_res = supabase.table("lead_chats").select("*").eq("id", chat_id).execute()
@@ -349,19 +348,14 @@ async def send_message(
     
     sender_type = None
 
-    if client_token and chat["client_session_id"] == client_token:
-        sender_type = "client"
-    elif current_user:
-        if chat["master_id"] == current_user.user_id:
-            sender_type = "master"
-        else:
-            lead_res = supabase.table("leads").select("client_id").eq("id", lead_id).execute()
-            if lead_res.data and lead_res.data[0].get("client_id") == current_user.user_id:
-                sender_type = "client"
-            else:
-                raise HTTPException(status_code=403, detail="Forbidden")
+    if chat["master_id"] == current_user.user_id:
+        sender_type = "master"
     else:
-        raise HTTPException(status_code=403, detail="Forbidden")
+        lead_res = supabase.table("leads").select("client_id").eq("id", lead_id).execute()
+        if lead_res.data and lead_res.data[0].get("client_id") == current_user.user_id:
+            sender_type = "client"
+        else:
+            raise HTTPException(status_code=403, detail="Forbidden")
 
     # Chat is available only after the client accepts this master.
     if not filter_accepted_chats(supabase, [{

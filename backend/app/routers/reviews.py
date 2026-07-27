@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from typing import List, Optional
 from datetime import datetime
 from app.database import get_async_supabase_client
+from app.middleware.auth import AuthUser, get_current_user
 from supabase._async.client import AsyncClient
 
 router = APIRouter(prefix="/api/reviews", tags=["Reviews"])
@@ -22,6 +23,7 @@ class ReviewResponse(BaseModel):
 async def create_review(
     session_id: str,
     data: ReviewCreate,
+    current_user: AuthUser = Depends(get_current_user),
     supabase: AsyncClient = Depends(get_async_supabase_client)
 ):
     """Client creates a review for a completed session."""
@@ -30,7 +32,9 @@ async def create_review(
 
     try:
         # Check if session exists and is completed
-        session_res = await supabase.table("master_sessions").select("*, master_clients(client_id)").eq("id", session_id).single().execute()
+        session_res = await supabase.table("master_sessions").select(
+            "id,status,master_id,client_id"
+        ).eq("id", session_id).single().execute()
         
         if not session_res.data:
             raise HTTPException(status_code=404, detail="Session not found")
@@ -38,6 +42,18 @@ async def create_review(
         session = session_res.data
         if session.get("status") != "completed":
             raise HTTPException(status_code=400, detail="Can only review completed sessions")
+
+        crm_client_res = await supabase.table("master_clients").select(
+            "lead_id"
+        ).eq("id", session.get("client_id")).limit(1).execute()
+        lead_id = crm_client_res.data[0].get("lead_id") if crm_client_res.data else None
+        if not lead_id:
+            raise HTTPException(status_code=403, detail="REVIEW_NOT_AUTHORIZED")
+        owned_lead = await supabase.table("leads").select("id").eq(
+            "id", lead_id
+        ).eq("client_id", current_user.user_id).limit(1).execute()
+        if not owned_lead.data:
+            raise HTTPException(status_code=403, detail="REVIEW_NOT_AUTHORIZED")
 
         master_id = session.get("master_id")
         # Ensure we don't duplicate
@@ -48,6 +64,7 @@ async def create_review(
         # Insert review
         review_data = {
             "master_id": master_id,
+            "client_id": current_user.user_id,
             "session_id": session_id,
             "rating": data.rating,
             "text": data.text
@@ -62,7 +79,7 @@ async def create_review(
             raise HTTPException(status_code=400, detail="Failed to create review")
             
         return res.data[0]
-    except Exception as e:
-        import traceback
-        traceback.print_exc()
-        raise HTTPException(status_code=500, detail=str(e))
+    except HTTPException:
+        raise
+    except Exception:
+        raise HTTPException(status_code=500, detail="REVIEW_CREATION_FAILED")

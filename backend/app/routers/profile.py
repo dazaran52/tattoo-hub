@@ -1,5 +1,6 @@
 """Profile router for master data endpoints."""
 from datetime import datetime, timezone
+from decimal import Decimal
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 from pydantic import BaseModel
@@ -143,10 +144,10 @@ async def get_profile(
             referred_by = current_user.user_metadata.get("referred_by")
             country_ids = current_user.user_metadata.get("country_ids", [])
             city_ids = current_user.user_metadata.get("city_ids", [])
-            role = current_user.user_metadata.get("role", "master")
-            
-            # Clients are approved immediately; masters pass temporary MVP auto-check.
-            status_val = "approved" if role == "client" else "pending"
+            # Auth metadata is user-controlled in Supabase. New accounts always
+            # start as clients; master promotion is an administrator action.
+            role = "client"
+            status_val = "approved"
             
             new_profile = {
                 "id": current_user.user_id,
@@ -327,7 +328,17 @@ async def update_profile(
         if update_data.bio is not None:
             update_dict["bio"] = update_data.bio
         if update_data.currency is not None:
-            update_dict["currency"] = update_data.currency
+            requested_currency = update_data.currency.strip().upper()
+            if requested_currency not in {"CZK", "EUR", "USD"}:
+                raise HTTPException(status_code=400, detail="UNSUPPORTED_WALLET_CURRENCY")
+            wallet_res = await supabase.table("users").select(
+                "balance,currency"
+            ).eq("id", current_user.user_id).single().execute()
+            current_currency = (wallet_res.data.get("currency") or "CZK").upper()
+            current_balance = Decimal(str(wallet_res.data.get("balance") or 0))
+            if requested_currency != current_currency and current_balance != Decimal("0"):
+                raise HTTPException(status_code=409, detail="FUNDED_WALLET_CURRENCY_LOCKED")
+            update_dict["currency"] = requested_currency
         if update_data.portfolio_url is not None:
             update_dict["portfolio_url"] = update_data.portfolio_url
         if update_data.avatar_url is not None:

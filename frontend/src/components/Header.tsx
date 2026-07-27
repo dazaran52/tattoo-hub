@@ -150,8 +150,8 @@ export function Header({ profile, onLogout, maxWidthClass = 'max-w-7xl' }: Heade
                 >
                   <Gem className="w-4 h-4 text-cyan-500 dark:text-cyan-400 shrink-0" />
                   <div className="flex items-baseline gap-1">
-                    <span className="font-bold text-[15px] text-neutral-900 dark:text-white leading-none">{profile.credits}</span>
-                    <span className="font-semibold text-xs text-neutral-500 dark:text-neutral-400 leading-none uppercase tracking-wider">{t('credit_plural')}</span>
+                    <span className="font-bold text-[15px] text-neutral-900 dark:text-white leading-none">{profile.balance ?? 0}</span>
+                    <span className="font-semibold text-xs text-neutral-500 dark:text-neutral-400 leading-none uppercase tracking-wider">{profile.currency || 'CZK'}</span>
                   </div>
                   
                   {profile.discount_tokens > 0 && (

@@ -172,16 +172,16 @@ def get_personal_leads(
             .eq("assigned_master_id", current_user.user_id) \
             .order("created_at", desc=True) \
             .execute()
-        
+
         leads = leads_res.data or []
-        
+
         processed_leads = []
         for lead in leads:
             # Assignment is the authorization boundary for direct/personal CRM leads.
             is_unlocked = True
             unlock_status = lead.get("status")
             contacts = lead["contacts"]
-            
+
             # Format display budget
             display_budget = None
             if lead.get("is_negotiable_budget"):
@@ -193,11 +193,11 @@ def get_personal_leads(
                     display_budget = f"{orig_budget} {orig_curr}"
                 else:
                     display_budget = f"{orig_budget} {orig_curr}"
-            
+
             # Calculate dynamic unlock price based on the master's currency
             base_price_eur = float(lead.get("base_unlock_price_eur", 2.0))
             local_unlock_price = base_price_eur
-            
+
             processed_leads.append({
                 **lead,
                 "contacts": contacts,
@@ -213,7 +213,7 @@ def get_personal_leads(
                 "my_chat_id": None,
                 "display_budget": display_budget
             })
-            
+
         return processed_leads
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -247,7 +247,7 @@ def get_leads(
             l for l in raw_leads
             if l.get("assigned_master_id") is None or (l.get("assigned_master_id") == current_user.user_id and not l.get("is_personal", False))
         ]
-        
+
         paginated_leads = leads[offset:offset+limit]
         has_more = len(leads) > offset + limit
         response.headers["X-Has-More"] = "true" if has_more else "false"
@@ -257,19 +257,19 @@ def get_leads(
         proposals = proposals_res.data or []
         lowest_bids = {}
         my_proposals = {}
-        
+
         for p in proposals:
             lid = p["lead_id"]
             if p["user_id"] == current_user.user_id:
                 my_proposals[lid] = p["status"]
-                
+
             if lid not in lowest_bids or p["price_offer"] < lowest_bids[lid]:
                 lowest_bids[lid] = p["price_offer"]
 
         # Fetch own chats
         chats_res = supabase.table("lead_chats").select("lead_id, id").eq("master_id", current_user.user_id).execute()
         my_chats = {c["lead_id"]: c["id"] for c in (chats_res.data or [])}
-        
+
         proposal_counts: dict[str, int] = {}
         for proposal in proposals:
             lead_id = proposal["lead_id"]
@@ -285,9 +285,9 @@ def get_leads(
             )
             lead_proposal_count = proposal_counts.get(lead["id"], 0)
             unlock_status = proposal_status
-            
+
             contacts = lead["contacts"] if is_unlocked else "Контакт скрыт до выбора мастера"
-                
+
             # Format display budget
             display_budget = None
             if lead.get("is_negotiable_budget"):
@@ -303,14 +303,14 @@ def get_leads(
                         display_budget = f"{orig_budget} {orig_curr} (~{converted} {master_currency})"
                     except ValueError:
                         display_budget = f"{orig_budget} {orig_curr}"
-            
+
             # Calculate dynamic unlock price based on the master's currency
             base_price_eur = float(lead.get("base_unlock_price_eur", 2.0))
             try:
                 local_unlock_price = convert_currency(base_price_eur, "EUR", master_currency, supabase=supabase)
             except ValueError:
                 local_unlock_price = base_price_eur
-                
+
             processed_leads.append(LeadResponse(
                 id=lead["id"],
                 title=lead["title"],
@@ -336,7 +336,7 @@ def get_leads(
                 unlock_price_local=0,
                 master_currency=master_currency
             ))
-            
+
         return processed_leads
 
     except HTTPException:
@@ -346,6 +346,7 @@ def get_leads(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error fetching leads: {str(e)}"
         )
+
 
 
 class MasterLeadCreate(BaseModel):
@@ -370,10 +371,9 @@ def create_master_lead(
         lead_insert = supabase.table("leads").insert(data).execute()
         if not lead_insert.data:
             raise HTTPException(status_code=400, detail="Failed to create lead")
-            
+
         new_lead = lead_insert.data[0]
-        
-        
+
         return new_lead
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -396,28 +396,68 @@ class ClientLeadCreate(BaseModel):
     instagram: str | None = None
     is_negotiable_budget: bool = False
     image_urls: list[str] | None = None
-    assigned_master_id: str | None = None
     session_date: datetime.datetime | None = None
     session_time: str | None = None
     client_name: str | None = None
-    is_personal: bool = False
 
 @router.post("/client")
-async def create_client_lead(
+async def create_public_client_lead(
     lead_data: ClientLeadCreate,
     background_tasks: BackgroundTasks,
     current_user: Optional[AuthUser] = Depends(get_optional_user),
-    supabase: AsyncClient = Depends(get_async_supabase_client)
+    supabase: AsyncClient = Depends(get_async_supabase_client),
 ):
-    """Public endpoint for clients submitting leads via the Landing Page."""
+    return await _create_client_lead(
+        lead_data, background_tasks, None, current_user, supabase
+    )
+
+
+@router.post("/client/direct/{master_id}")
+async def create_direct_client_lead(
+    master_id: str,
+    lead_data: ClientLeadCreate,
+    background_tasks: BackgroundTasks,
+    current_user: AuthUser = Depends(get_current_user),
+    supabase: AsyncClient = Depends(get_async_supabase_client),
+):
+    return await _create_client_lead(
+        lead_data, background_tasks, master_id, current_user, supabase
+    )
+
+
+async def _create_client_lead(
+    lead_data: ClientLeadCreate,
+    background_tasks: BackgroundTasks,
+    master_id: str | None,
+    current_user: Optional[AuthUser],
+    supabase: AsyncClient,
+):
+    """Create a public marketplace lead or an authenticated direct booking."""
     try:
+        trusted_master_id = None
+        is_direct_booking = master_id is not None
+        if master_id:
+            master_res = await supabase.table("users").select(
+                "id, role, status, is_verified_master"
+            ).eq("id", master_id).execute()
+            if not master_res.data:
+                raise HTTPException(status_code=404, detail="MASTER_NOT_FOUND")
+            master = master_res.data[0]
+            if (
+                master.get("role") != "master"
+                or master.get("status") != "approved"
+                or not master.get("is_verified_master")
+            ):
+                raise HTTPException(status_code=403, detail="MASTER_NOT_AVAILABLE")
+            trusted_master_id = master_id
+
         # Format the lead for the DB
         style_display = lead_data.style if lead_data.style and lead_data.style != 'Не определился' else ''
         body_display = lead_data.body_place if lead_data.body_place and lead_data.body_place != 'Не определился' else ''
         title = f"Татуировка {body_display}".strip() if body_display else "Новая заявка на татуировку"
         if style_display:
             title += f" ({style_display})"
-            
+
         full_description = f"{lead_data.description}\n\n"
         if lead_data.budget:
             full_description += f"Бюджет: {lead_data.budget}\n"
@@ -425,7 +465,7 @@ async def create_client_lead(
             full_description += f"Город: {lead_data.city}\n"
         if lead_data.session_time:
             full_description += f"Желаемое время: {lead_data.session_time}\n"
-            
+
         contacts = f"Имя: {lead_data.name or 'Без имени'}, Контакт: {lead_data.contact}"
         if lead_data.email:
             contacts += f", Email: {lead_data.email}"
@@ -478,62 +518,15 @@ async def create_client_lead(
             "style": lead_data.style,
             "size": lead_data.size,
             "body_place": lead_data.body_place,
-            "assigned_master_id": lead_data.assigned_master_id,
+            "assigned_master_id": trusted_master_id,
             "session_date": lead_data.session_date.isoformat() if lead_data.session_date else None,
             "client_name": lead_data.client_name or lead_data.name,
-            "is_personal": lead_data.is_personal
+            "is_personal": is_direct_booking
         }
-        
-        client_id = None
-        login_link = None
-        if current_user:
-            client_id = current_user.user_id
-        elif lead_data.email:
-            email = lead_data.email.strip().lower()
-            try:
-                # Check if user exists in public.users
-                res = await supabase.table("users").select("id").eq("email", email).execute()
-                if res.data:
-                    client_id = res.data[0]["id"]
-                else:
-                    # Create new auth user
-                    import secrets, string
-                    alphabet = string.ascii_letters + string.digits
-                    password = ''.join(secrets.choice(alphabet) for _ in range(16))
-                    user_resp = await supabase.auth.admin.create_user({
-                        "email": email,
-                        "password": password,
-                        "email_confirm": True,
-                        "user_metadata": {
-                            "name": lead_data.name or "Клиент",
-                            "role": "client"
-                        }
-                    })
-                    client_id = user_resp.user.id
-                    
-                    try:
-                        # Generate magic link
-                        link_resp = await supabase.auth.admin.generate_link({
-                            "type": "magiclink",
-                            "email": email,
-                            "options": {
-                                "redirect_to": "https://tattoo-hub.xyz/dashboard"
-                            }
-                        })
-                        
-                        action_link = None
-                        if hasattr(link_resp, "properties") and hasattr(link_resp.properties, "action_link"):
-                            action_link = link_resp.properties.action_link
-                        elif isinstance(link_resp, dict) and "properties" in link_resp:
-                            action_link = link_resp["properties"].get("action_link")
-                            
-                        if action_link:
-                            login_link = action_link
-                    except Exception as le:
-                        print(f"Failed to generate magic link: {le}")
-            except Exception as e:
-                print(f"Shadow auth failed: {e}")
-                
+
+        client_id = current_user.user_id if current_user else None
+        login_link = "https://tattoo-hub.xyz/login" if lead_data.email else None
+
         if client_id:
             try:
                 # Ensure client exists in public.users to avoid foreign key constraint error
@@ -555,6 +548,40 @@ async def create_client_lead(
                 print(f"Failed to ensure client user in public.users: {eu}")
             db_lead["client_id"] = client_id
 
+        if is_direct_booking and trusted_master_id:
+            rpc_lead = {
+                key: (str(value) if isinstance(value, Decimal) else value)
+                for key, value in db_lead.items()
+            }
+            direct_res = await supabase.rpc("create_direct_booking", {
+                "p_lead": rpc_lead,
+                "p_master_id": trusted_master_id,
+                "p_client_id": client_id,
+                "p_client_token": client_token,
+                "p_client_email": lead_data.email.strip() if lead_data.email else None,
+                "p_client_instagram": lead_data.instagram.strip() if lead_data.instagram else None,
+                "p_client_name": lead_data.name or lead_data.client_name,
+                "p_contact": lead_data.contact,
+                "p_session_time": lead_data.session_time,
+            }).execute()
+            direct_result = direct_res.data or {}
+            if not direct_result.get("success") or not direct_result.get("lead"):
+                raise HTTPException(status_code=400, detail="DIRECT_BOOKING_FAILED")
+
+            background_tasks.add_task(
+                send_push_notification,
+                user_id=trusted_master_id,
+                title="Новая заявка! 🔥",
+                body=f"Клиент {lead_data.name or 'Неизвестный'} хочет записаться к вам на сеанс.",
+                url="/dashboard",
+            )
+            return {
+                "success": True,
+                "lead": direct_result["lead"],
+                "chat_id": direct_result.get("chat_id"),
+                "login_link": login_link or ("https://tattoo-hub.xyz/login" if lead_data.email else None),
+            }
+
         import asyncio
         max_retries = 3
         for attempt in range(max_retries):
@@ -562,167 +589,43 @@ async def create_client_lead(
                 res = await supabase.table("leads").insert(db_lead).execute()
                 if res.data:
                     new_lead = res.data[0]
-                    
-                    if lead_data.assigned_master_id:
-                        if lead_data.is_personal:
-                            # Create an accepted proposal to bypass chat filters
-                            await supabase.table("lead_proposals").insert({
-                                "lead_id": new_lead["id"],
-                                "user_id": lead_data.assigned_master_id,
-                                "status": "accepted",
-                                "price_offer": 0,
-                                "proposed_dates": "Сразу в работу"
-                            }).execute()
-                            
-                            # Create or get the chat
-                            chat_id = None
-                            if client_id:
-                                chats_res = await supabase.table("lead_chats").select("id").eq("client_id", client_id).eq("master_id", lead_data.assigned_master_id).execute()
-                            else:
-                                chats_res = await supabase.table("lead_chats").select("id").eq("client_session_id", client_token).eq("master_id", lead_data.assigned_master_id).execute()
-                                
-                            if not chats_res.data:
-                                new_chat = await supabase.table("lead_chats").insert({
-                                    "lead_id": new_lead["id"],
-                                    "master_id": lead_data.assigned_master_id,
-                                    "client_session_id": client_token,
-                                    "client_id": client_id
-                                }).execute()
-                                if new_chat.data:
-                                    chat_id = new_chat.data[0]["id"]
-                            else:
-                                chat_id = chats_res.data[0]["id"]
-                                
-                            if chat_id:
-                                import json
-                                system_msg = {
-                                    "type": "new_lead",
-                                    "lead_id": new_lead["id"],
-                                    "title": new_lead["title"]
-                                }
-                                await supabase.table("chat_messages").insert({
-                                    "chat_id": chat_id,
-                                    "sender_type": "system",
-                                    "content": f"[SYSTEM_CARD]: {json.dumps(system_msg)}"
-                                }).execute()
-                        
-                        # Also automatically add to CRM (master_clients & master_sessions) for ANY directly assigned lead
-                        # Try to find an existing client first
-                        existing_client = None
-                        if lead_data.instagram:
-                            res_client = await supabase.table("master_clients").select("id").eq("master_id", lead_data.assigned_master_id).eq("instagram", lead_data.instagram.strip()).eq("is_deleted", False).execute()
-                            if res_client.data: existing_client = res_client.data[0]
-                        if not existing_client and lead_data.email:
-                            res_client = await supabase.table("master_clients").select("id").eq("master_id", lead_data.assigned_master_id).eq("email", lead_data.email.strip()).eq("is_deleted", False).execute()
-                            if res_client.data: existing_client = res_client.data[0]
-                        
-                        if not existing_client:
-                            # Create new master_client
-                            client_data = {
-                                "master_id": lead_data.assigned_master_id,
-                                "lead_id": new_lead["id"],
-                                "name": lead_data.name or "Новый клиент",
-                                "contact_info": lead_data.contact,
-                                "phone": lead_data.contact if not lead_data.email and not lead_data.instagram else None,
-                                "instagram": lead_data.instagram,
-                                "email": lead_data.email,
-                                "notes": "",
-                                "source": "direct" if lead_data.is_personal else "marketplace",
-                                "kanban_status": "new"
-                            }
-                            new_c_res = await supabase.table("master_clients").insert(client_data).execute()
-                            if new_c_res.data:
-                                existing_client = new_c_res.data[0]
-                                
-                        if existing_client:
-                            # Update existing client with latest lead_id
-                            update_client_data = {"lead_id": new_lead["id"]}
-                            if lead_data.is_personal:
-                                update_client_data["source"] = "direct"
-                            await supabase.table("master_clients").update(update_client_data).eq("id", existing_client["id"]).execute()
 
-                            # Create a master_sessions for this new request
-                            session_date = lead_data.session_date.isoformat()[:10] if lead_data.session_date else datetime.datetime.utcnow().date().isoformat()
-                            res = await supabase.table("master_sessions").insert({
-                                "master_id": lead_data.assigned_master_id,
-                                "client_id": existing_client["id"],
-                                "lead_id": new_lead["id"],
-                                "source": "direct" if lead_data.is_personal else "marketplace",
-                                "session_date": session_date,
-                                "start_time": lead_data.session_time,
-                                "status": "new",
-                                "style": lead_data.style,
-                                "body_place": lead_data.body_place,
-                                "size": lead_data.size,
-                                "reference_images": lead_data.image_urls or [],
-                                "price": lead_data.budget_val
-                            }).execute()
-                            
-                            # Create in-app and push notifications for new lead
-                            try:
-                                await supabase.table("notifications").insert({
-                                    "user_id": lead_data.assigned_master_id,
-                                    "title": "Новая персональная заявка!",
-                                    "message": f"У вас новая персональная заявка от клиента {lead_data.name or 'Неизвестный'}.",
-                                    "type": "system"
-                                }).execute()
-                                
-                                send_push_notification(
-                                    user_id=lead_data.assigned_master_id,
-                                    title="Новая заявка! 🔥",
-                                    body=f"Клиент {lead_data.name or 'Неизвестный'} хочет записаться к вам на сеанс.",
-                                    url="/dashboard"
-                                )
-                            except Exception as notif_e:
-                                print(f"Warning: Failed to send notifications: {notif_e}")
-                        
-                        if lead_data.email and not login_link:
-                            login_link = "https://tattoo-hub.xyz/login"
-                            try:
-                                res = await supabase.auth.admin.generate_link(
-                                    {"type": "magiclink", "email": lead_data.email.strip(), "options": {"redirect_to": "https://tattoo-hub.xyz/dashboard"}}
-                                )
-                                if hasattr(res, 'properties') and res.properties.action_link:
-                                    login_link = res.properties.action_link
-                            except Exception as e:
-                                print(f"Warning: Failed to generate magiclink for {lead_data.email}: {e}")
-                                
-                        if lead_data.email:
-                            def send_submission_email(link: str = login_link or "https://tattoo-hub.xyz/login"):
-                                from app.services.email_lead_agent import send_smtp_reply
-                                subject = "Ваша заявка успешно отправлена! 🎉"
-                                html = f'''
-                                <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 0; background-color: #f9fafb;">
-                                    <div style="background-color: #ffffff; padding: 40px 30px; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
-                                        <h2 style="color: #111827; font-size: 24px; font-weight: 800; margin-top: 0; text-align: center;">Заявка принята!</h2>
-                                        <p style="font-size: 16px; line-height: 1.6; color: #4b5563; text-align: center;">
-                                            Привет, {lead_data.name or 'друг'}! Мы успешно получили твою заявку на татуировку.
-                                        </p>
-                                        <p style="font-size: 16px; line-height: 1.6; color: #4b5563; text-align: center;">
-                                            Мастер скоро ознакомится с ней. Вы можете отслеживать статус заявки и общаться с мастером в личном кабинете.
-                                        </p>
-                                        <div style="text-align: center; margin: 35px 0;">
-                                            <a href="{link}" style="background-color: #7c3aed; color: white; padding: 14px 28px; text-decoration: none; border-radius: 12px; font-weight: bold; font-size: 16px; display: inline-block;">Открыть мои заявки</a>
-                                        </div>
-                                        <p style="font-size: 14px; color: #6b7280; text-align: center; margin: 0; border-top: 1px solid #e5e7eb; padding-top: 20px;">
-                                            Используйте email {lead_data.email} для входа.
-                                        </p>
+                    if lead_data.email:
+                        def send_submission_email(link: str = login_link or "https://tattoo-hub.xyz/login"):
+                            from app.services.email_lead_agent import send_smtp_reply
+                            subject = "Ваша заявка успешно отправлена! 🎉"
+                            html = f'''
+                            <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 0; background-color: #f9fafb;">
+                                <div style="background-color: #ffffff; padding: 40px 30px; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+                                    <h2 style="color: #111827; font-size: 24px; font-weight: 800; margin-top: 0; text-align: center;">Заявка принята!</h2>
+                                    <p style="font-size: 16px; line-height: 1.6; color: #4b5563; text-align: center;">
+                                        Привет, {lead_data.name or 'друг'}! Мы успешно получили твою заявку на татуировку.
+                                    </p>
+                                    <p style="font-size: 16px; line-height: 1.6; color: #4b5563; text-align: center;">
+                                        Мастер скоро ознакомится с ней. Вы можете отслеживать статус заявки и общаться с мастером в личном кабинете.
+                                    </p>
+                                    <div style="text-align: center; margin: 35px 0;">
+                                        <a href="{link}" style="background-color: #7c3aed; color: white; padding: 14px 28px; text-decoration: none; border-radius: 12px; font-weight: bold; font-size: 16px; display: inline-block;">Открыть мои заявки</a>
                                     </div>
+                                    <p style="font-size: 14px; color: #6b7280; text-align: center; margin: 0; border-top: 1px solid #e5e7eb; padding-top: 20px;">
+                                        Используйте email {lead_data.email} для входа.
+                                    </p>
                                 </div>
-                                '''
-                                try:
-                                    # Ensure we use Resend
-                                    from app.config import get_settings
-                                    settings = get_settings()
-                                    original_name = getattr(settings, 'LEAD_REPLY_FROM_NAME', 'Tattoo HUB')
-                                    settings.LEAD_REPLY_FROM_NAME = "Tattoo HUB"
-                                    send_smtp_reply(lead_data.email.strip(), subject, html)
-                                    settings.LEAD_REPLY_FROM_NAME = original_name
-                                except Exception as e:
-                                    print(f"Error sending submission email: {e}")
+                            </div>
+                            '''
+                            try:
+                                # Ensure we use Resend
+                                from app.config import get_settings
+                                settings = get_settings()
+                                original_name = getattr(settings, 'LEAD_REPLY_FROM_NAME', 'Tattoo HUB')
+                                settings.LEAD_REPLY_FROM_NAME = "Tattoo HUB"
+                                send_smtp_reply(lead_data.email.strip(), subject, html)
+                                settings.LEAD_REPLY_FROM_NAME = original_name
+                            except Exception as e:
+                                print(f"Error sending submission email: {e}")
 
-                            background_tasks.add_task(send_submission_email)
-                            
+                        background_tasks.add_task(send_submission_email)
+
                     return {"success": True, "lead": new_lead, "login_link": login_link}
                 if attempt == max_retries - 1:
                     raise HTTPException(status_code=400, detail="Failed to create lead")
@@ -734,11 +637,11 @@ async def create_client_lead(
                         continue
                 if attempt == max_retries - 1:
                     raise e
-            
+
     except Exception as e:
         if isinstance(e, HTTPException):
             raise e
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="LEAD_CREATION_FAILED")
 
 
 @router.get("/client")
@@ -753,25 +656,38 @@ async def get_client_leads(
             .eq("client_id", current_user.user_id) \
             .order("created_at", desc=True) \
             .execute()
-        
+
         leads = res.data or []
         if not leads:
             return []
-            
+
         lead_ids = [l["id"] for l in leads]
-        
+
         # Get proposals
         props_res = await supabase.table("lead_proposals") \
-            .select("lead_id, status, user_id, users(id, display_name, avatar_url, username)") \
+            .select("lead_id, status, user_id, price_offer, proposed_dates, offer_currency, users(id, display_name, avatar_url, username, certificate_status)") \
             .in_("lead_id", lead_ids) \
             .execute()
-            
+
         proposals = props_res.data or []
         proposals_count = {}
+        proposals_by_lead = {}
         accepted_masters = {}
         for p in proposals:
             lid = p["lead_id"]
             proposals_count[lid] = proposals_count.get(lid, 0) + 1
+            master = p.get("users") or {}
+            proposals_by_lead.setdefault(lid, []).append({
+                "master_id": p["user_id"],
+                "master_name": master.get("display_name") or master.get("username") or "Мастер",
+                "master_username": master.get("username"),
+                "master_avatar": master.get("avatar_url"),
+                "certificate_verified": master.get("certificate_status") == "approved",
+                "price_offer": p.get("price_offer"),
+                "offer_currency": p.get("offer_currency") or "CZK",
+                "proposed_dates": p.get("proposed_dates"),
+                "status": p.get("status") or "pending",
+            })
             if p["status"] in {"accepted", "booked", "completed"} and p.get("users"):
                 u = p["users"]
                 accepted_masters[lid] = {
@@ -789,7 +705,7 @@ async def get_client_leads(
         master_clients_res = await supabase.table("master_clients").select("id, lead_id").in_("lead_id", lead_ids).execute()
         master_clients = master_clients_res.data or []
         mc_dict = {mc["lead_id"]: mc["id"] for mc in master_clients}
-        
+
         sessions_dict = {}
         if master_clients:
             mc_ids = [mc["id"] for mc in master_clients]
@@ -803,7 +719,7 @@ async def get_client_leads(
         for lead in leads:
             mc_id = mc_dict.get(lead["id"])
             session = sessions_dict.get(mc_id) if mc_id else None
-            
+
             master_info = None
             if lead.get("users"): # from assigned_master_id
                 u = lead["users"]
@@ -827,6 +743,7 @@ async def get_client_leads(
             out.append({
                 **lead,
                 "unlock_count": proposals_count.get(lead["id"], 0),
+                "proposals": proposals_by_lead.get(lead["id"], []),
                 "chat_id": chat_id,
                 "master": master_info,
                 "session": session
@@ -834,6 +751,55 @@ async def get_client_leads(
         return out
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/client/{lead_id}/proposals/{master_id}/accept")
+async def accept_client_proposal(
+    lead_id: str,
+    master_id: str,
+    background_tasks: BackgroundTasks,
+    current_user: AuthUser = Depends(get_current_user),
+    supabase: AsyncClient = Depends(get_async_supabase_client),
+):
+    """Let an authenticated lead owner choose one marketplace proposal."""
+    lead_res = await supabase.table("leads").select(
+        "id, client_id, client_token, title"
+    ).eq("id", lead_id).eq("client_id", current_user.user_id).execute()
+    if not lead_res.data:
+        raise HTTPException(status_code=404, detail="LEAD_NOT_FOUND")
+
+    lead = lead_res.data[0]
+    try:
+        acceptance = await supabase.rpc("accept_marketplace_proposal", {
+            "p_lead_id": lead_id,
+            "p_master_id": master_id,
+            "p_client_token": lead.get("client_token"),
+        }).execute()
+    except Exception as exc:
+        message = str(exc)
+        if "INSUFFICIENT_BALANCE" in message:
+            raise HTTPException(status_code=409, detail="MASTER_BALANCE_NOT_READY") from exc
+        if "PROPOSAL_ALREADY_ACCEPTED" in message:
+            raise HTTPException(status_code=409, detail="PROPOSAL_ALREADY_ACCEPTED") from exc
+        raise HTTPException(status_code=400, detail="PROPOSAL_ACCEPT_FAILED") from exc
+
+    if not acceptance.data or not acceptance.data.get("success"):
+        raise HTTPException(status_code=400, detail="PROPOSAL_ACCEPT_FAILED")
+
+    if not acceptance.data.get("already_charged"):
+        background_tasks.add_task(
+            send_push_notification,
+            user_id=master_id,
+            title="Сеанс подтвержден!",
+            body=f"Клиент выбрал вас для заявки '{lead.get('title')}'.",
+            url="/dashboard?tab=messages",
+        )
+
+    return {
+        "success": True,
+        "chat_id": acceptance.data.get("chat_id"),
+        "already_charged": acceptance.data.get("already_charged", False),
+    }
 
 
 class ClientLeadUpdate(BaseModel):
@@ -851,7 +817,6 @@ class ClientLeadUpdate(BaseModel):
     contact: str | None = None
     is_negotiable_budget: bool | None = None
     image_urls: list[str] | None = None
-    status: str | None = None
 
 @router.patch("/client/{lead_id}")
 async def update_client_lead(
@@ -864,6 +829,13 @@ async def update_client_lead(
         data = update_data.model_dump(exclude_unset=True)
         if not data:
             return {"success": True}
+        current = await supabase.table("leads").select(
+            "status,assigned_master_id"
+        ).eq("id", lead_id).eq("client_id", current_user.user_id).single().execute()
+        if not current.data:
+            raise HTTPException(status_code=404, detail="Lead not found or no permission")
+        if current.data.get("assigned_master_id") or current.data.get("status") in {"accepted", "booked", "completed"}:
+            raise HTTPException(status_code=409, detail="ASSIGNED_LEAD_IMMUTABLE")
         res = await supabase.table("leads").update(data).eq("id", lead_id).eq("client_id", current_user.user_id).execute()
         if not res.data:
             raise HTTPException(status_code=404, detail="Lead not found or no permission")
@@ -879,6 +851,13 @@ async def delete_client_lead(
     supabase: AsyncClient = Depends(get_async_supabase_client)
 ):
     try:
+        current = await supabase.table("leads").select(
+            "status,assigned_master_id"
+        ).eq("id", lead_id).eq("client_id", current_user.user_id).single().execute()
+        if not current.data:
+            raise HTTPException(status_code=404, detail="Lead not found or no permission")
+        if current.data.get("assigned_master_id") or current.data.get("status") in {"accepted", "booked", "completed"}:
+            raise HTTPException(status_code=409, detail="ASSIGNED_LEAD_CANNOT_BE_DELETED")
         res = await supabase.table("leads").delete().eq("id", lead_id).eq("client_id", current_user.user_id).execute()
         if not res.data:
             raise HTTPException(status_code=404, detail="Lead not found or no permission")
@@ -1012,7 +991,7 @@ def update_proposal_status(
             lead_res = supabase.table("leads").update({
                 "status": payload.status
             }).eq("id", lead_id).eq("assigned_master_id", current_user.user_id).execute()
-            
+
             if not lead_res.data:
                 raise HTTPException(status_code=404, detail="Proposal or Personal Lead not found")
             return {"success": True, "lead": lead_res.data[0]}
@@ -1037,15 +1016,26 @@ def update_lead_status(
     Update the status of a lead (e.g. active, paused, open, archived).
     Must be the owner of the lead.
     """
-    valid_statuses = ['new', 'active', 'paused', 'closed', 'open', 'archived', 'accepted', 'completed', 'cancelled']
+    valid_statuses = {'new', 'active', 'paused', 'closed'}
     if payload.status not in valid_statuses:
         raise HTTPException(status_code=400, detail="Invalid status")
 
     try:
-        # Verify ownership
-        lead_res = supabase.table("leads").select("client_id").eq("id", lead_id).execute()
+        # Verify ownership and enforce the pre-selection lifecycle only.
+        lead_res = supabase.table("leads").select("client_id, status, assigned_master_id").eq("id", lead_id).execute()
         if not lead_res.data or lead_res.data[0].get("client_id") != current_user.user_id:
             raise HTTPException(status_code=403, detail="Not authorized to update this lead")
+
+        lead = lead_res.data[0]
+        current_status = lead.get("status") or "new"
+        allowed_transitions = {
+            "new": {"active", "paused", "closed"},
+            "active": {"paused", "closed"},
+            "paused": {"active", "closed"},
+            "closed": set(),
+        }
+        if lead.get("assigned_master_id") or payload.status not in allowed_transitions.get(current_status, set()):
+            raise HTTPException(status_code=409, detail="INVALID_LEAD_STATUS_TRANSITION")
 
         res = supabase.table("leads").update({
             "status": payload.status
@@ -1071,9 +1061,12 @@ def delete_lead(
     """
     try:
         # Verify ownership
-        lead_res = supabase.table("leads").select("client_id").eq("id", lead_id).execute()
+        lead_res = supabase.table("leads").select("client_id,status,assigned_master_id").eq("id", lead_id).execute()
         if not lead_res.data or lead_res.data[0].get("client_id") != current_user.user_id:
             raise HTTPException(status_code=403, detail="Not authorized to delete this lead")
+        lead = lead_res.data[0]
+        if lead.get("assigned_master_id") or lead.get("status") in {"accepted", "booked", "completed"}:
+            raise HTTPException(status_code=409, detail="ASSIGNED_LEAD_CANNOT_BE_DELETED")
 
         res = supabase.table("leads").delete().eq("id", lead_id).execute()
         return {"success": True}
@@ -1144,13 +1137,13 @@ async def get_master_unavailable_dates(
             master_res = await supabase.table("users").select("id").eq("id", username).execute()
         if not master_res.data:
             return []
-            
+
         master_id = master_res.data[0]["id"]
-        
+
         # Get explicit days off
         days_off_res = await supabase.table("master_days_off").select("date").eq("master_id", master_id).eq("is_full_day", True).execute()
         unavailable_dates = set([d["date"] for d in days_off_res.data or []])
-                
+
         return list(unavailable_dates)
     except Exception as e:
         return []

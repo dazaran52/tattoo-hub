@@ -4,6 +4,7 @@ from app.database import get_supabase_client
 from supabase import Client
 from typing import List, Optional
 from decimal import Decimal
+from app.middleware.auth import get_current_user, AuthUser
 
 router = APIRouter(prefix="/api/client-portal", tags=["client-portal"])
 
@@ -97,43 +98,7 @@ async def accept_proposal(
     token: str = Query(...),
     supabase: Client = Depends(get_supabase_client)
 ):
-    # Verify token
-    lead_res = supabase.table("leads").select("*").eq("id", lead_id).eq("client_token", token).execute()
-    if not lead_res.data:
-        raise HTTPException(status_code=403, detail="Invalid token")
-    
-    lead = lead_res.data[0]
-
-    # Charge the snapshotted fee and accept/reject proposals atomically in PostgreSQL.
-    try:
-        acceptance = supabase.rpc("accept_marketplace_proposal", {
-            "p_lead_id": lead_id,
-            "p_master_id": master_id,
-            "p_client_token": token,
-        }).execute()
-    except Exception as exc:
-        message = str(exc)
-        if "INSUFFICIENT_BALANCE" in message:
-            raise HTTPException(status_code=409, detail="У мастера недостаточно средств для комиссии") from exc
-        if "PROPOSAL_ALREADY_ACCEPTED" in message:
-            raise HTTPException(status_code=409, detail="Мастер уже выбран") from exc
-        raise HTTPException(status_code=400, detail=message) from exc
-    if not acceptance.data or not acceptance.data.get("success"):
-        raise HTTPException(status_code=400, detail="Не удалось выбрать мастера")
-
-    if not acceptance.data.get("already_charged"):
-        from app.services.notifications import send_push_notification
-        import asyncio
-        asyncio.create_task(asyncio.to_thread(
-            send_push_notification,
-            master_id,
-            "Сеанс подтвержден!",
-            f"Клиент выбрал вас для заявки '{lead.get('title')}'.",
-            "/dashboard?tab=messages",
-        ))
-
-    return {
-        "success": True,
-        "chat_id": acceptance.data.get("chat_id"),
-        "already_charged": acceptance.data.get("already_charged", False),
-    }
+    raise HTTPException(
+        status_code=410,
+        detail="PROPOSAL_SELECTION_REQUIRES_AUTHENTICATED_DASHBOARD",
+    )

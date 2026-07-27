@@ -20,16 +20,17 @@ class StripeCheckoutRequest(BaseModel):
     package_id: str
     
 PACKAGES = {
-    "starter": {"name": "Starter Pack", "price_czk": 300, "credits": 300},
-    "standard": {"name": "Standard Pack", "price_czk": 500, "credits": 500},
-    "pro": {"name": "Pro Pack", "price_czk": 1000, "credits": 1000},
-    "vip": {"name": "VIP Pack", "price_czk": 2000, "credits": 2000},
+    "starter": {"name": "Starter Balance", "amounts": {"CZK": 300, "EUR": 12, "USD": 13}},
+    "standard": {"name": "Standard Balance", "amounts": {"CZK": 500, "EUR": 20, "USD": 22}},
+    "pro": {"name": "Pro Balance", "amounts": {"CZK": 1000, "EUR": 40, "USD": 44}},
+    "vip": {"name": "VIP Balance", "amounts": {"CZK": 2000, "EUR": 80, "USD": 88}},
 }
 
 @router.post("/stripe/create-checkout-session")
 async def create_stripe_checkout_session(
     req: StripeCheckoutRequest,
-    current_user: AuthUser = Depends(get_current_user)
+    current_user: AuthUser = Depends(get_current_user),
+    supabase = Depends(get_supabase_client),
 ):
     settings = get_settings()
     if not settings.STRIPE_SECRET_KEY:
@@ -40,6 +41,14 @@ async def create_stripe_checkout_session(
     pkg = PACKAGES.get(req.package_id)
     if not pkg:
         raise HTTPException(status_code=400, detail="Invalid package ID")
+
+    user_res = supabase.table("users").select("currency").eq("id", current_user.user_id).execute()
+    if not user_res.data:
+        raise HTTPException(status_code=404, detail="USER_NOT_FOUND")
+    currency = (user_res.data[0].get("currency") or "CZK").upper()
+    amount = pkg["amounts"].get(currency)
+    if amount is None:
+        raise HTTPException(status_code=400, detail="UNSUPPORTED_WALLET_CURRENCY")
         
     # Assuming frontend runs on same domain or we pass it via headers.
     # We can use a default or allow frontend to pass success_url, but for safety:
@@ -60,8 +69,8 @@ async def create_stripe_checkout_session(
             line_items=[
                 {
                     'price_data': {
-                        'currency': 'czk',
-                        'unit_amount': pkg['price_czk'] * 100, # Stripe uses cents
+                        'currency': currency.lower(),
+                        'unit_amount': amount * 100, # Stripe uses minor units
                         'product_data': {
                             'name': pkg['name'],
                         },
@@ -74,7 +83,7 @@ async def create_stripe_checkout_session(
             cancel_url=cancel_url,
             client_reference_id=current_user.user_id,
             metadata={
-                'credits': pkg['credits']
+                'wallet_currency': currency
             }
         )
         return {"checkout_url": checkout_session.url}

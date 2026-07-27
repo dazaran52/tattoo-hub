@@ -1,10 +1,12 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import { Star, CheckCircle } from 'lucide-react'
+import { supabase } from '@/lib/supabase'
 
-export default function ReviewPage({ params }: { params: { session_id: string } }) {
+export default function ReviewPage() {
+  const params = useParams<{ session_id: string }>()
   const router = useRouter()
   const [rating, setRating] = useState<number>(0)
   const [hoveredRating, setHoveredRating] = useState<number>(0)
@@ -23,9 +25,14 @@ export default function ReviewPage({ params }: { params: { session_id: string } 
     try {
       setIsSubmitting(true)
       setError(null)
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) throw new Error('Войдите в аккаунт, чтобы оставить отзыв')
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/reviews/${params.session_id}`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
         body: JSON.stringify({ rating, text })
       })
 

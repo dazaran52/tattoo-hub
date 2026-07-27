@@ -26,6 +26,7 @@ class Settings(BaseSettings):
     SMTP_USERNAME: str | None = None
     SMTP_PASSWORD: str | None = None
     SMTP_FROM_EMAIL: str = "noreply@tattoo-hub.xyz"
+    RESEND_API_KEY: str | None = None
     
     # App Configuration
     APP_HOST: str = "0.0.0.0"

@@ -24,22 +24,13 @@ export function DayOffModal({ isOpen, onClose, onSuccess }: DayOffModalProps) {
       if (!session) throw new Error('Not authenticated')
 
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
-      const payload = {
-        name: 'Выходной',
-        contact: 'Система',
-        description: 'Выходной день',
-        session_date: sessionDate ? new Date(sessionDate).toISOString() : null,
-        assigned_master_id: session.user.id,
-        is_personal: true,
-      }
-
-      const res = await fetch(`${apiUrl}/api/leads/client`, {
+      const res = await fetch(`${apiUrl}/api/leads/unavailable-dates`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${session.access_token}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(payload)
+        body: JSON.stringify({ date: sessionDate })
       })
 
       if (!res.ok) throw new Error('Failed to create day off')

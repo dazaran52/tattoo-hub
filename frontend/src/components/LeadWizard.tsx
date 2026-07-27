@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { 
   Calendar as CalendarIcon, User, MapPin, FileText, CheckCircle, 
-  ArrowLeft, Send, Link as LinkIcon, Instagram, Upload, Loader2, 
+  ArrowLeft, Send, Link as LinkIcon, AtSign, Upload, Loader2,
   X, Image as ImageIcon, ChevronRight, Phone, Clock, DollarSign, 
   Sparkles, AlertTriangle, Check, ChevronDown, ChevronUp, ExternalLink, Share2, ShieldCheck, Mail
 } from 'lucide-react'
@@ -278,16 +278,33 @@ export function LeadWizard({ master, source = 'platform', themeClasses, onSucces
         instagram: instagram.trim() || null,
         is_negotiable_budget: isNegotiable,
         image_urls: finalImageUrls,
-        assigned_master_id: master && source === 'personal' ? master.id : null,
         session_date: sessionDate ? sessionDate.toISOString() : null,
         session_time: sessionTime || null,
         client_name: name.trim() || null,
-        is_personal: master && source === 'personal' ? true : false,
       }
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/leads/client`, {
+      const isDirectBooking = Boolean(master && source === 'personal')
+      const endpoint = isDirectBooking
+        ? `/api/leads/client/direct/${master!.id}`
+        : '/api/leads/client'
+      const { data: { session } } = await supabase.auth.getSession()
+      if (isDirectBooking && !session) {
+        throw new Error('Войдите в аккаунт, чтобы записаться к выбранному мастеру')
+      }
+      if (!session) {
+        localStorage.setItem('pending_lead', JSON.stringify({
+          ...payload,
+          created_at: Date.now()
+        }))
+        toast.success('Заявка сохранена. Войдите, чтобы безопасно опубликовать её.', { id: toastId })
+        window.location.href = '/login?next=/dashboard'
+        return
+      }
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+      headers.Authorization = `Bearer ${session.access_token}`
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${endpoint}`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify(payload)
       })
 
@@ -339,11 +356,9 @@ export function LeadWizard({ master, source = 'platform', themeClasses, onSucces
         instagram: instagram.trim() || null,
         is_negotiable_budget: isNegotiable,
         image_urls: uploadedUrls,
-        assigned_master_id: null,
         session_date: sessionDate ? sessionDate.toISOString() : null,
         session_time: sessionTime || null,
         client_name: name.trim() || null,
-        is_personal: false,
       }
 
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/leads/client`, {
@@ -1136,7 +1151,7 @@ export function LeadWizard({ master, source = 'platform', themeClasses, onSucces
                             Instagram профиль
                           </label>
                           <div className="relative">
-                            <Instagram className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500" />
+                            <AtSign className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500" />
                             <input
                               type="text"
                               value={instagram}

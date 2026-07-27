@@ -39,6 +39,7 @@ export function LeadForm({ masterId, source = 'platform' }: { masterId?: string,
   const [budgetVal, setBudgetVal] = useState(5000)
   const [isDragActive, setIsDragActive] = useState(false)
   const [uploadProgress, setUploadProgress] = useState<number | null>(null)
+  const [pendingImageUrls, setPendingImageUrls] = useState<string[]>([])
 
   // Countries and Cities
   const [countries, setCountries] = useState<any[]>([])
@@ -83,9 +84,20 @@ export function LeadForm({ masterId, source = 'platform' }: { masterId?: string,
         setFormData(prev => ({
           ...prev,
           description: pendingLead.description || prev.description,
+          style: typeof pendingLead.style === 'string' ? pendingLead.style.split(',').map((value: string) => value.trim()).filter(Boolean) : prev.style,
+          body_place: pendingLead.body_place || prev.body_place,
           size: pendingLead.size || prev.size,
-          priority: pendingLead.priority || prev.priority
+          city: pendingLead.city || prev.city,
+          name: pendingLead.name || prev.name,
+          contact: pendingLead.email || pendingLead.contact || prev.contact,
+          priority: pendingLead.client_priority || pendingLead.priority || prev.priority,
+          is_negotiable: Boolean(pendingLead.is_negotiable_budget),
+          budget: pendingLead.budget || prev.budget
         }))
+        if (pendingLead.budget_currency) setCurrency(pendingLead.budget_currency)
+        if (typeof pendingLead.budget_val === 'number') setBudgetVal(pendingLead.budget_val)
+        if (pendingLead.country_id) setSelectedCountry(pendingLead.country_id)
+        if (Array.isArray(pendingLead.image_urls)) setPendingImageUrls(pendingLead.image_urls)
       } catch (e) {
         console.error('Failed to parse pending lead', e)
       }
@@ -179,7 +191,7 @@ export function LeadForm({ masterId, source = 'platform' }: { masterId?: string,
     setIsSubmitting(true)
     
     try {
-      const imageUrls: string[] = []
+      const imageUrls: string[] = [...pendingImageUrls]
       if (formData.images.length > 0) {
         for (const file of formData.images) {
           const compressionOptions = {
@@ -213,8 +225,6 @@ export function LeadForm({ masterId, source = 'platform' }: { masterId?: string,
         name: formData.name || null,
         email: formData.contact,
         contact: formData.contact,
-        assigned_master_id: masterId || null,
-        is_personal: source === 'personal',
         image_urls: imageUrls
       }
 
@@ -228,7 +238,10 @@ export function LeadForm({ masterId, source = 'platform' }: { masterId?: string,
         headers['Authorization'] = `Bearer ${token}`
       }
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/leads/client`, {
+      const endpoint = source === 'personal' && masterId
+        ? `/api/leads/client/direct/${masterId}`
+        : '/api/leads/client'
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${endpoint}`, {
         method: 'POST',
         headers,
         body: JSON.stringify(payload)

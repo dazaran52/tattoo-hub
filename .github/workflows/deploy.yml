@@ -31,6 +31,7 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           password: ${{ secrets.SERVER_PASSWORD }}
           script: |
+            set -euo pipefail
             cd /app/backend
             # Install any new dependencies if needed
             if [ ! -d ".venv" ]; then
@@ -41,6 +42,7 @@ jobs:
             # Apply schema changes atomically before starting code that depends on them.
             python run_migration.py \
               migrations/049_manual_certificate_verification.sql \
-              migrations/050_marketplace_success_fee.sql
+              migrations/050_marketplace_success_fee.sql \
+              migrations/051_security_stabilization.sql
             # Restart the service
             systemctl restart tattoohub.service

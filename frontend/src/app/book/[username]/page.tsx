@@ -1,8 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
-import { User, Loader2, Image as ImageIcon, Video, Star, Instagram, Link as LinkIcon } from 'lucide-react'
+import { useParams, useRouter, useSearchParams } from 'next/navigation'
+import { User, Loader2, Image as ImageIcon, Video, Star, AtSign, Link as LinkIcon } from 'lucide-react'
 import { format, parseISO } from 'date-fns'
 import { ru } from 'date-fns/locale'
 import { PostModal, PortfolioPost } from '@/components/PostModal'
@@ -71,7 +71,8 @@ const getThemeClasses = (theme: string) => {
 }
 
 // Use a subset of Lucide icons or basic SVG if needed
-export default function BookMasterPage({ params }: { params: { username: string } }) {
+export default function BookMasterPage() {
+  const params = useParams<{ username: string }>()
   const router = useRouter()
   const searchParams = useSearchParams()
   const source = searchParams.get('source')
@@ -190,7 +191,7 @@ export default function BookMasterPage({ params }: { params: { username: string 
               className="inline-flex items-center gap-2 px-5 py-2.5 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-900 dark:text-white rounded-full transition-colors font-medium text-sm"
             >
               {master.portfolio_url.includes('instagram') ? (
-                <Instagram className="w-4 h-4" />
+                <AtSign className="w-4 h-4" />
               ) : (
                 <LinkIcon className="w-4 h-4" />
               )}

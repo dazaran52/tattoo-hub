@@ -229,6 +229,12 @@ BEGIN
   END IF;
 END $$;
 
+ALTER TABLE public.master_sessions
+  ADD COLUMN IF NOT EXISTS lead_id UUID REFERENCES public.leads(id) ON DELETE SET NULL,
+  ADD COLUMN IF NOT EXISTS source TEXT NOT NULL DEFAULT 'manual';
+CREATE UNIQUE INDEX IF NOT EXISTS master_sessions_one_per_lead_idx
+  ON public.master_sessions(lead_id) WHERE lead_id IS NOT NULL;
+
 CREATE OR REPLACE FUNCTION public.accept_marketplace_proposal(
   p_lead_id UUID,
   p_master_id UUID,
@@ -236,7 +242,7 @@ CREATE OR REPLACE FUNCTION public.accept_marketplace_proposal(
 ) RETURNS JSONB
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public
+SET search_path = ''
 AS $$
 DECLARE
   v_lead public.leads%ROWTYPE;
@@ -244,6 +250,7 @@ DECLARE
   v_user public.users%ROWTYPE;
   v_transaction_id UUID;
   v_chat_id UUID;
+  v_crm_client_id UUID;
   v_already_charged BOOLEAN := FALSE;
   v_new_balance NUMERIC(12,2);
 BEGIN
@@ -383,6 +390,45 @@ BEGIN
     WHERE chat_id = v_chat_id
       AND sender_type = 'system'
       AND content LIKE '[SYSTEM_CARD]: %'
+  );
+
+  INSERT INTO public.master_clients (
+    master_id, lead_id, name, source, kanban_status
+  ) VALUES (
+    p_master_id,
+    p_lead_id,
+    COALESCE(NULLIF(v_lead.client_name, ''), NULLIF(v_lead.title, ''), 'Клиент'),
+    'marketplace',
+    'new'
+  )
+  ON CONFLICT (master_id, lead_id) DO UPDATE
+    SET source = 'marketplace', updated_at = NOW()
+  RETURNING id INTO v_crm_client_id;
+
+  INSERT INTO public.master_sessions (
+    master_id, client_id, lead_id, source, session_date, status,
+    style, body_place, size, reference_images, price
+  ) VALUES (
+    p_master_id, v_crm_client_id, p_lead_id, 'marketplace',
+    COALESCE(v_lead.session_date::DATE, CURRENT_DATE), 'new',
+    v_lead.style, v_lead.body_place, v_lead.size, v_lead.image_urls,
+    v_proposal.price_offer
+  )
+  ON CONFLICT (lead_id) WHERE lead_id IS NOT NULL DO UPDATE
+    SET client_id = EXCLUDED.client_id,
+        master_id = EXCLUDED.master_id,
+        price = EXCLUDED.price,
+        source = 'marketplace';
+
+  INSERT INTO public.notifications (user_id, title, message, type)
+  SELECT p_master_id, 'Сеанс подтвержден!',
+         'Клиент выбрал вас для заявки «' || COALESCE(v_lead.title, 'Без названия') || '».',
+         'system'
+  WHERE NOT EXISTS (
+    SELECT 1 FROM public.notifications
+    WHERE user_id = p_master_id
+      AND title = 'Сеанс подтвержден!'
+      AND message = 'Клиент выбрал вас для заявки «' || COALESCE(v_lead.title, 'Без названия') || '».'
   );
 
   RETURN jsonb_build_object(
