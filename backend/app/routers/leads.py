@@ -299,7 +299,7 @@ def get_leads(
                     display_budget = f"{orig_budget} {orig_curr}"
                 else:
                     try:
-                        converted = convert_currency(orig_budget, orig_curr, master_currency)
+                        converted = convert_currency(orig_budget, orig_curr, master_currency, supabase=supabase)
                         display_budget = f"{orig_budget} {orig_curr} (~{converted} {master_currency})"
                     except ValueError:
                         display_budget = f"{orig_budget} {orig_curr}"
@@ -307,7 +307,7 @@ def get_leads(
             # Calculate dynamic unlock price based on the master's currency
             base_price_eur = float(lead.get("base_unlock_price_eur", 2.0))
             try:
-                local_unlock_price = convert_currency(base_price_eur, "EUR", master_currency)
+                local_unlock_price = convert_currency(base_price_eur, "EUR", master_currency, supabase=supabase)
             except ValueError:
                 local_unlock_price = base_price_eur
                 
@@ -435,7 +435,8 @@ async def create_client_lead(
         # Calculate dynamic price based on base currency (EUR)
         base_unlock_price_eur = calculate_unlock_price_base(
             client_budget=lead_data.budget_val if not lead_data.is_negotiable_budget else None,
-            client_currency=lead_data.budget_currency
+            client_currency=lead_data.budget_currency,
+            supabase=supabase
         )
 
         client_token = str(uuid.uuid4())

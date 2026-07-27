@@ -806,3 +806,39 @@ async def pause_conversation(
             detail=f"Error updating conversation pause status: {str(e)}"
         )
 
+from app.services.currency_service import fetch_and_update_ecb_rates
+from app.utils.currency import ExchangeRateCache
+
+@router.get("/currency/rates")
+async def get_currency_rates(
+    admin_user: AuthUser = Depends(get_admin_user),
+    supabase: Client = Depends(get_supabase_client)
+):
+    """Get current exchange rates from Supabase table or cache."""
+    try:
+        res = supabase.table("exchange_rates").select("*").order("currency_code").execute()
+        rates_data = res.data or []
+        # Ensure cache is synced
+        cached = ExchangeRateCache.get_rates(supabase)
+        return {
+            "rates": rates_data,
+            "cached": cached,
+            "base": "EUR"
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/currency/sync-rates")
+async def sync_currency_rates(
+    admin_user: AuthUser = Depends(get_admin_user),
+    supabase: Client = Depends(get_supabase_client)
+):
+    """Fetch latest ECB exchange rates via Frankfurter API and update DB + cache."""
+    try:
+        result = await fetch_and_update_ecb_rates(supabase)
+        return result
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to sync currency rates: {str(e)}"
+        )

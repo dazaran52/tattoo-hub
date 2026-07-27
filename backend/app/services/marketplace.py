@@ -3,7 +3,7 @@
 from dataclasses import dataclass
 from decimal import Decimal, ROUND_HALF_UP
 
-from app.utils.currency import EXCHANGE_RATES
+from app.utils.currency import ExchangeRateCache, EXCHANGE_RATES
 
 MAX_PROPOSALS_PER_LEAD = 5
 SUCCESS_FEE_RATE = Decimal("0.10")
@@ -73,7 +73,7 @@ def calculate_success_fee(price_offer: Decimal, currency: str) -> SuccessFee:
     normalized_currency = currency.upper()
     if price_offer <= 0:
         raise ValueError("PRICE_OFFER_MUST_BE_POSITIVE")
-    if normalized_currency not in EXCHANGE_RATES:
+    if normalized_currency not in ExchangeRateCache.get_rates():
         raise ValueError("UNSUPPORTED_CURRENCY")
 
     amount = (price_offer * SUCCESS_FEE_RATE).quantize(

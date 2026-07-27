@@ -43,7 +43,7 @@ def test_fee_rejects_non_positive_unknown_currency_and_zero_rounded_fee():
     with pytest.raises(ValueError):
         calculate_success_fee(Decimal("0"), "CZK")
     with pytest.raises(ValueError):
-        calculate_success_fee(Decimal("100"), "GBP")
+        calculate_success_fee(Decimal("100"), "XYZ")
     with pytest.raises(ValueError, match="SUCCESS_FEE_TOO_SMALL"):
         calculate_success_fee(Decimal("0.01"), "EUR")
 

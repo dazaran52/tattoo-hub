@@ -8,6 +8,7 @@ import { AdminAiChats } from '@/components/AdminAiChats'
 import { AdminLocations } from '@/components/AdminLocations'
 import { AdminDisputes } from '@/components/AdminDisputes'
 import { AdminWithdrawals } from '@/components/AdminWithdrawals'
+import { AdminCurrencies } from '@/components/AdminCurrencies'
 import { supabase, Profile } from '@/lib/supabase'
 import { CheckCircle, XCircle, Clock, Loader2, Plus, Edit2, Trash2, Link as LinkIcon, Search, Coins, Ban } from 'lucide-react'
 import { getTranslation, Language } from '@/lib/i18n'
@@ -47,7 +48,7 @@ export default function AdminPage() {
   const [userPage, setUserPage] = useState(1)
   const [userTotalPages, setUserTotalPages] = useState(1)
   const [userTotalCount, setUserTotalCount] = useState(0)
-  const [activeTab, setActiveTab] = useState<'users' | 'chats' | 'ai-chats' | 'locations' | 'disputes' | 'withdrawals'>('users')
+  const [activeTab, setActiveTab] = useState<'users' | 'chats' | 'ai-chats' | 'locations' | 'disputes' | 'withdrawals' | 'currencies'>('users')
   const [searchQuery, setSearchQuery] = useState('')
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest' | 'balance_desc' | 'balance_asc'>('newest')
   const [balanceModalUser, setBalanceModalUser] = useState<{ id: string, email: string, balance: number } | null>(null)
@@ -371,6 +372,14 @@ export default function AdminPage() {
           >
             Выводы
           </button>
+          <button
+            onClick={() => setActiveTab('currencies')}
+            className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all ${
+              activeTab === 'currencies' ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-950 shadow-md scale-[1.02]' : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
+            }`}
+          >
+            Курсы валют
+          </button>
         </div>
 
         {activeTab === 'locations' && <AdminLocations />}
@@ -378,6 +387,7 @@ export default function AdminPage() {
         {activeTab === 'ai-chats' && <AdminAiChats />}
         {activeTab === 'disputes' && <AdminDisputes />}
         {activeTab === 'withdrawals' && <AdminWithdrawals />}
+        {activeTab === 'currencies' && <AdminCurrencies />}
         
         {activeTab === 'users' && (
           <div className="bg-white/40 dark:bg-neutral-900/40 backdrop-blur-md border border-neutral-200/50 dark:border-white/5 rounded-3xl overflow-hidden shadow-xl animate-fade-in-up">

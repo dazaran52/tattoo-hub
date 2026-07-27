@@ -15,8 +15,6 @@ from app.routers.admin import router as admin_router
 from app.routers.payments import router as payments_router
 from app.routers.notifications import router as notifications_router
 from app.routers.locations import router as locations_router
-from app.routers.disputes import router as disputes_router
-from app.routers.auctions import router as auctions_router
 from app.routers.analytics import router as analytics_router
 from app.routers.subscriptions import router as subscriptions_router
 from app.routers.chat import router as chat_router
@@ -165,8 +163,6 @@ def create_application() -> FastAPI:
     app.include_router(payments_router)
     app.include_router(notifications_router)
     app.include_router(locations_router)
-    app.include_router(disputes_router)
-    app.include_router(auctions_router)
     app.include_router(analytics_router)
     app.include_router(subscriptions_router)
     app.include_router(chat_router)
