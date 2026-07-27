@@ -1,4 +1,4 @@
-"""Tattoo Hub - FastAPI Backend Application"""
+"""Tattoo Hub - FastAPI Backend Application (v1.0)"""
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
