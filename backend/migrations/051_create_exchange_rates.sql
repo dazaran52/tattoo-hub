@@ -12,12 +12,14 @@ CREATE TABLE IF NOT EXISTS public.exchange_rates (
 ALTER TABLE public.exchange_rates ENABLE ROW LEVEL SECURITY;
 
 -- Allow public read access (so any user/master/client can view rates for price calculation)
+DROP POLICY IF EXISTS "Allow public read access on exchange_rates" ON public.exchange_rates;
 CREATE POLICY "Allow public read access on exchange_rates"
     ON public.exchange_rates
     FOR SELECT
     USING (true);
 
 -- Allow write access only for service role or admin users
+DROP POLICY IF EXISTS "Allow admin and service role write on exchange_rates" ON public.exchange_rates;
 CREATE POLICY "Allow admin and service role write on exchange_rates"
     ON public.exchange_rates
     FOR ALL
