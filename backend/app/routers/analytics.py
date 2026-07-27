@@ -10,11 +10,12 @@ router = APIRouter(prefix="/api/analytics", tags=["analytics"])
 
 class DailyActivity(BaseModel):
     date: str
-    spent: int
+    spent: float
     bought: int
 
 class AnalyticsResponse(BaseModel):
-    total_spent_balance: int
+    total_spent_balance: float
+    total_spent_credits: float
     total_leads_bought: int
     activity_by_day: List[DailyActivity]
 
@@ -24,52 +25,45 @@ async def get_analytics(
     supabase: Client = Depends(get_supabase_client)
 ):
     try:
-        # 1. Total leads bought
-        unlocks_res = supabase.table("lead_unlocks") \
-            .select("unlocked_at, lead_id, leads(price_credits)") \
+        # 1. Total leads acquired (accepted proposals)
+        proposals_res = supabase.table("lead_proposals") \
+            .select("id, created_at") \
             .eq("user_id", current_user.user_id) \
+            .in_("status", ["accepted", "booked", "completed"]) \
             .execute()
             
-        unlocks = unlocks_res.data or []
-        total_leads = len(unlocks)
+        proposals = proposals_res.data or []
+        total_leads = len(proposals)
         
-        # 2. Auctions won
-        auctions_res = supabase.table("auctions") \
-            .select("lead_id, current_price") \
-            .eq("highest_bidder_id", current_user.user_id) \
-            .eq("status", "completed") \
+        # 2. Total fees spent (marketplace fee transactions)
+        fees_res = supabase.table("marketplace_fee_transactions") \
+            .select("amount, created_at") \
+            .eq("master_id", current_user.user_id) \
             .execute()
             
-        auctions = {a["lead_id"]: a["current_price"] for a in (auctions_res.data or [])}
+        fees = fees_res.data or []
+        total_spent = sum(float(f.get("amount") or 0.0) for f in fees)
         
         # 3. Last 30 days map
         today = datetime.utcnow().date()
         days_map = {}
         for i in range(29, -1, -1):
             d = today - timedelta(days=i)
-            days_map[d.isoformat()] = {"date": d.isoformat(), "spent": 0, "bought": 0}
+            days_map[d.isoformat()] = {"date": d.isoformat(), "spent": 0.0, "bought": 0}
             
-        total_spent = 0
-        
-        for u in unlocks:
-            dt = datetime.fromisoformat(u["unlocked_at"].replace("Z", "+00:00")[:19]).date()
-            dt_str = dt.isoformat()
-            
-            # Determine price
-            lead_id = u["lead_id"]
-            if lead_id in auctions:
-                price = auctions[lead_id]
-            else:
-                leads_data = u.get("leads")
-                price = leads_data.get("price_credits", 0) if leads_data else 0
-                
-            total_spent += price
+        for p in proposals:
+            dt_str = p.get("created_at", "")[:10]
             if dt_str in days_map:
                 days_map[dt_str]["bought"] += 1
-                days_map[dt_str]["spent"] += price
+                
+        for f in fees:
+            dt_str = f.get("created_at", "")[:10]
+            if dt_str in days_map:
+                days_map[dt_str]["spent"] += float(f.get("amount") or 0.0)
 
         return {
-            "total_spent_balance": total_spent,
+            "total_spent_balance": round(total_spent, 2),
+            "total_spent_credits": round(total_spent, 2),
             "total_leads_bought": total_leads,
             "activity_by_day": list(days_map.values())
         }

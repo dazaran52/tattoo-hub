@@ -154,30 +154,6 @@ async def get_marketplace_leads(
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc)) from exc
 
-@router.post("/{lead_id}/dump")
-async def dump_lead(
-    lead_id: str,
-    current_user: AuthUser = Depends(get_current_user),
-    supabase: AsyncClient = Depends(get_async_supabase_client)
-):
-    """Dump a lead into the marketplace (auction)."""
-    try:
-        # Check ownership
-        lead_res = await supabase.table("leads").select("assigned_master_id").eq("id", lead_id).single().execute()
-        if not lead_res.data or lead_res.data.get("assigned_master_id") != current_user.user_id:
-            raise HTTPException(status_code=403, detail="Not authorized to dump this lead")
-            
-        # Update lead
-        await supabase.table("leads").update({
-            "assigned_master_id": None,
-            "status": "auction"
-        }).eq("id", lead_id).execute()
-        
-        return {"status": "success"}
-    except Exception as e:
-        if isinstance(e, HTTPException):
-            raise e
-        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get("/personal", response_model=List[LeadResponse])
@@ -299,12 +275,6 @@ def get_leads(
             lead_id = proposal["lead_id"]
             proposal_counts[lead_id] = proposal_counts.get(lead_id, 0) + 1
 
-        # Fetch active auctions to hide contacts
-        auctions_res = supabase.table("auctions") \
-            .select("lead_id") \
-            .eq("status", "active") \
-            .execute()
-        auction_lead_ids = {a["lead_id"] for a in (auctions_res.data or [])}
 
         processed_leads = []
         for lead in paginated_leads:
@@ -316,11 +286,7 @@ def get_leads(
             lead_proposal_count = proposal_counts.get(lead["id"], 0)
             unlock_status = proposal_status
             
-            # Hide contacts if lead is currently on auction, even if unlocked
-            if lead["id"] in auction_lead_ids:
-                contacts = "******** [Лид на аукционе]"
-            else:
-                contacts = lead["contacts"] if is_unlocked else "Контакт скрыт до выбора мастера"
+            contacts = lead["contacts"] if is_unlocked else "Контакт скрыт до выбора мастера"
                 
             # Format display budget
             display_budget = None
@@ -407,12 +373,6 @@ def create_master_lead(
             
         new_lead = lead_insert.data[0]
         
-        # Auto-unlock for the creator so they own it
-        unlock_insert = supabase.table("lead_unlocks").insert({
-            "user_id": current_user.user_id,
-            "lead_id": new_lead["id"],
-            "status": "new"
-        }).execute()
         
         return new_lead
     except Exception as e:
@@ -483,13 +443,20 @@ async def create_client_lead(
         city_id = None
         if lead_data.city:
             try:
-                # First try to find exact match in name_ru or name_en
-                q = supabase.table("cities").select("id").or_(f"name_ru.ilike.{lead_data.city},name_en.ilike.{lead_data.city}")
+                # First try to find match in name_ru, then name_en
+                q1 = supabase.table("cities").select("id").ilike("name_ru", f"%{lead_data.city}%")
                 if lead_data.country_id:
-                    q = q.eq("country_id", lead_data.country_id)
-                city_res = await q.execute()
+                    q1 = q1.eq("country_id", lead_data.country_id)
+                city_res = await q1.execute()
                 if city_res.data:
                     city_id = city_res.data[0]["id"]
+                else:
+                    q2 = supabase.table("cities").select("id").ilike("name_en", f"%{lead_data.city}%")
+                    if lead_data.country_id:
+                        q2 = q2.eq("country_id", lead_data.country_id)
+                    city_res2 = await q2.execute()
+                    if city_res2.data:
+                        city_id = city_res2.data[0]["id"]
             except Exception as e:
                 print(f"Failed to lookup city_id for {lead_data.city}: {e}")
 

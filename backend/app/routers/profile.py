@@ -213,7 +213,7 @@ async def get_profile(
             print(f"Failed to start marketplace access verification: {exc}")
 
     # Calculate unlocks and gamification level
-    unlocks_res = await supabase.table("lead_unlocks").select("id", count="exact").eq("user_id", current_user.user_id).execute()
+    unlocks_res = await supabase.table("lead_proposals").select("id", count="exact").eq("user_id", current_user.user_id).in_("status", ["accepted", "booked", "completed"]).execute()
     unlocked_count = unlocks_res.count if unlocks_res.count is not None else len(unlocks_res.data)
     
     level = "Newbie"
@@ -372,7 +372,7 @@ async def update_profile(
                 detail="Profile not found"
             )
         
-        unlocks_res = await supabase.table("lead_unlocks").select("id", count="exact").eq("user_id", current_user.user_id).execute()
+        unlocks_res = await supabase.table("lead_proposals").select("id", count="exact").eq("user_id", current_user.user_id).in_("status", ["accepted", "booked", "completed"]).execute()
         unlocked_count = unlocks_res.count if unlocks_res.count is not None else len(unlocks_res.data)
         
         level = "Newbie"
@@ -524,65 +524,6 @@ async def remove_city(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-class AnalyticsResponse(BaseModel):
-    total_spent_credits: int
-    total_leads_bought: int
-    activity_by_day: list[dict]
-
-
-@router.get("/analytics", response_model=AnalyticsResponse)
-async def get_analytics(
-    current_user: AuthUser = Depends(get_current_user),
-    supabase: AsyncClient = Depends(get_async_supabase_client)
-):
-    """Get user analytics for the dashboard."""
-    try:
-        # Fetch all unlocked leads for the user with their prices
-        unlocks_res = await supabase.table("lead_unlocks").select("unlocked_at, leads(price)").eq("user_id", current_user.user_id).execute()
-        
-        total_spent = 0
-        total_leads = len(unlocks_res.data)
-        
-        from collections import defaultdict
-        from datetime import datetime
-        
-        daily_activity = defaultdict(lambda: {"spent": 0, "bought": 0})
-        
-        for unlock in unlocks_res.data:
-            price = unlock.get("leads", {}).get("price", 0) if unlock.get("leads") else 0
-            # If price is missing or null, default to 0
-            if price is None:
-                price = 0
-                
-            total_spent += price
-            
-            # Format date as YYYY-MM-DD
-            date_str = unlock["unlocked_at"][:10] if unlock.get("unlocked_at") else datetime.utcnow().strftime("%Y-%m-%d")
-            daily_activity[date_str]["spent"] += price
-            daily_activity[date_str]["bought"] += 1
-            
-        # Convert to list and sort by date
-        activity_list = [{"date": k, "spent": v["spent"], "bought": v["bought"]} for k, v in daily_activity.items()]
-        activity_list.sort(key=lambda x: x["date"])
-        
-        # Fill empty days for the last 7 days if empty
-        if not activity_list:
-            today = datetime.utcnow().strftime("%Y-%m-%d")
-            activity_list = [{"date": today, "spent": 0, "bought": 0}]
-            
-        return {
-            "total_spent_credits": total_spent,
-            "total_leads_bought": total_leads,
-            "activity_by_day": activity_list[-30:] # Last 30 days of activity
-        }
-    except Exception as e:
-        print(f"Analytics error: {e}")
-        # Return empty stats on error
-        return {
-            "total_spent_credits": 0,
-            "total_leads_bought": 0,
-            "activity_by_day": []
-        }
 
 
 @router.delete("/profile", status_code=status.HTTP_204_NO_CONTENT)

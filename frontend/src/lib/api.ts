@@ -119,6 +119,5 @@ export const api = {
     const res = await fetch(`${API_URL}/api/leads`, { headers })
     if (!res.ok) throw new Error('Failed to fetch leads')
     return res.json()
-  },
   }
 }

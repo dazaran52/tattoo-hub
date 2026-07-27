@@ -6,8 +6,6 @@ import { SkeletonCard } from '@/components/SkeletonCard'
 import { RefreshCw, Search, Loader2, Plus, Edit2, Trash2, XCircle, ChevronLeft, ChevronRight, Image as ImageIcon, Clock, Bell, BellOff, MapPin } from 'lucide-react'
 import { getTranslation, Language } from '@/lib/i18n'
 import { LowBalanceModal } from '@/components/LowBalanceModal'
-import { DisputeModal } from '@/components/DisputeModal'
-import { AuctionModal } from '@/components/AuctionModal'
 import { MasterLeadModal } from '@/components/MasterLeadModal'
 import { ProposalModal } from '@/components/ProposalModal'
 import { ChatModal } from '@/components/ChatModal'
@@ -110,8 +108,6 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
   const [lightboxImage, setLightboxImage] = useState<string | null>(null)
   const [currentImageIndexes, setCurrentImageIndexes] = useState<Record<string, number>>({})
 
-  const [selectedDisputeLead, setSelectedDisputeLead] = useState<Lead | null>(null)
-  const [selectedAuctionLead, setSelectedAuctionLead] = useState<Lead | null>(null)
   const [selectedProposalLead, setSelectedProposalLead] = useState<Lead | null>(null)
   const [selectedChatLead, setSelectedChatLead] = useState<Lead | null>(null)
   const [isMasterModalOpen, setIsMasterModalOpen] = useState(false)
@@ -402,41 +398,6 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
     })
   }
 
-  const dumpLead = (leadId: string) => {
-    const lead = leads.find(l => l.id === leadId)
-    setConfirmModal({
-      isOpen: true,
-      title: 'Слить лида',
-      message: `Вы уверены, что хотите отказаться от лида "${lead?.title || ''}"? Он будет отправлен в аукцион.`,
-      confirmText: 'Отказаться',
-      cancelText: 'Отмена',
-      type: 'danger',
-      onConfirm: async () => {
-        setConfirmModal(null)
-        try {
-          setActionLoadingId(leadId)
-          const { data: { session } } = await supabase.auth.getSession()
-          if (!session) return
-
-          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/leads/${leadId}/dump`, {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${session.access_token}`,
-            }
-          })
-
-          if (!res.ok) throw new Error('Failed to dump lead')
-
-          setLeads(leads.filter(l => l.id !== leadId))
-          toast.success('Лид перенесен в аукцион')
-        } catch (err: any) {
-          toast.error(err.message)
-        } finally {
-          setActionLoadingId(null)
-        }
-      }
-    })
-  }
 
   const handleNextImage = (leadId: string, totalImages: number, e: React.MouseEvent) => {
     e.stopPropagation()
@@ -495,14 +456,6 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
         currency={lowBalanceCurrency} 
       />
 
-      {selectedDisputeLead && (
-        <DisputeModal
-          isOpen={!!selectedDisputeLead}
-          onClose={() => setSelectedDisputeLead(null)}
-          lead={selectedDisputeLead}
-        />
-      )}
-
       <MasterLeadModal
         isOpen={isMasterModalOpen}
         onClose={() => setIsMasterModalOpen(false)}
@@ -532,14 +485,6 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
         chatId={selectedChatLead?.chat_id || null}
         leadTitle={selectedChatLead?.title || ''}
       />
-
-      {selectedAuctionLead && (
-        <AuctionModal
-          isOpen={!!selectedAuctionLead}
-          onClose={() => setSelectedAuctionLead(null)}
-          lead={selectedAuctionLead}
-        />
-      )}
 
       {/* Lightbox */}
       {lightboxImage && (
@@ -892,38 +837,17 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
                     ❌ Клиент выбрал другого мастера
                   </div>
                 ) : lead.is_unlocked || isAdmin ? (
-                  <div className="space-y-3">
-                    <div className="w-full py-3 px-4 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-900/50 rounded-xl text-sm font-bold shadow-inner flex items-center justify-center gap-2">
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-                      {isAdmin ? "ADMIN VIEW" : t('unlocked')}
-                    </div>
-
-                    {!isAdmin && (
-                      <div className="grid grid-cols-2 gap-2 mt-2">
-                        <button 
-                          onClick={() => setSelectedDisputeLead(lead)}
-                          className="w-full py-2 px-3 bg-white dark:bg-neutral-900 border border-red-200 dark:border-red-900/50 text-red-600 dark:text-red-400 rounded-lg text-xs font-bold hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors flex items-center justify-center gap-1"
-                        >
-                          Оспорить
-                        </button>
-                        <button 
-                          onClick={() => setSelectedAuctionLead(lead)}
-                          className="w-full py-2 px-3 bg-white dark:bg-neutral-900 border border-purple-200 dark:border-purple-900/50 text-purple-600 dark:text-purple-400 rounded-lg text-xs font-bold hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-colors flex items-center justify-center gap-1"
-                        >
-                          В Аукцион
-                        </button>
-                      </div>
-                    )}
+                  <div className="w-full py-3 px-4 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-900/50 rounded-xl text-sm font-bold shadow-inner flex items-center justify-center gap-2">
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                    {isAdmin ? "ADMIN VIEW" : t('unlocked')}
                   </div>
                 ) : (
                   <button 
                     onClick={() => setSelectedProposalLead(lead)}
-                    disabled={unlockingId === lead.id || ((lead.proposal_count ?? lead.unlock_count ?? 0) >= (lead.max_proposals ?? lead.max_unlocks ?? 5) && !lead.proposal_status)}
+                    disabled={((lead.proposal_count ?? lead.unlock_count ?? 0) >= (lead.max_proposals ?? lead.max_unlocks ?? 5) && !lead.proposal_status)}
                     className="w-full py-3 px-4 bg-neutral-900 dark:bg-white text-white dark:text-neutral-950 hover:bg-neutral-800 dark:hover:bg-neutral-200 rounded-xl text-sm font-bold transition-all shadow-md hover:shadow-lg disabled:opacity-50 flex items-center justify-center gap-2 group-hover:scale-[1.02]"
                   >
-                    {unlockingId === lead.id ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (lead.proposal_count ?? lead.unlock_count ?? 0) >= (lead.max_proposals ?? lead.max_unlocks ?? 5) ? (
+                    {(lead.proposal_count ?? lead.unlock_count ?? 0) >= (lead.max_proposals ?? lead.max_unlocks ?? 5) ? (
                       <span>🔒 Уже 5 предложений</span>
                     ) : (
                       <>

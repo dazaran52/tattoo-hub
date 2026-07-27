@@ -6,7 +6,6 @@ import { Header } from '@/components/Header'
 import { SkeletonCard } from '@/components/SkeletonCard'
 import { supabase, Profile } from '@/lib/supabase'
 import { LeadsFeed } from '@/components/LeadsFeed'
-import { AuctionsFeed } from '@/components/AuctionsFeed'
 import { CRMBoard } from '@/components/CRMBoard'
 import { MessagesList } from '@/components/MessagesList'
 import { toast } from 'react-hot-toast'
@@ -21,13 +20,13 @@ export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true)
   const { t, lang: language } = useLanguage()
   const [currentSession, setCurrentSession] = useState<any>(null)
-  const [activeTab, setActiveTab] = useState<'feed' | 'my-leads' | 'auctions' | 'crm' | 'messages' | 'portfolio'>('crm')
+  const [activeTab, setActiveTab] = useState<'feed' | 'crm' | 'messages' | 'portfolio'>('crm')
   const [unreadMessages, setUnreadMessages] = useState(0)
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const tab = urlParams.get('tab');
-    if (tab && ['feed', 'my-leads', 'auctions', 'crm', 'messages', 'portfolio'].includes(tab)) {
+    if (tab && ['feed', 'crm', 'messages', 'portfolio'].includes(tab)) {
       setActiveTab(tab as any);
     }
   }, [])
@@ -313,13 +312,7 @@ export default function DashboardPage() {
             </div>
 
             {/* Content Rendering based on Tab */}
-            {['feed', 'my-leads', 'auctions'].includes(activeTab) ? (
-              <>
-                {activeTab === 'feed' && <LeadsFeed onUnlockSuccess={handleUnlockSuccess} isAdmin={profile.is_admin} userCities={profile.city_ids || []} />}
-                {activeTab === 'my-leads' && <LeadsFeed onUnlockSuccess={handleUnlockSuccess} isAdmin={profile.is_admin} showOnlyUnlocked={true} userCities={profile.city_ids || []} />}
-                {activeTab === 'auctions' && <AuctionsFeed />}
-              </>
-            ) : null}
+            {activeTab === 'feed' && <LeadsFeed onUnlockSuccess={handleUnlockSuccess} isAdmin={profile.is_admin} userCities={profile.city_ids || []} />}
 
           {activeTab === 'crm' && <CRMBoard />}
           {activeTab === 'portfolio' && <PortfolioTab profile={profile} />}

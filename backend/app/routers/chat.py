@@ -217,12 +217,7 @@ async def get_my_chats(
         if client_ids or client_session_ids:
             accepted_lead_ids = [chat["lead_id"] for chat in chats]
             l_query = supabase.table("leads").select("id, client_id, client_session_id, title, description, image_urls, contacts, is_personal, assigned_master_id, client_budget, client_currency, is_negotiable_budget, session_date, session_time, body_place, size, client_priority, client_name").in_("id", accepted_lead_ids).order("created_at", desc=True)
-            if client_ids and client_session_ids:
-                l_res = l_query.or_(f"client_id.in.({','.join(client_ids)}),client_session_id.in.({','.join(client_session_ids)})").execute()
-            elif client_ids:
-                l_res = l_query.in_("client_id", client_ids).execute()
-            else:
-                l_res = l_query.in_("client_session_id", client_session_ids).execute()
+            l_res = l_query.execute()
                 
             for l in (l_res.data or []):
                 # group by client_id or client_session_id
