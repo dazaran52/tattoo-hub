@@ -216,7 +216,7 @@ async def get_my_chats(
     try:
         if client_ids or client_session_ids:
             accepted_lead_ids = [chat["lead_id"] for chat in chats]
-            l_query = supabase.table("leads").select("id, client_id, client_session_id, title, description, image_urls, contacts, is_personal, assigned_master_id, client_budget, client_currency, is_negotiable_budget, session_date, session_time, body_place, size, client_priority, client_name").in_("id", accepted_lead_ids).order("created_at", desc=True)
+            l_query = supabase.table("leads").select("*").in_("id", accepted_lead_ids).order("created_at", desc=True)
             l_res = l_query.execute()
                 
             for l in (l_res.data or []):
