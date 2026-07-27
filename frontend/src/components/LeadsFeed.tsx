@@ -42,6 +42,8 @@ export interface Lead {
   chat_id?: string
   display_budget?: string
   is_negotiable_budget?: boolean
+  proposal_count?: number
+  max_proposals?: number
 }
 
 interface LeadsFeedProps {
@@ -865,9 +867,11 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
                   </div>
                   <div className="flex items-center gap-2">
 
-                    <span className="bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white text-xs px-3 py-1.5 rounded-full font-bold shadow-sm whitespace-nowrap border border-neutral-200 dark:border-neutral-700 flex items-center gap-1">
-                      {lead.unlock_price_local} {lead.master_currency}
-                    </span>
+                    {!isMarketplace && (
+                      <span className="bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white text-xs px-3 py-1.5 rounded-full font-bold shadow-sm whitespace-nowrap border border-neutral-200 dark:border-neutral-700 flex items-center gap-1">
+                        {lead.unlock_price_local} {lead.master_currency}
+                      </span>
+                    )}
                     {lead.display_budget && (
                       <span className="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-400 text-xs px-3 py-1.5 rounded-full font-bold shadow-sm whitespace-nowrap border border-emerald-200 dark:border-emerald-800 flex items-center gap-1">
                         💰 {lead.display_budget}
@@ -880,19 +884,19 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
                 {/* Competition meter status bar */}
                 <div className="mt-2 mb-4">
                   <div className="flex justify-between text-xs font-bold text-neutral-500 mb-1">
-                    <span>Конкуренция</span>
-                    <span>{lead.unlock_count || 0} / {lead.max_unlocks || 3} unlocked</span>
+                    <span>{isMarketplace ? 'Предложения мастеров' : 'Конкуренция'}</span>
+                    <span>{lead.proposal_count ?? lead.unlock_count ?? 0} / {lead.max_proposals ?? lead.max_unlocks ?? 5}</span>
                   </div>
                   <div className="h-2 w-full bg-neutral-200/50 dark:bg-neutral-800/50 rounded-full overflow-hidden">
                     <div 
                       className={`h-full transition-all duration-500 ${
-                        (lead.unlock_count || 0) >= (lead.max_unlocks || 3)
+                        (lead.proposal_count ?? lead.unlock_count ?? 0) >= (lead.max_proposals ?? lead.max_unlocks ?? 5)
                           ? 'bg-red-500'
-                          : (lead.unlock_count || 0) === 2
+                          : (lead.proposal_count ?? lead.unlock_count ?? 0) >= 4
                           ? 'bg-amber-500'
                           : 'bg-green-500'
                       }`}
-                      style={{ width: `${((lead.unlock_count || 0) / (lead.max_unlocks || 3)) * 100}%` }}
+                      style={{ width: `${Math.min(100, ((lead.proposal_count ?? lead.unlock_count ?? 0) / (lead.max_proposals ?? lead.max_unlocks ?? 5)) * 100)}%` }}
                     />
                   </div>
                 </div>
@@ -924,7 +928,7 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
               </div>
               
               <div className="p-5 border-t border-neutral-100 dark:border-neutral-800/80 bg-neutral-50/50 dark:bg-neutral-900/50 backdrop-blur-sm">
-                {lead.proposal_status === 'accepted' ? (
+                {lead.proposal_status && ['accepted', 'booked', 'completed'].includes(lead.proposal_status) ? (
                   <div className="space-y-3">
                     <div className="w-full py-3 px-4 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-900/50 rounded-xl text-sm font-bold shadow-inner flex items-center justify-center gap-2">
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
@@ -945,6 +949,12 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
                     <div className="w-full py-3 px-4 bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-900/50 rounded-xl text-sm font-bold shadow-inner flex items-center justify-center gap-2">
                       ⏳ Ожидает решения клиента
                     </div>
+                    <button
+                      onClick={() => setSelectedProposalLead(lead)}
+                      className="w-full py-2.5 px-4 border border-neutral-300 dark:border-neutral-700 rounded-xl text-sm font-bold hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                    >
+                      Редактировать предложение
+                    </button>
                     {lead.chat_id && (
                       <button
                         onClick={() => setSelectedChatLead(lead)}
@@ -986,16 +996,16 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
                 ) : (
                   <button 
                     onClick={() => setSelectedProposalLead(lead)}
-                    disabled={unlockingId === lead.id || ((lead.unlock_count || 0) >= (lead.max_unlocks || 3) && !lead.is_unlocked)}
+                    disabled={unlockingId === lead.id || ((lead.proposal_count ?? lead.unlock_count ?? 0) >= (lead.max_proposals ?? lead.max_unlocks ?? 5) && !lead.proposal_status)}
                     className="w-full py-3 px-4 bg-neutral-900 dark:bg-white text-white dark:text-neutral-950 hover:bg-neutral-800 dark:hover:bg-neutral-200 rounded-xl text-sm font-bold transition-all shadow-md hover:shadow-lg disabled:opacity-50 flex items-center justify-center gap-2 group-hover:scale-[1.02]"
                   >
                     {unlockingId === lead.id ? (
                       <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (lead.unlock_count || 0) >= (lead.max_unlocks || 3) ? (
-                      <span>🔒 Лимит разблокировок исчерпан</span>
+                    ) : (lead.proposal_count ?? lead.unlock_count ?? 0) >= (lead.max_proposals ?? lead.max_unlocks ?? 5) ? (
+                      <span>🔒 Уже 5 предложений</span>
                     ) : (
                       <>
-                        🔓 {t('unlock')} — {lead.unlock_price_local} {lead.master_currency}
+                        Сделать предложение — бесплатно
                       </>
                     )}
                   </button>

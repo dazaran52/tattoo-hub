@@ -13,19 +13,21 @@ interface ProposalModalProps {
   language: string
 }
 
-export function ProposalModal({ isOpen, onClose, lead, onSuccess, language }: ProposalModalProps) {
+export function ProposalModal({ isOpen, onClose, lead, onSuccess }: ProposalModalProps) {
   const [loading, setLoading] = useState(false)
-  const [formData, setFormData] = useState({
-    price_offer: '',
-    proposed_dates: ''
-  })
+  const [formData, setFormData] = useState({ price_offer: '', proposed_dates: '' })
 
   if (!isOpen || !lead) return null
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!formData.price_offer || !formData.proposed_dates) {
-      toast.error('Пожалуйста, заполните все поля')
+  const currency = lead.master_currency || 'CZK'
+  const price = Number(formData.price_offer) || 0
+  const feeRate = 0.10
+  const feeAmount = Math.round(price * feeRate * 100) / 100
+
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault()
+    if (price <= 0 || !formData.proposed_dates.trim()) {
+      toast.error('Укажите цену и свободные даты')
       return
     }
 
@@ -33,39 +35,32 @@ export function ProposalModal({ isOpen, onClose, lead, onSuccess, language }: Pr
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
       const { data: { session } } = await supabase.auth.getSession()
-      const token = session?.access_token
+      if (!session) throw new Error('Нет активной сессии')
 
-
-      // Step 1: Submit Proposal (which also freezes credits and creates chat)
-      const proposalRes = await fetch(`${apiUrl}/api/leads/${lead.id}/proposals`, {
+      const response = await fetch(`${apiUrl}/api/leads/${lead.id}/proposals`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
+          Authorization: `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          price_offer: parseInt(formData.price_offer),
-          proposed_dates: formData.proposed_dates
-        })
+          price_offer: price,
+          proposed_dates: formData.proposed_dates.trim(),
+          currency,
+        }),
       })
-
-      const responseData = await proposalRes.json()
-
-      if (!proposalRes.ok) {
-        if (responseData.detail === 'INSUFFICIENT_CREDITS') {
-          throw new Error('INSUFFICIENT_CREDITS')
+      const responseData = await response.json().catch(() => ({}))
+      if (!response.ok) {
+        if (responseData.detail === 'MAX_PROPOSALS_REACHED') {
+          throw new Error('Лимит: клиент уже получил 5 предложений')
         }
-        throw new Error(responseData.detail || 'Failed to submit proposal')
+        throw new Error(responseData.detail || 'Не удалось отправить предложение')
       }
 
-      toast.success('Оффер отправлен! Ожидайте ответа клиента.')
+      toast.success('Предложение отправлено бесплатно')
       onSuccess()
-    } catch (err: any) {
-      if (err.message === 'INSUFFICIENT_CREDITS') {
-        onClose()
-        throw err
-      }
-      toast.error(err.message || 'Ошибка')
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Ошибка отправки')
     } finally {
       setLoading(false)
     }
@@ -73,70 +68,67 @@ export function ProposalModal({ isOpen, onClose, lead, onSuccess, language }: Pr
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
-        <motion.div 
+      <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm" onClick={(event) => event.target === event.currentTarget && onClose()}>
+        <motion.div
           initial={{ opacity: 0, scale: 0.95, y: 10 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 10 }}
-          className="bg-white dark:bg-neutral-900 w-full max-w-md rounded-3xl shadow-2xl overflow-hidden border border-neutral-200 dark:border-white/10"
+          className="w-full max-w-md overflow-hidden rounded-3xl border border-neutral-200 bg-white shadow-2xl dark:border-white/10 dark:bg-neutral-900"
         >
-          <div className="flex justify-between items-center p-4 lg:p-6 border-b border-neutral-100 dark:border-white/5">
+          <div className="flex items-center justify-between border-b border-neutral-100 p-4 dark:border-white/5 lg:p-6">
             <h2 className="text-xl font-bold text-neutral-900 dark:text-white">Сделать предложение</h2>
-            <button onClick={onClose} className="p-2 text-neutral-500 hover:text-neutral-900 dark:hover:text-white rounded-full transition-colors bg-neutral-100 dark:bg-neutral-800">
-              <X className="w-5 h-5" />
+            <button type="button" onClick={onClose} aria-label="Закрыть" className="rounded-full bg-neutral-100 p-2 text-neutral-500 dark:bg-neutral-800">
+              <X className="h-5 w-5" />
             </button>
           </div>
-          
-          <form onSubmit={handleSubmit} className="p-4 lg:p-6 space-y-5">
-            <div className="bg-violet-500/10 text-violet-600 dark:text-violet-400 p-4 rounded-2xl text-sm flex gap-3 items-start">
-              <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
-              <p>Отправьте ваш оффер клиенту. Заявка перейдет в статус ожидания. Кредиты спишутся только если клиент выберет вас!</p>
+
+          <form onSubmit={handleSubmit} className="space-y-5 p-4 lg:p-6">
+            <div className="flex items-start gap-3 rounded-2xl bg-violet-500/10 p-4 text-sm text-violet-600 dark:text-violet-400">
+              <AlertCircle className="mt-0.5 h-5 w-5 shrink-0" />
+              <p>Отправка бесплатна. Комиссия спишется только если клиент выберет вас. Чат и контакты откроются после выбора.</p>
             </div>
 
-            {lead.client_priority === 'cheap' && lead.lowest_bid && (
-              <div className="bg-green-500/10 text-green-600 dark:text-green-400 p-4 rounded-2xl text-sm flex justify-between items-center font-bold">
-                <span>🔥 Текущая лучшая цена:</span>
-                <span className="text-lg">{lead.lowest_bid} CZK</span>
+            {lead.display_budget && (
+              <div className="rounded-2xl bg-emerald-500/10 p-3 text-sm font-bold text-emerald-700 dark:text-emerald-300">
+                Бюджет клиента: {lead.display_budget}
               </div>
             )}
 
             <div>
-              <label className="block text-sm font-bold text-neutral-700 dark:text-neutral-300 mb-2">Ваша примерная цена (CZK)</label>
+              <label className="mb-2 block text-sm font-bold text-neutral-700 dark:text-neutral-300">Ваша примерная цена ({currency})</label>
               <input
                 type="number"
+                min="1"
                 required
-                className="w-full bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white border border-transparent focus:border-violet-500 rounded-2xl px-5 py-3 outline-none transition-all"
+                className="w-full rounded-2xl border border-transparent bg-neutral-100 px-5 py-3 text-neutral-900 outline-none focus:border-violet-500 dark:bg-neutral-800 dark:text-white"
                 placeholder="Например: 3500"
                 value={formData.price_offer}
-                onChange={(e) => setFormData({...formData, price_offer: e.target.value})}
+                onChange={(event) => setFormData({ ...formData, price_offer: event.target.value })}
               />
             </div>
-            
+
+            {price > 0 && (
+              <div className="rounded-2xl border border-neutral-200 p-4 text-sm dark:border-neutral-700">
+                <div className="flex justify-between"><span>Комиссия Tattoo HUB</span><strong>{feeRate * 100}%</strong></div>
+                <div className="mt-2 flex justify-between text-base"><span>Спишется при выборе</span><strong>{feeAmount} {currency}</strong></div>
+                <p className="mt-2 text-xs text-neutral-500">Единая комиссия — 10% от цены предложения.</p>
+              </div>
+            )}
+
             <div>
-              <label className="block text-sm font-bold text-neutral-700 dark:text-neutral-300 mb-2">Свободные даты</label>
+              <label className="mb-2 block text-sm font-bold text-neutral-700 dark:text-neutral-300">Свободные даты</label>
               <textarea
                 required
-                className="w-full bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white border border-transparent focus:border-violet-500 rounded-2xl px-5 py-3 outline-none transition-all resize-none"
-                placeholder="Например: Могу принять на этой неделе в четверг или пятницу..."
+                className="w-full resize-none rounded-2xl border border-transparent bg-neutral-100 px-5 py-3 text-neutral-900 outline-none focus:border-violet-500 dark:bg-neutral-800 dark:text-white"
+                placeholder="Например: четверг или пятница на этой неделе"
                 rows={3}
                 value={formData.proposed_dates}
-                onChange={(e) => setFormData({...formData, proposed_dates: e.target.value})}
+                onChange={(event) => setFormData({ ...formData, proposed_dates: event.target.value })}
               />
             </div>
-            
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-violet-500 hover:bg-violet-600 text-white font-bold py-4 rounded-2xl transition-all shadow-lg shadow-violet-500/25 flex items-center justify-center gap-2 disabled:opacity-50"
-            >
-              {loading ? (
-                <div className="w-6 h-6 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-              ) : (
-                <>
-                  <span>Отправить оффер</span>
-                  <Send className="w-5 h-5" />
-                </>
-              )}
+
+            <button type="submit" disabled={loading} className="flex w-full items-center justify-center gap-2 rounded-2xl bg-violet-500 py-4 font-bold text-white shadow-lg shadow-violet-500/25 hover:bg-violet-600 disabled:opacity-50">
+              {loading ? <div className="h-6 w-6 animate-spin rounded-full border-2 border-white/20 border-t-white" /> : <><span>Отправить бесплатно</span><Send className="h-5 w-5" /></>}
             </button>
           </form>
         </motion.div>

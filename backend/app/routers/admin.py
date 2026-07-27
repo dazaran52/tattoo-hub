@@ -1,3 +1,5 @@
+from datetime import datetime, timezone
+
 from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks, Query, Response
 from pydantic import BaseModel
 from typing import List
@@ -6,15 +8,26 @@ from app.database import get_supabase_client
 from supabase import Client
 from app.services.mail import send_transactional_email
 from app.services.notifications import send_push_notification
+from app.services.verification import (
+    build_certificate_review_update,
+    ensure_certificate_reviewable,
+)
+from app.services.marketplace import build_admin_balance_update
+from decimal import Decimal
 
 router = APIRouter(prefix="/api/admin", tags=["admin"])
 
 class UserStatusUpdate(BaseModel):
     status: str
 
+
+class CertificateReview(BaseModel):
+    status: str
+    reason: str | None = None
+
 class UserBalanceUpdate(BaseModel):
     credits: int | None = None
-    balance: float | None = None
+    balance: Decimal | None = None
 
 class AdminUserResponse(BaseModel):
     id: str
@@ -34,6 +47,10 @@ class AdminUserResponse(BaseModel):
     portfolio_url: str | None = None
     role: str | None = None
     referred_by: str | None = None
+    certificate_url: str | None = None
+    certificate_status: str = "not_submitted"
+    certificate_submitted_at: str | None = None
+    certificate_rejection_reason: str | None = None
 
 class AdminUserPaginatedResponse(BaseModel):
     users: List[AdminUserResponse]
@@ -133,7 +150,11 @@ async def get_users(
                 created_at=u["created_at"],
                 portfolio_url=u.get("portfolio_url"),
                 role=u.get("role"),
-                referred_by=u.get("referred_by")
+                referred_by=u.get("referred_by"),
+                certificate_url=u.get("certificate_url"),
+                certificate_status=u.get("certificate_status") or "not_submitted",
+                certificate_submitted_at=u.get("certificate_submitted_at"),
+                certificate_rejection_reason=u.get("certificate_rejection_reason"),
             )
             for u in response.data
         ]
@@ -170,10 +191,10 @@ async def update_user_status(
         )
         
     try:
-        update_payload = {"status": update_data.status}
+        update_payload: dict[str, object] = {"status": update_data.status}
         if update_data.status == "approved":
             update_payload["is_verified_master"] = True
-        elif update_data.status == "rejected":
+        elif update_data.status in {"pending", "rejected"}:
             update_payload["is_verified_master"] = False
             
         response = supabase.table("users") \
@@ -216,8 +237,8 @@ async def update_user_status(
             if target_user.get("role") == "master":
                 supabase.table("notifications").insert({
                     "user_id": user_id,
-                    "title": "Профиль верифицирован",
-                    "message": "Ваш профиль успешно проверен администратором. Теперь вам доступен маркетплейс заявок!",
+                    "title": "Аккаунт мастера одобрен",
+                    "message": "Ваш аккаунт одобрен администратором. Проверка сертификата отображается отдельным статусом.",
                     "type": "system"
                 }).execute()
             
@@ -226,8 +247,8 @@ async def update_user_status(
             if user_email:
                 send_transactional_email(
                     to_email=user_email,
-                    subject="Поздравляем! Ваш профиль Tattoo Hub верифицирован",
-                    html_content="<h1>Добро пожаловать в Tattoo Hub!</h1><p>Ваш аккаунт успешно проверен. Теперь вам доступен маркетплейс заявок в нашем приложении.</p>"
+                    subject="Ваш аккаунт мастера Tattoo Hub одобрен",
+                    html_content="<h1>Добро пожаловать в Tattoo Hub!</h1><p>Ваш аккаунт одобрен. Статус проверки сертификата отображается отдельно в профиле.</p>"
                 )
         elif update_data.status == "rejected":
             # Send Email for rejection
@@ -247,6 +268,83 @@ async def update_user_status(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error updating user status: {str(e)}"
         )
+
+
+@router.get("/users/{user_id}/certificate-url")
+async def get_certificate_preview_url(
+    user_id: str,
+    admin_user: AuthUser = Depends(get_admin_user),
+    supabase: Client = Depends(get_supabase_client),
+):
+    """Create a short-lived URL for an admin to inspect a private certificate."""
+    user_res = supabase.table("users").select("certificate_url, role").eq("id", user_id).single().execute()
+    if not user_res.data or user_res.data.get("role") != "master":
+        raise HTTPException(status_code=404, detail="Master not found")
+    object_path = user_res.data.get("certificate_url")
+    if not object_path:
+        raise HTTPException(status_code=404, detail="Certificate not submitted")
+
+    signed = supabase.storage.from_("certificates").create_signed_url(object_path, 600)
+    signed_url = signed.get("signedURL") or signed.get("signedUrl") or signed.get("signed_url")
+    if not signed_url:
+        raise HTTPException(status_code=500, detail="Could not create certificate preview")
+    return {"url": signed_url, "expires_in": 600}
+
+
+@router.put("/users/{user_id}/certificate-review")
+async def review_master_certificate(
+    user_id: str,
+    review: CertificateReview,
+    admin_user: AuthUser = Depends(get_admin_user),
+    supabase: Client = Depends(get_supabase_client),
+):
+    """Approve or reject a submitted master certificate."""
+    user_res = supabase.table("users").select(
+        "role, email, certificate_url, certificate_status"
+    ).eq("id", user_id).single().execute()
+    if not user_res.data or user_res.data.get("role") != "master":
+        raise HTTPException(status_code=404, detail="Master not found")
+    if not user_res.data.get("certificate_url"):
+        raise HTTPException(status_code=400, detail="Certificate not submitted")
+    try:
+        ensure_certificate_reviewable(
+            user_res.data.get("certificate_status") or "not_submitted"
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+
+    try:
+        update = build_certificate_review_update(
+            review.status,
+            review.reason,
+            admin_user.user_id,
+            datetime.now(timezone.utc),
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    response = supabase.table("users").update(update).eq("id", user_id).eq(
+        "certificate_status", "pending"
+    ).eq("certificate_url", user_res.data["certificate_url"]).execute()
+    if not response.data:
+        raise HTTPException(status_code=409, detail="Certificate changed during review")
+
+    approved = review.status == "approved"
+    supabase.table("notifications").insert({
+        "user_id": user_id,
+        "title": "Сертификат подтверждён" if approved else "Сертификат отклонён",
+        "message": (
+            "Администратор проверил сертификат. На публичном профиле появился знак подтверждения обучения."
+            if approved
+            else f"Загрузите новый сертификат. Причина: {update['certificate_rejection_reason']}"
+        ),
+        "type": "system",
+    }).execute()
+
+    return {
+        "certificate_status": review.status,
+        "certificate_rejection_reason": update["certificate_rejection_reason"],
+    }
 
 
 @router.delete("/users/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -279,13 +377,20 @@ async def update_user_balance(
     supabase: Client = Depends(get_supabase_client)
 ):
     """Update a user's credit balance."""
-    val = update_data.credits if update_data.credits is not None else update_data.balance
-    if val is None or val < 0:
-        raise HTTPException(status_code=400, detail="Credits cannot be negative")
-        
     try:
+        update_payload = build_admin_balance_update(
+            update_data.credits, update_data.balance
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    try:
+        serialized_update = {
+            key: float(value) if key == "balance" else value
+            for key, value in update_payload.items()
+        }
         response = supabase.table("users") \
-            .update({"credits": val}) \
+            .update(serialized_update) \
             .eq("id", user_id) \
             .execute()
             
@@ -293,15 +398,22 @@ async def update_user_balance(
             raise HTTPException(status_code=404, detail="User not found")
             
         # Send Email notification for balance change
+        updated_field, updated_value = next(iter(update_payload.items()))
         user_email = response.data[0].get("email")
         if user_email:
             send_transactional_email(
                 to_email=user_email,
-                subject="Ваш баланс Tattoo Hub пополнен!",
-                html_content=f"<h1>Ваш баланс обновлен</h1><p>Текущий баланс: <strong>{val} кредитов</strong>.</p>"
+                subject="Ваш баланс Tattoo Hub обновлён",
+                html_content=(
+                    "<h1>Ваш баланс обновлён</h1>"
+                    f"<p>{updated_field}: <strong>{updated_value}</strong>.</p>"
+                ),
             )
-            
-        return {"message": f"User credits updated to {val}"}
+
+        return {
+            "message": "User balance updated",
+            "updated": serialized_update,
+        }
     except HTTPException:
         raise
     except Exception as e:

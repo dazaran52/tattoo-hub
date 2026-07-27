@@ -38,5 +38,9 @@ jobs:
             fi
             source .venv/bin/activate
             pip install -r requirements.txt
+            # Apply schema changes atomically before starting code that depends on them.
+            python run_migration.py \
+              migrations/049_manual_certificate_verification.sql \
+              migrations/050_marketplace_success_fee.sql
             # Restart the service
             systemctl restart tattoohub.service

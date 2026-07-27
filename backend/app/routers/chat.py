@@ -41,6 +41,34 @@ def apply_anti_bypass_filter(content: str) -> str:
         filtered = "[СКРЫТЫЙ НОМЕР]"
     return filtered
 
+
+def filter_accepted_chats(supabase: Client, chats: list[dict]) -> list[dict]:
+    """Exclude stale chats unless their selected master has an accepted proposal."""
+    lead_ids = [chat.get("lead_id") for chat in chats if chat.get("lead_id")]
+    if not lead_ids:
+        return []
+    proposals_res = supabase.table("lead_proposals").select(
+        "lead_id, user_id"
+    ).in_("lead_id", lead_ids).in_(
+        "status", ["accepted", "booked", "completed"]
+    ).execute()
+    accepted_pairs = {
+        (proposal["lead_id"], proposal["user_id"])
+        for proposal in (proposals_res.data or [])
+    }
+    leads_res = supabase.table("leads").select(
+        "id, assigned_master_id"
+    ).in_("id", lead_ids).execute()
+    assigned_pairs = {
+        (lead["id"], lead.get("assigned_master_id"))
+        for lead in (leads_res.data or [])
+    }
+    return [
+        chat for chat in chats
+        if (chat.get("lead_id"), chat.get("master_id")) in accepted_pairs
+        and (chat.get("lead_id"), chat.get("master_id")) in assigned_pairs
+    ]
+
 @router.get("/{chat_id}/messages", response_model=List[MessageResponse])
 async def get_messages(
     chat_id: str,
@@ -60,6 +88,9 @@ async def get_messages(
         raise HTTPException(status_code=404, detail="Chat not found")
     
     chat = chat_res.data[0]
+
+    if not filter_accepted_chats(supabase, [chat]):
+        raise HTTPException(status_code=403, detail="CHAT_AVAILABLE_AFTER_ACCEPTANCE")
     
     # Check if client or master
     if client_token and chat["client_session_id"] == client_token:
@@ -102,14 +133,15 @@ async def get_unread_count(
         user_role = current_user.user_metadata.get("role", "client")
         
         # Get all chats for the user
-        query = supabase.table("lead_chats").select("id")
+        query = supabase.table("lead_chats").select("id, lead_id, master_id")
         if user_role == "client":
             query = query.eq("client_id", current_user.user_id)
         else:
             query = query.eq("master_id", current_user.user_id)
             
         chats_res = query.execute()
-        chat_ids = [c["id"] for c in (chats_res.data or [])]
+        accepted_chats = filter_accepted_chats(supabase, chats_res.data or [])
+        chat_ids = [c["id"] for c in accepted_chats]
         
         if not chat_ids:
             return {"count": 0}
@@ -152,7 +184,7 @@ async def get_my_chats(
         import traceback
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
-    chats = chats_res.data or []
+    chats = filter_accepted_chats(supabase, chats_res.data or [])
     if not chats:
         return []
     
@@ -183,7 +215,8 @@ async def get_my_chats(
     leads_map = {}
     try:
         if client_ids or client_session_ids:
-            l_query = supabase.table("leads").select("id, client_id, client_session_id, title, description, image_urls, contacts, is_personal, assigned_master_id, client_budget, client_currency, is_negotiable_budget, session_date, session_time, body_place, size, client_priority, client_name").order("created_at", desc=True)
+            accepted_lead_ids = [chat["lead_id"] for chat in chats]
+            l_query = supabase.table("leads").select("id, client_id, client_session_id, title, description, image_urls, contacts, is_personal, assigned_master_id, client_budget, client_currency, is_negotiable_budget, session_date, session_time, body_place, size, client_priority, client_name").in_("id", accepted_lead_ids).order("created_at", desc=True)
             if client_ids and client_session_ids:
                 l_res = l_query.or_(f"client_id.in.({','.join(client_ids)}),client_session_id.in.({','.join(client_session_ids)})").execute()
             elif client_ids:
@@ -335,13 +368,14 @@ async def send_message(
     else:
         raise HTTPException(status_code=403, detail="Forbidden")
 
-    # Check if proposal is accepted
-    prop_res = supabase.table("lead_proposals").select("status").eq("lead_id", lead_id).eq("user_id", master_id).execute()
-    is_accepted = prop_res.data and prop_res.data[0]["status"] == "accepted"
+    # Chat is available only after the client accepts this master.
+    if not filter_accepted_chats(supabase, [{
+        "lead_id": lead_id,
+        "master_id": master_id,
+    }]):
+        raise HTTPException(status_code=403, detail="CHAT_AVAILABLE_AFTER_ACCEPTANCE")
 
     content = message.content
-    if not is_accepted:
-        content = apply_anti_bypass_filter(content)
 
     insert_res = supabase.table("chat_messages").insert({
         "chat_id": chat_id,
@@ -421,6 +455,8 @@ async def get_chat_sessions(
     # Verify access
     if not ((client_token and chat["client_session_id"] == client_token) or (current_user and (chat["master_id"] == current_user.user_id or chat["client_id"] == current_user.user_id))):
         raise HTTPException(status_code=403, detail="Forbidden")
+    if not filter_accepted_chats(supabase, [chat]):
+        raise HTTPException(status_code=403, detail="CHAT_AVAILABLE_AFTER_ACCEPTANCE")
 
     # Fetch sessions for this master & client
     query = supabase.table("master_sessions").select("*, master_clients!inner(id, name, lead_id, leads(*))").eq("master_id", chat["master_id"]).eq("is_deleted", False)

@@ -14,6 +14,7 @@ class PublicMasterResponse(BaseModel):
     portfolio_url: str | None = None
     city_ids: list[str] | None = None
     is_verified_master: bool = False
+    certificate_status: str = "not_submitted"
     portfolio_posts: list[dict] = []
     theme: str = "system"
     avatar_url: str | None = None
@@ -29,7 +30,7 @@ async def get_public_masters(
     """
     try:
         query = supabase.table("users").select(
-            "id, username, display_name, bio, portfolio_url, city_ids, is_verified_master, status, role, theme, avatar_url, portfolio_posts(id, media, description, created_at), master_reviews!master_reviews_master_id_fkey(rating), is_admin"
+            "id, username, display_name, bio, portfolio_url, city_ids, is_verified_master, certificate_status, status, role, theme, avatar_url, portfolio_posts(id, media, description, created_at), master_reviews!master_reviews_master_id_fkey(rating), is_admin"
         ).eq("role", "master").eq("is_verified_master", True).eq("status", "approved")
         
         response = await query.execute()
@@ -64,6 +65,7 @@ async def get_public_masters(
                     portfolio_url=data.get("portfolio_url"),
                     city_ids=data.get("city_ids", []),
                     is_verified_master=data.get("is_verified_master", False),
+                    certificate_status=data.get("certificate_status") or "not_submitted",
                     portfolio_posts=top_posts,
                     theme=data.get("theme", "system"),
                     avatar_url=data.get("avatar_url"),
@@ -101,7 +103,7 @@ async def get_public_master(
             pass
 
         query = supabase.table("users").select(
-            "id, username, display_name, bio, portfolio_url, city_ids, is_verified_master, status, role, theme, avatar_url, portfolio_posts(id, media, description, created_at), master_reviews!master_reviews_master_id_fkey(rating)"
+            "id, username, display_name, bio, portfolio_url, city_ids, is_verified_master, certificate_status, status, role, theme, avatar_url, portfolio_posts(id, media, description, created_at), master_reviews!master_reviews_master_id_fkey(rating)"
         )
         
         if is_uuid:
@@ -137,6 +139,7 @@ async def get_public_master(
             portfolio_url=data.get("portfolio_url"),
             city_ids=data.get("city_ids", []),
             is_verified_master=data.get("is_verified_master", False),
+            certificate_status=data.get("certificate_status") or "not_submitted",
             portfolio_posts=posts,
             theme=data.get("theme", "system"),
             avatar_url=data.get("avatar_url"),

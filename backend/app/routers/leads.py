@@ -10,6 +10,14 @@ from typing import List, Optional
 import datetime
 import uuid
 from app.utils.currency import convert_currency, calculate_unlock_price_base
+from app.services.marketplace import (
+    MAX_PROPOSALS_PER_LEAD,
+    calculate_success_fee,
+    ensure_master_can_access_marketplace,
+    ensure_proposal_slot_available,
+    ensure_proposal_status_transition,
+)
+from decimal import Decimal
 
 router = APIRouter(prefix="/api/leads", tags=["leads"])
 
@@ -37,6 +45,8 @@ class LeadResponse(BaseModel):
     is_negotiable_budget: bool = False
     unlock_price_local: float | None = None
     master_currency: str | None = None
+    proposal_count: int = 0
+    max_proposals: int = MAX_PROPOSALS_PER_LEAD
 
 class UnlockResponse(BaseModel):
     contacts: str
@@ -51,67 +61,98 @@ async def get_marketplace_leads(
     current_user: AuthUser = Depends(get_current_user),
     supabase: AsyncClient = Depends(get_async_supabase_client)
 ):
-    """Get all public leads (marketplace) that are not assigned to a master."""
+    """Return marketplace leads only to masters with MVP access verification."""
     try:
+        user_res = await supabase.table("users").select(
+            "role, is_verified_master, currency"
+        ).eq("id", current_user.user_id).single().execute()
+        try:
+            ensure_master_can_access_marketplace(user_res.data or {})
+        except ValueError as exc:
+            raise HTTPException(status_code=403, detail=str(exc)) from exc
+
         raw_res = await supabase.table("leads") \
             .select("*, cities(country_id)") \
             .neq("status", "closed") \
             .order("created_at", desc=True) \
             .limit(2000) \
             .execute()
-            
         raw_leads = raw_res.data or []
         leads = [
-            l for l in raw_leads
-            if l.get("assigned_master_id") is None or (l.get("assigned_master_id") == current_user.user_id and not l.get("is_personal", False))
+            lead for lead in raw_leads
+            if not lead.get("is_personal")
+            and (
+                lead.get("assigned_master_id") is None
+                or lead.get("assigned_master_id") == current_user.user_id
+            )
         ]
-        
-        paginated_leads = leads[offset:offset+limit]
-        has_more = len(leads) > offset + limit
-        response.headers["X-Has-More"] = "true" if has_more else "false"
-        
-        # Check unlocks
-        unlocks_res = await supabase.table("lead_unlocks") \
-            .select("lead_id") \
-            .eq("user_id", current_user.user_id) \
-            .execute()
-        unlocked_lead_ids = {u["lead_id"] for u in unlocks_res.data or []}
-        
-        # Get user currency
-        user_res = await supabase.table("users").select("currency").eq("id", current_user.user_id).execute()
-        master_currency = user_res.data[0].get("currency", "CZK") if user_res.data else "CZK"
+        paginated_leads = leads[offset:offset + limit]
+        response.headers["X-Has-More"] = "true" if len(leads) > offset + limit else "false"
 
-        processed_leads = []
+        lead_ids = [lead["id"] for lead in paginated_leads]
+        proposals = []
+        if lead_ids:
+            proposal_res = await supabase.table("lead_proposals").select(
+                "lead_id, user_id, status, price_offer"
+            ).in_("lead_id", lead_ids).execute()
+            proposals = proposal_res.data or []
+
+        proposal_counts: dict[str, int] = {}
+        my_proposals: dict[str, dict] = {}
+        for proposal in proposals:
+            proposal_counts[proposal["lead_id"]] = proposal_counts.get(proposal["lead_id"], 0) + 1
+            if proposal["user_id"] == current_user.user_id:
+                my_proposals[proposal["lead_id"]] = proposal
+
+        chats: dict[str, str] = {}
+        accepted_ids = [
+            lead_id for lead_id, proposal in my_proposals.items()
+            if proposal.get("status") in {"accepted", "booked", "completed"}
+            and any(
+                lead["id"] == lead_id
+                and lead.get("assigned_master_id") == current_user.user_id
+                for lead in paginated_leads
+            )
+        ]
+        if accepted_ids:
+            chat_res = await supabase.table("lead_chats").select("lead_id, id").eq(
+                "master_id", current_user.user_id
+            ).in_("lead_id", accepted_ids).execute()
+            chats = {chat["lead_id"]: chat["id"] for chat in chat_res.data or []}
+
+        master_currency = (user_res.data or {}).get("currency") or "CZK"
+        processed = []
         for lead in paginated_leads:
-            is_unlocked = lead["id"] in unlocked_lead_ids
-            
-            base_price = float(lead.get("base_unlock_price_eur", 5.0))
-            try:
-                local_price = convert_currency(base_price, "EUR", master_currency)
-            except ValueError:
-                local_price = base_price
-                
+            own_proposal = my_proposals.get(lead["id"])
+            accepted = (
+                own_proposal is not None
+                and own_proposal.get("status") in {"accepted", "booked", "completed"}
+                and lead.get("assigned_master_id") == current_user.user_id
+            )
             lead_dict = dict(lead)
-            lead_dict["is_unlocked"] = is_unlocked
-            lead_dict["unlock_price_local"] = local_price
+            lead_dict["is_unlocked"] = accepted
+            lead_dict["contacts"] = lead.get("contacts") if accepted else "Контакт скрыт до выбора мастера"
+            lead_dict["proposal_status"] = own_proposal.get("status") if own_proposal else None
+            lead_dict["chat_id"] = chats.get(lead["id"]) if accepted else None
+            lead_dict["unlock_count"] = proposal_counts.get(lead["id"], 0)
+            lead_dict["max_unlocks"] = MAX_PROPOSALS_PER_LEAD
+            lead_dict["proposal_count"] = proposal_counts.get(lead["id"], 0)
+            lead_dict["max_proposals"] = MAX_PROPOSALS_PER_LEAD
             lead_dict["master_currency"] = master_currency
-            
-            # Format budget
-            b_val = lead.get("client_budget")
-            b_cur = lead.get("client_currency", "CZK")
-            lead_dict["display_budget"] = f"{b_val} {b_cur}" if b_val else "По договоренности"
-            
-            if not is_unlocked:
-                lead_dict["contacts"] = "Контакт скрыт"
-                
+            lead_dict["unlock_price_local"] = 0
+            budget = lead.get("client_budget")
+            budget_currency = lead.get("client_currency") or "CZK"
+            lead_dict["display_budget"] = (
+                f"{budget} {budget_currency}" if budget else "По договоренности"
+            )
             if lead_dict.get("cities"):
                 lead_dict["country_id"] = lead_dict["cities"].get("country_id")
-                
-            processed_leads.append(lead_dict)
-            
-        return processed_leads
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+            processed.append(lead_dict)
+        return processed
+    except HTTPException:
+        raise
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
 
 @router.post("/{lead_id}/dump")
 async def dump_lead(
@@ -158,19 +199,12 @@ def get_personal_leads(
         
         leads = leads_res.data or []
         
-        # Fetch unlocks for these leads
-        lead_ids = [l["id"] for l in leads]
-        unlocked_by_me = {}
-        if lead_ids:
-            unlocks_res = supabase.table("lead_unlocks").select("lead_id, status").eq("user_id", current_user.user_id).in_("lead_id", lead_ids).execute()
-            unlocked_by_me = {u["lead_id"]: u["status"] for u in (unlocks_res.data or [])}
-
         processed_leads = []
         for lead in leads:
-            is_unlocked = lead["id"] in unlocked_by_me
-            unlock_status = unlocked_by_me.get(lead["id"]) if is_unlocked else None
-            
-            contacts = lead["contacts"] if is_unlocked else "******** [Skryto. Odemkněte za credits]"
+            # Assignment is the authorization boundary for direct/personal CRM leads.
+            is_unlocked = True
+            unlock_status = lead.get("status")
+            contacts = lead["contacts"]
             
             # Format display budget
             display_budget = None
@@ -217,13 +251,18 @@ def get_leads(
     supabase: Client = Depends(get_supabase_client)
 ):
     """
-    Get all leads. Contacts are masked if the user hasn't unlocked them.
-    Leads are limited to 3 unlocks maximum.
+    Get legacy marketplace feed with contacts available only after selection.
     """
     try:
-        # Fetch current master's currency
-        user_res = supabase.table("users").select("currency").eq("id", current_user.user_id).execute()
-        master_currency = user_res.data[0].get("currency", "CZK") if user_res.data else "CZK"
+        user_res = supabase.table("users").select(
+            "role, is_verified_master, currency"
+        ).eq("id", current_user.user_id).execute()
+        profile = user_res.data[0] if user_res.data else {}
+        try:
+            ensure_master_can_access_marketplace(profile)
+        except ValueError as exc:
+            raise HTTPException(status_code=403, detail=str(exc)) from exc
+        master_currency = profile.get("currency", "CZK")
 
         # Fetch all public leads (and exclusive paid leads)
         raw_res = supabase.table("leads").select("*, cities(country_id)").order("created_at", desc=True).limit(2000).execute()
@@ -236,10 +275,6 @@ def get_leads(
         paginated_leads = leads[offset:offset+limit]
         has_more = len(leads) > offset + limit
         response.headers["X-Has-More"] = "true" if has_more else "false"
-
-        # Fetch ALL unlocks
-        all_unlocks_res = supabase.table("lead_unlocks").select("lead_id, user_id, status").execute()
-        all_unlocks = all_unlocks_res.data or []
 
         # Fetch ALL proposals for lowest_bid calculation and checking own proposals
         proposals_res = supabase.table("lead_proposals").select("lead_id, user_id, price_offer, status").execute()
@@ -259,13 +294,10 @@ def get_leads(
         chats_res = supabase.table("lead_chats").select("lead_id, id").eq("master_id", current_user.user_id).execute()
         my_chats = {c["lead_id"]: c["id"] for c in (chats_res.data or [])}
         
-        unlocked_by_me = {u["lead_id"]: u["status"] for u in all_unlocks if u["user_id"] == current_user.user_id}
-        
-        # Calculate unlocks count per lead
-        unlocks_count = {}
-        for u in all_unlocks:
-            lid = u["lead_id"]
-            unlocks_count[lid] = unlocks_count.get(lid, 0) + 1
+        proposal_counts: dict[str, int] = {}
+        for proposal in proposals:
+            lead_id = proposal["lead_id"]
+            proposal_counts[lead_id] = proposal_counts.get(lead_id, 0) + 1
 
         # Fetch active auctions to hide contacts
         auctions_res = supabase.table("auctions") \
@@ -276,20 +308,19 @@ def get_leads(
 
         processed_leads = []
         for lead in paginated_leads:
-            is_unlocked = lead["id"] in unlocked_by_me
-            lead_unlock_count = unlocks_count.get(lead["id"], 0)
-            
-            # If lead has been unlocked by 3 or more masters, and this master hasn't unlocked it, hide it.
-            if lead_unlock_count >= 3 and not is_unlocked:
-                continue
-                
-            unlock_status = unlocked_by_me.get(lead["id"]) if is_unlocked else None
+            proposal_status = my_proposals.get(lead["id"])
+            is_unlocked = (
+                proposal_status in {"accepted", "booked", "completed"}
+                and lead.get("assigned_master_id") == current_user.user_id
+            )
+            lead_proposal_count = proposal_counts.get(lead["id"], 0)
+            unlock_status = proposal_status
             
             # Hide contacts if lead is currently on auction, even if unlocked
             if lead["id"] in auction_lead_ids:
                 contacts = "******** [Лид на аукционе]"
             else:
-                contacts = lead["contacts"] if is_unlocked else "******** [Skryto. Odemkněte za credits]"
+                contacts = lead["contacts"] if is_unlocked else "Контакт скрыт до выбора мастера"
                 
             # Format display budget
             display_budget = None
@@ -326,22 +357,24 @@ def get_leads(
                 city_id=lead.get("city_id"),
                 trust_score=lead.get("trust_score", 100),
                 unlock_status=unlock_status,
-                unlock_count=lead_unlock_count,
-                max_unlocks=3,
+                unlock_count=lead_proposal_count,
+                max_unlocks=MAX_PROPOSALS_PER_LEAD,
                 client_priority=lead.get("client_priority", "quality"),
                 lowest_bid=lowest_bids.get(lead["id"]) if lead.get("client_priority") == 'cheap' else None,
-                proposal_status=my_proposals.get(lead["id"]),
-                chat_id=my_chats.get(lead["id"]),
+                proposal_status=proposal_status,
+                chat_id=my_chats.get(lead["id"]) if is_unlocked else None,
                 client_budget=lead.get("client_budget"),
                 client_currency=lead.get("client_currency"),
                 display_budget=display_budget,
                 is_negotiable_budget=lead.get("is_negotiable_budget", False),
-                unlock_price_local=float(local_unlock_price),
+                unlock_price_local=0,
                 master_currency=master_currency
             ))
             
         return processed_leads
 
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -355,67 +388,8 @@ async def unlock_lead(
     current_user: AuthUser = Depends(get_current_user),
     supabase: AsyncClient = Depends(get_async_supabase_client)
 ):
-    """
-    Unlock a lead by deducting credits.
-    """
-    try:
-        # Check if already unlocked
-        unlock_check = await supabase.table("lead_unlocks") \
-            .select("id") \
-            .eq("user_id", current_user.user_id) \
-            .eq("lead_id", lead_id) \
-            .execute()
-            
-        # Get lead
-        lead_res = await supabase.table("leads").select("*").eq("id", lead_id).single().execute()
-        if not lead_res.data:
-            raise HTTPException(status_code=404, detail="Lead not found.")
-        
-        lead = lead_res.data
-        
-        # Fetch current master's currency to calculate local unlock price
-        user_res = await supabase.table("users").select("currency").eq("id", current_user.user_id).execute()
-        master_currency = user_res.data[0].get("currency", "CZK") if user_res.data else "CZK"
-        
-        base_price_eur = float(lead.get("base_unlock_price_eur", 2.0))
-        try:
-            local_unlock_price = convert_currency(base_price_eur, "EUR", master_currency)
-        except ValueError:
-            local_unlock_price = base_price_eur
-        
-        # Call the atomic RPC function
-        try:
-            rpc_res = await supabase.rpc(
-                "unlock_lead",
-                {"p_user_id": current_user.user_id, "p_lead_id": lead_id, "p_deduct_amount": float(local_unlock_price)}
-            ).execute()
-        except Exception as e:
-            if "INSUFFICIENT_CREDITS" in str(e):
-                raise HTTPException(status_code=400, detail="INSUFFICIENT_CREDITS")
-            elif "MAX_UNLOCKS_REACHED" in str(e):
-                raise HTTPException(status_code=400, detail="MAX_UNLOCKS_REACHED")
-            elif "Already unlocked" in str(e):
-                # We need to fetch contacts since RPC might just return the text
-                pass
-            raise HTTPException(status_code=400, detail=str(e))
-            
-        data = rpc_res.data
-        if not data or not data.get("success"):
-            raise HTTPException(status_code=400, detail="Failed to unlock lead")
-            
-        return UnlockResponse(
-            contacts=data.get("contacts", "Hidden"),
-            is_unlocked=True,
-            current_credits=data.get("new_credits", 0)
-        )
-
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error unlocking lead: {str(e)}"
-        )
+    """The legacy paid-unlock flow is retired; contacts open after acceptance."""
+    raise HTTPException(status_code=410, detail="CONTACTS_AVAILABLE_AFTER_ACCEPTANCE")
 
 
 class LeadStatusUpdate(BaseModel):
@@ -888,7 +862,7 @@ async def get_client_leads(
         for p in proposals:
             lid = p["lead_id"]
             proposals_count[lid] = proposals_count.get(lid, 0) + 1
-            if p["status"] == "accepted" and p.get("users"):
+            if p["status"] in {"accepted", "booked", "completed"} and p.get("users"):
                 u = p["users"]
                 accepted_masters[lid] = {
                     "id": u.get("id"),
@@ -1005,8 +979,9 @@ async def delete_client_lead(
 
 
 class ProposalCreate(BaseModel):
-    price_offer: int
+    price_offer: Decimal
     proposed_dates: str
+    currency: str | None = None
 
 @router.post("/{lead_id}/proposals")
 def create_proposal(
@@ -1015,50 +990,72 @@ def create_proposal(
     current_user: AuthUser = Depends(get_current_user),
     supabase: Client = Depends(get_supabase_client)
 ):
-    """
-    Submit a proposal (price & dates) and create a chat. Freezes credits implicitly by checking balance.
-    """
+    """Submit or edit a free proposal; fee and chat activate only on acceptance."""
     try:
-        # Check if lead exists and get price
-        lead_res = supabase.table("leads").select("price_credits, client_token").eq("id", lead_id).execute()
+        profile_res = supabase.table("users").select(
+            "role, is_verified_master, currency"
+        ).eq("id", current_user.user_id).single().execute()
+        try:
+            ensure_master_can_access_marketplace(profile_res.data or {})
+        except ValueError as exc:
+            raise HTTPException(status_code=403, detail=str(exc)) from exc
+
+        lead_res = supabase.table("leads").select(
+            "id, status, assigned_master_id"
+        ).eq("id", lead_id).single().execute()
         if not lead_res.data:
             raise HTTPException(status_code=404, detail="Lead not found")
-        lead_data = lead_res.data[0]
+        if lead_res.data.get("status") in {"closed", "accepted"}:
+            raise HTTPException(status_code=409, detail="LEAD_NOT_ACCEPTING_PROPOSALS")
 
-        # Check balance
-        user_res = supabase.table("users").select("credits").eq("id", current_user.user_id).execute()
-        if not user_res.data or user_res.data[0]["credits"] < lead_data["price_credits"]:
-            raise HTTPException(status_code=400, detail="INSUFFICIENT_CREDITS")
-
-        db_proposal = {
-            "lead_id": lead_id,
-            "user_id": current_user.user_id,
-            "price_offer": proposal.price_offer,
-            "proposed_dates": proposal.proposed_dates,
-            "status": "pending"
-        }
-
-        # Use upsert in case they update their proposal
-        insert_res = supabase.table("lead_proposals").upsert(db_proposal, on_conflict="lead_id,user_id").execute()
-        if not insert_res.data:
-            raise HTTPException(status_code=400, detail="Failed to submit proposal")
-
-        # Create chat if not exists
+        existing_res = supabase.table("lead_proposals").select(
+            "user_id, status"
+        ).eq("lead_id", lead_id).execute()
+        existing = existing_res.data or []
+        own = next((item for item in existing if item["user_id"] == current_user.user_id), None)
+        if own and own.get("status") == "accepted":
+            raise HTTPException(status_code=409, detail="ACCEPTED_PROPOSAL_CANNOT_BE_EDITED")
         try:
-            supabase.table("lead_chats").insert({
-                "lead_id": lead_id,
-                "master_id": current_user.user_id,
-                "client_session_id": lead_data["client_token"]
-            }).execute()
-        except Exception as e:
-            # ignore if chat already exists (unique constraint)
-            pass
+            ensure_proposal_slot_available(
+                [item["user_id"] for item in existing],
+                current_user.user_id,
+            )
+        except ValueError as exc:
+            raise HTTPException(status_code=409, detail=str(exc)) from exc
 
-        return {"success": True, "proposal": insert_res.data[0]}
-    except Exception as e:
-        if isinstance(e, HTTPException):
-            raise e
-        raise HTTPException(status_code=500, detail=str(e))
+        profile_currency = ((profile_res.data or {}).get("currency") or "CZK").upper()
+        offer_currency = (proposal.currency or profile_currency).upper()
+        if offer_currency != profile_currency:
+            raise HTTPException(status_code=400, detail="OFFER_CURRENCY_MUST_MATCH_BALANCE")
+        try:
+            fee = calculate_success_fee(proposal.price_offer, offer_currency)
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+        proposed_dates = proposal.proposed_dates.strip()
+        if not proposed_dates:
+            raise HTTPException(status_code=400, detail="PROPOSED_DATES_REQUIRED")
+
+        result = supabase.rpc("upsert_marketplace_proposal", {
+            "p_lead_id": lead_id,
+            "p_master_id": current_user.user_id,
+            "p_price_offer": str(proposal.price_offer),
+            "p_proposed_dates": proposed_dates,
+            "p_currency": fee.currency,
+            "p_success_fee_rate": str(fee.rate),
+            "p_success_fee_amount": str(fee.amount),
+        }).execute()
+        if not result.data:
+            raise HTTPException(status_code=400, detail="Failed to submit proposal")
+        return {
+            "success": True,
+            "proposal": result.data,
+            "proposal_count": len(existing) if own else len(existing) + 1,
+            "max_proposals": MAX_PROPOSALS_PER_LEAD,
+        }
+    except HTTPException:
+        raise
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
 
 class ProposalStatusUpdate(BaseModel):
     status: str
@@ -1074,11 +1071,22 @@ def update_proposal_status(
     Update the status of an existing proposal for a master (e.g. booked, completed).
     Clients update status to 'accepted' via the client_portal API.
     """
-    valid_statuses = ['pending', 'accepted', 'rejected', 'booked', 'completed']
+    valid_statuses = ['booked', 'completed']
     if payload.status not in valid_statuses:
         raise HTTPException(status_code=400, detail="Invalid status")
 
     try:
+        current_res = supabase.table("lead_proposals").select("status").eq(
+            "lead_id", lead_id
+        ).eq("user_id", current_user.user_id).execute()
+        if current_res.data:
+            try:
+                ensure_proposal_status_transition(
+                    current_res.data[0].get("status", "pending"), payload.status
+                )
+            except ValueError as exc:
+                raise HTTPException(status_code=409, detail=str(exc)) from exc
+
         res = supabase.table("lead_proposals").update({
             "status": payload.status
         }).eq("lead_id", lead_id).eq("user_id", current_user.user_id).execute()

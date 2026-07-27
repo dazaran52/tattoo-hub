@@ -10,6 +10,64 @@ import asyncio
 
 router = APIRouter()
 
+
+async def ensure_crm_lead_access(
+    supabase: AsyncClient,
+    master_id: str,
+    lead_id: str | None,
+) -> None:
+    if not lead_id:
+        return
+    lead_res = await supabase.table("leads").select(
+        "is_personal, assigned_master_id"
+    ).eq("id", lead_id).execute()
+    if not lead_res.data:
+        raise HTTPException(status_code=404, detail="Lead not found")
+    lead = lead_res.data[0]
+    if lead.get("assigned_master_id") != master_id:
+        raise HTTPException(status_code=403, detail="CRM_LEAD_NOT_ASSIGNED")
+    if lead.get("is_personal"):
+        return
+    proposal_res = await supabase.table("lead_proposals").select("id").eq(
+        "lead_id", lead_id
+    ).eq("user_id", master_id).in_(
+        "status", ["accepted", "booked", "completed"]
+    ).execute()
+    if not proposal_res.data:
+        raise HTTPException(status_code=403, detail="CRM_LEAD_NOT_SELECTED")
+
+
+async def ensure_crm_client_access(
+    supabase: AsyncClient,
+    master_id: str,
+    client_id: str,
+) -> dict:
+    client_res = await supabase.table("master_clients").select("id, lead_id").eq(
+        "id", client_id
+    ).eq("master_id", master_id).execute()
+    if not client_res.data:
+        raise HTTPException(status_code=404, detail="Client not found")
+    client = client_res.data[0]
+    await ensure_crm_lead_access(supabase, master_id, client.get("lead_id"))
+    return client
+
+
+async def ensure_crm_session_access(
+    supabase: AsyncClient,
+    master_id: str,
+    session_id: str,
+) -> dict:
+    session_res = await supabase.table("master_sessions").select(
+        "id, master_clients(lead_id)"
+    ).eq("id", session_id).eq("master_id", master_id).execute()
+    if not session_res.data:
+        raise HTTPException(status_code=404, detail="Session not found")
+    session = session_res.data[0]
+    client = session.get("master_clients") or {}
+    await ensure_crm_lead_access(supabase, master_id, client.get("lead_id"))
+    return session
+
+
 class SessionStatusUpdate(BaseModel):
     status: str
 
@@ -98,14 +156,24 @@ async def get_clients(
         # we will fetch the leads to get their client_id / client_token
         lead_ids = [c["lead_id"] for c in clients if c.get("lead_id")]
         lead_map = {}
-        unlocked_lead_ids = set()
+        selected_lead_ids = set()
         
         if lead_ids:
-            l_res = await supabase.table("leads").select("id, client_id, client_session_id").in_("id", lead_ids).execute()
+            l_res = await supabase.table("leads").select(
+                "id, client_id, client_session_id, assigned_master_id"
+            ).in_("id", lead_ids).execute()
             lead_map = {l["id"]: l for l in (l_res.data or [])}
             
-            u_res = await supabase.table("lead_unlocks").select("lead_id").eq("user_id", current_user.user_id).in_("lead_id", lead_ids).execute()
-            unlocked_lead_ids = {u["lead_id"] for u in (u_res.data or [])}
+            proposal_res = await supabase.table("lead_proposals").select("lead_id").eq(
+                "user_id", current_user.user_id
+            ).in_("lead_id", lead_ids).in_(
+                "status", ["accepted", "booked", "completed"]
+            ).execute()
+            selected_lead_ids = {
+                proposal["lead_id"] for proposal in (proposal_res.data or [])
+                if lead_map.get(proposal["lead_id"], {}).get("assigned_master_id")
+                == current_user.user_id
+            }
             
         for c in (chats_res.data or []):
             if c.get("client_id"):
@@ -136,12 +204,14 @@ async def get_clients(
                     client["source"] = "direct"
                 else:
                     # It's a marketplace lead assigned to this master
-                    if client["lead_id"] not in unlocked_lead_ids:
+                    if client["lead_id"] not in selected_lead_ids:
                         client["is_unlocked"] = False
+                        client["chat_id"] = None
                         client["phone"] = "Скрыто"
                         client["email"] = "Скрыто"
                         client["instagram"] = "Скрыто"
                         client["contact_info"] = "Скрыто"
+                        client["leads"]["contacts"] = "Скрыто до выбора мастера"
         
         return clients
     except Exception as e:
@@ -154,6 +224,7 @@ async def delete_client(
     supabase: AsyncClient = Depends(get_async_supabase_client)
 ):
     try:
+        await ensure_crm_client_access(supabase, current_user.user_id, client_id)
         print(f"Deleting client {client_id} for master {current_user.user_id}")
         # Soft delete client
         await supabase.table("master_clients") \
@@ -239,6 +310,7 @@ async def update_client(
     supabase: AsyncClient = Depends(get_async_supabase_client)
 ):
     try:
+        await ensure_crm_client_access(supabase, current_user.user_id, client_id)
         # Validate that we only update allowed fields
         allowed_fields = {"name", "contact_info", "phone", "telegram", "instagram", "email", "notes", "kanban_status"}
         filtered_data = {k: v for k, v in update_data.items() if k in allowed_fields}
@@ -267,7 +339,7 @@ async def get_sessions(
     """Get all non-deleted sessions for the master's kanban board."""
     try:
         res = await supabase.table("master_sessions") \
-            .select("*, master_clients(*, leads(title, description, image_urls, client_priority, is_personal, client_budget, client_currency, is_negotiable_budget, session_date, session_time, body_place, size, contacts, client_id, client_session_id))") \
+            .select("*, master_clients(*, leads(title, description, image_urls, client_priority, is_personal, assigned_master_id, client_budget, client_currency, is_negotiable_budget, session_date, session_time, body_place, size, contacts, client_id, client_session_id))") \
             .eq("master_id", current_user.user_id) \
             .eq("is_deleted", False) \
             .order("created_at", desc=True) \
@@ -275,6 +347,38 @@ async def get_sessions(
         
         # Filter out sessions where the linked client was soft deleted
         sessions = [s for s in (res.data or []) if s.get("master_clients") and not s["master_clients"].get("is_deleted")]
+        marketplace_lead_ids = {
+            session["master_clients"].get("lead_id")
+            for session in sessions
+            if session["master_clients"].get("lead_id")
+            and not (session["master_clients"].get("leads") or {}).get("is_personal")
+        }
+        selected_lead_ids = set()
+        if marketplace_lead_ids:
+            proposal_res = await supabase.table("lead_proposals").select("lead_id").eq(
+                "user_id", current_user.user_id
+            ).in_("lead_id", list(marketplace_lead_ids)).in_(
+                "status", ["accepted", "booked", "completed"]
+            ).execute()
+            assigned_lead_ids = {
+                session["master_clients"].get("lead_id")
+                for session in sessions
+                if (session["master_clients"].get("leads") or {}).get(
+                    "assigned_master_id"
+                ) == current_user.user_id
+            }
+            selected_lead_ids = {
+                proposal["lead_id"] for proposal in (proposal_res.data or [])
+                if proposal["lead_id"] in assigned_lead_ids
+            }
+        for session in sessions:
+            client = session["master_clients"]
+            lead = client.get("leads") or {}
+            lead_id = client.get("lead_id")
+            if lead_id and not lead.get("is_personal") and lead_id not in selected_lead_ids:
+                lead["contacts"] = "Скрыто до выбора мастера"
+                for field in ("phone", "email", "instagram", "telegram", "contact_info"):
+                    client[field] = "Скрыто"
         return sessions
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -291,10 +395,34 @@ async def create_session(
         if not client_res.data:
             raise HTTPException(status_code=404, detail="Client not found or not owned by master")
 
+        lead_id = client_res.data[0].get("lead_id")
+        lead = {}
+        if lead_id:
+            lead_q = await supabase.table("leads").select(
+                "client_id, client_session_id, is_personal, assigned_master_id"
+            ).eq("id", lead_id).execute()
+            if not lead_q.data:
+                raise HTTPException(status_code=404, detail="Lead not found")
+            lead = lead_q.data[0]
+            if not lead.get("is_personal"):
+                proposal_res = await supabase.table("lead_proposals").select("status").eq(
+                    "lead_id", lead_id
+                ).eq("user_id", current_user.user_id).in_(
+                    "status", ["accepted", "booked", "completed"]
+                ).execute()
+                if (
+                    lead.get("assigned_master_id") != current_user.user_id
+                    or not proposal_res.data
+                ):
+                    raise HTTPException(
+                        status_code=403,
+                        detail="MARKETPLACE_SESSION_REQUIRES_ACCEPTED_PROPOSAL",
+                    )
+
         session_data = {
             "master_id": current_user.user_id,
             "client_id": data.client_id,
-            "lead_id": client_res.data[0].get("lead_id"),
+            "lead_id": lead_id,
             "source": client_res.data[0].get("source") or "direct",
             "session_date": data.session_date,
             "start_time": data.start_time,
@@ -311,31 +439,27 @@ async def create_session(
             raise HTTPException(status_code=400, detail="Failed to create session")
             
         # Inject system message into chat if it exists
-        lead_id = client_res.data[0].get("lead_id")
         if lead_id:
-            lead_q = await supabase.table("leads").select("client_id, client_session_id").eq("id", lead_id).execute()
-            if lead_q.data:
-                lead = lead_q.data[0]
-                if lead.get("client_id"):
-                    chat_res = await supabase.table("lead_chats").select("id").eq("client_id", lead.get("client_id")).eq("master_id", current_user.user_id).execute()
-                else:
-                    chat_res = await supabase.table("lead_chats").select("id").eq("client_session_id", lead.get("client_session_id")).eq("master_id", current_user.user_id).execute()
-                    
-                if chat_res.data:
-                    import json
-                    system_msg = {
-                        "type": "session_created",
-                        "price": data.price,
-                        "date": data.session_date,
-                        "time": data.start_time
-                    }
-                    await supabase.table("chat_messages").insert({
-                        "chat_id": chat_res.data[0]["id"],
-                        "sender_type": "system", 
-                        "content": f"[SYSTEM_CARD]: {json.dumps(system_msg)}"
-                    }).execute()
+            chat_res = await supabase.table("lead_chats").select("id").eq(
+                "lead_id", lead_id
+            ).eq("master_id", current_user.user_id).execute()
+            if chat_res.data:
+                import json
+                system_msg = {
+                    "type": "session_created",
+                    "price": data.price,
+                    "date": data.session_date,
+                    "time": data.start_time
+                }
+                await supabase.table("chat_messages").insert({
+                    "chat_id": chat_res.data[0]["id"],
+                    "sender_type": "system",
+                    "content": f"[SYSTEM_CARD]: {json.dumps(system_msg)}"
+                }).execute()
         
         return res.data[0]
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -347,6 +471,7 @@ async def update_session(
     supabase: AsyncClient = Depends(get_async_supabase_client)
 ):
     try:
+        await ensure_crm_session_access(supabase, current_user.user_id, session_id)
         dump = data.model_dump()
         reason = dump.pop("reject_reason", None)
         update_data = {k: v for k, v in dump.items() if v is not None}
@@ -357,7 +482,7 @@ async def update_session(
         if is_rejecting:
             # We must get the session details first to check if it's a marketplace lead
             s_res = await supabase.table("master_sessions") \
-                .select("*, master_clients(lead_id, name, leads(is_personal))") \
+                .select("*, master_clients(lead_id, name, leads(is_personal, assigned_master_id))") \
                 .eq("id", session_id) \
                 .eq("master_id", current_user.user_id) \
                 .execute()
@@ -367,31 +492,29 @@ async def update_session(
                 lead_info = client.get("leads") or {}
                 lead_id = client.get("lead_id")
                 
-                # Check if it was unlocked
-                is_unlocked = False
-                if lead_id:
-                    u_res = await supabase.table("lead_unlocks").select("id").eq("lead_id", lead_id).eq("user_id", current_user.user_id).execute()
-                    is_unlocked = bool(u_res.data)
-                
-                # If it's a platform lead and NOT unlocked, we should send it to marketplace
-                # and maybe soft delete this session or keep it as cancelled?
-                # The user said "should it fall to the general marketplace? YES"
-                # So we update the lead to auction status
-                if lead_id and not lead_info.get("is_personal") and not is_unlocked:
-                    await supabase.table("leads").update({
-                        "assigned_master_id": None,
-                        "status": "auction"
-                    }).eq("id", lead_id).execute()
-                    
-                    # We might also want to delete the master_clients/sessions since it's no longer theirs,
-                    # but keeping it as 'cancelled' with is_deleted=True removes it from their active view.
-                    update_data["status"] = "cancelled"
-                    update_data["is_deleted"] = True
+                if lead_id and not lead_info.get("is_personal"):
+                    if lead_info.get("assigned_master_id") != current_user.user_id:
+                        raise HTTPException(
+                            status_code=403,
+                            detail="MARKETPLACE_SESSION_REQUIRES_ACCEPTED_PROPOSAL",
+                        )
+                    proposal_res = await supabase.table("lead_proposals").select("status").eq(
+                        "lead_id", lead_id
+                    ).eq("user_id", current_user.user_id).in_(
+                        "status", ["accepted", "booked", "completed"]
+                    ).execute()
+                    if not proposal_res.data:
+                        raise HTTPException(
+                            status_code=403,
+                            detail="MARKETPLACE_SESSION_REQUIRES_ACCEPTED_PROPOSAL",
+                        )
                 
                 # Send a system message or notification with the reason
                 if lead_id:
                     # find chat_id
-                    chat_res = await supabase.table("lead_chats").select("id").eq("lead_id", lead_id).execute()
+                    chat_res = await supabase.table("lead_chats").select("id").eq(
+                        "lead_id", lead_id
+                    ).eq("master_id", current_user.user_id).execute()
                     chat_id = chat_res.data[0]["id"] if chat_res.data else None
                     
                     if not chat_id:
@@ -422,7 +545,7 @@ async def update_session(
         # If moving to in_progress or discussing, notify client that the session was accepted
         if update_data.get("status") in ["in_progress", "discussing"]:
             s_res = await supabase.table("master_sessions") \
-                .select("*, master_clients(lead_id, leads(client_id, client_session_id))") \
+                .select("*, master_clients(lead_id, leads(client_id, client_session_id, is_personal, assigned_master_id))") \
                 .eq("id", session_id) \
                 .eq("master_id", current_user.user_id) \
                 .execute()
@@ -433,8 +556,26 @@ async def update_session(
                 lead_id = client.get("lead_id")
                 
                 if lead_id:
+                    if not lead_info.get("is_personal"):
+                        if lead_info.get("assigned_master_id") != current_user.user_id:
+                            raise HTTPException(
+                                status_code=403,
+                                detail="MARKETPLACE_SESSION_REQUIRES_ACCEPTED_PROPOSAL",
+                            )
+                        proposal_res = await supabase.table("lead_proposals").select("status").eq(
+                            "lead_id", lead_id
+                        ).eq("user_id", current_user.user_id).in_(
+                            "status", ["accepted", "booked", "completed"]
+                        ).execute()
+                        if not proposal_res.data:
+                            raise HTTPException(
+                                status_code=403,
+                                detail="MARKETPLACE_SESSION_REQUIRES_ACCEPTED_PROPOSAL",
+                            )
                     # check if chat exists
-                    chat_res = await supabase.table("lead_chats").select("id").eq("lead_id", lead_id).execute()
+                    chat_res = await supabase.table("lead_chats").select("id").eq(
+                        "lead_id", lead_id
+                    ).eq("master_id", current_user.user_id).execute()
                     chat_id = chat_res.data[0]["id"] if chat_res.data else None
                     if not chat_id:
                         # create chat
@@ -467,6 +608,8 @@ async def update_session(
         if not res.data:
             raise HTTPException(status_code=404, detail="Session not found")
         return res.data[0]
+    except HTTPException:
+        raise
     except Exception as e:
         import traceback
         traceback.print_exc()
@@ -479,6 +622,7 @@ async def delete_session(
     supabase: AsyncClient = Depends(get_async_supabase_client)
 ):
     try:
+        await ensure_crm_session_access(supabase, current_user.user_id, session_id)
         print(f"Deleting session {session_id} for master {current_user.user_id}")
         await supabase.table("master_sessions") \
             .update({"is_deleted": True}) \
@@ -498,6 +642,7 @@ async def sign_waiver(
     supabase: AsyncClient = Depends(get_async_supabase_client)
 ):
     try:
+        await ensure_crm_session_access(supabase, current_user.user_id, session_id)
         res = await supabase.table("master_sessions") \
             .update({
                 "waiver_signed": True,
@@ -522,6 +667,7 @@ async def complete_session(
     supabase: AsyncClient = Depends(get_async_supabase_client)
 ):
     try:
+        await ensure_crm_session_access(supabase, current_user.user_id, session_id)
         now_time = data.end_time if data.end_time else datetime.now().strftime("%H:%M")
         res = await supabase.table("master_sessions") \
             .update({
@@ -590,6 +736,7 @@ async def send_accept_email(
     supabase: AsyncClient = Depends(get_async_supabase_client)
 ):
     try:
+        await ensure_crm_session_access(supabase, current_user.user_id, session_id)
         # Fetch session and client to get email
         res = await supabase.table("master_sessions") \
             .select("*, master_clients(email, lead_id)") \

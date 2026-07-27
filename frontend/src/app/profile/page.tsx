@@ -15,6 +15,7 @@ import { toast } from 'react-hot-toast'
 import { ImageViewerModal } from '@/components/ImageViewerModal'
 import { QRCodeModal } from '@/components/QRCodeModal'
 import { QrCode } from 'lucide-react'
+import { CertificateVerificationCard } from '@/components/CertificateVerificationCard'
 
 export default function ProfilePage() {
   const router = useRouter()
@@ -358,6 +359,13 @@ export default function ProfilePage() {
 
           {/* Right Column: Settings & Portfolio */}
           <div className="lg:col-span-2 space-y-6">
+            {profile.role === 'master' && (
+              <CertificateVerificationCard
+                profile={profile}
+                language={language}
+                onProfileChange={setProfile}
+              />
+            )}
             
             <div className="bg-white/60 dark:bg-neutral-900/60 backdrop-blur-xl border border-white/40 dark:border-white/5 rounded-3xl p-6 md:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.2)]">
               <h3 className="text-xl font-bold mb-6 flex items-center gap-2">

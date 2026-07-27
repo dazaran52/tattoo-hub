@@ -1,26 +1,37 @@
 import os
-import psycopg2
-from dotenv import load_dotenv
 import sys
+from pathlib import Path
 
-load_dotenv()
+try:
+    from dotenv import load_dotenv
+except ImportError:
+    load_dotenv = None
+
+if load_dotenv:
+    load_dotenv()
 
 DB_URL = os.environ.get("POSTGRES_URL")
 
 if len(sys.argv) < 2:
-    print("Usage: python run_migration.py <file>")
+    print("Usage: python run_migration.py <file> [<file> ...]")
     sys.exit(1)
 
-migration_file = sys.argv[1]
-with open(migration_file, "r") as f:
-    sql = f.read()
+if not DB_URL:
+    print("POSTGRES_URL is required; refusing to deploy code without migrations")
+    sys.exit(1)
+
+import psycopg2
 
 conn = psycopg2.connect(DB_URL)
-conn.autocommit = True
-cur = conn.cursor()
-
-print(f"Executing migration {migration_file}...")
-cur.execute(sql)
-print("Success!")
-cur.close()
-conn.close()
+try:
+    with conn.cursor() as cur:
+        for migration_file in sys.argv[1:]:
+            print(f"Executing migration {migration_file}...")
+            cur.execute(Path(migration_file).read_text())
+    conn.commit()
+    print("All migrations committed successfully.")
+except Exception:
+    conn.rollback()
+    raise
+finally:
+    conn.close()

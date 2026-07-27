@@ -7,6 +7,12 @@ import { format, parseISO } from 'date-fns'
 import { ru } from 'date-fns/locale'
 import { PostModal, PortfolioPost } from '@/components/PostModal'
 import { LeadWizard } from '@/components/LeadWizard'
+import { MasterTrustSummary, VerifiedMasterBadge, WhatHappensNext } from '@/components/PublicMasterTrust'
+import { publicApi, PublicMaster, PublicReview } from '@/lib/publicApi'
+
+type BookMaster = Omit<PublicMaster, 'portfolio_posts'> & {
+  portfolio_posts?: PortfolioPost[]
+}
 
 const getThemeClasses = (theme: string) => {
   switch (theme) {
@@ -69,12 +75,12 @@ export default function BookMasterPage({ params }: { params: { username: string 
   const router = useRouter()
   const searchParams = useSearchParams()
   const source = searchParams.get('source')
-  const [master, setMaster] = useState<any>(null)
+  const [master, setMaster] = useState<BookMaster | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<'booking' | 'portfolio' | 'reviews'>('booking')
   const [selectedPost, setSelectedPost] = useState<PortfolioPost | null>(null)
-  const [reviews, setReviews] = useState<any[]>([])
+  const [reviews, setReviews] = useState<PublicReview[]>([])
   const [isLoadingReviews, setIsLoadingReviews] = useState(false)
 
   useEffect(() => {
@@ -84,22 +90,17 @@ export default function BookMasterPage({ params }: { params: { username: string 
   const fetchMasterProfile = async () => {
     try {
       setIsLoading(true)
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/public/master/${params.username}`)
-      
-      if (!res.ok) {
-        throw new Error('Мастер не найден')
-      }
-      
-      const data = await res.json()
-      setMaster(data)
-      
+      const data = await publicApi.getMaster(params.username)
+      setMaster(data as BookMaster)
+
       setIsLoadingReviews(true)
-      const revRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/public/master/${params.username}/reviews`)
-      if (revRes.ok) {
-        const revData = await revRes.json()
-        setReviews(revData)
+      try {
+        setReviews(await publicApi.getMasterReviews(params.username))
+      } catch {
+        setReviews([])
+      } finally {
+        setIsLoadingReviews(false)
       }
-      setIsLoadingReviews(false)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Ошибка загрузки профиля')
     } finally {
@@ -158,17 +159,22 @@ export default function BookMasterPage({ params }: { params: { username: string 
               <User className="w-12 h-12 text-neutral-500" />
             )}
           </div>
-          <h1 className="text-3xl font-extrabold tracking-tight mb-2">
-            {master.display_name || master.username || 'Мастер'}
-          </h1>
+          <div className="mb-2 flex flex-wrap items-center justify-center gap-2.5">
+            <h1 className="text-3xl font-extrabold tracking-tight">
+              {master.display_name || master.username || 'Мастер'}
+            </h1>
+            <VerifiedMasterBadge verified={master.certificate_status === 'approved'} />
+          </div>
           
-          {master.review_count > 0 && (
+          {master.review_count && master.review_count > 0 && (
             <div className="flex items-center justify-center gap-1.5 mb-4 text-yellow-500">
               <Star className="w-5 h-5 fill-current" />
               <span className="font-bold text-lg">{master.rating}</span>
               <span className="text-neutral-500 dark:text-neutral-400 text-sm">({master.review_count})</span>
             </div>
           )}
+
+          <MasterTrustSummary cityIds={master.city_ids} />
           
           {master.bio && (
             <p className="text-neutral-600 dark:text-neutral-400 max-w-md mx-auto mb-6">
@@ -222,15 +228,18 @@ export default function BookMasterPage({ params }: { params: { username: string 
         </div>
 
         {activeTab === 'booking' ? (
-          <LeadWizard
-            master={master}
-            source={source === 'platform' ? 'platform' : 'personal'}
-            themeClasses={{
-              card: tClasses.card,
-              input: tClasses.input,
-              buttonPrimary: tClasses.buttonPrimary
-            }}
-          />
+          <>
+            <WhatHappensNext className={tClasses.card} />
+            <LeadWizard
+              master={master}
+              source={source === 'platform' ? 'platform' : 'personal'}
+              themeClasses={{
+                card: tClasses.card,
+                input: tClasses.input,
+                buttonPrimary: tClasses.buttonPrimary
+              }}
+            />
+          </>
         ) : activeTab === 'portfolio' ? (
           <div className={`rounded-3xl p-8 transition-colors duration-500 ${tClasses.card}`}>
             <h2 className="text-2xl font-bold mb-6 text-center">Портфолио</h2>
@@ -275,7 +284,7 @@ export default function BookMasterPage({ params }: { params: { username: string 
               <div className="flex justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-neutral-500" /></div>
             ) : reviews.length > 0 ? (
               <div className="space-y-4 text-left">
-                {reviews.map((r: any) => (
+                {reviews.map((r) => (
                   <div key={r.id} className="p-5 rounded-2xl bg-neutral-100 dark:bg-neutral-800/50 border border-neutral-200 dark:border-white/5">
                     <div className="flex justify-between items-start mb-3">
                       <span className="font-bold">{r.client_name}</span>

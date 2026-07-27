@@ -27,6 +27,10 @@ export interface Profile {
   role?: string
   is_verified_master?: boolean
   certificate_url?: string
+  certificate_status?: 'not_submitted' | 'pending' | 'approved' | 'rejected'
+  certificate_submitted_at?: string
+  certificate_reviewed_at?: string
+  certificate_rejection_reason?: string
   avatar_url?: string
   portfolio_image_urls?: string[]
   theme?: string
@@ -73,6 +77,23 @@ export const api = {
       body: JSON.stringify(data)
     })
     if (!res.ok) throw new Error('Failed to update profile')
+    return res.json()
+  },
+
+  async submitCertificate(objectPath: string): Promise<{
+    certificate_status: 'pending'
+    certificate_submitted_at: string
+  }> {
+    const headers = await getAuthHeaders()
+    const res = await fetch(`${API_URL}/api/profile/certificate`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ object_path: objectPath })
+    })
+    if (!res.ok) {
+      const error = await res.json().catch(() => ({}))
+      throw new Error(error.detail || 'Failed to submit certificate')
+    }
     return res.json()
   },
 

@@ -13,6 +13,7 @@ import { CheckCircle, XCircle, Clock, Loader2, Plus, Edit2, Trash2, Link as Link
 import { getTranslation, Language } from '@/lib/i18n'
 import toast from 'react-hot-toast'
 import { useLanguage } from '@/i18n/LanguageContext'
+import { CertificateReviewModal, CertificateReviewUser } from '@/components/CertificateReviewModal'
 
 interface AdminUserResponse {
   id: string
@@ -28,6 +29,10 @@ interface AdminUserResponse {
   role?: string
   referred_by?: string
   status?: string
+  certificate_url?: string
+  certificate_status?: 'not_submitted' | 'pending' | 'approved' | 'rejected'
+  certificate_submitted_at?: string
+  certificate_rejection_reason?: string
 }
 
 
@@ -47,6 +52,7 @@ export default function AdminPage() {
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest' | 'balance_desc' | 'balance_asc'>('newest')
   const [balanceModalUser, setBalanceModalUser] = useState<{ id: string, email: string, balance: number } | null>(null)
   const [newBalanceValue, setNewBalanceValue] = useState<string>('')
+  const [certificateReviewUser, setCertificateReviewUser] = useState<CertificateReviewUser | null>(null)
 
 
   const fetchAdminUsers = async (page: number, role: string) => {
@@ -167,6 +173,18 @@ export default function AdminPage() {
     }
   }
 
+  const handleCertificateReviewed = (
+    userId: string,
+    certificateStatus: 'approved' | 'rejected',
+    reason?: string,
+  ) => {
+    setUsers(current => current.map(user => user.id === userId ? {
+      ...user,
+      certificate_status: certificateStatus,
+      certificate_rejection_reason: reason,
+    } : user))
+  }
+
   const deleteUser = async (userId: string) => {
     if (!confirm('Вы уверены, что хотите безвозвратно удалить этого пользователя? Это действие нельзя отменить.')) return
 
@@ -206,7 +224,7 @@ export default function AdminPage() {
 
   const submitUpdateCredits = async () => {
     if (!balanceModalUser) return
-    const num = parseInt(newBalanceValue)
+    const num = Number.parseFloat(newBalanceValue)
     if (isNaN(num) || num < 0) {
       toast.error('Неверная сумма')
       return
@@ -227,7 +245,7 @@ export default function AdminPage() {
             'Authorization': `Bearer ${session.access_token}`,
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ credits: num })
+          body: JSON.stringify({ balance: num })
         }
       )
 
@@ -235,7 +253,7 @@ export default function AdminPage() {
 
       setUsers(currentUsers => 
         currentUsers.map(user => 
-          user.id === userId ? { ...user, credits: num } : user
+          user.id === userId ? { ...user, balance: num } : user
         )
       )
       toast.success('Баланс успешно обновлен!')
@@ -467,6 +485,15 @@ export default function AdminPage() {
                             <XCircle className="w-3.5 h-3.5" /> Rejected
                           </span>
                         )}
+                        {user.role === 'master' && (
+                          <div className="mt-2 text-[11px] font-bold text-neutral-500">
+                            Сертификат: {
+                              user.certificate_status === 'approved' ? 'проверен' :
+                              user.certificate_status === 'pending' ? 'ожидает проверки' :
+                              user.certificate_status === 'rejected' ? 'отклонён' : 'не загружен'
+                            }
+                          </div>
+                        )}
                       </td>
                       <td className="px-6 py-4 text-right">
                         {actionLoadingId === user.id ? (
@@ -475,6 +502,14 @@ export default function AdminPage() {
                           </div>
                         ) : (
                           <div className="flex justify-end gap-2">
+                            {user.role === 'master' && user.certificate_url && (
+                              <button
+                                onClick={() => setCertificateReviewUser(user)}
+                                className="px-3.5 py-2 bg-violet-500/10 text-violet-600 dark:text-violet-400 border border-violet-500/20 rounded-xl text-xs font-bold hover:bg-violet-500/20 transition-all"
+                              >
+                                {user.certificate_status === 'pending' ? 'Проверить сертификат' : 'Сертификат'}
+                              </button>
+                            )}
                             {(user.role === 'master' || user.is_admin || user.is_verified_master) && (
                               <button
                                 onClick={() => handleUpdateCredits(user.id, user.balance, user.email)}
@@ -568,6 +603,12 @@ export default function AdminPage() {
           </div>
         )}
       </main>
+
+      <CertificateReviewModal
+        user={certificateReviewUser}
+        onClose={() => setCertificateReviewUser(null)}
+        onReviewed={handleCertificateReviewed}
+      />
 
       {balanceModalUser && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-200">

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useParams, useSearchParams } from 'next/navigation'
-import { Check, MessageCircle, Send, AlertCircle } from 'lucide-react'
+import { Check, MessageCircle, Send } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 import { motion } from 'framer-motion'
 
@@ -20,7 +20,8 @@ interface Proposal {
   price_offer: number
   proposed_dates: string
   status: string
-  chat_id: string
+  chat_id?: string
+  offer_currency?: string
 }
 
 interface LeadData {
@@ -92,7 +93,7 @@ export default function ClientPortalPage() {
 
   const sendMessage = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!newMessage.trim() || !selectedProposal) return
+    if (!newMessage.trim() || !selectedProposal?.chat_id) return
 
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
@@ -145,7 +146,8 @@ export default function ClientPortalPage() {
   if (error) return <div className="p-8 text-center text-red-500">{error}</div>
   if (!leadData) return null
 
-  const isAnyAccepted = leadData.proposals.some(p => p.status === 'accepted')
+  const isSelectedStatus = (status: string) => ['accepted', 'booked', 'completed'].includes(status)
+  const isAnyAccepted = leadData.proposals.some(p => isSelectedStatus(p.status))
 
   return (
     <div className="min-h-screen bg-neutral-50 dark:bg-neutral-900 pb-20">
@@ -175,8 +177,10 @@ export default function ClientPortalPage() {
               <div 
                 key={p.master_id} 
                 onClick={() => {
-                  setSelectedProposal(p)
-                  loadChat(p.chat_id)
+                  if (isSelectedStatus(p.status) && p.chat_id) {
+                    setSelectedProposal(p)
+                    loadChat(p.chat_id)
+                  }
                 }}
                 className={`p-5 rounded-3xl border cursor-pointer transition-all ${
                   selectedProposal?.master_id === p.master_id 
@@ -196,14 +200,14 @@ export default function ClientPortalPage() {
                     <div>
                       <div className="font-bold text-neutral-900 dark:text-white">{p.master_name}</div>
                       <div className="text-xs text-neutral-500">
-                        {p.status === 'accepted' && <span className="text-green-500">Выбран</span>}
+                        {isSelectedStatus(p.status) && <span className="text-green-500">Выбран</span>}
                         {p.status === 'pending' && <span className="text-amber-500">Ожидает</span>}
                         {p.status === 'rejected' && <span className="text-red-500">Отклонен</span>}
                       </div>
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="font-black text-lg text-neutral-900 dark:text-white">{p.price_offer} CZK</div>
+                    <div className="font-black text-lg text-neutral-900 dark:text-white">{p.price_offer} {p.offer_currency || 'CZK'}</div>
                   </div>
                 </div>
                 <div className="text-sm text-neutral-600 dark:text-neutral-400 bg-neutral-100 dark:bg-neutral-900 p-3 rounded-xl mb-3">
@@ -230,7 +234,7 @@ export default function ClientPortalPage() {
           </div>
 
           <div>
-            {selectedProposal ? (
+            {selectedProposal && isSelectedStatus(selectedProposal.status) && selectedProposal.chat_id ? (
               <div className="bg-white dark:bg-neutral-800 rounded-3xl border border-neutral-200 dark:border-white/5 flex flex-col h-[600px] overflow-hidden sticky top-8">
                 <div className="p-4 border-b border-neutral-100 dark:border-white/5 bg-neutral-50/50 dark:bg-neutral-900/50 flex justify-between items-center">
                   <h3 className="font-bold text-neutral-900 dark:text-white flex items-center gap-2">
@@ -240,12 +244,6 @@ export default function ClientPortalPage() {
                 </div>
 
                 <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                  {!isAnyAccepted && selectedProposal.status !== 'accepted' && (
-                    <div className="bg-amber-500/10 text-amber-600 dark:text-amber-400 p-3 rounded-2xl text-xs flex gap-2">
-                      <AlertCircle className="w-4 h-4 shrink-0" />
-                      Контактные данные и ссылки скрываются в целях безопасности, пока вы не выберете мастера.
-                    </div>
-                  )}
 
                   {chatLoading ? (
                     <div className="text-center text-neutral-400 py-4">Загрузка сообщений...</div>
@@ -293,7 +291,7 @@ export default function ClientPortalPage() {
               </div>
             ) : (
               <div className="h-full border-2 border-dashed border-neutral-200 dark:border-white/10 rounded-3xl flex items-center justify-center text-neutral-400 p-8 text-center min-h-[300px]">
-                Выберите отклик слева, чтобы начать переписку с мастером
+                Чат откроется после выбора мастера
               </div>
             )}
           </div>

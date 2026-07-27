@@ -1,40 +1,47 @@
 """Profile router for master data endpoints."""
-from fastapi import APIRouter, Depends, HTTPException, status
+from datetime import datetime, timezone
+
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 from pydantic import BaseModel
 from app.middleware.auth import get_current_user, AuthUser
 from app.database import get_async_supabase_client
+from app.services.verification import (
+    build_certificate_submission_update,
+    validate_certificate_object_path,
+)
+from app.services.marketplace import should_schedule_auto_verification
 from supabase._async.client import AsyncClient
 import uuid
 import asyncio
 import random
-from fastapi import BackgroundTasks
+
 
 async def auto_verify_master(user_id: str):
-    """Fake auto-verification for startup phase."""
-    from app.database import get_async_supabase_client
+    """Temporarily grant marketplace access automatically during MVP testing."""
     delay = random.uniform(10.0, 120.0)
-    print(f"Auto-verifying master {user_id} in {delay:.1f} seconds...")
     await asyncio.sleep(delay)
-    
     try:
         supabase = await get_async_supabase_client()
-        # Verify if they are still unverified (in case an admin did it manually in the meantime)
-        res = await supabase.table("users").select("is_verified_master").eq("id", user_id).single().execute()
-        if res.data and not res.data.get("is_verified_master"):
+        result = await supabase.table("users").select(
+            "role, is_verified_master"
+        ).eq("id", user_id).single().execute()
+        if (
+            result.data
+            and result.data.get("role") == "master"
+            and not result.data.get("is_verified_master")
+        ):
             await supabase.table("users").update({
-                "is_verified_master": True, 
-                "status": "active"
+                "is_verified_master": True,
+                "status": "approved",
             }).eq("id", user_id).execute()
-            
             await supabase.table("notifications").insert({
                 "user_id": user_id,
-                "title": "🎉 Верификация пройдена!",
-                "message": "Ваш профиль мастера успешно верифицирован. Теперь вам доступны все функции платформы и маркетплейс!",
-                "type": "system"
+                "title": "Доступ к маркетплейсу открыт",
+                "message": "Автоматическая MVP-проверка завершена. Проверка сертификата выполняется отдельно.",
+                "type": "system",
             }).execute()
-            print(f"Auto-verified master {user_id} after {delay:.1f}s")
-    except Exception as e:
-        print(f"Failed to auto-verify master {user_id}: {e}")
+    except Exception as exc:
+        print(f"Failed to auto-verify marketplace access for {user_id}: {exc}")
 
 
 router = APIRouter(prefix="/api", tags=["profile"])
@@ -66,6 +73,10 @@ class ProfileResponse(BaseModel):
     role: str | None = None
     is_verified_master: bool = False
     certificate_url: str | None = None
+    certificate_status: str = "not_submitted"
+    certificate_submitted_at: str | None = None
+    certificate_reviewed_at: str | None = None
+    certificate_rejection_reason: str | None = None
     avatar_url: str | None = None
     portfolio_image_urls: list[str] | None = None
     theme: str = "system"
@@ -92,6 +103,10 @@ class ProfileUpdate(BaseModel):
     city_ids: list[str] | None = None
     theme: str | None = None
     kanban_columns: list | None = None
+
+
+class CertificateSubmission(BaseModel):
+    object_path: str
 
 
 @router.get("/profile", response_model=ProfileResponse)
@@ -130,7 +145,7 @@ async def get_profile(
             city_ids = current_user.user_metadata.get("city_ids", [])
             role = current_user.user_metadata.get("role", "master")
             
-            # Clients are automatically approved, masters need manual review
+            # Clients are approved immediately; masters pass temporary MVP auto-check.
             status_val = "approved" if role == "client" else "pending"
             
             new_profile = {
@@ -149,6 +164,7 @@ async def get_profile(
                 "status": status_val,
                 "is_verified_master": False,
                 "certificate_url": None,
+                "certificate_status": "not_submitted",
                 "currency": "CZK",
                 "balance": 0.0,
                 "theme": "system"
@@ -158,7 +174,7 @@ async def get_profile(
             if response.data and len(response.data) > 0:
                 data = response.data[0]
                 
-                # Notify admins about new pending master
+                # Keep admin visibility even while MVP access verification is automatic.
                 if role == "master":
                     try:
                         admin_res = await supabase.table("users").select("id").eq("is_admin", True).execute()
@@ -166,7 +182,7 @@ async def get_profile(
                             await supabase.table("notifications").insert({
                                 "user_id": admin["id"],
                                 "title": "Новая регистрация мастера",
-                                "message": f"Новый мастер зарегистрировался ({current_user.email}) и ожидает проверки.",
+                                "message": f"Новый мастер зарегистрировался ({current_user.email}); доступ будет выдан автоматически, сертификат проверяется отдельно.",
                                 "type": "system"
                             }).execute()
                     except Exception as e:
@@ -186,15 +202,15 @@ async def get_profile(
                 detail=f"Failed to create profile: {str(e)}"
             )
 
-    # Fake auto-verification logic for unverified masters
-    if data and data.get("role") == "master" and not data.get("is_verified_master") and data.get("status") == "pending":
+    if data and should_schedule_auto_verification(data):
         try:
-            # Mark as verifying so we don't spawn multiple background tasks
-            await supabase.table("users").update({"status": "verifying"}).eq("id", current_user.user_id).execute()
+            await supabase.table("users").update({"status": "verifying"}).eq(
+                "id", current_user.user_id
+            ).execute()
             data["status"] = "verifying"
             background_tasks.add_task(auto_verify_master, current_user.user_id)
-        except Exception as e:
-            print(f"Failed to trigger auto-verification: {e}")
+        except Exception as exc:
+            print(f"Failed to start marketplace access verification: {exc}")
 
     # Calculate unlocks and gamification level
     unlocks_res = await supabase.table("lead_unlocks").select("id", count="exact").eq("user_id", current_user.user_id).execute()
@@ -231,11 +247,54 @@ async def get_profile(
         role=data.get("role"),
         is_verified_master=data.get("is_verified_master") or False,
         certificate_url=data.get("certificate_url"),
+        certificate_status=data.get("certificate_status") or "not_submitted",
+        certificate_submitted_at=data.get("certificate_submitted_at"),
+        certificate_reviewed_at=data.get("certificate_reviewed_at"),
+        certificate_rejection_reason=data.get("certificate_rejection_reason"),
         avatar_url=data.get("avatar_url"),
         portfolio_image_urls=data.get("portfolio_image_urls") or [],
         theme=data.get("theme") or "system",
         kanban_columns=data.get("kanban_columns")
     )
+
+
+@router.post("/profile/certificate")
+async def submit_certificate(
+    submission: CertificateSubmission,
+    current_user: AuthUser = Depends(get_current_user),
+    supabase: AsyncClient = Depends(get_async_supabase_client),
+):
+    """Submit a private certificate object for manual administrator review."""
+    profile_res = await supabase.table("users").select("role, email").eq("id", current_user.user_id).single().execute()
+    if not profile_res.data or profile_res.data.get("role") != "master":
+        raise HTTPException(status_code=403, detail="Only masters can submit certificates")
+
+    try:
+        object_path = validate_certificate_object_path(current_user.user_id, submission.object_path)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    update = build_certificate_submission_update(object_path, datetime.now(timezone.utc))
+    response = await supabase.table("users").update(update).eq("id", current_user.user_id).execute()
+    if not response.data:
+        raise HTTPException(status_code=404, detail="Profile not found")
+
+    try:
+        admins = await supabase.table("users").select("id").eq("is_admin", True).execute()
+        for admin in admins.data or []:
+            await supabase.table("notifications").insert({
+                "user_id": admin["id"],
+                "title": "Сертификат ожидает проверки",
+                "message": f"Мастер {profile_res.data.get('email')} загрузил сертификат.",
+                "type": "system",
+            }).execute()
+    except Exception as exc:
+        print(f"Failed to notify admins about certificate: {exc}")
+
+    return {
+        "certificate_status": "pending",
+        "certificate_submitted_at": update["certificate_submitted_at"],
+    }
 
 
 @router.put("/profile", response_model=ProfileResponse)
@@ -348,6 +407,10 @@ async def update_profile(
             role=data.get("role"),
             is_verified_master=data.get("is_verified_master") or False,
             certificate_url=data.get("certificate_url"),
+            certificate_status=data.get("certificate_status") or "not_submitted",
+            certificate_submitted_at=data.get("certificate_submitted_at"),
+            certificate_reviewed_at=data.get("certificate_reviewed_at"),
+            certificate_rejection_reason=data.get("certificate_rejection_reason"),
             avatar_url=data.get("avatar_url"),
             portfolio_image_urls=data.get("portfolio_image_urls") or [],
             theme=data.get("theme") or "system",
@@ -371,14 +434,15 @@ async def get_my_leads(
     current_user: AuthUser = Depends(get_current_user),
     supabase: AsyncClient = Depends(get_async_supabase_client)
 ):
-    """Get leads unlocked by the current user."""
+    """Get marketplace leads where the current master was selected."""
     try:
-        unlocks_res = await supabase.table("lead_unlocks") \
+        proposals_res = await supabase.table("lead_proposals") \
             .select("lead_id") \
             .eq("user_id", current_user.user_id) \
+            .in_("status", ["accepted", "booked", "completed"]) \
             .execute()
         
-        lead_ids = [u["lead_id"] for u in (unlocks_res.data or [])]
+        lead_ids = [proposal["lead_id"] for proposal in (proposals_res.data or [])]
         
         if not lead_ids:
             return []
@@ -386,6 +450,7 @@ async def get_my_leads(
         leads_res = await supabase.table("leads") \
             .select("*") \
             .in_("id", lead_ids) \
+            .eq("assigned_master_id", current_user.user_id) \
             .order("created_at", desc=True) \
             .execute()
             
