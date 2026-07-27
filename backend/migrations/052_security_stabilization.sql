@@ -26,10 +26,10 @@ REVOKE INSERT, UPDATE, DELETE, TRUNCATE ON TABLE public.users
     FROM PUBLIC, anon, authenticated;
 GRANT SELECT ON TABLE public.users TO anon, authenticated;
 
--- Remove the retired auction's public screenshot capabilities and objects.
+-- Remove the retired auction's public screenshot capabilities.
 DROP POLICY IF EXISTS "Allow anon uploads lead_images" ON storage.objects;
-DELETE FROM storage.objects
-WHERE bucket_id = 'lead_images' AND name LIKE 'auctions/%';
+-- NOTE: Direct SQL deletion from storage.objects is blocked by Supabase storage.protect_delete() trigger.
+-- DELETE FROM storage.objects WHERE bucket_id = 'lead_images' AND name LIKE 'auctions/%';
 
 -- Retire every legacy auction policy and direct table surface. Historical rows are kept
 -- for audit purposes, but they are not exposed through PostgREST.
