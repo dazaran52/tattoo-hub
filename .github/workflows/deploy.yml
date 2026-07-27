@@ -43,6 +43,7 @@ jobs:
             python run_migration.py \
               migrations/049_manual_certificate_verification.sql \
               migrations/050_marketplace_success_fee.sql \
-              migrations/051_security_stabilization.sql
+              migrations/051_create_exchange_rates.sql \
+              migrations/052_security_stabilization.sql
             # Restart the service
             systemctl restart tattoohub.service
