@@ -6,6 +6,8 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { supabase } from '@/lib/supabase'
 import { ImageViewerModal } from '@/components/ImageViewerModal'
 import { OnlineIndicator } from '@/components/OnlineIndicator'
+import { usePresence } from '@/components/PresenceContext'
+import { formatLastSeenText } from '@/lib/formatLastSeen'
 
 interface Message {
   id: string
@@ -27,6 +29,9 @@ interface ChatModalProps {
 }
 
 export function ChatModal({ isOpen, onClose, chatId, leadTitle, currentUserRole = 'master', recipientName, recipientAvatar, recipientLastSeen, recipientId }: ChatModalProps) {
+  const { isOnline } = usePresence()
+  const online = isOnline(recipientId, recipientLastSeen)
+  const lastSeenText = formatLastSeenText(recipientLastSeen, online)
   const [messages, setMessages] = useState<Message[]>([])
   const [newMessage, setNewMessage] = useState('')
   const [loading, setLoading] = useState(false)
@@ -216,10 +221,16 @@ export function ChatModal({ isOpen, onClose, chatId, leadTitle, currentUserRole 
                 </div>
               )}
               <div>
-                <h2 className="text-lg font-bold text-neutral-900 dark:text-white">
+                <h2 className="text-lg font-bold text-neutral-900 dark:text-white leading-tight">
                   {recipientName || leadTitle}
                 </h2>
-                <p className="text-xs text-neutral-500 mt-0.5">Внутренний чат</p>
+                <p className="text-xs mt-0.5 font-medium">
+                  {online ? (
+                    <span className="text-emerald-500 font-semibold">В сети</span>
+                  ) : (
+                    <span className="text-neutral-500 dark:text-neutral-400">{lastSeenText}</span>
+                  )}
+                </p>
               </div>
             </div>
             <button onClick={onClose} className="p-2 hover:bg-neutral-200 dark:hover:bg-neutral-800 rounded-xl transition-colors">

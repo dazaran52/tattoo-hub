@@ -10,6 +10,8 @@ import { ChatSessionsModal } from '@/components/ChatSessionsModal'
 import { SkeletonList } from '@/components/SkeletonCard'
 import { EmptyState } from '@/components/EmptyState'
 import { OnlineIndicator } from '@/components/OnlineIndicator'
+import { usePresence } from '@/components/PresenceContext'
+import { formatLastSeenText } from '@/lib/formatLastSeen'
 
 interface Message {
   id: string
@@ -58,6 +60,7 @@ interface MessagesListProps {
 }
 
 export function MessagesList({ userRole = 'master' }: MessagesListProps) {
+  const { isOnline } = usePresence()
   const [chats, setChats] = useState<ChatPreview[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
@@ -549,18 +552,22 @@ export function MessagesList({ userRole = 'master' }: MessagesListProps) {
                   <OnlineIndicator userId={userRole === 'client' ? selectedChat.master_id : (selectedChat.client_id || selectedChat.client_info?.id)} lastSeen={selectedChat.client_info?.last_seen} size="md" className="-bottom-0.5 -right-0.5 border-2 border-white dark:border-neutral-900" />
                 </div>
                 <div className="flex flex-col min-w-0">
-                  <h3 className="font-bold text-neutral-900 dark:text-white truncate">
+                  <h3 className="font-bold text-neutral-900 dark:text-white truncate leading-tight">
                     {selectedChat.client_info?.name || selectedChat.leads?.title}
                   </h3>
-                  {selectedChat.client_info?.email ? (
-                    <p className="text-xs text-neutral-500 truncate">
-                      {selectedChat.client_info.email}
-                    </p>
-                  ) : (
-                    <p className="text-xs text-neutral-500 truncate">
-                      {selectedChat.leads?.title}
-                    </p>
-                  )}
+                  <p className="text-xs mt-0.5 truncate font-medium">
+                    {(() => {
+                      const recId = userRole === 'client' ? selectedChat.master_id : (selectedChat.client_id || selectedChat.client_info?.id)
+                      const recLastSeen = selectedChat.client_info?.last_seen
+                      const online = isOnline(recId, recLastSeen)
+                      const text = formatLastSeenText(recLastSeen, online)
+                      return online ? (
+                        <span className="text-emerald-500 font-semibold">В сети</span>
+                      ) : (
+                        <span className="text-neutral-500 dark:text-neutral-400">{text}</span>
+                      )
+                    })()}
+                  </p>
                 </div>
               </div>
               
