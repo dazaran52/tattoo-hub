@@ -6,15 +6,30 @@ import { supabase } from '@/lib/supabase'
 interface PresenceContextType {
   onlineUserIds: Set<string>
   isOnline: (userId?: string | null, lastSeen?: string | null) => boolean
+  ping: () => void
 }
 
 const PresenceContext = createContext<PresenceContextType>({
   onlineUserIds: new Set(),
   isOnline: () => false,
+  ping: () => {},
 })
 
 export function PresenceProvider({ children }: { children: React.ReactNode }) {
   const [onlineUserIds, setOnlineUserIds] = useState<Set<string>>(new Set())
+
+  const pingBackend = useCallback(async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) return
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/profile/ping`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      })
+    } catch {
+      // Ignore ping errors
+    }
+  }, [])
 
   useEffect(() => {
     let pingInterval: NodeJS.Timeout
@@ -61,19 +76,6 @@ export function PresenceProvider({ children }: { children: React.ReactNode }) {
                 online_at: new Date().toISOString(),
               })
 
-              const pingBackend = async () => {
-                try {
-                  const { data: { session: s } } = await supabase.auth.getSession()
-                  if (!s) return
-                  await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/profile/ping`, {
-                    method: 'POST',
-                    headers: { Authorization: `Bearer ${s.access_token}` },
-                  })
-                } catch {
-                  // Ignore ping errors
-                }
-              }
-
               void pingBackend()
               pingInterval = setInterval(pingBackend, 30 * 1000)
             }
@@ -98,6 +100,7 @@ export function PresenceProvider({ children }: { children: React.ReactNode }) {
       const userId = session?.user?.id || null
       if (channel && userId) {
         void channel.track({ user_id: userId, online_at: new Date().toISOString() })
+        void pingBackend()
       }
     })
 
@@ -109,28 +112,33 @@ export function PresenceProvider({ children }: { children: React.ReactNode }) {
       }
       subscription.unsubscribe()
     }
-  }, [])
+  }, [pingBackend])
 
   const isOnline = useCallback(
     (userId?: string | null, lastSeen?: string | null): boolean => {
-      if (userId) {
-        if (onlineUserIds.has(userId)) {
-          return true
-        }
-        if (onlineUserIds.size > 0) {
-          return false
+      // 1. Check real-time WebSocket presence
+      if (userId && onlineUserIds.has(userId)) {
+        return true
+      }
+
+      // 2. Check lastSeen timestamp (online if active in last 3 minutes)
+      if (lastSeen) {
+        const lastSeenTime = new Date(lastSeen).getTime()
+        if (!isNaN(lastSeenTime)) {
+          const diffMs = new Date().getTime() - lastSeenTime
+          if (diffMs >= 0 && diffMs < 3 * 60 * 1000) {
+            return true
+          }
         }
       }
 
-      if (!lastSeen) return false
-      const diffMs = new Date().getTime() - new Date(lastSeen).getTime()
-      return diffMs >= 0 && diffMs < 90 * 1000
+      return false
     },
     [onlineUserIds]
   )
 
   return (
-    <PresenceContext.Provider value={{ onlineUserIds, isOnline }}>
+    <PresenceContext.Provider value={{ onlineUserIds, isOnline, ping: pingBackend }}>
       {children}
     </PresenceContext.Provider>
   )
