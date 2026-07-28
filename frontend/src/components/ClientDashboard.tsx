@@ -50,9 +50,9 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
     try {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) return
-      
+
       const isFav = favoriteMasterIds.has(masterId)
-      
+
       // Optimistic update
       setFavoriteMasterIds(prev => {
         const next = new Set(prev)
@@ -60,12 +60,12 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
         else next.add(masterId)
         return next
       })
-      
+
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/favorites/${masterId}`, {
         method: isFav ? 'DELETE' : 'POST',
         headers: { 'Authorization': `Bearer ${session.access_token}` }
       })
-      
+
       if (!response.ok) {
         // Revert on error
         setFavoriteMasterIds(prev => {
@@ -205,7 +205,7 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
         setIsLoadingLeads(false)
       }
     }
-    
+
     async function fetchTopMasters() {
       try {
         setIsLoadingMasters(true)
@@ -220,7 +220,7 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
         setIsLoadingMasters(false)
       }
     }
-    
+
     async function fetchFavorites() {
       try {
         const { data: { session } } = await supabase.auth.getSession()
@@ -236,7 +236,7 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
         console.error('Error fetching favorites:', err)
       }
     }
-    
+
     async function fetchUnread() {
       try {
         const { data: { session } } = await supabase.auth.getSession()
@@ -269,13 +269,13 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
     fetchUnread()
     fetchFavorites()
     fetchCities()
-    
+
     const channel = supabase.channel('client_messages')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'chat_messages' }, () => {
         fetchUnread()
       })
       .subscribe()
-      
+
     return () => {
       supabase.removeChannel(channel)
     }
@@ -306,36 +306,33 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
             {t('manageYourLeads')}
           </p>
         </div>
-        
+
         <div className="mt-4 md:mt-0 flex p-1 bg-neutral-100 dark:bg-neutral-800 rounded-lg">
           <button
             onClick={() => setActiveTab('leads')}
-            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-              activeTab === 'leads'
+            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${activeTab === 'leads'
                 ? 'bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white shadow-sm'
                 : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200'
-            }`}
+              }`}
           >
             {t('myLeads')}
           </button>
 
           <button
             onClick={() => setActiveTab('top_masters')}
-            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-              activeTab === 'top_masters'
+            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${activeTab === 'top_masters'
                 ? 'bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white shadow-sm'
                 : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200'
-            }`}
+              }`}
           >
             {t('masters') || 'Мастера'}
           </button>
           <button
             onClick={() => setActiveTab('messages')}
-            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors relative flex items-center ${
-              activeTab === 'messages'
+            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors relative flex items-center ${activeTab === 'messages'
                 ? 'bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white shadow-sm'
                 : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200'
-            }`}
+              }`}
           >
             <MessageCircle className="w-4 h-4 inline-block mr-2" />
             {t('messages') || 'Сообщения'}
@@ -357,14 +354,14 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
               <p className="text-neutral-500 dark:text-neutral-400 mb-6 text-sm">
                 Отправьте заявку в общую ленту маркетплейса. Подходящие мастера откликнутся сами.
               </p>
-              <button 
+              <button
                 onClick={() => { setSelectedMasterForDirectBooking(null); setIsFormOpen(true) }}
                 className="px-6 py-3 w-full max-w-[200px] bg-primary-600 hover:bg-primary-500 text-white font-bold rounded-xl transition-colors"
               >
                 Создать заявку
               </button>
             </div>
-            
+
             <div className="bg-primary-50 dark:bg-primary-900/10 border border-primary-200 dark:border-primary-800 rounded-2xl p-8 flex flex-col items-center justify-center text-center shadow-sm">
               <div className="w-16 h-16 bg-white dark:bg-neutral-800 rounded-full flex items-center justify-center mb-4 shadow-sm">
                 <Heart className="w-8 h-8 text-primary-500" />
@@ -373,7 +370,7 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
               <p className="text-neutral-500 dark:text-neutral-400 mb-6 text-sm">
                 Выберите мастера из списка всех мастеров и запишитесь к нему напрямую.
               </p>
-              <button 
+              <button
                 onClick={() => { setActiveTab('top_masters') }}
                 className="px-6 py-3 w-full max-w-[200px] bg-primary-600 hover:bg-primary-500 text-white font-bold rounded-xl transition-colors shadow-md shadow-primary-500/20"
               >
@@ -390,7 +387,7 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
             <div key={lead.id} className="bg-white dark:bg-[#0a0a0a] border border-neutral-200 dark:border-white/5 rounded-3xl p-6 shadow-xl shadow-black/5 hover:shadow-2xl hover:shadow-black/10 transition-all duration-300 relative overflow-hidden group">
               {/* Background accent */}
               <div className="absolute top-0 right-0 w-32 h-32 bg-primary-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:bg-primary-500/10 transition-colors" />
-              
+
               <div className="relative z-10">
                 <div className="flex justify-between items-start mb-5">
                   <div className="flex flex-wrap gap-2 items-center">
@@ -403,26 +400,25 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
                         Маркетплейс
                       </span>
                     )}
-                    
-                    <span className={`px-3 py-1 border text-xs font-extrabold tracking-wide uppercase rounded-full ${
-                      ['new', 'active'].includes(lead.status) ? 'bg-amber-100 dark:bg-amber-500/10 border-amber-200 dark:border-amber-500/20 text-amber-700 dark:text-amber-400' :
-                      ['accepted', 'booked'].includes(lead.status) ? 'bg-emerald-100 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/20 text-emerald-700 dark:text-emerald-400' :
-                      'bg-neutral-100 dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-400'
-                    }`}>
+
+                    <span className={`px-3 py-1 border text-xs font-extrabold tracking-wide uppercase rounded-full ${['new', 'active'].includes(lead.status) ? 'bg-amber-100 dark:bg-amber-500/10 border-amber-200 dark:border-amber-500/20 text-amber-700 dark:text-amber-400' :
+                        ['accepted', 'booked'].includes(lead.status) ? 'bg-emerald-100 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/20 text-emerald-700 dark:text-emerald-400' :
+                          'bg-neutral-100 dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-400'
+                      }`}>
                       {['new', 'active'].includes(lead.status) ? (lead.is_personal ? t('statusPending', 'Ожидает ответа') : t('statusSearching', 'В поиске')) :
-                       ['accepted', 'booked'].includes(lead.status) ? t('statusAccepted', 'В работе') :
-                       lead.status === 'completed' ? t('statusCompleted', 'Завершено') :
-                       lead.status === 'paused' ? t('statusPaused', 'Приостановлена') :
-                       lead.status === 'closed' ? t('statusArchived', 'Закрыта') : lead.status}
+                        ['accepted', 'booked'].includes(lead.status) ? t('statusAccepted', 'В работе') :
+                          lead.status === 'completed' ? t('statusCompleted', 'Завершено') :
+                            lead.status === 'paused' ? t('statusPaused', 'Приостановлена') :
+                              lead.status === 'closed' ? t('statusArchived', 'Закрыта') : lead.status}
                     </span>
                   </div>
                   <div className="flex items-center gap-3">
                     <span className="text-xs font-medium text-neutral-400 flex items-center gap-1.5 bg-neutral-100 dark:bg-neutral-900 px-2.5 py-1 rounded-lg">
-                      <Clock className="w-3.5 h-3.5" /> 
+                      <Clock className="w-3.5 h-3.5" />
                       {new Date(lead.created_at).toLocaleDateString()}
                     </span>
                     <div className="relative">
-                      <button 
+                      <button
                         onClick={() => setOpenMenuId(openMenuId === lead.id ? null : lead.id)}
                         className="p-1.5 rounded-xl hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-400 hover:text-neutral-900 dark:hover:text-white transition-colors"
                       >
@@ -432,38 +428,38 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
                         <>
                           <div className="fixed inset-0 z-[5]" onClick={(e) => { e.stopPropagation(); setOpenMenuId(null); }} />
                           <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl shadow-xl overflow-hidden z-10 py-1">
-                          {['new', 'active', 'paused'].includes(lead.status) && (
-                            <button 
-                              onClick={() => { setOpenMenuId(null); setEditingLead(lead) }}
-                              className="w-full text-left px-4 py-2.5 text-sm font-semibold text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors flex items-center gap-2"
-                            >
-                              <Edit2 className="w-4 h-4" /> {t('editLead', 'Редактировать заявку')}
-                            </button>
-                          )}
-                          {['new', 'active', 'paused'].includes(lead.status) && <>
-                            <button
-                              onClick={() => { setOpenMenuId(null); handlePauseResume(lead.id, lead.status) }}
-                              className="w-full text-left px-4 py-2.5 text-sm font-medium flex items-center gap-2 hover:bg-neutral-50 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300 transition-colors"
-                            >
-                              {lead.status === 'paused' ? <><Play className="w-4 h-4" /> {t('resume') || 'Возобновить'}</> : <><Pause className="w-4 h-4" /> {t('pause') || 'Приостановить'}</>}
-                            </button>
-                            <div className="h-px w-full bg-neutral-100 dark:bg-neutral-800 my-1" />
-                          </>}
-                          {['new', 'active', 'paused', 'closed'].includes(lead.status) && (
-                            <button
-                              onClick={() => { setOpenMenuId(null); handleDelete(lead.id) }}
-                              className="w-full text-left px-4 py-2.5 text-sm font-medium flex items-center gap-2 hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400 transition-colors"
-                            >
-                              <Trash2 className="w-4 h-4 text-red-500" /> <span className="text-red-500">{t('deleteLead', 'Удалить заявку')}</span>
-                            </button>
-                          )}
+                            {['new', 'active', 'paused'].includes(lead.status) && (
+                              <button
+                                onClick={() => { setOpenMenuId(null); setEditingLead(lead) }}
+                                className="w-full text-left px-4 py-2.5 text-sm font-semibold text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors flex items-center gap-2"
+                              >
+                                <Edit2 className="w-4 h-4" /> {t('editLead', 'Редактировать заявку')}
+                              </button>
+                            )}
+                            {['new', 'active', 'paused'].includes(lead.status) && <>
+                              <button
+                                onClick={() => { setOpenMenuId(null); handlePauseResume(lead.id, lead.status) }}
+                                className="w-full text-left px-4 py-2.5 text-sm font-medium flex items-center gap-2 hover:bg-neutral-50 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300 transition-colors"
+                              >
+                                {lead.status === 'paused' ? <><Play className="w-4 h-4" /> {t('resume') || 'Возобновить'}</> : <><Pause className="w-4 h-4" /> {t('pause') || 'Приостановить'}</>}
+                              </button>
+                              <div className="h-px w-full bg-neutral-100 dark:bg-neutral-800 my-1" />
+                            </>}
+                            {['new', 'active', 'paused', 'closed'].includes(lead.status) && (
+                              <button
+                                onClick={() => { setOpenMenuId(null); handleDelete(lead.id) }}
+                                className="w-full text-left px-4 py-2.5 text-sm font-medium flex items-center gap-2 hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400 transition-colors"
+                              >
+                                <Trash2 className="w-4 h-4 text-red-500" /> <span className="text-red-500">{t('deleteLead', 'Удалить заявку')}</span>
+                              </button>
+                            )}
                           </div>
                         </>
                       )}
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="flex flex-wrap gap-2 mb-5">
                   {lead.style && lead.style !== 'Не определился' && (
                     <span className="px-3 py-1.5 bg-neutral-100 dark:bg-neutral-800/50 text-neutral-700 dark:text-neutral-300 text-xs font-semibold rounded-lg flex items-center gap-1.5 border border-neutral-200/50 dark:border-white/5">
@@ -484,7 +480,7 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
                     </span>
                   )}
                 </div>
-                
+
                 {lead.image_urls && Array.isArray(lead.image_urls) && lead.image_urls.length > 0 && (
                   <div className="flex gap-3 mb-5 overflow-x-auto pb-2 snap-x scrollbar-thin scrollbar-thumb-neutral-300 dark:scrollbar-thumb-neutral-700">
                     {lead.image_urls.map((url: any, i: number) => {
@@ -505,7 +501,7 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
                     })}
                   </div>
                 )}
-                
+
                 <div className="mb-6 relative">
                   <div className="absolute left-0 top-0 bottom-0 w-1 bg-neutral-200 dark:bg-neutral-800 rounded-full" />
                   <p className="text-sm text-neutral-600 dark:text-neutral-400 pl-4 line-clamp-3 leading-relaxed">
@@ -517,7 +513,7 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
                   <div className="mb-6 p-1 rounded-2xl bg-gradient-to-r from-primary-500/10 via-primary-500/10 to-fuchsia-500/10">
                     <div className="bg-white/50 dark:bg-[#0a0a0a]/50 backdrop-blur-md rounded-[14px] p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border border-white/20 dark:border-white/5">
                       <div className="flex items-center gap-4">
-                        <div 
+                        <div
                           className="flex items-center gap-3 bg-neutral-100 dark:bg-[#111] p-3 rounded-2xl border border-neutral-200/50 dark:border-white/5 cursor-pointer hover:bg-neutral-200 dark:hover:bg-[#1a1a1a] transition-colors group/master w-fit"
                           onClick={(e) => {
                             e.stopPropagation()
@@ -525,11 +521,11 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
                           }}
                         >
                           <div className="relative shrink-0 w-14 h-14">
-                            <Image 
-                              src={lead.master.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(lead.master.name || 'Master')}`} 
-                              alt="Master" 
+                            <Image
+                              src={lead.master.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(lead.master.name || 'Master')}`}
+                              alt="Master"
                               className="w-14 h-14 rounded-full object-cover shadow-md border-2 border-white dark:border-neutral-800"
-                              width={56} height={56} 
+                              width={56} height={56}
                             />
                             <OnlineIndicator userId={lead.master.id || lead.assigned_master_id} lastSeen={lead.master.last_seen} />
                           </div>
@@ -543,7 +539,7 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
                       <div className="flex flex-col sm:flex-row items-end sm:items-center gap-3">
                         {lead.session && lead.session.session_date ? (
                           <div className="text-left sm:text-right bg-white dark:bg-neutral-900 px-4 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-800 shadow-sm flex flex-col items-start sm:items-end">
-                            <p className="text-[10px] font-extrabold text-neutral-500 uppercase tracking-wider mb-1">{t('sessionDate') || 'Сеанс'}</p>
+                            <p className="text-[10px] font-extrabold text-neutral-500 uppercase tracking-wider mb-1">{t('Дата сеанса') || 'Сеанс'}</p>
                             <p className="text-sm font-bold text-neutral-900 dark:text-white flex items-center gap-1.5">
                               <Clock className="w-4 h-4 text-primary-500" />
                               {new Date(lead.session.session_date).toLocaleDateString()}
@@ -551,13 +547,13 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
                             </p>
                           </div>
                         ) : lead.chat_id ? (
-                           <div className="text-left sm:text-right bg-neutral-100 dark:bg-neutral-900 px-3 py-2 rounded-xl">
-                             <p className="text-xs text-neutral-500 font-semibold whitespace-nowrap">Ожидает назначения даты</p>
-                           </div>
+                          <div className="text-left sm:text-right bg-neutral-100 dark:bg-neutral-900 px-3 py-2 rounded-xl">
+                            <p className="text-xs text-neutral-500 font-semibold whitespace-nowrap">Ожидает назначения даты</p>
+                          </div>
                         ) : null}
-                        
+
                         {lead.chat_id && (
-                          <button 
+                          <button
                             onClick={() => {
                               setSelectedChatId(lead.chat_id)
                               setSelectedChatTitle(lead.title)
@@ -592,7 +588,7 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
                           <div key={proposalKey} className="rounded-2xl border border-neutral-200 bg-white p-4 shadow-sm dark:border-neutral-800 dark:bg-neutral-950">
                             <div className="flex items-start gap-3">
                               <div className="relative">
-                                <Image src={proposal.master_avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(proposal.master_name)}`} alt="" className="h-11 w-11 rounded-xl object-cover"  width={44} height={44} />
+                                <Image src={proposal.master_avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(proposal.master_name)}`} alt="" className="h-11 w-11 rounded-xl object-cover" width={44} height={44} />
                                 <OnlineIndicator userId={proposal.master_id || proposal.user_id} lastSeen={proposal.last_seen} size="sm" className="-bottom-1 -right-1" />
                               </div>
                               <div className="min-w-0 flex-1">
@@ -616,7 +612,7 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
                     </div>
                   </div>
                 )}
-                
+
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pt-5 border-t border-neutral-100 dark:border-neutral-800">
                   <div className="flex items-center gap-2">
                     <div className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-500/10 flex items-center justify-center">
@@ -629,7 +625,7 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
                       </p>
                     </div>
                   </div>
-                  
+
                   {!lead.master && (
                     <div className="flex items-center gap-2 bg-neutral-100 dark:bg-neutral-900 px-4 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800">
                       <span className="relative flex h-2 w-2 mr-1">
@@ -648,8 +644,8 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
                       <span className="text-xs font-medium text-neutral-500">
                         {
                           (lead.unlock_count || 0) === 1 ? t('response_one', 'отклик мастера') :
-                          (lead.unlock_count || 0) >= 2 && (lead.unlock_count || 0) <= 4 ? t('response_few', 'отклика мастеров') :
-                          t('response_many', 'откликов мастеров')
+                            (lead.unlock_count || 0) >= 2 && (lead.unlock_count || 0) <= 4 ? t('response_few', 'отклика мастеров') :
+                              t('response_many', 'откликов мастеров')
                         }
                       </span>
                     </div>
@@ -672,7 +668,7 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
               <p className="text-primary-100 font-medium mb-6 text-lg">
                 Оставьте одну заявку, и лучшие мастера вашего города сами предложат вам свои условия, цены и эскизы. Выбирайте того, кто подходит именно вам!
               </p>
-              <button 
+              <button
                 onClick={() => setIsFormOpen(true)}
                 className="px-8 py-4 bg-white text-primary-900 font-extrabold rounded-xl hover:bg-primary-50 transition-colors shadow-lg hover:shadow-xl hover:scale-105"
               >
@@ -685,20 +681,20 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
             <h3 className="text-2xl font-bold text-neutral-900 dark:text-white">Мастера</h3>
             <div className="flex flex-col sm:flex-row gap-4 items-center">
               <div className="w-full sm:w-64 relative z-10">
-                <CityMultiSelect 
+                <CityMultiSelect
                   cities={cities}
                   selectedCityIds={selectedMasterCities}
                   onChange={setSelectedMasterCities}
                 />
               </div>
               <div className="flex bg-neutral-100 dark:bg-neutral-800 p-1 rounded-xl w-fit">
-                <button 
+                <button
                   onClick={() => setMasterTab('rating')}
                   className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${masterTab === 'rating' ? 'bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white shadow-sm' : 'text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'}`}
                 >
                   Рейтинг мастеров
                 </button>
-                <button 
+                <button
                   onClick={() => setMasterTab('favorites')}
                   className={`px-4 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-1.5 ${masterTab === 'favorites' ? 'bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white shadow-sm' : 'text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'}`}
                 >
@@ -708,18 +704,17 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
               </div>
               <button
                 onClick={() => setShowMasterFilters(!showMasterFilters)}
-                className={`flex items-center gap-2 px-4 py-2 border rounded-lg text-sm font-semibold transition-colors ${
-                  showMasterFilters 
-                    ? 'bg-primary-50 dark:bg-primary-900/30 border-primary-500 text-primary-600 dark:text-primary-400' 
+                className={`flex items-center gap-2 px-4 py-2 border rounded-lg text-sm font-semibold transition-colors ${showMasterFilters
+                    ? 'bg-primary-50 dark:bg-primary-900/30 border-primary-500 text-primary-600 dark:text-primary-400'
                     : 'bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 text-neutral-700 dark:text-neutral-300 hover:border-neutral-600'
-                }`}
+                  }`}
               >
                 <Filter className="w-4 h-4" />
                 Фильтры
               </button>
             </div>
           </div>
-          
+
           <AnimatePresence>
             {showMasterFilters && (
               <motion.div
@@ -729,10 +724,10 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
                 className="overflow-hidden mb-6"
               >
                 <div className="p-4 bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 grid grid-cols-1 md:grid-cols-2 gap-4">
-                  
+
                   <div>
                     <label className="block text-xs font-bold text-neutral-500 mb-2 uppercase">Сортировка</label>
-                    <select 
+                    <select
                       value={masterSortBy}
                       onChange={(e) => setMasterSortBy(e.target.value as any)}
                       className="w-full bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg px-3 py-2 text-sm text-neutral-900 dark:text-white"
@@ -773,10 +768,10 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
               </motion.div>
             )}
           </AnimatePresence>
-          
+
           {isLoadingMasters ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[1,2,3].map(i => (
+              {[1, 2, 3].map(i => (
                 <div key={i} className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-3xl h-[400px] animate-pulse"></div>
               ))}
             </div>
@@ -785,18 +780,18 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
               {filteredMasters.map(master => (
                 <div key={master.id} className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-shadow group flex flex-col">
                   <div className="p-6 pb-4 flex items-start gap-4 relative">
-                    <button 
+                    <button
                       onClick={(e) => toggleFavorite(master.id, e)}
                       className="absolute top-4 right-4 p-2 bg-neutral-100 dark:bg-neutral-800 rounded-full hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
                     >
                       <Heart className={`w-5 h-5 transition-colors ${favoriteMasterIds.has(master.id) ? 'fill-red-500 text-red-500' : 'text-neutral-400'}`} />
                     </button>
                     <div className="relative">
-                      <Image 
+                      <Image
                         src={master.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(master.display_name || master.username || 'M')}`}
                         alt="Avatar"
                         className="w-16 h-16 rounded-2xl object-cover border-2 border-neutral-100 dark:border-neutral-800"
-                        width={64} height={64} 
+                        width={64} height={64}
                       />
                       <OnlineIndicator userId={master.id} lastSeen={master.last_seen} size="md" className="-bottom-1 -right-1" />
                     </div>
@@ -808,26 +803,26 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
                         <VerifiedMasterBadge verified={master.is_verified_master || master.certificate_status === 'approved'} className="h-4 w-4 text-primary-500" />
                       </div>
                       <p className="text-sm text-neutral-500 mb-2">@{master.username}</p>
-                      
+
                       <div className="flex items-center gap-1.5 text-yellow-500">
                         <span className="text-sm font-bold">★ {master.rating}</span>
                         <span className="text-xs text-neutral-400">({master.review_count} отзывов)</span>
                       </div>
                     </div>
                   </div>
-                  
+
                   {master.portfolio_posts && master.portfolio_posts.length > 0 && (
                     <div className="grid grid-cols-3 gap-1 px-6 mb-4">
                       {master.portfolio_posts.map((post: any) => (
                         <div key={post.id} className="aspect-square bg-neutral-100 dark:bg-neutral-800 rounded-lg overflow-hidden">
-                          <Image src={post.media?.[0]?.url || ''} className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity" alt="Portfolio"  width={800} height={800} />
+                          <Image src={post.media?.[0]?.url || ''} className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity" alt="Portfolio" width={800} height={800} />
                         </div>
                       ))}
                     </div>
                   )}
 
                   <div className="px-6 pb-6 mt-auto">
-                    <button 
+                    <button
                       onClick={() => setSelectedMasterUsernameForModal(master.username)}
                       className="block w-full py-3 text-center bg-neutral-100 dark:bg-neutral-800 hover:bg-primary-600 hover:text-white dark:hover:bg-primary-600 text-neutral-900 dark:text-white font-bold rounded-xl transition-all"
                     >
@@ -854,7 +849,7 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
       {isFormOpen && (
         <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-sm p-4 sm:p-6" onClick={(e) => { if (e.target === e.currentTarget) setIsFormOpen(false) }}>
           <div className="relative w-full max-w-4xl mx-auto my-10 bg-neutral-50 dark:bg-neutral-950 rounded-3xl p-6 md:p-10 border border-neutral-200 dark:border-neutral-800 shadow-2xl">
-            <button 
+            <button
               onClick={() => setIsFormOpen(false)}
               className="absolute top-6 right-6 z-50 p-2 text-neutral-400 hover:text-neutral-900 dark:hover:text-white rounded-full bg-neutral-200/50 dark:bg-white/5 hover:bg-neutral-200 dark:hover:bg-white/10 transition-colors"
             >
@@ -895,7 +890,7 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
           <div role="dialog" aria-modal="true" aria-labelledby="confirm-master-title" className="w-full max-w-md rounded-[2rem] border border-white/10 bg-white p-7 shadow-2xl dark:bg-neutral-950">
             <div className="mb-5 flex items-center gap-4">
               <div className="relative">
-                <Image src={proposalToConfirm.proposal.master_avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(proposalToConfirm.proposal.master_name)}`} alt="" className="h-14 w-14 rounded-2xl object-cover"  width={56} height={56} />
+                <Image src={proposalToConfirm.proposal.master_avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(proposalToConfirm.proposal.master_name)}`} alt="" className="h-14 w-14 rounded-2xl object-cover" width={56} height={56} />
                 <OnlineIndicator userId={proposalToConfirm.proposal.master_id || proposalToConfirm.proposal.user_id} lastSeen={proposalToConfirm.proposal.last_seen} size="md" className="-bottom-1 -right-1" />
               </div>
               <div>
@@ -923,11 +918,11 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
         recipientAvatar={selectedChatAvatar}
         recipientLastSeen={selectedChatLastSeen}
       />
-      
+
       {isMasterSelectModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm overflow-y-auto" onClick={(e) => { if (e.target === e.currentTarget) setIsMasterSelectModalOpen(false) }}>
           <div className="relative w-full max-w-2xl bg-white dark:bg-neutral-900 rounded-3xl p-6 md:p-8 border border-neutral-200 dark:border-neutral-800 shadow-2xl flex flex-col max-h-[80vh]">
-            <button 
+            <button
               onClick={() => setIsMasterSelectModalOpen(false)}
               className="absolute top-6 right-6 z-50 p-2 text-neutral-400 hover:text-neutral-900 dark:hover:text-white rounded-full bg-neutral-100 dark:bg-neutral-800 transition-colors"
             >
@@ -942,11 +937,11 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
                   <div key={master.id} className="flex items-center justify-between p-4 bg-neutral-50 dark:bg-neutral-800/50 rounded-2xl border border-neutral-100 dark:border-neutral-800">
                     <div className="flex items-center gap-4">
                       <div className="relative">
-                        <Image 
+                        <Image
                           src={master.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(master.display_name || master.username || 'M')}`}
                           alt="Avatar"
                           className="w-12 h-12 rounded-full object-cover"
-                          width={48} height={48} 
+                          width={48} height={48}
                         />
                         <OnlineIndicator lastSeen={master.last_seen} size="sm" className="bottom-0 right-0" />
                       </div>
@@ -973,22 +968,22 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
         </div>
       )}
       {lightboxImage && (
-        <div 
+        <div
           className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4 backdrop-blur-sm cursor-zoom-out"
           onClick={() => setLightboxImage(null)}
         >
-          <img 
-            src={lightboxImage} 
-            alt="Fullscreen preview" 
+          <img
+            src={lightboxImage}
+            alt="Fullscreen preview"
             className="max-w-full max-h-[90vh] object-contain rounded-lg"
           />
         </div>
       )}
 
       {selectedMasterUsernameForModal && (
-        <MasterProfileModal 
-          username={selectedMasterUsernameForModal} 
-          onClose={() => setSelectedMasterUsernameForModal(null)} 
+        <MasterProfileModal
+          username={selectedMasterUsernameForModal}
+          onClose={() => setSelectedMasterUsernameForModal(null)}
           onBook={(masterId) => {
             setSelectedMasterForDirectBooking(masterId)
             setIsFormOpen(true)

@@ -35,7 +35,7 @@ export function CityMultiSelect({ cities, selectedCityIds, onChange, placeholder
 
   const getCityName = (c: City) => lang === 'en' && c.name_en ? c.name_en : c.name_ru
 
-  const filteredCities = cities.filter(c => 
+  const filteredCities = cities.filter(c =>
     getCityName(c).toLowerCase().includes(search.toLowerCase())
   )
 
@@ -55,9 +55,9 @@ export function CityMultiSelect({ cities, selectedCityIds, onChange, placeholder
 
   const renderTriggerText = () => {
     if (selectedCityIds.length === 0) {
-      return <span className="text-neutral-500">{placeholder || t('allCities') || 'Все города'}</span>
+      return <span className="text-neutral-500">{placeholder || t('Все города') || 'Все города'}</span>
     }
-    
+
     if (selectedCityIds.length === 1) {
       const city = cities.find(c => c.id === selectedCityIds[0])
       return <span className="text-neutral-900 dark:text-white font-medium truncate">{city ? getCityName(city) : ''}</span>
@@ -72,7 +72,7 @@ export function CityMultiSelect({ cities, selectedCityIds, onChange, placeholder
 
   return (
     <div className={`relative ${className}`} ref={wrapperRef}>
-      <div 
+      <div
         className="flex items-center justify-between gap-2 px-4 py-2.5 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl cursor-pointer hover:border-neutral-300 dark:hover:border-neutral-700 transition-colors shadow-sm"
         onClick={() => setIsOpen(!isOpen)}
       >
@@ -82,7 +82,7 @@ export function CityMultiSelect({ cities, selectedCityIds, onChange, placeholder
             {renderTriggerText()}
           </div>
         </div>
-        
+
         <div className="flex items-center gap-1 shrink-0">
           {selectedCityIds.length > 0 && (
             <button
@@ -101,14 +101,14 @@ export function CityMultiSelect({ cities, selectedCityIds, onChange, placeholder
           <div className="p-2 border-b border-neutral-100 dark:border-neutral-800">
             <input
               type="text"
-              placeholder={t('searchCity') || 'Поиск города...'}
+              placeholder={t('Поиск города...') || 'Поиск города...'}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full px-3 py-2 text-sm bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-lg outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 dark:text-white transition-all"
               onClick={e => e.stopPropagation()}
             />
           </div>
-          
+
           <div className="max-h-60 overflow-y-auto p-2 space-y-0.5 scrollbar-thin scrollbar-thumb-neutral-200 dark:scrollbar-thumb-neutral-800">
             {filteredCities.length === 0 ? (
               <div className="p-4 text-center text-sm text-neutral-500">
@@ -121,11 +121,10 @@ export function CityMultiSelect({ cities, selectedCityIds, onChange, placeholder
                   <div
                     key={city.id}
                     onClick={(e) => toggleCity(city.id, e)}
-                    className={`flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer text-sm transition-colors ${
-                      isSelected 
-                        ? 'bg-primary-50 dark:bg-primary-500/10 text-primary-700 dark:text-primary-400 font-medium' 
-                        : 'text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800'
-                    }`}
+                    className={`flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer text-sm transition-colors ${isSelected
+                      ? 'bg-primary-50 dark:bg-primary-500/10 text-primary-700 dark:text-primary-400 font-medium'
+                      : 'text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800'
+                      }`}
                   >
                     <span className="truncate">{getCityName(city)}</span>
                     {isSelected && <Check className="w-4 h-4" />}

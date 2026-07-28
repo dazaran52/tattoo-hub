@@ -85,6 +85,7 @@ export default function BookMasterPage() {
   const [selectedPost, setSelectedPost] = useState<PortfolioPost | null>(null)
   const [reviews, setReviews] = useState<PublicReview[]>([])
   const [isLoadingReviews, setIsLoadingReviews] = useState(false)
+  const [isBookingStarted, setIsBookingStarted] = useState(false)
 
   useEffect(() => {
     fetchMasterProfile()
@@ -172,7 +173,7 @@ export default function BookMasterPage() {
             <VerifiedMasterBadge verified={master.certificate_status === 'approved'} />
           </div>
           
-          {master.review_count && master.review_count > 0 && (
+          {(master.review_count || 0) > 0 && (
             <div className="flex items-center justify-center gap-1.5 mb-4 text-yellow-500">
               <Star className="w-5 h-5 fill-current" />
               <span className="font-bold text-lg">{master.rating}</span>
@@ -235,16 +236,27 @@ export default function BookMasterPage() {
 
         {activeTab === 'booking' ? (
           <>
-            <WhatHappensNext className={tClasses.card} />
-            <LeadWizard
-              master={master}
-              source={source === 'platform' ? 'platform' : 'personal'}
-              themeClasses={{
-                card: tClasses.card,
-                input: tClasses.input,
-                buttonPrimary: tClasses.buttonPrimary
-              }}
-            />
+            {!isBookingStarted ? (
+              <div className="flex flex-col gap-4 max-w-xl mx-auto">
+                <WhatHappensNext className={tClasses.card} />
+                <button
+                  onClick={() => setIsBookingStarted(true)}
+                  className={`w-full py-4 rounded-2xl font-bold text-lg ${tClasses.buttonPrimary}`}
+                >
+                  Начать
+                </button>
+              </div>
+            ) : (
+              <LeadWizard
+                master={master}
+                source={source === 'platform' ? 'platform' : 'personal'}
+                themeClasses={{
+                  card: tClasses.card,
+                  input: tClasses.input,
+                  buttonPrimary: tClasses.buttonPrimary
+                }}
+              />
+            )}
           </>
         ) : activeTab === 'portfolio' ? (
           <div className={`rounded-3xl p-8 transition-colors duration-500 ${tClasses.card}`}>

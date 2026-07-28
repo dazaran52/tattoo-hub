@@ -290,7 +290,8 @@ async def get_my_chats(
                 "name": m_info.get("display_name") or m_info.get("username") or "Мастер",
                 "email": "",
                 "avatar_url": m_info.get("avatar_url") or "",
-                "last_seen": m_info.get("last_seen")
+                "last_seen": m_info.get("last_seen"),
+                "username": m_info.get("username")
             }
         else:
             users_data = client_map.get(chat["client_id"], {})
