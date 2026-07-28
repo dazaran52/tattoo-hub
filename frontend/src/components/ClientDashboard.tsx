@@ -34,6 +34,7 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
   const [selectedChatMaster, setSelectedChatMaster] = useState('')
   const [acceptingProposalId, setAcceptingProposalId] = useState<string | null>(null)
   const [proposalToConfirm, setProposalToConfirm] = useState<{ leadId: string; proposal: any } | null>(null)
+  const [lightboxImage, setLightboxImage] = useState<string | null>(null)
 
   const toggleFavorite = async (masterId: string, e: React.MouseEvent) => {
     e.stopPropagation()
@@ -389,11 +390,11 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
                       ['accepted', 'booked'].includes(lead.status) ? 'bg-emerald-100 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/20 text-emerald-700 dark:text-emerald-400' :
                       'bg-neutral-100 dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-400'
                     }`}>
-                      {['new', 'active'].includes(lead.status) ? (t('statusSearching') || 'В поиске') :
-                       ['accepted', 'booked'].includes(lead.status) ? (t('statusAccepted') || 'В работе') :
-                       lead.status === 'completed' ? (t('statusCompleted') || 'Завершено') :
-                       lead.status === 'paused' ? (t('statusPaused') || 'Приостановлена') :
-                       lead.status === 'closed' ? (t('statusArchived') || 'Закрыта') : lead.status}
+                      {['new', 'active'].includes(lead.status) ? (lead.is_personal ? t('statusPending', 'Ожидает ответа') : t('statusSearching', 'В поиске')) :
+                       ['accepted', 'booked'].includes(lead.status) ? t('statusAccepted', 'В работе') :
+                       lead.status === 'completed' ? t('statusCompleted', 'Завершено') :
+                       lead.status === 'paused' ? t('statusPaused', 'Приостановлена') :
+                       lead.status === 'closed' ? t('statusArchived', 'Закрыта') : lead.status}
                     </span>
                   </div>
                   <div className="flex items-center gap-3">
@@ -412,6 +413,14 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
                         <>
                           <div className="fixed inset-0 z-[5]" onClick={(e) => { e.stopPropagation(); setOpenMenuId(null); }} />
                           <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl shadow-xl overflow-hidden z-10 py-1">
+                          {['new', 'active', 'paused'].includes(lead.status) && (
+                            <button 
+                              onClick={() => { setOpenMenuId(null); setEditingLead(lead) }}
+                              className="w-full text-left px-4 py-2.5 text-sm font-semibold text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors flex items-center gap-2"
+                            >
+                              <Edit2 className="w-4 h-4" /> {t('editLead', 'Редактировать заявку')}
+                            </button>
+                          )}
                           {['new', 'active', 'paused'].includes(lead.status) && <>
                             <button
                               onClick={() => { setOpenMenuId(null); handlePauseResume(lead.id, lead.status) }}
@@ -421,20 +430,20 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
                             </button>
                             <div className="h-px w-full bg-neutral-100 dark:bg-neutral-800 my-1" />
                           </>}
-                          {['new', 'active', 'paused', 'closed'].includes(lead.status) && <button
-                            onClick={() => { setOpenMenuId(null); handleDelete(lead.id) }}
-                            className="w-full text-left px-4 py-2.5 text-sm font-medium flex items-center gap-2 hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400 transition-colors"
-                          >
-                            <Trash2 className="w-4 h-4" /> {t('delete') || 'Удалить'}
-                          </button>}
-                        </div>
+                          {['new', 'active', 'paused', 'closed'].includes(lead.status) && (
+                            <button
+                              onClick={() => { setOpenMenuId(null); handleDelete(lead.id) }}
+                              className="w-full text-left px-4 py-2.5 text-sm font-medium flex items-center gap-2 hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400 transition-colors"
+                            >
+                              <Trash2 className="w-4 h-4 text-red-500" /> <span className="text-red-500">{t('deleteLead', 'Удалить заявку')}</span>
+                            </button>
+                          )}
+                          </div>
                         </>
                       )}
                     </div>
                   </div>
                 </div>
-                
-                <h4 className="font-extrabold text-xl text-neutral-900 dark:text-white mb-4 tracking-tight">{lead.title || t('tattooLead')}</h4>
                 
                 <div className="flex flex-wrap gap-2 mb-5">
                   {lead.style && lead.style !== 'Не определился' && (
@@ -445,7 +454,7 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
                   )}
                   {lead.body_place && lead.body_place !== 'Не определился' && (
                     <span className="px-3 py-1.5 bg-neutral-100 dark:bg-neutral-800/50 text-neutral-700 dark:text-neutral-300 text-xs font-semibold rounded-lg flex items-center gap-1.5 border border-neutral-200/50 dark:border-white/5">
-                      <span>🦵</span>
+                      <span>👤</span>
                       {lead.body_place}
                     </span>
                   )}
@@ -460,12 +469,18 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
                 {lead.image_urls && Array.isArray(lead.image_urls) && lead.image_urls.length > 0 && (
                   <div className="flex gap-3 mb-5 overflow-x-auto pb-2 snap-x scrollbar-thin scrollbar-thumb-neutral-300 dark:scrollbar-thumb-neutral-700">
                     {lead.image_urls.map((url: any, i: number) => {
-                      const imgSrc = typeof url === 'string' ? url : (url?.url || '');
-                      if (!imgSrc) return null;
+                      const img = typeof url === 'string' ? url : (url?.url || '');
+                      if (!img) return null;
                       return (
-                        <div key={i} className="snap-center shrink-0 w-28 h-28 relative rounded-2xl overflow-hidden border border-neutral-200 dark:border-neutral-800 shadow-sm group/img cursor-pointer">
-                          <Image src={imgSrc || ''} alt="Reference" className="w-full h-full object-cover transition-transform duration-500 group-hover/img:scale-110"  width={800} height={800} />
-                          <div className="absolute inset-0 bg-black/0 group-hover/img:bg-black/10 transition-colors" />
+                        <div key={i} className="relative w-28 h-28 shrink-0 rounded-xl overflow-hidden border border-neutral-200 dark:border-neutral-800">
+                          <Image
+                            src={img}
+                            alt="Reference"
+                            fill
+                            className="object-cover rounded-xl group-hover:scale-110 transition-transform duration-500 cursor-zoom-in"
+                            sizes="120px"
+                            onClick={(e) => { e.stopPropagation(); setLightboxImage(img) }}
+                          />
                         </div>
                       )
                     })}
@@ -483,18 +498,24 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
                   <div className="mb-6 p-1 rounded-2xl bg-gradient-to-r from-primary-500/10 via-primary-500/10 to-fuchsia-500/10">
                     <div className="bg-white/50 dark:bg-[#0a0a0a]/50 backdrop-blur-md rounded-[14px] p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border border-white/20 dark:border-white/5">
                       <div className="flex items-center gap-4">
-                        <div className="relative">
+                        <div 
+                          className="flex items-center gap-3 bg-neutral-100 dark:bg-[#111] p-3 rounded-2xl border border-neutral-200/50 dark:border-white/5 cursor-pointer hover:bg-neutral-200 dark:hover:bg-[#1a1a1a] transition-colors group/master w-fit"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setSelectedMasterUsernameForModal(lead.master.username || lead.assigned_master_id)
+                          }}
+                        >
                           <Image 
                             src={lead.master.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(lead.master.name || 'Master')}`} 
                             alt="Master" 
                             className="w-14 h-14 rounded-full object-cover shadow-md border-2 border-white dark:border-neutral-800"
                            width={56} height={56} />
                           <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-white dark:border-[#0a0a0a] rounded-full" />
-                        </div>
-                        <div>
-                          <p className="text-xs font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-primary-500 to-primary-500 uppercase tracking-wider mb-1">{t('assignedMaster') || 'Ваш мастер'}</p>
-                          <h5 className="font-bold text-base text-neutral-900 dark:text-white leading-tight">{lead.master.name}</h5>
-                          <a href={`/book/${lead.master.username}`} target="_blank" rel="noopener noreferrer" className="text-xs font-medium text-neutral-500 hover:text-primary-500 transition-colors">@{lead.master.username}</a>
+                          <div>
+                            <p className="text-xs font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-primary-500 to-primary-500 uppercase tracking-wider mb-1">{t('assignedMaster', 'Назначенный мастер')}</p>
+                            <h5 className="font-bold text-base text-neutral-900 dark:text-white leading-tight">{lead.master.name}</h5>
+                            <span className="text-xs font-medium text-neutral-500">@{lead.master.username}</span>
+                          </div>
                         </div>
                       </div>
                       <div className="flex flex-col sm:flex-row items-end sm:items-center gap-3">
@@ -575,7 +596,7 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
                       <DollarSign className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                     </div>
                     <div>
-                      <p className="text-[10px] font-extrabold text-neutral-500 uppercase tracking-wider">{t('budgetLabel') || 'Бюджет'}</p>
+                      <p className="text-[10px] font-extrabold text-neutral-500 uppercase tracking-wider">{t('budgetLabel', 'Бюджет')}</p>
                       <p className="font-bold text-neutral-900 dark:text-white text-sm">
                         {lead.display_budget || lead.client_budget ? `${lead.client_budget} ${lead.client_currency || 'CZK'}` : t('negotiableBudget')}
                       </p>
@@ -599,9 +620,9 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
                       </span>
                       <span className="text-xs font-medium text-neutral-500">
                         {
-                          (lead.unlock_count || 0) === 1 ? (t('response_one') || 'отклик мастера') :
-                          (lead.unlock_count || 0) >= 2 && (lead.unlock_count || 0) <= 4 ? (t('response_few') || 'отклика мастеров') :
-                          (t('response_many') || 'откликов мастеров')
+                          (lead.unlock_count || 0) === 1 ? t('response_one', 'отклик мастера') :
+                          (lead.unlock_count || 0) >= 2 && (lead.unlock_count || 0) <= 4 ? t('response_few', 'отклика мастеров') :
+                          t('response_many', 'откликов мастеров')
                         }
                       </span>
                     </div>
@@ -843,6 +864,19 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
           </div>
         </div>
       )}
+      {lightboxImage && (
+        <div 
+          className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4 backdrop-blur-sm cursor-zoom-out"
+          onClick={() => setLightboxImage(null)}
+        >
+          <img 
+            src={lightboxImage} 
+            alt="Fullscreen preview" 
+            className="max-w-full max-h-[90vh] object-contain rounded-lg"
+          />
+        </div>
+      )}
+
       {selectedMasterUsernameForModal && (
         <MasterProfileModal 
           username={selectedMasterUsernameForModal} 
