@@ -5,7 +5,6 @@ import { X, Loader2, ArrowDownToLine, Gem, Calendar } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { getTranslation, Language } from '@/lib/i18n'
 import { createPortal } from 'react-dom'
-import { WithdrawalModal } from './WithdrawalModal'
 import { useLanguage } from '@/i18n/LanguageContext'
 
 interface Transaction {
@@ -23,14 +22,12 @@ interface Transaction {
 interface Props {
   isOpen: boolean
   onClose: () => void
-  withdrawableBalance?: number
 }
 
-export function TransactionHistoryModal({ isOpen, onClose, withdrawableBalance = 0 }: Props) {
+export function TransactionHistoryModal({ isOpen, onClose }: Props) {
   const { lang: language } = useLanguage()
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [showWithdraw, setShowWithdraw] = useState(false)
 
   const t = (key: Parameters<typeof getTranslation>[1]) => getTranslation(language as Language, key)
 
@@ -106,20 +103,6 @@ export function TransactionHistoryModal({ isOpen, onClose, withdrawableBalance =
           </div>
         </div>
 
-        {withdrawableBalance > 0 && (
-          <div className="mx-4 mb-4 bg-accent-50 dark:bg-accent-900/20 p-4 rounded-xl border border-accent-100 dark:border-accent-900/50 flex items-center justify-between">
-            <div>
-              <p className="text-xs font-bold text-accent-600 dark:text-accent-400">Доступно для вывода</p>
-              <p className="text-lg font-bold text-neutral-900 dark:text-white">{withdrawableBalance} кредитов</p>
-            </div>
-            <button
-              onClick={() => setShowWithdraw(true)}
-              className="px-4 py-2 bg-accent-600 hover:bg-accent-700 text-white rounded-lg text-sm font-bold shadow-md transition-colors"
-            >
-              Вывести
-            </button>
-          </div>
-        )}
 
         <div className="flex-1 overflow-y-auto pr-2 space-y-3">
           {isLoading ? (
@@ -191,15 +174,6 @@ export function TransactionHistoryModal({ isOpen, onClose, withdrawableBalance =
         </div>
       </div>
       
-      <WithdrawalModal
-        isOpen={showWithdraw}
-        onClose={() => setShowWithdraw(false)}
-        withdrawableBalance={withdrawableBalance}
-        onSuccess={() => {
-          setShowWithdraw(false)
-          window.location.reload()
-        }}
-      />
     </div>
   )
 

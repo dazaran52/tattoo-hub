@@ -68,7 +68,6 @@ class ProfileResponse(BaseModel):
     country_ids: list[str] | None = None
     city_ids: list[str] | None = None
     discount_tokens: int = 0
-    withdrawable_credits: int = 0
     unlocked_leads_count: int = 0
     gamification_level: str = "Newbie"
     role: str | None = None
@@ -160,7 +159,6 @@ async def get_profile(
                 "country_ids": country_ids,
                 "city_ids": city_ids,
                 "discount_tokens": 0,
-                "withdrawable_credits": 0,
                 "role": role,
                 "status": status_val,
                 "is_verified_master": False,
@@ -249,7 +247,6 @@ async def get_profile(
         discount_tokens=data.get("discount_tokens") or 0,
         unlocked_leads_count=unlocked_count,
         gamification_level=level,
-        withdrawable_credits=data.get("withdrawable_credits") or 0,
         role=data.get("role"),
         is_verified_master=data.get("is_verified_master") or False,
         certificate_url=data.get("certificate_url"),
@@ -424,7 +421,6 @@ async def update_profile(
             discount_tokens=data.get("discount_tokens") or 0,
             unlocked_leads_count=unlocked_count,
             gamification_level=level,
-            withdrawable_credits=data.get("withdrawable_credits") or 0,
             role=data.get("role"),
             is_verified_master=data.get("is_verified_master") or False,
             certificate_url=data.get("certificate_url"),

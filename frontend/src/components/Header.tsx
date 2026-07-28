@@ -280,7 +280,6 @@ export function Header({ profile, onLogout, maxWidthClass = 'max-w-7xl' }: Heade
       <TransactionHistoryModal 
         isOpen={showHistory} 
         onClose={() => setShowHistory(false)} 
-        withdrawableBalance={profile.withdrawable_balance}
       />
     </header>
   )

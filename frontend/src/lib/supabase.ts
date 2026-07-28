@@ -28,7 +28,6 @@ export type Profile = {
   discount_tokens: number
   unlocked_leads_count?: number
   gamification_level?: string
-  withdrawable_balance?: number
   role?: string
   is_verified_master?: boolean
   certificate_url?: string | null

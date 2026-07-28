@@ -363,16 +363,37 @@ def create_master_lead(
     current_user: AuthUser = Depends(get_current_user),
     supabase: Client = Depends(get_supabase_client)
 ):
-    """Allow a master to create their own lead (C2C)."""
+    """Allow a master to create their own lead (C2C) and list on marketplace."""
     try:
         # Insert lead (exclude country_id as it doesn't exist in DB)
         data = lead_data.model_dump()
         data.pop("country_id", None)
+        data["creator_master_id"] = current_user.user_id
+        data["status"] = "new"
+        data["is_personal"] = False
+        data["client_token"] = str(uuid.uuid4())
+
         lead_insert = supabase.table("leads").insert(data).execute()
         if not lead_insert.data:
             raise HTTPException(status_code=400, detail="Failed to create lead")
 
         new_lead = lead_insert.data[0]
+
+        # Also create a client record in CRM for the master who shared the lead
+        try:
+            client_data = {
+                "master_id": current_user.user_id,
+                "name": data["title"],
+                "contact_info": data["contacts"],
+                "phone": data["contacts"],
+                "notes": data.get("description", ""),
+                "source": "marketplace",
+                "kanban_status": "marketplace",
+                "lead_id": new_lead["id"]
+            }
+            supabase.table("master_clients").insert(client_data).execute()
+        except Exception as client_err:
+            print(f"Warning: Failed to auto-create CRM client for master lead: {client_err}")
 
         return new_lead
     except Exception as e:

@@ -7,6 +7,7 @@ from app.database import get_async_supabase_client
 from supabase._async.client import AsyncClient
 from app.services.mail import send_transactional_email
 import asyncio
+import uuid
 
 router = APIRouter()
 
@@ -329,6 +330,87 @@ async def update_client(
             
         return res.data[0]
     except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+class ShareClientRequest(BaseModel):
+    city_id: Optional[str] = None
+    price_credits: int = 50
+
+@router.post("/clients/{client_id}/share")
+async def share_client_to_marketplace(
+    client_id: str,
+    data: Optional[ShareClientRequest] = None,
+    current_user: AuthUser = Depends(get_current_user),
+    supabase: AsyncClient = Depends(get_async_supabase_client)
+):
+    try:
+        client_res = await supabase.table("master_clients") \
+            .select("*, master_sessions(*)") \
+            .eq("id", client_id) \
+            .eq("master_id", current_user.user_id) \
+            .execute()
+        if not client_res.data:
+            raise HTTPException(status_code=404, detail="Client not found")
+        client = client_res.data[0]
+
+        city_id = data.city_id if data and data.city_id else None
+        price_credits = data.price_credits if data else 50
+
+        if not city_id:
+            res_cities = await supabase.table("profiles").select("city_ids").eq("id", current_user.user_id).single().execute()
+            city_ids = res_cities.data.get("city_ids") if res_cities.data else []
+            if not city_ids:
+                res_uc = await supabase.table("user_cities").select("city_id").eq("user_id", current_user.user_id).execute()
+                city_ids = [c["city_id"] for c in (res_uc.data or [])]
+            if city_ids:
+                city_id = city_ids[0]
+            else:
+                res_any = await supabase.table("cities").select("id").limit(1).execute()
+                if res_any.data:
+                    city_id = res_any.data[0]["id"]
+                else:
+                    raise HTTPException(status_code=400, detail="В системе нет городов для размещения лида")
+
+        # Check if lead already exists
+        lead_id = client.get("lead_id")
+        if lead_id:
+            await supabase.table("leads").update({
+                "assigned_master_id": None,
+                "creator_master_id": current_user.user_id,
+                "status": "new",
+                "is_personal": False,
+                "city_id": city_id,
+                "price_credits": price_credits
+            }).eq("id", lead_id).execute()
+        else:
+            lead_data = {
+                "title": f"Клиент: {client['name']}",
+                "description": client.get("notes") or "Клиент выставлен мастером из CRM.",
+                "contacts": client.get("phone") or client.get("telegram") or client.get("instagram") or client.get("email") or client.get("contact_info") or "Контакты в CRM",
+                "city_id": city_id,
+                "price_credits": price_credits,
+                "creator_master_id": current_user.user_id,
+                "status": "new",
+                "is_personal": False,
+                "client_token": str(uuid.uuid4())
+            }
+            res_lead = await supabase.table("leads").insert(lead_data).execute()
+            if not res_lead.data:
+                raise HTTPException(status_code=400, detail="Failed to create lead on marketplace")
+            lead_id = res_lead.data[0]["id"]
+
+        res_client = await supabase.table("master_clients") \
+            .update({"lead_id": lead_id, "source": "marketplace", "kanban_status": "marketplace"}) \
+            .eq("id", client_id) \
+            .eq("master_id", current_user.user_id) \
+            .execute()
+
+        return res_client.data[0] if res_client.data else {"status": "success", "lead_id": lead_id}
+    except HTTPException:
+        raise
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/sessions")
