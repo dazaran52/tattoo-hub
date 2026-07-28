@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react'
 import { Profile, supabase } from '@/lib/supabase'
 import { PlusCircle, Heart, Clock, X, MoreVertical, Edit2, Pause, Play, Trash2, MessageCircle, DollarSign, ShieldCheck, Loader2 } from 'lucide-react'
 import { LeadWizard } from '@/components/LeadWizard'
+import { CityMultiSelect } from '@/components/CityMultiSelect'
 import { ChatModal } from '@/components/ChatModal'
 import { MessagesList } from '@/components/MessagesList'
 import { MasterProfileModal } from '@/components/MasterProfileModal'
@@ -22,6 +23,8 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
   const [isMasterSelectModalOpen, setIsMasterSelectModalOpen] = useState(false)
   const [leads, setLeads] = useState<any[]>([])
   const [topMasters, setTopMasters] = useState<any[]>([])
+  const [cities, setCities] = useState<any[]>([])
+  const [selectedMasterCities, setSelectedMasterCities] = useState<string[]>([])
   const [isLoadingLeads, setIsLoadingLeads] = useState(true)
   const [isLoadingMasters, setIsLoadingMasters] = useState(false)
   const [editingLead, setEditingLead] = useState<any>(null)
@@ -239,10 +242,23 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
       }
     }
 
+    async function fetchCities() {
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/locations/cities`)
+        if (response.ok) {
+          const data = await response.json()
+          setCities(data)
+        }
+      } catch (err) {
+        console.error('Error fetching cities:', err)
+      }
+    }
+
     fetchLeads()
     fetchTopMasters()
     fetchUnread()
     fetchFavorites()
+    fetchCities()
     
     const channel = supabase.channel('client_messages')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'chat_messages' }, () => {
@@ -254,6 +270,10 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
       supabase.removeChannel(channel)
     }
   }, [])
+
+  const filteredMasters = topMasters
+    .filter(m => masterTab === 'rating' || favoriteMasterIds.has(m.id))
+    .filter(m => selectedMasterCities.length === 0 || (m.city_ids && m.city_ids.some((id: string) => selectedMasterCities.includes(id))))
 
   return (
     <div className="w-full">
@@ -615,20 +635,29 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
 
           <div className="flex flex-col sm:flex-row sm:items-center justify-between mt-12 mb-6 gap-4">
             <h3 className="text-2xl font-bold text-neutral-900 dark:text-white">Мастера</h3>
-            <div className="flex bg-neutral-100 dark:bg-neutral-800 p-1 rounded-xl w-fit">
-              <button 
-                onClick={() => setMasterTab('rating')}
-                className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${masterTab === 'rating' ? 'bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white shadow-sm' : 'text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'}`}
-              >
-                Рейтинг мастеров
-              </button>
-              <button 
-                onClick={() => setMasterTab('favorites')}
-                className={`px-4 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-1.5 ${masterTab === 'favorites' ? 'bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white shadow-sm' : 'text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'}`}
-              >
-                <Heart className={`w-4 h-4 ${masterTab === 'favorites' ? 'fill-red-500 text-red-500' : ''}`} />
-                Избранные
-              </button>
+            <div className="flex flex-col sm:flex-row gap-4 items-center">
+              <div className="w-full sm:w-64 relative z-10">
+                <CityMultiSelect 
+                  cities={cities}
+                  selectedCityIds={selectedMasterCities}
+                  onChange={setSelectedMasterCities}
+                />
+              </div>
+              <div className="flex bg-neutral-100 dark:bg-neutral-800 p-1 rounded-xl w-fit">
+                <button 
+                  onClick={() => setMasterTab('rating')}
+                  className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${masterTab === 'rating' ? 'bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white shadow-sm' : 'text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'}`}
+                >
+                  Рейтинг мастеров
+                </button>
+                <button 
+                  onClick={() => setMasterTab('favorites')}
+                  className={`px-4 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-1.5 ${masterTab === 'favorites' ? 'bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white shadow-sm' : 'text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'}`}
+                >
+                  <Heart className={`w-4 h-4 ${masterTab === 'favorites' ? 'fill-red-500 text-red-500' : ''}`} />
+                  Избранные
+                </button>
+              </div>
             </div>
           </div>
           
@@ -638,9 +667,9 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
                 <div key={i} className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-3xl h-[400px] animate-pulse"></div>
               ))}
             </div>
-          ) : topMasters.filter(m => masterTab === 'rating' || favoriteMasterIds.has(m.id)).length > 0 ? (
+          ) : filteredMasters.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {topMasters.filter(m => masterTab === 'rating' || favoriteMasterIds.has(m.id)).map(master => (
+              {filteredMasters.map(master => (
                 <div key={master.id} className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-shadow group flex flex-col">
                   <div className="p-6 pb-4 flex items-start gap-4 relative">
                     <button 

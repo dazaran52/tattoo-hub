@@ -16,6 +16,7 @@ import { playSuccessSound, playErrorSound, triggerHaptic } from '@/lib/sounds'
 import imageCompression from 'browser-image-compression'
 import { api } from '@/lib/api'
 import { ConfirmModal } from '@/components/ConfirmModal'
+import { CityMultiSelect } from '@/components/CityMultiSelect'
 import { useLanguage } from '@/i18n/LanguageContext'
 
 export interface Lead {
@@ -63,7 +64,7 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
   const [error, setError] = useState<string | null>(null)
   const [actionLoadingId, setActionLoadingId] = useState<string | null>(null)
   const [filterText, setFilterText] = useState('')
-  const [showOtherCities, setShowOtherCities] = useState(false)
+  const [selectedCityFilters, setSelectedCityFilters] = useState<string[]>(userCities || [])
 
   
   // Custom Confirm Modal State
@@ -441,8 +442,8 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
                        l.description.toLowerCase().includes(filterText.toLowerCase()))
     : leads
 
-  if (!showOtherCities && !showOnlyUnlocked && userCities.length > 0) {
-    filteredLeads = filteredLeads.filter(l => l.city_id && userCities.includes(l.city_id))
+  if (!showOnlyUnlocked && selectedCityFilters.length > 0) {
+    filteredLeads = filteredLeads.filter(l => l.city_id && selectedCityFilters.includes(l.city_id))
   }
 
   if (showOnlyUnlocked) {
@@ -543,18 +544,14 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
               Разместить клиента
             </button>
           )}
-          {!showOnlyUnlocked && userCities.length > 0 && (
-            <button
-              onClick={() => setShowOtherCities(!showOtherCities)}
-              className={`flex items-center gap-2 px-4 py-2 border rounded-full text-sm font-semibold transition-all duration-300 shadow-sm hover:scale-[1.02] ${
-                !showOtherCities 
-                  ? 'bg-primary-500/10 dark:bg-primary-500/20 border-primary-500/30 dark:border-primary-500/50 text-primary-600 dark:text-primary-400' 
-                  : 'bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 text-neutral-500 hover:text-neutral-950 dark:hover:text-white'
-              }`}
-            >
-              <MapPin className={`w-4 h-4 ${!showOtherCities ? 'text-primary-500 dark:text-primary-400' : ''}`} />
-              {!showOtherCities ? 'Только мои города' : 'Все города'}
-            </button>
+          {!showOnlyUnlocked && (
+            <div className="w-full sm:w-64 relative z-10">
+              <CityMultiSelect 
+                cities={cities}
+                selectedCityIds={selectedCityFilters}
+                onChange={setSelectedCityFilters}
+              />
+            </div>
           )}
           <button
             onClick={togglePushNotifications}
