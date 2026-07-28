@@ -13,6 +13,7 @@ import { useLanguage } from '@/i18n/LanguageContext'
 import { TATTOO_STYLES } from '@/lib/constants'
 import { motion, AnimatePresence } from 'framer-motion'
 import { OnlineIndicator } from '@/components/OnlineIndicator'
+import { VerifiedMasterBadge } from '@/components/PublicMasterTrust'
 
 export function ClientDashboard({ profile }: { profile: Profile }) {
   const { t } = useLanguage()
@@ -597,7 +598,7 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
                               <div className="min-w-0 flex-1">
                                 <div className="flex flex-wrap items-center gap-2">
                                   <p className="truncate text-sm font-extrabold text-neutral-900 dark:text-white">{proposal.master_name}</p>
-                                  {proposal.certificate_verified && <span title="Сертификат об обучении проверен Tattoo HUB" className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300"><ShieldCheck className="h-3 w-3" /> Проверен</span>}
+                                  {proposal.certificate_verified && <VerifiedMasterBadge verified={true} className="h-4 w-4 text-primary-500" />}
                                 </div>
                                 {proposal.proposed_dates && <p className="mt-1 text-xs text-neutral-500">{proposal.proposed_dates}</p>}
                                 <p className="mt-2 text-base font-extrabold text-neutral-900 dark:text-white">{proposal.price_offer} {proposal.offer_currency}</p>
@@ -800,9 +801,12 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
                       <OnlineIndicator lastSeen={master.last_seen} size="md" className="-bottom-1 -right-1" />
                     </div>
                     <div>
-                      <h4 className="font-bold text-lg text-neutral-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
-                        {master.display_name || master.username}
-                      </h4>
+                      <div className="flex items-center gap-1.5">
+                        <h4 className="font-bold text-lg text-neutral-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
+                          {master.display_name || master.username}
+                        </h4>
+                        <VerifiedMasterBadge verified={master.is_verified_master || master.certificate_status === 'approved'} className="h-4 w-4 text-primary-500" />
+                      </div>
                       <p className="text-sm text-neutral-500 mb-2">@{master.username}</p>
                       
                       <div className="flex items-center gap-1.5 text-yellow-500">

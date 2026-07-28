@@ -1,19 +1,19 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { BadgeCheck, CalendarCheck, MapPin, MessageCircle, Send } from 'lucide-react'
+import { Award, CalendarCheck, MapPin, MessageCircle, Send } from 'lucide-react'
 import { publicApi } from '@/lib/publicApi'
 
-export function VerifiedMasterBadge({ verified }: { verified?: boolean }) {
+export function VerifiedMasterBadge({ verified, className = 'h-5 w-5 text-primary-500' }: { verified?: boolean; className?: string }) {
   if (!verified) return null
 
   return (
     <span
-      aria-label="Сертификат об обучении проверен Tattoo HUB"
-      title="Сертификат об обучении проверен Tattoo HUB"
-      className="inline-flex items-center gap-1.5 rounded-full border border-accent-500/30 bg-accent-500/10 px-2.5 py-1 text-xs font-semibold text-accent-500"
+      aria-label="Проверенный мастер Tattoo HUB"
+      title="Проверенный мастер Tattoo HUB"
+      className="inline-flex items-center shrink-0"
     >
-      <BadgeCheck className="h-4 w-4" aria-hidden="true" />
+      <Award className={className} aria-hidden="true" />
     </span>
   )
 }
