@@ -455,7 +455,7 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
                 <div className="mb-6 relative">
                   <div className="absolute left-0 top-0 bottom-0 w-1 bg-neutral-200 dark:bg-neutral-800 rounded-full" />
                   <p className="text-sm text-neutral-600 dark:text-neutral-400 pl-4 line-clamp-3 leading-relaxed">
-                    {lead.description || t('noDescription')}
+                    {lead.description?.replace(/\s*(Бюджет|Город):.*?(?=(\n|$))/gi, '') || t('noDescription')}
                   </p>
                 </div>
 

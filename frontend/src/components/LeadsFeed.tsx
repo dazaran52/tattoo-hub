@@ -778,7 +778,7 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
                 </div>
 
                 <p className="text-neutral-600 dark:text-neutral-400 text-sm mb-6 leading-relaxed flex-1 line-clamp-4">
-                  {lead.description || 'Нет описания'}
+                  {lead.description?.replace(/\s*(Бюджет|Город):.*?(?=(\n|$))/gi, '') || 'Нет описания'}
                 </p>
                 
                 {/* Contacts Block */}
