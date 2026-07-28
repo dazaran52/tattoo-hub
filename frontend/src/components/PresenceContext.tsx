@@ -121,12 +121,12 @@ export function PresenceProvider({ children }: { children: React.ReactNode }) {
         return true
       }
 
-      // 2. Check lastSeen timestamp (online if active in last 3 minutes)
+      // 2. Check lastSeen timestamp (online if active in last 45 seconds)
       if (lastSeen) {
         const lastSeenTime = new Date(lastSeen).getTime()
         if (!isNaN(lastSeenTime)) {
           const diffMs = new Date().getTime() - lastSeenTime
-          if (diffMs >= 0 && diffMs < 3 * 60 * 1000) {
+          if (diffMs >= 0 && diffMs < 45 * 1000) {
             return true
           }
         }
