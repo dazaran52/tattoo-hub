@@ -2,8 +2,8 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 from typing import List, Optional
 from supabase.client import Client
-from app.dependencies import get_current_user, get_supabase_client, AuthUser
-
+from app.middleware.auth import get_current_user, AuthUser
+from app.database import get_supabase_client
 router = APIRouter(prefix="/disputes", tags=["Disputes"])
 
 class DisputeCreate(BaseModel):
