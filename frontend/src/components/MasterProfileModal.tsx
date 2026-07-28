@@ -6,6 +6,7 @@ import { X, User, Star, ImageIcon, Video } from 'lucide-react'
 import { format, parseISO } from 'date-fns'
 import { ru } from 'date-fns/locale'
 import { PostModal } from './PostModal'
+import { OnlineIndicator } from '@/components/OnlineIndicator'
 
 export function MasterProfileModal({ username, onClose, onBook }: { username: string, onClose: () => void, onBook: (masterId: string) => void }) {
   const [master, setMaster] = useState<any>(null)
@@ -69,11 +70,15 @@ export function MasterProfileModal({ username, onClose, onBook }: { username: st
             <>
               {/* Profile Info */}
               <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 mb-8 text-center sm:text-left">
-                <Image 
-                  src={master.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(master.display_name || master.username || 'M')}`} 
-                  alt="Avatar" 
-                  className="w-24 h-24 rounded-full object-cover border-4 border-white dark:border-neutral-900 shadow-lg"
-                 width={96} height={96} />
+                <div className="relative">
+                  <Image 
+                    src={master.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(master.display_name || master.username || 'M')}`} 
+                    alt="Avatar" 
+                    className="w-24 h-24 rounded-full object-cover border-4 border-white dark:border-neutral-900 shadow-lg"
+                    width={96} height={96} 
+                  />
+                  <OnlineIndicator lastSeen={master.last_seen} size="lg" className="bottom-1 right-1" />
+                </div>
                 <div className="flex-1">
                   <h1 className="text-2xl font-bold text-neutral-900 dark:text-white mb-1">
                     {master.display_name || master.username}

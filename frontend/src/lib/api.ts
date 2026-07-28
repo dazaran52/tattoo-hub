@@ -34,6 +34,7 @@ export interface Profile {
   avatar_url?: string
   portfolio_image_urls?: string[]
   theme?: string
+  styles?: string[]
 }
 
 async function getAuthHeaders() {

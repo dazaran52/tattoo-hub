@@ -9,6 +9,7 @@ import { LanguageProvider } from '@/i18n/LanguageContext'
 import { CustomCursor } from '@/components/CustomCursor'
 import { TouchEffect } from '@/components/TouchEffect'
 import { CookieBanner } from '@/components/CookieBanner'
+import { OnlinePresenceTracker } from '@/components/OnlinePresenceTracker'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 
@@ -85,6 +86,7 @@ export default function RootLayout({
           <ChatWidget />
           <InstallPrompt />
           <CookieBanner />
+          <OnlinePresenceTracker />
         </LanguageProvider>
       </body>
     </html>

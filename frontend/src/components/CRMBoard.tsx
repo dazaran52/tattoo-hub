@@ -17,6 +17,7 @@ import { KanbanColumnEditor } from '@/components/KanbanColumnEditor'
 import { LeadDetailsModal } from '@/components/LeadDetailsModal'
 import { ImageViewerModal } from '@/components/ImageViewerModal'
 import { SkeletonKanban, SkeletonTable } from '@/components/SkeletonCard'
+import { CreateDisputeModal } from '@/components/CreateDisputeModal'
 import { useLanguage } from '@/i18n/LanguageContext'
 
 export interface CRMSession {
@@ -165,9 +166,10 @@ export function CRMBoard() {
 
   // Filters
   const [searchQuery, setSearchQuery] = useState('')
+  const [isEditingColumns, setIsEditingColumns] = useState(false)
+  const [disputeLeadId, setDisputeLeadId] = useState<string | null>(null)
   const [selectedKanbanIds, setSelectedKanbanIds] = useState<Set<string>>(new Set())
   const [columns, setColumns] = useState<KanbanColumn[]>(DEFAULT_COLUMNS)
-  const [isEditingColumns, setIsEditingColumns] = useState(false)
   
   const dateFilteredSessions = useMemo(() => {
     if (dateFilter === 'all') return sessions
@@ -672,7 +674,8 @@ export function CRMBoard() {
                             <div 
                               onClick={(e) => {
                                 e.stopPropagation();
-                                setClientToView(item.master_clients);
+                                const fullClient = clientsForModal.find(c => c.id === item.master_clients?.id);
+                                setClientToView(fullClient || item.master_clients);
                               }}
                               className="flex items-center gap-3 mb-3 pr-14 cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-800/50 rounded-xl p-1 -m-1 transition-colors"
                             >
@@ -997,6 +1000,23 @@ export function CRMBoard() {
         onSessionClick={(session) => {
           setSessionDetails(null)
           setTimeout(() => setSessionToEdit(session), 100)
+        }}
+        onOpenDispute={() => {
+          if (sessionDetails?.lead_id || sessionDetails?.master_clients?.lead_id) {
+            setDisputeLeadId(sessionDetails.lead_id || sessionDetails.master_clients?.lead_id || null)
+          } else {
+            toast.error('Невозможно открыть диспут для этого сеанса')
+          }
+        }}
+      />
+
+      <CreateDisputeModal
+        isOpen={!!disputeLeadId}
+        onClose={() => setDisputeLeadId(null)}
+        leadId={disputeLeadId || ''}
+        onSuccess={() => {
+          fetchData()
+          setDisputeLeadId(null)
         }}
       />
 

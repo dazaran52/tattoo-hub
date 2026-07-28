@@ -3,13 +3,16 @@
 import Image from 'next/image'
 import { useState, useEffect } from 'react'
 import { Profile, supabase } from '@/lib/supabase'
-import { PlusCircle, Heart, Clock, X, MoreVertical, Edit2, Pause, Play, Trash2, MessageCircle, DollarSign, ShieldCheck, Loader2 } from 'lucide-react'
+import { PlusCircle, Heart, Clock, X, MoreVertical, Edit2, Pause, Play, Trash2, MessageCircle, DollarSign, ShieldCheck, Loader2, Filter, XCircle } from 'lucide-react'
 import { LeadWizard } from '@/components/LeadWizard'
 import { CityMultiSelect } from '@/components/CityMultiSelect'
 import { ChatModal } from '@/components/ChatModal'
 import { MessagesList } from '@/components/MessagesList'
 import { MasterProfileModal } from '@/components/MasterProfileModal'
 import { useLanguage } from '@/i18n/LanguageContext'
+import { TATTOO_STYLES } from '@/lib/constants'
+import { motion, AnimatePresence } from 'framer-motion'
+import { OnlineIndicator } from '@/components/OnlineIndicator'
 
 export function ClientDashboard({ profile }: { profile: Profile }) {
   const { t } = useLanguage()
@@ -32,9 +35,14 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
   const [selectedChatId, setSelectedChatId] = useState<string | null>(null)
   const [selectedChatTitle, setSelectedChatTitle] = useState('')
   const [selectedChatMaster, setSelectedChatMaster] = useState('')
+  const [selectedChatAvatar, setSelectedChatAvatar] = useState<string | null>(null)
+  const [selectedChatLastSeen, setSelectedChatLastSeen] = useState<string | null>(null)
   const [acceptingProposalId, setAcceptingProposalId] = useState<string | null>(null)
   const [proposalToConfirm, setProposalToConfirm] = useState<{ leadId: string; proposal: any } | null>(null)
   const [lightboxImage, setLightboxImage] = useState<string | null>(null)
+  const [selectedMasterStyles, setSelectedMasterStyles] = useState<string[]>([])
+  const [masterSortBy, setMasterSortBy] = useState<'rating_desc' | 'rating_asc' | 'reviews_desc'>('rating_desc')
+  const [showMasterFilters, setShowMasterFilters] = useState(false)
 
   const toggleFavorite = async (masterId: string, e: React.MouseEvent) => {
     e.stopPropagation()
@@ -272,9 +280,19 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
     }
   }, [])
 
-  const filteredMasters = topMasters
+  let filteredMasters = topMasters
     .filter(m => masterTab === 'rating' || favoriteMasterIds.has(m.id))
     .filter(m => selectedMasterCities.length === 0 || (m.city_ids && m.city_ids.some((id: string) => selectedMasterCities.includes(id))))
+
+  if (selectedMasterStyles.length > 0) {
+    filteredMasters = filteredMasters.filter(m => m.styles && m.styles.some((s: string) => selectedMasterStyles.includes(s)))
+  }
+
+  filteredMasters.sort((a, b) => {
+    if (masterSortBy === 'rating_asc') return (a.rating || 0) - (b.rating || 0)
+    if (masterSortBy === 'reviews_desc') return (b.review_count || 0) - (a.review_count || 0)
+    return (b.rating || 0) - (a.rating || 0)
+  })
 
   return (
     <div className="w-full">
@@ -505,12 +523,15 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
                             setSelectedMasterUsernameForModal(lead.master.username || lead.assigned_master_id)
                           }}
                         >
-                          <Image 
-                            src={lead.master.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(lead.master.name || 'Master')}`} 
-                            alt="Master" 
-                            className="w-14 h-14 rounded-full object-cover shadow-md border-2 border-white dark:border-neutral-800"
-                           width={56} height={56} />
-                          <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-white dark:border-[#0a0a0a] rounded-full" />
+                          <div className="relative shrink-0 w-14 h-14">
+                            <Image 
+                              src={lead.master.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(lead.master.name || 'Master')}`} 
+                              alt="Master" 
+                              className="w-14 h-14 rounded-full object-cover shadow-md border-2 border-white dark:border-neutral-800"
+                              width={56} height={56} 
+                            />
+                            <OnlineIndicator lastSeen={lead.master.last_seen} />
+                          </div>
                           <div>
                             <p className="text-xs font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-primary-500 to-primary-500 uppercase tracking-wider mb-1">{t('assignedMaster', 'Назначенный мастер')}</p>
                             <h5 className="font-bold text-base text-neutral-900 dark:text-white leading-tight">{lead.master.name}</h5>
@@ -540,6 +561,8 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
                               setSelectedChatId(lead.chat_id)
                               setSelectedChatTitle(lead.title)
                               setSelectedChatMaster(lead.master.name)
+                              setSelectedChatAvatar(lead.master.avatar_url || null)
+                              setSelectedChatLastSeen(lead.master.last_seen || null)
                             }}
                             className="px-5 py-3 bg-primary-600 hover:bg-primary-500 text-white rounded-xl text-sm font-bold shadow-lg shadow-primary-500/20 transition-all hover:-translate-y-0.5 flex items-center gap-2"
                           >
@@ -567,7 +590,10 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
                         return (
                           <div key={proposalKey} className="rounded-2xl border border-neutral-200 bg-white p-4 shadow-sm dark:border-neutral-800 dark:bg-neutral-950">
                             <div className="flex items-start gap-3">
-                              <Image src={proposal.master_avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(proposal.master_name)}`} alt="" className="h-11 w-11 rounded-xl object-cover"  width={44} height={44} />
+                              <div className="relative">
+                                <Image src={proposal.master_avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(proposal.master_name)}`} alt="" className="h-11 w-11 rounded-xl object-cover"  width={44} height={44} />
+                                <OnlineIndicator lastSeen={proposal.last_seen} size="sm" className="-bottom-1 -right-1" />
+                              </div>
                               <div className="min-w-0 flex-1">
                                 <div className="flex flex-wrap items-center gap-2">
                                   <p className="truncate text-sm font-extrabold text-neutral-900 dark:text-white">{proposal.master_name}</p>
@@ -679,8 +705,73 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
                   Избранные
                 </button>
               </div>
+              <button
+                onClick={() => setShowMasterFilters(!showMasterFilters)}
+                className={`flex items-center gap-2 px-4 py-2 border rounded-lg text-sm font-semibold transition-colors ${
+                  showMasterFilters 
+                    ? 'bg-primary-50 dark:bg-primary-900/30 border-primary-500 text-primary-600 dark:text-primary-400' 
+                    : 'bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 text-neutral-700 dark:text-neutral-300 hover:border-neutral-600'
+                }`}
+              >
+                <Filter className="w-4 h-4" />
+                Фильтры
+              </button>
             </div>
           </div>
+          
+          <AnimatePresence>
+            {showMasterFilters && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                className="overflow-hidden mb-6"
+              >
+                <div className="p-4 bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 grid grid-cols-1 md:grid-cols-2 gap-4">
+                  
+                  <div>
+                    <label className="block text-xs font-bold text-neutral-500 mb-2 uppercase">Сортировка</label>
+                    <select 
+                      value={masterSortBy}
+                      onChange={(e) => setMasterSortBy(e.target.value as any)}
+                      className="w-full bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg px-3 py-2 text-sm text-neutral-900 dark:text-white"
+                    >
+                      <option value="rating_desc">Высокий рейтинг</option>
+                      <option value="rating_asc">Низкий рейтинг</option>
+                      <option value="reviews_desc">Больше отзывов</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-neutral-500 mb-2 uppercase">Стили ({selectedMasterStyles.length})</label>
+                    <select
+                      className="w-full bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg px-3 py-2 text-sm text-neutral-900 dark:text-white"
+                      onChange={(e) => {
+                        if (e.target.value && !selectedMasterStyles.includes(e.target.value)) {
+                          setSelectedMasterStyles([...selectedMasterStyles, e.target.value])
+                        }
+                        e.target.value = ''
+                      }}
+                    >
+                      <option value="">Добавить стиль...</option>
+                      {TATTOO_STYLES.map(s => (
+                        <option key={s} value={s}>{s}</option>
+                      ))}
+                    </select>
+                    {selectedMasterStyles.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-2">
+                        {selectedMasterStyles.map(s => (
+                          <span key={s} className="px-2 py-1 bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 text-xs rounded-md flex items-center gap-1">
+                            {s} <XCircle className="w-3 h-3 cursor-pointer hover:text-primary-900" onClick={() => setSelectedMasterStyles(selectedMasterStyles.filter(x => x !== s))} />
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
           
           {isLoadingMasters ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -699,11 +790,15 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
                     >
                       <Heart className={`w-5 h-5 transition-colors ${favoriteMasterIds.has(master.id) ? 'fill-red-500 text-red-500' : 'text-neutral-400'}`} />
                     </button>
-                    <Image 
-                      src={master.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(master.display_name || master.username || 'M')}`}
-                      alt="Avatar"
-                      className="w-16 h-16 rounded-2xl object-cover border-2 border-neutral-100 dark:border-neutral-800"
-                     width={64} height={64} />
+                    <div className="relative">
+                      <Image 
+                        src={master.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(master.display_name || master.username || 'M')}`}
+                        alt="Avatar"
+                        className="w-16 h-16 rounded-2xl object-cover border-2 border-neutral-100 dark:border-neutral-800"
+                        width={64} height={64} 
+                      />
+                      <OnlineIndicator lastSeen={master.last_seen} size="md" className="-bottom-1 -right-1" />
+                    </div>
                     <div>
                       <h4 className="font-bold text-lg text-neutral-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
                         {master.display_name || master.username}
@@ -795,7 +890,10 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
         <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm" onClick={(event) => { if (event.target === event.currentTarget) setProposalToConfirm(null) }}>
           <div role="dialog" aria-modal="true" aria-labelledby="confirm-master-title" className="w-full max-w-md rounded-[2rem] border border-white/10 bg-white p-7 shadow-2xl dark:bg-neutral-950">
             <div className="mb-5 flex items-center gap-4">
-              <Image src={proposalToConfirm.proposal.master_avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(proposalToConfirm.proposal.master_name)}`} alt="" className="h-14 w-14 rounded-2xl object-cover"  width={56} height={56} />
+              <div className="relative">
+                <Image src={proposalToConfirm.proposal.master_avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(proposalToConfirm.proposal.master_name)}`} alt="" className="h-14 w-14 rounded-2xl object-cover"  width={56} height={56} />
+                <OnlineIndicator lastSeen={proposalToConfirm.proposal.last_seen} size="md" className="-bottom-1 -right-1" />
+              </div>
               <div>
                 <p className="text-xs font-extrabold uppercase tracking-wider text-primary-600">Финальный выбор</p>
                 <h3 id="confirm-master-title" className="text-xl font-extrabold text-neutral-900 dark:text-white">Выбрать {proposalToConfirm.proposal.master_name}?</h3>
@@ -811,13 +909,15 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
         </div>
       )}
 
-      <ChatModal 
-        isOpen={!!selectedChatId} 
-        onClose={() => setSelectedChatId(null)} 
-        chatId={selectedChatId} 
+      <ChatModal
+        isOpen={!!selectedChatId}
+        onClose={() => setSelectedChatId(null)}
+        chatId={selectedChatId}
         leadTitle={selectedChatTitle}
         currentUserRole="client"
         recipientName={selectedChatMaster}
+        recipientAvatar={selectedChatAvatar}
+        recipientLastSeen={selectedChatLastSeen}
       />
       
       {isMasterSelectModalOpen && (
@@ -837,11 +937,15 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
                 topMasters.map(master => (
                   <div key={master.id} className="flex items-center justify-between p-4 bg-neutral-50 dark:bg-neutral-800/50 rounded-2xl border border-neutral-100 dark:border-neutral-800">
                     <div className="flex items-center gap-4">
-                      <Image 
-                        src={master.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(master.display_name || master.username || 'M')}`}
-                        alt="Avatar"
-                        className="w-12 h-12 rounded-full object-cover"
-                       width={48} height={48} />
+                      <div className="relative">
+                        <Image 
+                          src={master.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(master.display_name || master.username || 'M')}`}
+                          alt="Avatar"
+                          className="w-12 h-12 rounded-full object-cover"
+                          width={48} height={48} 
+                        />
+                        <OnlineIndicator lastSeen={master.last_seen} size="sm" className="bottom-0 right-0" />
+                      </div>
                       <div>
                         <h4 className="font-bold text-neutral-900 dark:text-white">{master.display_name || master.username}</h4>
                         <p className="text-xs text-neutral-500">@{master.username} • ★ {master.rating}</p>

@@ -10,6 +10,7 @@ import { PostModal, PortfolioPost } from '@/components/PostModal'
 import { LeadWizard } from '@/components/LeadWizard'
 import { MasterTrustSummary, VerifiedMasterBadge, WhatHappensNext } from '@/components/PublicMasterTrust'
 import { publicApi, PublicMaster, PublicReview } from '@/lib/publicApi'
+import { OnlineIndicator } from '@/components/OnlineIndicator'
 
 type BookMaster = Omit<PublicMaster, 'portfolio_posts'> & {
   portfolio_posts?: PortfolioPost[]
@@ -154,12 +155,15 @@ export default function BookMasterPage() {
       <div className="max-w-2xl mx-auto relative z-10">
         {/* Profile Card */}
         <div className={`rounded-3xl p-8 mb-8 text-center transition-colors duration-500 ${tClasses.card}`}>
-          <div className="w-28 h-28 bg-gradient-to-br from-neutral-200 dark:from-neutral-800 to-neutral-300 dark:to-neutral-700 rounded-full mx-auto mb-5 flex items-center justify-center border-4 border-white dark:border-neutral-950 shadow-xl overflow-hidden">
-            {master.avatar_url ? (
-              <Image src={master.avatar_url || ''} alt="Avatar" className="w-full h-full object-cover"  width={800} height={800} />
-            ) : (
-              <User className="w-12 h-12 text-neutral-500" />
-            )}
+          <div className="relative inline-block mb-5">
+            <div className="w-28 h-28 bg-gradient-to-br from-neutral-200 dark:from-neutral-800 to-neutral-300 dark:to-neutral-700 rounded-full mx-auto flex items-center justify-center border-4 border-white dark:border-neutral-950 shadow-xl overflow-hidden">
+              {master.avatar_url ? (
+                <Image src={master.avatar_url || ''} alt="Avatar" className="w-full h-full object-cover"  width={800} height={800} />
+              ) : (
+                <User className="w-12 h-12 text-neutral-500" />
+              )}
+            </div>
+            <OnlineIndicator lastSeen={master.last_seen} size="lg" className="bottom-1 right-1 border-4 border-white dark:border-neutral-950" />
           </div>
           <div className="mb-2 flex flex-wrap items-center justify-center gap-2.5">
             <h1 className="text-3xl font-extrabold tracking-tight">

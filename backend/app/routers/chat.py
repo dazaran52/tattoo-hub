@@ -192,14 +192,14 @@ async def get_my_chats(
     master_ids = list(set([c["master_id"] for c in chats]))
     master_map = {}
     if master_ids:
-        master_users_res = supabase.table("users").select("id, display_name, username, avatar_url").in_("id", master_ids).execute()
+        master_users_res = supabase.table("users").select("id, display_name, username, avatar_url, last_seen").in_("id", master_ids).execute()
         master_map = {u["id"]: u for u in (master_users_res.data or [])}
 
     # Fetch client info manually
     client_ids = list(set([c["client_id"] for c in chats if c["client_id"]]))
     client_map = {}
     if client_ids:
-        client_users_res = supabase.table("users").select("id, display_name, email, avatar_url").in_("id", client_ids).execute()
+        client_users_res = supabase.table("users").select("id, display_name, email, avatar_url, last_seen").in_("id", client_ids).execute()
         client_map = {u["id"]: u for u in (client_users_res.data or [])}
 
     unread_res = supabase.table("chat_messages").select("chat_id, sender_type").in_("chat_id", [c["id"] for c in chats]).eq("is_read", False).execute()
@@ -288,7 +288,8 @@ async def get_my_chats(
             chat["client_info"] = {
                 "name": m_info.get("display_name") or m_info.get("username") or "Мастер",
                 "email": "",
-                "avatar_url": m_info.get("avatar_url") or ""
+                "avatar_url": m_info.get("avatar_url") or "",
+                "last_seen": m_info.get("last_seen")
             }
         else:
             users_data = client_map.get(chat["client_id"], {})
@@ -326,7 +327,8 @@ async def get_my_chats(
             chat["client_info"] = {
                 "name": c_name or (mc_match.get("name") if mc_match else None) or c_email or (chat["leads"]["client_name"] if chat["leads"] and chat["leads"].get("client_name") else "Клиент"),
                 "email": c_email or (mc_match.get("email") if mc_match else "") or "",
-                "avatar_url": c_avatar or ""
+                "avatar_url": c_avatar or "",
+                "last_seen": users_data.get("last_seen")
             }
 
     return chats

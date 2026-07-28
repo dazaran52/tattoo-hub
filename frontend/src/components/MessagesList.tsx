@@ -9,6 +9,7 @@ import { ImageViewerModal } from '@/components/ImageViewerModal'
 import { ChatSessionsModal } from '@/components/ChatSessionsModal'
 import { SkeletonList } from '@/components/SkeletonCard'
 import { EmptyState } from '@/components/EmptyState'
+import { OnlineIndicator } from '@/components/OnlineIndicator'
 
 interface Message {
   id: string
@@ -39,6 +40,7 @@ interface ChatPreview {
     name: string
     email: string
     avatar_url: string
+    last_seen?: string
   }
   last_message: {
     content: string
@@ -416,14 +418,17 @@ export function MessagesList({ userRole = 'master' }: MessagesListProps) {
                 }}
                 className={`p-4 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 cursor-pointer transition-colors flex items-center gap-3 ${isSelected ? 'bg-primary-50/50 dark:bg-primary-900/10 border-l-4 border-primary-500' : 'border-l-4 border-transparent'}`}
               >
-                <div className="w-12 h-12 bg-neutral-100 dark:bg-neutral-800 rounded-full flex items-center justify-center shrink-0 overflow-hidden border border-neutral-200 dark:border-white/10">
-                  {chat.client_info?.avatar_url ? (
-                    <Image src={chat.client_info.avatar_url || ''} alt="avatar" className="w-full h-full object-cover"  width={800} height={800} />
-                  ) : chat.leads?.image_urls && chat.leads.image_urls.length > 0 ? (
-                    <Image src={chat.leads.image_urls[0] || ''} alt="tattoo" className="w-full h-full object-cover"  width={800} height={800} />
-                  ) : (
-                    <MessageCircle className="w-6 h-6 text-neutral-400" />
-                  )}
+                <div className="relative w-12 h-12 shrink-0">
+                  <div className="w-12 h-12 bg-neutral-100 dark:bg-neutral-800 rounded-full flex items-center justify-center overflow-hidden border border-neutral-200 dark:border-white/10">
+                    {chat.client_info?.avatar_url ? (
+                      <Image src={chat.client_info.avatar_url || ''} alt="avatar" className="w-full h-full object-cover"  width={800} height={800} />
+                    ) : chat.leads?.image_urls && chat.leads.image_urls.length > 0 ? (
+                      <Image src={chat.leads.image_urls[0] || ''} alt="tattoo" className="w-full h-full object-cover"  width={800} height={800} />
+                    ) : (
+                      <MessageCircle className="w-6 h-6 text-neutral-400" />
+                    )}
+                  </div>
+                  <OnlineIndicator lastSeen={chat.client_info?.last_seen} size="sm" className="bottom-0 right-0 border-white dark:border-neutral-900" />
                 </div>
                 
                 <div className="flex-1 min-w-0">
@@ -530,14 +535,17 @@ export function MessagesList({ userRole = 'master' }: MessagesListProps) {
                 >
                   <ChevronLeft className="w-5 h-5" />
                 </button>
-                <div className="w-10 h-10 bg-neutral-100 dark:bg-neutral-800 rounded-full flex items-center justify-center shrink-0 overflow-hidden border border-neutral-200 dark:border-white/10">
-                    {selectedChat.client_info?.avatar_url ? (
-                      <Image src={selectedChat.client_info.avatar_url || ''} alt="avatar" className="w-full h-full object-cover"  width={800} height={800} />
-                    ) : selectedChat.leads?.image_urls && selectedChat.leads.image_urls.length > 0 ? (
-                      <Image src={selectedChat.leads.image_urls[0] || ''} alt="tattoo" className="w-full h-full object-cover"  width={800} height={800} />
-                    ) : (
-                      <MessageCircle className="w-5 h-5 text-neutral-400" />
-                    )}
+                <div className="relative w-10 h-10 shrink-0">
+                  <div className="w-10 h-10 bg-neutral-100 dark:bg-neutral-800 rounded-full flex items-center justify-center overflow-hidden border border-neutral-200 dark:border-white/10">
+                      {selectedChat.client_info?.avatar_url ? (
+                        <Image src={selectedChat.client_info.avatar_url || ''} alt="avatar" className="w-full h-full object-cover"  width={800} height={800} />
+                      ) : selectedChat.leads?.image_urls && selectedChat.leads.image_urls.length > 0 ? (
+                        <Image src={selectedChat.leads.image_urls[0] || ''} alt="tattoo" className="w-full h-full object-cover"  width={800} height={800} />
+                      ) : (
+                        <MessageCircle className="w-5 h-5 text-neutral-400" />
+                      )}
+                  </div>
+                  <OnlineIndicator lastSeen={selectedChat.client_info?.last_seen} size="sm" className="-bottom-0.5 -right-0.5 border-white dark:border-neutral-900" />
                 </div>
                 <div className="flex flex-col min-w-0">
                   <h3 className="font-bold text-neutral-900 dark:text-white truncate">

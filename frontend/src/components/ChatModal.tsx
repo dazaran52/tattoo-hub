@@ -5,6 +5,7 @@ import { toast } from 'react-hot-toast'
 import { motion, AnimatePresence } from 'framer-motion'
 import { supabase } from '@/lib/supabase'
 import { ImageViewerModal } from '@/components/ImageViewerModal'
+import { OnlineIndicator } from '@/components/OnlineIndicator'
 
 interface Message {
   id: string
@@ -20,9 +21,11 @@ interface ChatModalProps {
   leadTitle: string
   currentUserRole?: 'client' | 'master'
   recipientName?: string
+  recipientAvatar?: string | null
+  recipientLastSeen?: string | null
 }
 
-export function ChatModal({ isOpen, onClose, chatId, leadTitle, currentUserRole = 'master', recipientName }: ChatModalProps) {
+export function ChatModal({ isOpen, onClose, chatId, leadTitle, currentUserRole = 'master', recipientName, recipientAvatar, recipientLastSeen }: ChatModalProps) {
   const [messages, setMessages] = useState<Message[]>([])
   const [newMessage, setNewMessage] = useState('')
   const [loading, setLoading] = useState(false)
@@ -198,12 +201,25 @@ export function ChatModal({ isOpen, onClose, chatId, leadTitle, currentUserRole 
           className="bg-white dark:bg-neutral-900 w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden border border-neutral-200 dark:border-white/10 flex flex-col h-[80vh]"
         >
           <div className="flex justify-between items-center p-4 lg:p-6 border-b border-neutral-100 dark:border-white/5 bg-neutral-50/50 dark:bg-neutral-900/50">
-            <div>
-              <h2 className="text-xl font-bold text-neutral-900 dark:text-white flex items-center gap-2">
-                <MessageCircle className="w-5 h-5 text-primary-500" />
-                {recipientName || leadTitle}
-              </h2>
-              <p className="text-xs text-neutral-500 mt-0.5">Внутренний чат</p>
+            <div className="flex items-center gap-3">
+              {recipientAvatar ? (
+                <div className="relative w-10 h-10 shrink-0">
+                  <div className="w-10 h-10 bg-neutral-100 dark:bg-neutral-800 rounded-full flex items-center justify-center overflow-hidden border border-neutral-200 dark:border-white/10">
+                    <Image src={recipientAvatar} alt="avatar" className="w-full h-full object-cover" width={40} height={40} />
+                  </div>
+                  <OnlineIndicator lastSeen={recipientLastSeen} size="sm" className="-bottom-0.5 -right-0.5 border-white dark:border-neutral-900" />
+                </div>
+              ) : (
+                <div className="w-10 h-10 bg-primary-100 dark:bg-primary-900/30 rounded-full flex items-center justify-center shrink-0">
+                  <MessageCircle className="w-5 h-5 text-primary-500" />
+                </div>
+              )}
+              <div>
+                <h2 className="text-lg font-bold text-neutral-900 dark:text-white">
+                  {recipientName || leadTitle}
+                </h2>
+                <p className="text-xs text-neutral-500 mt-0.5">Внутренний чат</p>
+              </div>
             </div>
             <button onClick={onClose} className="p-2 hover:bg-neutral-200 dark:hover:bg-neutral-800 rounded-xl transition-colors">
               <X className="w-5 h-5 text-neutral-500" />

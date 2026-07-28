@@ -17,6 +17,8 @@ import { ImageViewerModal } from '@/components/ImageViewerModal'
 import { QRCodeModal } from '@/components/QRCodeModal'
 import { QrCode } from 'lucide-react'
 import { CertificateVerificationCard } from '@/components/CertificateVerificationCard'
+import { TATTOO_STYLES } from '@/lib/constants'
+import { OnlineIndicator } from '@/components/OnlineIndicator'
 
 export default function ProfilePage() {
   const router = useRouter()
@@ -40,6 +42,7 @@ export default function ProfilePage() {
   const [selectedCountry, setSelectedCountry] = useState('')
   const [selectedCity, setSelectedCity] = useState('')
   const [theme, setTheme] = useState('system')
+  const [selectedStyles, setSelectedStyles] = useState<string[]>([])
 
   const [countries, setCountries] = useState<any[]>([])
   const [cities, setCities] = useState<any[]>([])
@@ -99,6 +102,7 @@ export default function ProfilePage() {
       setSelectedCountry(profileData.country_ids?.[0] || '2a71599c-91f2-4461-b77b-86a150db3aab')
       setSelectedCity(profileData.city_ids?.[0] || '')
       setTheme(profileData.theme || 'system')
+      setSelectedStyles(profileData.styles || [])
 
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load profile')
@@ -125,7 +129,8 @@ export default function ProfilePage() {
         portfolio_url: finalPortfolioUrl,
         country_ids: selectedCountry ? [selectedCountry] : [],
         city_ids: selectedCity ? [selectedCity] : [],
-        theme
+        theme,
+        styles: selectedStyles
       })
       
       setProfile(updated)
@@ -283,6 +288,7 @@ export default function ProfilePage() {
                     </div>
                   )}
                 </div>
+                <OnlineIndicator lastSeen={new Date().toISOString()} size="lg" className="bottom-2 right-2 border-4 border-white dark:border-neutral-800" />
                 <button
                   onClick={() => avatarInputRef.current?.click()}
                   disabled={isUploading}
@@ -432,6 +438,39 @@ export default function ProfilePage() {
                     placeholder="+420..."
                     className="w-full bg-white dark:bg-black/50 border border-neutral-200 dark:border-neutral-800 rounded-xl px-4 py-3 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all disabled:opacity-70 font-medium"
                   />
+                </div>
+
+                {/* Styles */}
+                <div className="md:col-span-2 mt-4 pt-4 border-t border-neutral-100 dark:border-neutral-800">
+                  <label className="block text-sm font-bold text-neutral-700 dark:text-neutral-300 mb-4">
+                    Мои стили работы
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {TATTOO_STYLES.map(style => {
+                      const isSelected = selectedStyles.includes(style)
+                      return (
+                        <button
+                          key={style}
+                          type="button"
+                          disabled={!isEditing}
+                          onClick={() => {
+                            if (isSelected) {
+                              setSelectedStyles(prev => prev.filter(s => s !== style))
+                            } else {
+                              setSelectedStyles(prev => [...prev, style])
+                            }
+                          }}
+                          className={`px-4 py-2 rounded-full text-sm font-semibold transition-all border ${
+                            isSelected
+                              ? 'bg-primary-500 text-white border-primary-500 shadow-md shadow-primary-500/20'
+                              : 'bg-white dark:bg-black/50 text-neutral-700 dark:text-neutral-300 border-neutral-200 dark:border-neutral-800 hover:border-primary-500/50'
+                          } ${!isEditing && 'opacity-70 cursor-not-allowed'}`}
+                        >
+                          {style}
+                        </button>
+                      )
+                    })}
+                  </div>
                 </div>
 
                 {/* Locations */}

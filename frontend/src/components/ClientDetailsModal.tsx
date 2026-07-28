@@ -27,15 +27,15 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId: 
   const [isSessionModalOpen, setIsSessionModalOpen] = useState(false)
   const [phone, setPhone] = useState(client.phone || '')
   const [resolvedChatId, setResolvedChatId] = useState<string | null>(initialChatId)
-  const [sharing, setSharing] = useState(false)
+  const [sharing, setSharing] = useState<string | null>(null)
 
-  const handleShareToMarketplace = async () => {
-    if (!confirm('Выставить клиента на общий маркетплейс? Другие мастера смогут предложить ему свои услуги. Когда один из мастеров подтвердит сеанс с этим клиентом, вы получите 50% от комиссии платформы на свой баланс!')) return
-    setSharing(true)
+  const handleShareSession = async (sessionId: string) => {
+    if (!confirm('Выставить этот сеанс на маркетплейс? Если другой мастер возьмется за этот сеанс, вы получите 50% от комиссии платформы на свой баланс! Сеанс на вашей доске будет отменен.')) return
+    setSharing(sessionId)
     try {
       const { data: { session } } = await supabase.auth.getSession()
       const token = session?.access_token
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/crm/clients/${client.id}/share`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/crm/sessions/${sessionId}/share`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -45,14 +45,14 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId: 
       })
       if (!res.ok) {
         const err = await res.json().catch(() => ({}))
-        throw new Error(err.detail || 'Не удалось выставить клиента на маркетплейс')
+        throw new Error(err.detail || 'Не удалось выставить сеанс на маркетплейс')
       }
-      toast.success('Клиент успешно выставлен на маркетплейс!')
+      toast.success('Сеанс успешно выставлен на маркетплейс!')
       onUpdate()
     } catch (err: any) {
       toast.error(err.message || 'Ошибка размещения на маркетплейсе')
     } finally {
-      setSharing(false)
+      setSharing(null)
     }
   }
 
@@ -298,36 +298,7 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId: 
                   />
                 </div>
 
-                {!client.id.startsWith('temp-') && (
-                  <div className="mt-6 p-4 rounded-2xl bg-gradient-to-br from-accent-500/10 to-primary-500/10 border border-accent-500/20 dark:border-accent-500/30 flex flex-col sm:flex-row items-center justify-between gap-4">
-                    <div className="flex items-start gap-3">
-                      <div className="p-2.5 bg-accent-500/20 text-accent-600 dark:text-accent-400 rounded-xl shrink-0 mt-0.5">
-                        <Share2 className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <h4 className="font-bold text-neutral-900 dark:text-white text-sm">
-                          {client.source === 'marketplace' ? 'Клиент на маркетплейсе' : 'Поделиться клиентом на маркетплейсе'}
-                        </h4>
-                        <p className="text-xs text-neutral-600 dark:text-neutral-400 mt-1 leading-relaxed">
-                          {client.source === 'marketplace'
-                            ? 'Этот клиент доступен в общей ленте. Если другой мастер подтвердит с ним сеанс, вы получите 50% от комиссии платформы на свой внутренний счет.'
-                            : 'Выставьте клиента в общую ленту лидов. Если другой мастер подтвердит с ним сеанс, вы получите 50% от комиссии платформы на свой баланс!'}
-                        </p>
-                      </div>
-                    </div>
-                    {client.source !== 'marketplace' && (
-                      <button
-                        type="button"
-                        onClick={handleShareToMarketplace}
-                        disabled={sharing}
-                        className="w-full sm:w-auto shrink-0 px-4 py-2.5 bg-accent-600 hover:bg-accent-700 text-white text-xs font-bold rounded-xl shadow-md transition-all flex items-center justify-center gap-2 disabled:opacity-50"
-                      >
-                        <Share2 className="w-4 h-4" />
-                        {sharing ? 'Размещение...' : 'Выставить на маркетплейс'}
-                      </button>
-                    )}
-                  </div>
-                )}
+
               </div>
             )}
 
@@ -378,6 +349,11 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId: 
                                 <CheckCircle className="w-3 h-3" /> Завершить
                               </button>
                             )}
+                            {s.status !== 'completed' && s.status !== 'cancelled' && (
+                              <button onClick={(e) => { e.stopPropagation(); handleShareSession(s.id); }} disabled={sharing === s.id} className="p-1.5 text-neutral-400 hover:text-accent-500 rounded-md disabled:opacity-50" title="Выставить на маркетплейс">
+                                <Share2 className="w-4 h-4" />
+                              </button>
+                            )}
                             <button onClick={(e) => {
                               e.stopPropagation();
                               if (onSessionClick) {
@@ -385,10 +361,10 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId: 
                               } else {
                                 setSessionToEdit({ ...s, master_clients: { id: client.id, name: client.name } });
                               }
-                            }} className="p-1.5 text-neutral-400 hover:text-primary-500 rounded-md">
+                            }} className="p-1.5 text-neutral-400 hover:text-primary-500 rounded-md" title="Редактировать">
                               <Edit3 className="w-4 h-4" />
                             </button>
-                            <button onClick={(e) => { e.stopPropagation(); handleDeleteSession(s.id); }} className="p-1.5 text-neutral-400 hover:text-red-500 rounded-md">
+                            <button onClick={(e) => { e.stopPropagation(); handleDeleteSession(s.id); }} className="p-1.5 text-neutral-400 hover:text-red-500 rounded-md" title="Удалить">
                               <Trash2 className="w-4 h-4" />
                             </button>
                           </div>

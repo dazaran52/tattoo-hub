@@ -671,7 +671,7 @@ async def get_client_leads(
     """Get leads created by the current client."""
     try:
         res = await supabase.table("leads") \
-            .select("*, users!assigned_master_id(id, display_name, avatar_url, username)") \
+            .select("*, users!assigned_master_id(id, display_name, avatar_url, username, last_seen)") \
             .eq("client_id", current_user.user_id) \
             .order("created_at", desc=True) \
             .execute()
@@ -684,7 +684,7 @@ async def get_client_leads(
 
         # Get proposals
         props_res = await supabase.table("lead_proposals") \
-            .select("lead_id, status, user_id, price_offer, proposed_dates, offer_currency, users(id, display_name, avatar_url, username, certificate_status)") \
+            .select("lead_id, status, user_id, price_offer, proposed_dates, offer_currency, users(id, display_name, avatar_url, username, certificate_status, last_seen)") \
             .in_("lead_id", lead_ids) \
             .execute()
 
@@ -701,6 +701,7 @@ async def get_client_leads(
                 "master_name": master.get("display_name") or master.get("username") or "Мастер",
                 "master_username": master.get("username"),
                 "master_avatar": master.get("avatar_url"),
+                "master_last_seen": master.get("last_seen"),
                 "certificate_verified": master.get("certificate_status") == "approved",
                 "price_offer": p.get("price_offer"),
                 "offer_currency": p.get("offer_currency") or "CZK",
@@ -713,7 +714,8 @@ async def get_client_leads(
                     "id": u.get("id"),
                     "username": u.get("username"),
                     "name": u.get("display_name") or u.get("username") or "Мастер",
-                    "avatar_url": u.get("avatar_url")
+                    "avatar_url": u.get("avatar_url"),
+                    "last_seen": u.get("last_seen")
                 }
 
         # Get chats
@@ -746,7 +748,8 @@ async def get_client_leads(
                     "id": u.get("id"),
                     "username": u.get("username"),
                     "name": u.get("display_name") or u.get("username") or "Мастер",
-                    "avatar_url": u.get("avatar_url")
+                    "avatar_url": u.get("avatar_url"),
+                    "last_seen": u.get("last_seen")
                 }
             elif lead["id"] in accepted_masters:
                 master_info = accepted_masters[lead["id"]]

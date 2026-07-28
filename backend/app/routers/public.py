@@ -20,6 +20,8 @@ class PublicMasterResponse(BaseModel):
     avatar_url: str | None = None
     rating: float = 0.0
     review_count: int = 0
+    styles: list[str] = []
+    last_seen: str | None = None
 
 @router.get("/masters", response_model=list[PublicMasterResponse])
 async def get_public_masters(
@@ -30,7 +32,7 @@ async def get_public_masters(
     """
     try:
         query = supabase.table("users").select(
-            "id, username, display_name, bio, portfolio_url, city_ids, is_verified_master, certificate_status, status, role, theme, avatar_url, portfolio_posts(id, media, description, created_at), master_reviews!master_reviews_master_id_fkey(rating), is_admin"
+            "id, username, display_name, bio, portfolio_url, city_ids, styles, is_verified_master, certificate_status, status, role, theme, avatar_url, last_seen, portfolio_posts(id, media, description, created_at), master_reviews!master_reviews_master_id_fkey(rating), is_admin"
         ).eq("role", "master").eq("is_verified_master", True).eq("status", "approved")
         
         response = await query.execute()
@@ -70,7 +72,9 @@ async def get_public_masters(
                     theme=data.get("theme", "system"),
                     avatar_url=data.get("avatar_url"),
                     rating=round(rating, 1),
-                    review_count=review_count
+                    review_count=review_count,
+                    styles=data.get("styles") or [],
+                    last_seen=data.get("last_seen")
                 ),
                 "score": sort_score
             })
@@ -103,7 +107,7 @@ async def get_public_master(
             pass
 
         query = supabase.table("users").select(
-            "id, username, display_name, bio, portfolio_url, city_ids, is_verified_master, certificate_status, status, role, theme, avatar_url, portfolio_posts(id, media, description, created_at), master_reviews!master_reviews_master_id_fkey(rating)"
+            "id, username, display_name, bio, portfolio_url, city_ids, styles, is_verified_master, certificate_status, status, role, theme, avatar_url, last_seen, portfolio_posts(id, media, description, created_at), master_reviews!master_reviews_master_id_fkey(rating)"
         )
         
         if is_uuid:
@@ -144,7 +148,9 @@ async def get_public_master(
             theme=data.get("theme", "system"),
             avatar_url=data.get("avatar_url"),
             rating=round(rating, 1),
-            review_count=review_count
+            review_count=review_count,
+            styles=data.get("styles") or [],
+            last_seen=data.get("last_seen")
         )
 
     except HTTPException:

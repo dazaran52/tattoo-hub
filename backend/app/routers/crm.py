@@ -336,22 +336,27 @@ class ShareClientRequest(BaseModel):
     city_id: Optional[str] = None
     price_credits: int = 50
 
-@router.post("/clients/{client_id}/share")
-async def share_client_to_marketplace(
-    client_id: str,
+@router.post("/sessions/{session_id}/share")
+async def share_session_to_marketplace(
+    session_id: str,
     data: Optional[ShareClientRequest] = None,
     current_user: AuthUser = Depends(get_current_user),
     supabase: AsyncClient = Depends(get_async_supabase_client)
 ):
     try:
-        client_res = await supabase.table("master_clients") \
-            .select("*, master_sessions(*)") \
-            .eq("id", client_id) \
+        session_res = await supabase.table("master_sessions") \
+            .select("*, master_clients(*)") \
+            .eq("id", session_id) \
             .eq("master_id", current_user.user_id) \
             .execute()
-        if not client_res.data:
-            raise HTTPException(status_code=404, detail="Client not found")
-        client = client_res.data[0]
+        
+        if not session_res.data:
+            raise HTTPException(status_code=404, detail="Session not found")
+            
+        session_obj = session_res.data[0]
+        client = session_obj.get("master_clients")
+        if not client:
+            raise HTTPException(status_code=400, detail="Session has no associated client")
 
         city_id = data.city_id if data and data.city_id else None
         price_credits = data.price_credits if data else 50
@@ -371,41 +376,50 @@ async def share_client_to_marketplace(
                 else:
                     raise HTTPException(status_code=400, detail="В системе нет городов для размещения лида")
 
-        # Check if lead already exists
-        lead_id = client.get("lead_id")
-        if lead_id:
-            await supabase.table("leads").update({
-                "assigned_master_id": None,
-                "creator_master_id": current_user.user_id,
-                "status": "new",
-                "is_personal": False,
-                "city_id": city_id,
-                "price_credits": price_credits
-            }).eq("id", lead_id).execute()
-        else:
-            lead_data = {
-                "title": f"Клиент: {client['name']}",
-                "description": client.get("notes") or "Клиент выставлен мастером из CRM.",
-                "contacts": client.get("phone") or client.get("telegram") or client.get("instagram") or client.get("email") or client.get("contact_info") or "Контакты в CRM",
-                "city_id": city_id,
-                "price_credits": price_credits,
-                "creator_master_id": current_user.user_id,
-                "status": "new",
-                "is_personal": False,
-                "client_token": str(uuid.uuid4())
-            }
-            res_lead = await supabase.table("leads").insert(lead_data).execute()
-            if not res_lead.data:
-                raise HTTPException(status_code=400, detail="Failed to create lead on marketplace")
-            lead_id = res_lead.data[0]["id"]
+        style = session_obj.get("style")
+        title = f"Сеанс: {style}" if style else f"Сеанс татуировки"
+        
+        description = session_obj.get("notes")
+        if not description:
+            description = f"Клиент: {client.get('name', 'Аноним')}. Передан на маркетплейс мастером."
+            
+        lead_data = {
+            "title": title,
+            "description": description,
+            "contacts": client.get("phone") or client.get("telegram") or client.get("instagram") or client.get("email") or client.get("contact_info") or "Контакты в CRM",
+            "city_id": city_id,
+            "price_credits": price_credits,
+            "creator_master_id": current_user.user_id,
+            "status": "new",
+            "is_personal": False,
+            "client_token": str(uuid.uuid4()),
+            "image_urls": session_obj.get("reference_images") or []
+        }
+        
+        res_lead = await supabase.table("leads").insert(lead_data).execute()
+        if not res_lead.data:
+            raise HTTPException(status_code=400, detail="Failed to create lead on marketplace")
+        lead_id = res_lead.data[0]["id"]
 
-        res_client = await supabase.table("master_clients") \
-            .update({"lead_id": lead_id, "source": "marketplace", "kanban_status": "marketplace"}) \
-            .eq("id", client_id) \
+        notes = session_obj.get("notes") or ""
+        new_notes = notes + "\n\n[Система] Сеанс выставлен на маркетплейс." if notes else "[Система] Сеанс выставлен на маркетплейс."
+        
+        await supabase.table("master_sessions") \
+            .update({
+                "status": "cancelled",
+                "notes": new_notes
+            }) \
+            .eq("id", session_id) \
             .eq("master_id", current_user.user_id) \
             .execute()
+            
+        if not client.get("lead_id"):
+             await supabase.table("master_clients") \
+                .update({"lead_id": lead_id, "source": "marketplace"}) \
+                .eq("id", client.get("id")) \
+                .execute()
 
-        return res_client.data[0] if res_client.data else {"status": "success", "lead_id": lead_id}
+        return {"status": "success", "lead_id": lead_id}
     except HTTPException:
         raise
     except Exception as e:

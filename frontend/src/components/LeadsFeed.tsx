@@ -18,6 +18,8 @@ import { api } from '@/lib/api'
 import { ConfirmModal } from '@/components/ConfirmModal'
 import { CityMultiSelect } from '@/components/CityMultiSelect'
 import { useLanguage } from '@/i18n/LanguageContext'
+import { TATTOO_STYLES, BODY_PLACES } from '@/lib/constants'
+import { Filter } from 'lucide-react'
 
 export interface Lead {
   id: string
@@ -41,6 +43,7 @@ export interface Lead {
   proposal_status?: string
   chat_id?: string
   display_budget?: string
+  client_budget?: number
   is_negotiable_budget?: boolean
   proposal_count?: number
   max_proposals?: number
@@ -65,6 +68,14 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
   const [actionLoadingId, setActionLoadingId] = useState<string | null>(null)
   const [filterText, setFilterText] = useState('')
   const [selectedCityFilters, setSelectedCityFilters] = useState<string[]>(userCities || [])
+
+  // Advanced Filters State
+  const [showFilters, setShowFilters] = useState(false)
+  const [selectedStyles, setSelectedStyles] = useState<string[]>([])
+  const [selectedSizes, setSelectedSizes] = useState<string[]>([])
+  const [minTrust, setMinTrust] = useState<number | ''>('')
+  const [minBudget, setMinBudget] = useState<number | ''>('')
+  const [sortBy, setSortBy] = useState<'newest' | 'trust_desc' | 'budget_desc' | 'budget_asc'>('newest')
 
   
   // Custom Confirm Modal State
@@ -450,6 +461,34 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
     filteredLeads = filteredLeads.filter(l => l.is_unlocked)
   }
 
+  // Apply advanced filters
+  if (selectedStyles.length > 0) {
+    filteredLeads = filteredLeads.filter(l => l.style && selectedStyles.includes(l.style))
+  }
+  if (selectedSizes.length > 0) {
+    filteredLeads = filteredLeads.filter(l => l.size && selectedSizes.includes(l.size))
+  }
+  if (minTrust !== '') {
+    filteredLeads = filteredLeads.filter(l => (l.trust_score || 0) >= Number(minTrust))
+  }
+  if (minBudget !== '') {
+    filteredLeads = filteredLeads.filter(l => (l.client_budget || 0) >= Number(minBudget))
+  }
+
+  // Sort
+  filteredLeads.sort((a, b) => {
+    if (sortBy === 'trust_desc') {
+      return (b.trust_score || 0) - (a.trust_score || 0)
+    }
+    if (sortBy === 'budget_desc') {
+      return (b.client_budget || 0) - (a.client_budget || 0)
+    }
+    if (sortBy === 'budget_asc') {
+      return (a.client_budget || 0) - (b.client_budget || 0)
+    }
+    return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
+  })
+
 
 
   return (
@@ -581,8 +620,129 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
             <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
             {t('refresh')}
           </button>
+          
+          <button
+            onClick={() => setShowFilters(!showFilters)}
+            className={`flex items-center gap-2 px-4 py-2 border rounded-lg text-sm font-semibold transition-colors ${
+              showFilters 
+                ? 'bg-primary-50 dark:bg-primary-900/30 border-primary-500 text-primary-600 dark:text-primary-400' 
+                : 'bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 text-neutral-700 dark:text-neutral-300 hover:border-neutral-600'
+            }`}
+          >
+            <Filter className="w-4 h-4" />
+            Фильтры
+          </button>
         </div>
       </div>
+
+      <AnimatePresence>
+        {showFilters && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="overflow-hidden"
+          >
+            <div className="p-4 bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              
+              <div>
+                <label className="block text-xs font-bold text-neutral-500 mb-2 uppercase">Сортировка</label>
+                <select 
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value as any)}
+                  className="w-full bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg px-3 py-2 text-sm text-neutral-900 dark:text-white"
+                >
+                  <option value="newest">Сначала новые</option>
+                  <option value="trust_desc">Высокий Trust Score</option>
+                  <option value="budget_desc">Сначала дорогие</option>
+                  <option value="budget_asc">Сначала дешевые</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-neutral-500 mb-2 uppercase">Стили ({selectedStyles.length})</label>
+                <select
+                  className="w-full bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg px-3 py-2 text-sm text-neutral-900 dark:text-white"
+                  onChange={(e) => {
+                    if (e.target.value && !selectedStyles.includes(e.target.value)) {
+                      setSelectedStyles([...selectedStyles, e.target.value])
+                    }
+                    e.target.value = ''
+                  }}
+                >
+                  <option value="">Добавить стиль...</option>
+                  {TATTOO_STYLES.map(s => (
+                    <option key={s} value={s}>{s}</option>
+                  ))}
+                </select>
+                {selectedStyles.length > 0 && (
+                  <div className="flex flex-wrap gap-1 mt-2">
+                    {selectedStyles.map(s => (
+                      <span key={s} className="px-2 py-1 bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 text-xs rounded-md flex items-center gap-1">
+                        {s} <XCircle className="w-3 h-3 cursor-pointer hover:text-primary-900" onClick={() => setSelectedStyles(selectedStyles.filter(x => x !== s))} />
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-neutral-500 mb-2 uppercase">Размер</label>
+                <select
+                  className="w-full bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg px-3 py-2 text-sm text-neutral-900 dark:text-white"
+                  onChange={(e) => {
+                    if (e.target.value && !selectedSizes.includes(e.target.value)) {
+                      setSelectedSizes([...selectedSizes, e.target.value])
+                    }
+                    e.target.value = ''
+                  }}
+                >
+                  <option value="">Добавить размер...</option>
+                  <option value="Маленькая (до 5 см)">Маленькая (до 5 см)</option>
+                  <option value="Средняя (до 15 см)">Средняя (до 15 см)</option>
+                  <option value="Большая (от 15 см)">Большая (от 15 см)</option>
+                  <option value="Рукав / Спина целиком">Рукав / Спина целиком</option>
+                </select>
+                {selectedSizes.length > 0 && (
+                  <div className="flex flex-wrap gap-1 mt-2">
+                    {selectedSizes.map(s => (
+                      <span key={s} className="px-2 py-1 bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 text-xs rounded-md flex items-center gap-1">
+                        {s} <XCircle className="w-3 h-3 cursor-pointer hover:text-primary-900" onClick={() => setSelectedSizes(selectedSizes.filter(x => x !== s))} />
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <div className="flex gap-4">
+                  <div className="flex-1">
+                    <label className="block text-xs font-bold text-neutral-500 mb-2 uppercase">Min Trust</label>
+                    <input 
+                      type="number" 
+                      placeholder="0"
+                      value={minTrust}
+                      onChange={e => setMinTrust(e.target.value ? Number(e.target.value) : '')}
+                      className="w-full bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg px-3 py-2 text-sm text-neutral-900 dark:text-white"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <label className="block text-xs font-bold text-neutral-500 mb-2 uppercase">Min Бюджет</label>
+                    <input 
+                      type="number" 
+                      placeholder="0"
+                      value={minBudget}
+                      onChange={e => setMinBudget(e.target.value ? Number(e.target.value) : '')}
+                      className="w-full bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg px-3 py-2 text-sm text-neutral-900 dark:text-white"
+                    />
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {leads.length === 0 && !error && (
         <div className="text-center p-12 bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800">

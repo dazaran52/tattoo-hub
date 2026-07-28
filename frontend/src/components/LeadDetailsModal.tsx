@@ -17,9 +17,10 @@ interface LeadDetailsModalProps {
   onSessionClick?: (session: any) => void
   onUpdate?: () => void
   chatId?: string | null
+  onOpenDispute?: () => void
 }
 
-export function LeadDetailsModal({ isOpen, onClose, session, onAccept, onReject, onEdit, onSessionClick, chatId, onUpdate }: LeadDetailsModalProps) {
+export function LeadDetailsModal({ isOpen, onClose, session, onAccept, onReject, onEdit, onSessionClick, chatId, onUpdate, onOpenDispute }: LeadDetailsModalProps) {
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
   const [isClientModalOpen, setIsClientModalOpen] = useState(false)
   const [isRejecting, setIsRejecting] = useState(false)
@@ -179,13 +180,21 @@ export function LeadDetailsModal({ isOpen, onClose, session, onAccept, onReject,
               </>
             ) : (
               <>
+                {session.status === 'cancelled' && leadData?.id && onOpenDispute && (
+                  <button 
+                    onClick={() => { onClose(); onOpenDispute(); }}
+                    className="flex-1 py-3.5 px-4 bg-red-100 hover:bg-red-200 dark:bg-red-900/30 dark:hover:bg-red-900/50 text-red-700 dark:text-red-400 rounded-xl font-bold transition-colors"
+                  >
+                    Открыть диспут
+                  </button>
+                )}
                 <button 
                   onClick={onClose}
                   className="flex-1 py-3.5 px-4 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 rounded-xl font-bold transition-colors"
                 >
                   Закрыть
                 </button>
-                {onEdit && (
+                {onEdit && session.status !== 'cancelled' && (
                   <button 
                     onClick={() => { onClose(); onEdit(); }}
                     className="flex-1 py-3.5 px-4 bg-primary-600 hover:bg-primary-700 text-white shadow-lg shadow-primary-500/25 rounded-xl font-bold transition-all hover:scale-[1.02]"

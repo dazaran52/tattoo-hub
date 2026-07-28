@@ -81,6 +81,8 @@ class ProfileResponse(BaseModel):
     portfolio_image_urls: list[str] | None = None
     theme: str = "system"
     kanban_columns: list | None = None
+    styles: list[str] | None = None
+    last_seen: str | None = None
 
 
 class ProfileCreate(BaseModel):
@@ -103,11 +105,25 @@ class ProfileUpdate(BaseModel):
     city_ids: list[str] | None = None
     theme: str | None = None
     kanban_columns: list | None = None
+    styles: list[str] | None = None
 
 
 class CertificateSubmission(BaseModel):
     object_path: str
 
+
+@router.post("/profile/ping")
+async def ping_profile(
+    current_user: AuthUser = Depends(get_current_user),
+    supabase: AsyncClient = Depends(get_async_supabase_client)
+):
+    """Update last_seen for the current user."""
+    try:
+        await supabase.table("users").update({"last_seen": "now()"}).eq("id", current_user.user_id).execute()
+        return {"status": "ok"}
+    except Exception as e:
+        # Ignore errors for ping
+        return {"status": "error", "detail": str(e)}
 
 @router.get("/profile", response_model=ProfileResponse)
 async def get_profile(
@@ -257,7 +273,8 @@ async def get_profile(
         avatar_url=data.get("avatar_url"),
         portfolio_image_urls=data.get("portfolio_image_urls") or [],
         theme=data.get("theme") or "system",
-        kanban_columns=data.get("kanban_columns")
+        kanban_columns=data.get("kanban_columns"),
+        styles=data.get("styles") or []
     )
 
 
@@ -355,6 +372,8 @@ async def update_profile(
             update_dict["theme"] = update_data.theme
         if update_data.kanban_columns is not None:
             update_dict["kanban_columns"] = update_data.kanban_columns
+        if update_data.styles is not None:
+            update_dict["styles"] = update_data.styles
         print(f"DEBUG PUT: update_dict={update_dict}")
         
         if not update_dict:
@@ -431,7 +450,8 @@ async def update_profile(
             avatar_url=data.get("avatar_url"),
             portfolio_image_urls=data.get("portfolio_image_urls") or [],
             theme=data.get("theme") or "system",
-            kanban_columns=data.get("kanban_columns")
+            kanban_columns=data.get("kanban_columns"),
+            styles=data.get("styles") or []
         )
         
     except HTTPException:

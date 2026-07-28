@@ -14,6 +14,7 @@ export interface PublicMaster {
   avatar_url?: string
   rating?: number
   review_count?: number
+  last_seen?: string
 }
 
 export interface PublicCity {

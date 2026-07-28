@@ -20,7 +20,7 @@ from app.routers.chat import router as chat_router
 from app.routers.client_portal import router as client_portal_router
 from app.routers.public import router as public_router
 from app.routers.reviews import router as reviews_router
-from app.routers import crm, favorites
+from app.routers import crm, favorites, disputes
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -90,6 +90,7 @@ def create_application() -> FastAPI:
     app.include_router(reviews_router)
     app.include_router(crm.router, prefix="/api/crm", tags=["CRM"])
     app.include_router(favorites.router)
+    app.include_router(disputes.router, prefix="/api", tags=["Disputes"])
 
     @app.get("/health")
     @app.get("/api/health")
