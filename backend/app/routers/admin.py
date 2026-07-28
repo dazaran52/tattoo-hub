@@ -145,7 +145,7 @@ async def get_users(
                 status=u.get("status", "pending"),
                 is_verified_master=u.get("is_verified_master") or False,
                 is_admin=u.get("is_admin") or False,
-                balance=u.get("balance") or 0.0,
+                balance=float(u.get("balance") or 0.0) if float(u.get("balance") or 0.0) > 0 else float(u.get("credits") or 0),
                 credits=u.get("credits") or 0,
                 created_at=u["created_at"],
                 portfolio_url=u.get("portfolio_url"),

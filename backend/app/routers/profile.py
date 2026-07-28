@@ -223,12 +223,17 @@ async def get_profile(
     elif unlocked_count >= 3:
         level = "Pro"
         
+    val_credits = data.get("credits") or 0
+    val_balance = float(data.get("balance") or 0.0)
+    if val_balance == 0.0 and val_credits > 0:
+        val_balance = float(val_credits)
+
     return ProfileResponse(
         id=data["id"],
         username=data.get("username"),
         email=data["email"],
-        credits=data.get("credits") or 0,
-        balance=float(data.get("balance") or 0.0),
+        credits=val_credits,
+        balance=val_balance,
         currency=data.get("currency") or "CZK",
         created_at=data.get("created_at"),
         display_name=data.get("display_name"),
@@ -393,12 +398,17 @@ async def update_profile(
             level = "Pro"
             
         print(f"DEBUG PUT: Success, returning profile")
+        val_credits = data.get("credits") or 0
+        val_balance = float(data.get("balance") or 0.0)
+        if val_balance == 0.0 and val_credits > 0:
+            val_balance = float(val_credits)
+
         return ProfileResponse(
             id=data["id"],
             username=data.get("username"),
             email=data["email"],
-            credits=data.get("credits") or 0,
-            balance=float(data.get("balance") or 0.0),
+            credits=val_credits,
+            balance=val_balance,
             currency=data.get("currency") or "CZK",
             created_at=data.get("created_at"),
             display_name=data.get("display_name"),

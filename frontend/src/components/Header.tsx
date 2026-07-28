@@ -163,7 +163,7 @@ export function Header({ profile, onLogout, maxWidthClass = 'max-w-7xl' }: Heade
                 >
                   <Gem className="w-4 h-4 text-accent-500 dark:text-accent-400 shrink-0" />
                   <div className="flex items-baseline gap-1">
-                    <span className="font-bold text-[15px] text-neutral-900 dark:text-white leading-none">{profile.balance ?? 0}</span>
+                    <span className="font-bold text-[15px] text-neutral-900 dark:text-white leading-none">{(profile.balance && profile.balance > 0) ? profile.balance : (profile.credits ?? 0)}</span>
                     <span className="font-semibold text-xs text-neutral-500 dark:text-neutral-400 leading-none uppercase tracking-wider">{profile.currency || 'CZK'}</span>
                   </div>
                   
