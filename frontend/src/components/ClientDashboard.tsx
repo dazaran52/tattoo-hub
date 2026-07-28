@@ -419,19 +419,19 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
                 <div className="flex flex-wrap gap-2 mb-5">
                   {lead.style && lead.style !== 'Не определился' && (
                     <span className="px-3 py-1.5 bg-neutral-100 dark:bg-neutral-800/50 text-neutral-700 dark:text-neutral-300 text-xs font-semibold rounded-lg flex items-center gap-1.5 border border-neutral-200/50 dark:border-white/5">
-                      <div className="w-1.5 h-1.5 rounded-full bg-primary-500" />
+                      <span>🎨</span>
                       {lead.style}
                     </span>
                   )}
                   {lead.body_place && lead.body_place !== 'Не определился' && (
                     <span className="px-3 py-1.5 bg-neutral-100 dark:bg-neutral-800/50 text-neutral-700 dark:text-neutral-300 text-xs font-semibold rounded-lg flex items-center gap-1.5 border border-neutral-200/50 dark:border-white/5">
-                      <div className="w-1.5 h-1.5 rounded-full bg-fuchsia-500" />
+                      <span>🦵</span>
                       {lead.body_place}
                     </span>
                   )}
                   {lead.size && (
                     <span className="px-3 py-1.5 bg-neutral-100 dark:bg-neutral-800/50 text-neutral-700 dark:text-neutral-300 text-xs font-semibold rounded-lg flex items-center gap-1.5 border border-neutral-200/50 dark:border-white/5">
-                      <div className="w-1.5 h-1.5 rounded-full bg-accent-500" />
+                      <span>📏</span>
                       {lead.size}
                     </span>
                   )}

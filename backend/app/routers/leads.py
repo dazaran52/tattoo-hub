@@ -481,13 +481,9 @@ async def _create_client_lead(
         if style_display:
             title += f" ({style_display})"
 
-        full_description = f"{lead_data.description}\n\n"
-        if lead_data.budget:
-            full_description += f"Бюджет: {lead_data.budget}\n"
-        if lead_data.city:
-            full_description += f"Город: {lead_data.city}\n"
+        full_description = lead_data.description or ""
         if lead_data.session_time:
-            full_description += f"Желаемое время: {lead_data.session_time}\n"
+            full_description += f"\n\nЖелаемое время: {lead_data.session_time}\n"
 
         contacts = f"Имя: {lead_data.name or 'Без имени'}, Контакт: {lead_data.contact}"
         if lead_data.email:

@@ -43,6 +43,9 @@ export interface Lead {
   is_negotiable_budget?: boolean
   proposal_count?: number
   max_proposals?: number
+  style?: string
+  body_place?: string
+  size?: string
 }
 
 interface LeadsFeedProps {
@@ -652,147 +655,167 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
 
               {/* Image Carousel */}
               {hasImages && lead.image_urls && (
-                <div className="relative w-full h-48 bg-neutral-100 dark:bg-neutral-950 group/carousel">
+                <div className="relative w-full h-56 bg-neutral-100 dark:bg-neutral-950 group/carousel">
                   <Image 
                     src={lead.image_urls[currentImageIdx] || ''} 
                     alt={`Lead ${lead.title} photo`} 
-                    className="w-full h-full object-cover cursor-pointer hover:opacity-90 transition-opacity"
+                    className="w-full h-full object-cover cursor-pointer transition-transform duration-700 hover:scale-105"
                     onClick={() => setLightboxImage(lead.image_urls![currentImageIdx])}
                    width={800} height={800} />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20 pointer-events-none" />
+                  
                   {lead.image_urls.length > 1 && (
                     <>
                       <button 
                         onClick={(e) => handlePrevImage(lead.id, lead.image_urls!.length, e)}
-                        className="absolute left-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-black/50 text-white opacity-0 group-hover/carousel:opacity-100 hover:bg-black/70 transition-all"
+                        className="absolute left-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-black/40 backdrop-blur-sm text-white opacity-0 group-hover/carousel:opacity-100 hover:bg-black/70 transition-all"
                       >
                         <ChevronLeft className="w-5 h-5" />
                       </button>
                       <button 
                         onClick={(e) => handleNextImage(lead.id, lead.image_urls!.length, e)}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-black/50 text-white opacity-0 group-hover/carousel:opacity-100 hover:bg-black/70 transition-all"
+                        className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-black/40 backdrop-blur-sm text-white opacity-0 group-hover/carousel:opacity-100 hover:bg-black/70 transition-all"
                       >
                         <ChevronRight className="w-5 h-5" />
                       </button>
-                      <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5">
+                      <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
                         {lead.image_urls.map((_, i) => (
                           <div key={i} className={`w-1.5 h-1.5 rounded-full ${i === currentImageIdx ? 'bg-white' : 'bg-white/50'}`} />
                         ))}
                       </div>
                     </>
                   )}
-                </div>
-              )}
-              
-              <div className="p-6 flex-1 relative z-10">
-                <div className="flex-1 flex justify-between items-start gap-4">
-                  <div>
+                  
+                  {/* Status Badges on Image (Top Left) */}
+                  <div className="absolute top-3 left-3 flex flex-col gap-2">
                     {lead.client_priority === 'fast' && (
-                      <div className="inline-flex items-center gap-1 mb-2 px-2 py-0.5 bg-rose-500/10 text-rose-600 dark:text-rose-400 text-[10px] font-bold uppercase rounded-md border border-rose-500/20">
-                        <span>⚡ Как можно быстрее</span>
-                      </div>
+                      <span className="px-2 py-1 bg-rose-500/90 backdrop-blur-md text-white text-[10px] font-bold uppercase rounded-md shadow-sm">
+                        ⚡ Как можно быстрее
+                      </span>
                     )}
                     {lead.client_priority === 'cheap' && (
-                      <div className="inline-flex items-center gap-1 mb-2 px-2 py-0.5 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold uppercase rounded-md border border-emerald-500/20">
-                        <span>💸 Важна цена</span>
-                      </div>
+                      <span className="px-2 py-1 bg-emerald-500/90 backdrop-blur-md text-white text-[10px] font-bold uppercase rounded-md shadow-sm">
+                        💸 Важна цена
+                      </span>
                     )}
                     {lead.client_priority === 'quality' && (
-                      <div className="inline-flex items-center gap-1 mb-2 px-2 py-0.5 bg-amber-500/10 text-amber-600 dark:text-amber-400 text-[10px] font-bold uppercase rounded-md border border-amber-500/20">
-                        <span>💎 Максимальное качество</span>
-                      </div>
-                    )}
-                    <h3 className="font-bold text-lg text-neutral-900 dark:text-white leading-tight mb-2 group-hover:text-accent-600 dark:group-hover:text-accent-400 transition-colors">
-                      {lead.title}
-                    </h3>
-                    <div className="flex flex-wrap gap-2 text-xs text-neutral-500 mb-3 font-medium">
-                      <span className="bg-neutral-100 dark:bg-neutral-800 px-2 py-1 rounded-md">
-                        #ID-{lead.id.substring(0, 6)}
+                      <span className="px-2 py-1 bg-amber-500/90 backdrop-blur-md text-white text-[10px] font-bold uppercase rounded-md shadow-sm">
+                        💎 Максимальное качество
                       </span>
-                      {lead.created_at && (
-                        <span className="bg-neutral-100 dark:bg-neutral-800 px-2 py-1 rounded-md flex items-center gap-1">
-                          <Clock className="w-3 h-3" />
-                          {new Date(lead.created_at).toLocaleDateString()}
-                        </span>
-                      )}
-                      {(lead.country_id || lead.city_id) && (
-                        <span className="bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-2 py-1 rounded-md flex items-center gap-1">
-                          📍 {countries.find(c => c.id === lead.country_id)?.name_ru || ''} 
-                          {lead.city_id && cities.find(c => c.id === lead.city_id) ? `, ${cities.find(c => c.id === lead.city_id)?.name_ru}` : ''}
-                        </span>
-                      )}
-                      {lead.trust_score !== undefined && (
-                        <span className={`text-[10px] uppercase font-bold px-2 py-1 rounded-md border flex items-center gap-1 ${
+                    )}
+                  </div>
+                  
+                  {/* Trust Score on Image (Top Right) */}
+                  {lead.trust_score !== undefined && (
+                    <div className="absolute top-3 right-3">
+                        <span className={`text-[10px] uppercase font-bold px-2 py-1 rounded-md shadow-sm flex items-center gap-1 backdrop-blur-md ${
                           lead.trust_score >= 80
-                            ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20'
+                            ? 'bg-emerald-500/90 text-white'
                             : lead.trust_score >= 50
-                            ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20'
-                            : 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20'
+                            ? 'bg-amber-500/90 text-white'
+                            : 'bg-red-500/90 text-white'
                         }`}>
                           🛡️ Trust: {lead.trust_score}%
                         </span>
-                      )}
                     </div>
-                  </div>
-                  <div className="flex items-center gap-2">
+                  )}
+                </div>
+              )}
+              
+              {/* Competition Progress Bar (Top if no image) */}
+              <div className="h-1 w-full bg-neutral-100 dark:bg-neutral-800">
+                <div 
+                  className={`h-full transition-all duration-500 ${
+                    (lead.proposal_count ?? lead.unlock_count ?? 0) >= (lead.max_proposals ?? lead.max_unlocks ?? 5)
+                      ? 'bg-red-500'
+                      : (lead.proposal_count ?? lead.unlock_count ?? 0) >= 4
+                      ? 'bg-amber-500'
+                      : 'bg-emerald-500'
+                  }`}
+                  style={{ width: `${Math.min(100, ((lead.proposal_count ?? lead.unlock_count ?? 0) / (lead.max_proposals ?? lead.max_unlocks ?? 5)) * 100)}%` }}
+                />
+              </div>
 
-                    {!isMarketplace && (
-                      <span className="bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white text-xs px-3 py-1.5 rounded-full font-bold shadow-sm whitespace-nowrap border border-neutral-200 dark:border-neutral-700 flex items-center gap-1">
+              <div className="p-5 flex-1 relative z-10 flex flex-col">
+                <h3 className="font-extrabold text-xl text-neutral-900 dark:text-white leading-tight mb-3 group-hover:text-accent-600 dark:group-hover:text-accent-400 transition-colors">
+                  {lead.title}
+                </h3>
+                
+                {/* Unified Tags section */}
+                <div className="flex flex-wrap gap-2 mb-4">
+                  {lead.style && lead.style !== 'Не определился' && (
+                    <span className="px-2.5 py-1 bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-xs font-semibold rounded-md border border-neutral-200/50 dark:border-white/5 flex items-center gap-1">
+                      <span>🎨</span> {lead.style}
+                    </span>
+                  )}
+                  {lead.body_place && lead.body_place !== 'Не определился' && (
+                    <span className="px-2.5 py-1 bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-xs font-semibold rounded-md border border-neutral-200/50 dark:border-white/5 flex items-center gap-1">
+                      <span>🦵</span> {lead.body_place}
+                    </span>
+                  )}
+                  {lead.size && (
+                    <span className="px-2.5 py-1 bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-xs font-semibold rounded-md border border-neutral-200/50 dark:border-white/5 flex items-center gap-1">
+                      <span>📏</span> {lead.size}
+                    </span>
+                  )}
+                  {(lead.country_id || lead.city_id) && (
+                    <span className="px-2.5 py-1 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-xs font-semibold rounded-md border border-blue-200/50 dark:border-blue-700/50 flex items-center gap-1">
+                      <span>📍</span> 
+                      {cities.find(c => c.id === lead.city_id)?.name_ru || countries.find(c => c.id === lead.country_id)?.name_ru || ''}
+                    </span>
+                  )}
+                  {lead.display_budget && (
+                    <span className="px-2.5 py-1 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 text-xs font-extrabold rounded-md border border-emerald-200/50 dark:border-emerald-700/50 flex items-center gap-1 shadow-sm">
+                      <span>💰</span> {lead.display_budget}
+                    </span>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-2 text-xs text-neutral-400 mb-4 font-medium font-mono">
+                  <span>#ID-{lead.id.substring(0, 6)}</span>
+                  <span>•</span>
+                  {lead.created_at && <span>{new Date(lead.created_at).toLocaleDateString()}</span>}
+                </div>
+
+                <p className="text-neutral-600 dark:text-neutral-400 text-sm mb-6 leading-relaxed flex-1 line-clamp-4">
+                  {lead.description || 'Нет описания'}
+                </p>
+                
+                {/* Contacts Block */}
+                <div className="mt-auto">
+                  <div className="bg-neutral-50 dark:bg-neutral-800/50 p-4 rounded-xl border border-neutral-200 dark:border-neutral-700/50">
+                    <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-1.5 font-bold uppercase tracking-wider">{t('contacts')}</p>
+                    <p className={`font-mono text-sm ${lead.is_unlocked || isAdmin ? 'text-neutral-900 dark:text-white font-medium' : 'text-neutral-400 dark:text-neutral-500 blur-[4px] select-none'}`}>
+                      {lead.is_unlocked || isAdmin ? lead.contacts : '+7 (999) XXX-XX-XX'}
+                    </p>
+                    
+                    {(lead.is_unlocked || isAdmin) && (
+                      <div className="flex flex-wrap gap-2 mt-3">
+                        {getContactActions(lead.contacts).map((act, idx) => (
+                          <a
+                            key={idx}
+                            href={act.href}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-transform hover:scale-105 flex items-center gap-1.5 shadow-sm ${act.color}`}
+                          >
+                            <span>{act.icon}</span>
+                            <span>{act.name}</span>
+                          </a>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  
+                  {!isMarketplace && !lead.is_unlocked && !isAdmin && (
+                    <div className="mt-3 flex items-center justify-between">
+                      <span className="text-xs text-neutral-500 font-medium">Стоимость:</span>
+                      <span className="bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white text-xs px-3 py-1.5 rounded-lg font-bold">
                         {lead.unlock_price_local} {lead.master_currency}
                       </span>
-                    )}
-                    {lead.display_budget && (
-                      <span className="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-400 text-xs px-3 py-1.5 rounded-full font-bold shadow-sm whitespace-nowrap border border-emerald-200 dark:border-emerald-800 flex items-center gap-1">
-                        💰 {lead.display_budget}
-                      </span>
-                    )}
-                  </div>
+                    </div>
+                  )}
                 </div>
-                <p className="text-neutral-600 dark:text-neutral-400 text-sm mb-4 leading-relaxed line-clamp-3 group-hover:line-clamp-none transition-all">{lead.description}</p>
-                
-                {/* Competition meter status bar */}
-                <div className="mt-2 mb-4">
-                  <div className="flex justify-between text-xs font-bold text-neutral-500 mb-1">
-                    <span>{isMarketplace ? 'Предложения мастеров' : 'Конкуренция'}</span>
-                    <span>{lead.proposal_count ?? lead.unlock_count ?? 0} / {lead.max_proposals ?? lead.max_unlocks ?? 5}</span>
-                  </div>
-                  <div className="h-2 w-full bg-neutral-200/50 dark:bg-neutral-800/50 rounded-full overflow-hidden">
-                    <div 
-                      className={`h-full transition-all duration-500 ${
-                        (lead.proposal_count ?? lead.unlock_count ?? 0) >= (lead.max_proposals ?? lead.max_unlocks ?? 5)
-                          ? 'bg-red-500'
-                          : (lead.proposal_count ?? lead.unlock_count ?? 0) >= 4
-                          ? 'bg-amber-500'
-                          : 'bg-green-500'
-                      }`}
-                      style={{ width: `${Math.min(100, ((lead.proposal_count ?? lead.unlock_count ?? 0) / (lead.max_proposals ?? lead.max_unlocks ?? 5)) * 100)}%` }}
-                    />
-                  </div>
-                </div>
-
-                <div className="bg-neutral-50 dark:bg-neutral-950 p-4 rounded-xl border border-neutral-200/50 dark:border-neutral-800/50 relative overflow-hidden">
-                  <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-neutral-300 to-neutral-400 dark:from-neutral-700 dark:to-neutral-600"></div>
-                  <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-1 ml-2 font-medium">{t('contacts')}:</p>
-                  <p className={`font-mono text-sm ml-2 ${lead.is_unlocked || isAdmin ? 'text-green-600 dark:text-green-400 font-bold' : 'text-neutral-400 dark:text-neutral-600 blur-sm select-none'}`}>
-                    {lead.is_unlocked || isAdmin ? lead.contacts : 'HIDDEN_CONTACT_DATA'}
-                  </p>
-                </div>
-
-                {(lead.is_unlocked || isAdmin) && (
-                  <div className="flex flex-wrap gap-2 mt-4 justify-start">
-                    {getContactActions(lead.contacts).map((act, idx) => (
-                      <a
-                        key={idx}
-                        href={act.href}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm ${act.color}`}
-                      >
-                        <span>{act.icon}</span>
-                        <span>{act.name}</span>
-                      </a>
-                    ))}
-                  </div>
-                )}
               </div>
               
               <div className="p-5 border-t border-neutral-100 dark:border-neutral-800/80 bg-neutral-50/50 dark:bg-neutral-900/50 backdrop-blur-sm">

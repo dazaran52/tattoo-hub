@@ -76,6 +76,9 @@ class LeadUpdate(BaseModel):
     image_urls: List[str] | None = None
     country_id: str | None = None
     city_id: str | None = None
+    status: str | None = None
+    assigned_master_id: str | None = None
+    is_personal: bool | None = None
 
 async def get_admin_user(
     current_user: AuthUser = Depends(get_current_user),
@@ -442,12 +445,16 @@ async def get_admin_leads(
     response: Response,
     limit: int = Query(20, ge=1, le=100),
     offset: int = Query(0, ge=0),
+    status_filter: str | None = None,
     admin_user: AuthUser = Depends(get_admin_user),
     supabase: Client = Depends(get_supabase_client)
 ):
     """Get all leads with unmasked contacts for admin."""
     try:
-        res = supabase.table("leads").select("*, cities(country_id)").order("created_at", desc=True).limit(2000).execute()
+        query = supabase.table("leads").select("*, cities(country_id)")
+        if status_filter:
+            query = query.eq("status", status_filter)
+        res = query.order("created_at", desc=True).limit(2000).execute()
         leads = res.data or []
         paginated_leads = leads[offset:offset+limit]
         has_more = len(leads) > offset + limit
