@@ -14,7 +14,6 @@ export function VerifiedMasterBadge({ verified }: { verified?: boolean }) {
       className="inline-flex items-center gap-1.5 rounded-full border border-accent-500/30 bg-accent-500/10 px-2.5 py-1 text-xs font-semibold text-accent-500"
     >
       <BadgeCheck className="h-4 w-4" aria-hidden="true" />
-      <span>Сертификат проверен</span>
     </span>
   )
 }
