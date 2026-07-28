@@ -431,6 +431,7 @@ export function LeadWizard({ master, masterId, source = 'platform', isLoggedIn, 
         session_date: sessionDate ? sessionDate.toISOString() : null,
         session_time: sessionTime || null,
         client_name: name.trim() || null,
+        source: source
       }
 
       const isDirectBooking = Boolean(resolvedMaster && source === 'personal')
@@ -511,6 +512,7 @@ export function LeadWizard({ master, masterId, source = 'platform', isLoggedIn, 
         session_date: sessionDate ? sessionDate.toISOString() : null,
         session_time: sessionTime || null,
         client_name: name.trim() || null,
+        source: 'platform'
       }
 
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/leads/client`, {

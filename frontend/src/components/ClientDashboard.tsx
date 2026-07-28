@@ -714,7 +714,7 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
             <div className="mt-4">
               <LeadWizard
                 masterId={selectedMasterForDirectBooking || undefined}
-                source={selectedMasterForDirectBooking ? 'personal' : 'platform'}
+                source='platform'
                 isLoggedIn={true}
                 initialData={{
                   email: profile.email,

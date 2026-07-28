@@ -420,6 +420,7 @@ class ClientLeadCreate(BaseModel):
     session_date: datetime.datetime | None = None
     session_time: str | None = None
     client_name: str | None = None
+    source: str | None = None
 
 @router.post("/client")
 async def create_public_client_lead(
@@ -457,6 +458,7 @@ async def _create_client_lead(
     try:
         trusted_master_id = None
         is_direct_booking = master_id is not None
+        is_personal_booking = (lead_data.source == "personal")
         if master_id:
             master_res = await supabase.table("users").select(
                 "id, role, status, is_verified_master"
@@ -542,7 +544,7 @@ async def _create_client_lead(
             "assigned_master_id": trusted_master_id,
             "session_date": lead_data.session_date.isoformat() if lead_data.session_date else None,
             "client_name": lead_data.client_name or lead_data.name,
-            "is_personal": is_direct_booking
+            "is_personal": is_personal_booking
         }
 
         client_id = current_user.user_id if current_user else None
