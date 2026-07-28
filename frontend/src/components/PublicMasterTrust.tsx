@@ -4,14 +4,14 @@ import { useEffect, useState } from 'react'
 import { Award, CalendarCheck, MapPin, MessageCircle, Send } from 'lucide-react'
 import { publicApi } from '@/lib/publicApi'
 
-export function VerifiedMasterBadge({ verified, className = 'h-5 w-5 text-primary-500' }: { verified?: boolean; className?: string }) {
+export function VerifiedMasterBadge({ verified, className = 'h-4 w-4 text-primary-500' }: { verified?: boolean; className?: string }) {
   if (!verified) return null
 
   return (
     <span
       aria-label="Проверенный мастер Tattoo HUB"
       title="Проверенный мастер Tattoo HUB"
-      className="inline-flex items-center shrink-0"
+      className="inline-flex items-center justify-center rounded-full bg-primary-500/10 border border-primary-500/30 p-1 text-primary-500 shrink-0"
     >
       <Award className={className} aria-hidden="true" />
     </span>
