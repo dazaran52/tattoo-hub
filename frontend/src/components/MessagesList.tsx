@@ -37,6 +37,7 @@ interface ChatPreview {
     is_personal?: boolean
   }
   client_info?: {
+    id?: string
     name: string
     email: string
     avatar_url: string
@@ -428,7 +429,7 @@ export function MessagesList({ userRole = 'master' }: MessagesListProps) {
                       <MessageCircle className="w-6 h-6 text-neutral-400" />
                     )}
                   </div>
-                  <OnlineIndicator userId={chat.client_id || chat.master_id} lastSeen={chat.client_info?.last_seen} size="sm" className="bottom-0 right-0 border-white dark:border-neutral-900" />
+                  <OnlineIndicator userId={userRole === 'client' ? chat.master_id : (chat.client_id || chat.client_info?.id)} lastSeen={chat.client_info?.last_seen} size="md" className="bottom-0 right-0 border-2 border-white dark:border-neutral-900" />
                 </div>
                 
                 <div className="flex-1 min-w-0">
@@ -545,7 +546,7 @@ export function MessagesList({ userRole = 'master' }: MessagesListProps) {
                         <MessageCircle className="w-5 h-5 text-neutral-400" />
                       )}
                   </div>
-                  <OnlineIndicator userId={selectedChat.client_id || selectedChat.master_id} lastSeen={selectedChat.client_info?.last_seen} size="sm" className="-bottom-0.5 -right-0.5 border-white dark:border-neutral-900" />
+                  <OnlineIndicator userId={userRole === 'client' ? selectedChat.master_id : (selectedChat.client_id || selectedChat.client_info?.id)} lastSeen={selectedChat.client_info?.last_seen} size="md" className="-bottom-0.5 -right-0.5 border-2 border-white dark:border-neutral-900" />
                 </div>
                 <div className="flex flex-col min-w-0">
                   <h3 className="font-bold text-neutral-900 dark:text-white truncate">

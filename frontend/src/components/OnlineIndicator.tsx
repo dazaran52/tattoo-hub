@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { usePresence } from '@/context/PresenceContext'
+import { usePresence } from '@/components/PresenceContext'
 
 interface OnlineIndicatorProps {
   userId?: string | null
@@ -15,9 +15,9 @@ export function OnlineIndicator({ userId, lastSeen, className = '', size = 'md' 
   const online = isOnline(userId, lastSeen)
 
   const sizeClasses = {
-    sm: 'w-2 h-2',
-    md: 'w-3 h-3',
-    lg: 'w-4 h-4',
+    sm: 'w-2.5 h-2.5',
+    md: 'w-3.5 h-3.5',
+    lg: 'w-4.5 h-4.5',
   }
 
   return (
