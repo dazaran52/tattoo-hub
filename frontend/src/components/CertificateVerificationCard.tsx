@@ -120,8 +120,10 @@ export function CertificateVerificationCard({
     <section className="rounded-3xl border border-primary-500/15 bg-white/70 p-6 shadow-sm backdrop-blur-xl dark:bg-neutral-900/70 md:p-8">
       <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
         <div className="max-w-2xl">
-          <h3 className="flex items-center gap-2 text-xl font-bold">
-            <Award className="h-5 w-5 text-primary-500" />
+          <h3 className="flex items-center gap-2.5 text-xl font-bold">
+            <span className="inline-flex items-center justify-center rounded-full bg-primary-500/10 border border-primary-500/30 p-1 text-primary-500 shrink-0">
+              <Award className="h-4 w-4 text-primary-500" aria-hidden="true" />
+            </span>
             {copy.title}
           </h3>
           <p className="mt-2 text-sm leading-6 text-neutral-600 dark:text-neutral-400">
