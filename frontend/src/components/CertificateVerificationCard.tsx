@@ -128,7 +128,7 @@ export function CertificateVerificationCard({
             {copy.description}
           </p>
         </div>
-        <div className="inline-flex items-center gap-1.5 rounded-full border border-neutral-200/70 bg-neutral-100/70 px-3 py-1.5 dark:border-white/10 dark:bg-white/5">
+        <div className={`inline-flex shrink-0 items-center gap-2 rounded-full px-3 py-2 text-sm font-bold ${statusView.classes}`}>
           <StatusIcon className="h-4 w-4" />
           {statusView.text}
         </div>
