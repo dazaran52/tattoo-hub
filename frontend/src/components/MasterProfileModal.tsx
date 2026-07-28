@@ -7,6 +7,7 @@ import { format, parseISO } from 'date-fns'
 import { ru } from 'date-fns/locale'
 import { PostModal } from './PostModal'
 import { OnlineIndicator } from '@/components/OnlineIndicator'
+import { VerifiedMasterBadge } from '@/components/PublicMasterTrust'
 
 export function MasterProfileModal({ username, onClose, onBook }: { username: string, onClose: () => void, onBook: (masterId: string) => void }) {
   const [master, setMaster] = useState<any>(null)
@@ -80,9 +81,12 @@ export function MasterProfileModal({ username, onClose, onBook }: { username: st
                   <OnlineIndicator userId={master?.id} lastSeen={master.last_seen} size="lg" className="bottom-1 right-1" />
                 </div>
                 <div className="flex-1">
-                  <h1 className="text-2xl font-bold text-neutral-900 dark:text-white mb-1">
-                    {master.display_name || master.username}
-                  </h1>
+                  <div className="flex items-center justify-center sm:justify-start gap-2 mb-1">
+                    <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">
+                      {master.display_name || master.username}
+                    </h1>
+                    <VerifiedMasterBadge verified={master.certificate_status === 'approved' || master.is_verified_master} />
+                  </div>
                   <p className="text-neutral-500 dark:text-neutral-400 mb-3">@{master.username}</p>
                   
                   {master.review_count > 0 && (
