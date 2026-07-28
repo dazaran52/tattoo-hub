@@ -23,9 +23,10 @@ interface ChatModalProps {
   recipientName?: string
   recipientAvatar?: string | null
   recipientLastSeen?: string | null
+  recipientId?: string | null
 }
 
-export function ChatModal({ isOpen, onClose, chatId, leadTitle, currentUserRole = 'master', recipientName, recipientAvatar, recipientLastSeen }: ChatModalProps) {
+export function ChatModal({ isOpen, onClose, chatId, leadTitle, currentUserRole = 'master', recipientName, recipientAvatar, recipientLastSeen, recipientId }: ChatModalProps) {
   const [messages, setMessages] = useState<Message[]>([])
   const [newMessage, setNewMessage] = useState('')
   const [loading, setLoading] = useState(false)
@@ -207,7 +208,7 @@ export function ChatModal({ isOpen, onClose, chatId, leadTitle, currentUserRole 
                   <div className="w-10 h-10 bg-neutral-100 dark:bg-neutral-800 rounded-full flex items-center justify-center overflow-hidden border border-neutral-200 dark:border-white/10">
                     <Image src={recipientAvatar} alt="avatar" className="w-full h-full object-cover" width={40} height={40} />
                   </div>
-                  <OnlineIndicator lastSeen={recipientLastSeen} size="sm" className="-bottom-0.5 -right-0.5 border-white dark:border-neutral-900" />
+                  <OnlineIndicator userId={recipientId} lastSeen={recipientLastSeen} size="sm" className="-bottom-0.5 -right-0.5 border-white dark:border-neutral-900" />
                 </div>
               ) : (
                 <div className="w-10 h-10 bg-primary-100 dark:bg-primary-900/30 rounded-full flex items-center justify-center shrink-0">

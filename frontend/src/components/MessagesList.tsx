@@ -428,7 +428,7 @@ export function MessagesList({ userRole = 'master' }: MessagesListProps) {
                       <MessageCircle className="w-6 h-6 text-neutral-400" />
                     )}
                   </div>
-                  <OnlineIndicator lastSeen={chat.client_info?.last_seen} size="sm" className="bottom-0 right-0 border-white dark:border-neutral-900" />
+                  <OnlineIndicator userId={chat.client_id || chat.master_id} lastSeen={chat.client_info?.last_seen} size="sm" className="bottom-0 right-0 border-white dark:border-neutral-900" />
                 </div>
                 
                 <div className="flex-1 min-w-0">
@@ -545,7 +545,7 @@ export function MessagesList({ userRole = 'master' }: MessagesListProps) {
                         <MessageCircle className="w-5 h-5 text-neutral-400" />
                       )}
                   </div>
-                  <OnlineIndicator lastSeen={selectedChat.client_info?.last_seen} size="sm" className="-bottom-0.5 -right-0.5 border-white dark:border-neutral-900" />
+                  <OnlineIndicator userId={selectedChat.client_id || selectedChat.master_id} lastSeen={selectedChat.client_info?.last_seen} size="sm" className="-bottom-0.5 -right-0.5 border-white dark:border-neutral-900" />
                 </div>
                 <div className="flex flex-col min-w-0">
                   <h3 className="font-bold text-neutral-900 dark:text-white truncate">

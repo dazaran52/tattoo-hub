@@ -531,7 +531,7 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
                               className="w-14 h-14 rounded-full object-cover shadow-md border-2 border-white dark:border-neutral-800"
                               width={56} height={56} 
                             />
-                            <OnlineIndicator lastSeen={lead.master.last_seen} />
+                            <OnlineIndicator userId={lead.master.id || lead.assigned_master_id} lastSeen={lead.master.last_seen} />
                           </div>
                           <div>
                             <p className="text-xs font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-primary-500 to-primary-500 uppercase tracking-wider mb-1">{t('assignedMaster', 'Назначенный мастер')}</p>
@@ -593,7 +593,7 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
                             <div className="flex items-start gap-3">
                               <div className="relative">
                                 <Image src={proposal.master_avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(proposal.master_name)}`} alt="" className="h-11 w-11 rounded-xl object-cover"  width={44} height={44} />
-                                <OnlineIndicator lastSeen={proposal.last_seen} size="sm" className="-bottom-1 -right-1" />
+                                <OnlineIndicator userId={proposal.master_id || proposal.user_id} lastSeen={proposal.last_seen} size="sm" className="-bottom-1 -right-1" />
                               </div>
                               <div className="min-w-0 flex-1">
                                 <div className="flex flex-wrap items-center gap-2">
@@ -798,7 +798,7 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
                         className="w-16 h-16 rounded-2xl object-cover border-2 border-neutral-100 dark:border-neutral-800"
                         width={64} height={64} 
                       />
-                      <OnlineIndicator lastSeen={master.last_seen} size="md" className="-bottom-1 -right-1" />
+                      <OnlineIndicator userId={master.id} lastSeen={master.last_seen} size="md" className="-bottom-1 -right-1" />
                     </div>
                     <div>
                       <div className="flex items-center gap-1.5">
@@ -896,7 +896,7 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
             <div className="mb-5 flex items-center gap-4">
               <div className="relative">
                 <Image src={proposalToConfirm.proposal.master_avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(proposalToConfirm.proposal.master_name)}`} alt="" className="h-14 w-14 rounded-2xl object-cover"  width={56} height={56} />
-                <OnlineIndicator lastSeen={proposalToConfirm.proposal.last_seen} size="md" className="-bottom-1 -right-1" />
+                <OnlineIndicator userId={proposalToConfirm.proposal.master_id || proposalToConfirm.proposal.user_id} lastSeen={proposalToConfirm.proposal.last_seen} size="md" className="-bottom-1 -right-1" />
               </div>
               <div>
                 <p className="text-xs font-extrabold uppercase tracking-wider text-primary-600">Финальный выбор</p>

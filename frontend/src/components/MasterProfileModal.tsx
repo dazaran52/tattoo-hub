@@ -77,7 +77,7 @@ export function MasterProfileModal({ username, onClose, onBook }: { username: st
                     className="w-24 h-24 rounded-full object-cover border-4 border-white dark:border-neutral-900 shadow-lg"
                     width={96} height={96} 
                   />
-                  <OnlineIndicator lastSeen={master.last_seen} size="lg" className="bottom-1 right-1" />
+                  <OnlineIndicator userId={master?.id} lastSeen={master.last_seen} size="lg" className="bottom-1 right-1" />
                 </div>
                 <div className="flex-1">
                   <h1 className="text-2xl font-bold text-neutral-900 dark:text-white mb-1">
