@@ -11,6 +11,8 @@ import { TouchEffect } from '@/components/TouchEffect'
 import { CookieBanner } from '@/components/CookieBanner'
 import { OnlinePresenceTracker } from '@/components/OnlinePresenceTracker'
 
+import { PresenceProvider } from '@/components/PresenceContext'
+
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 
 export const metadata: Metadata = {
@@ -77,17 +79,18 @@ export default function RootLayout({
         />
       </head>
       <body className={`${inter.variable} font-sans`}>
-        <LanguageProvider>
-          <CustomCursor />
-          <TouchEffect />
-          <ThemeProvider />
-          <Toaster position="top-center" reverseOrder={false} />
-          {children}
-          <ChatWidget />
-          <InstallPrompt />
-          <CookieBanner />
-          <OnlinePresenceTracker />
-        </LanguageProvider>
+        <PresenceProvider>
+          <LanguageProvider>
+            <CustomCursor />
+            <TouchEffect />
+            <ThemeProvider />
+            <Toaster position="top-center" reverseOrder={false} />
+            {children}
+            <ChatWidget />
+            <InstallPrompt />
+            <CookieBanner />
+          </LanguageProvider>
+        </PresenceProvider>
       </body>
     </html>
   )

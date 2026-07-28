@@ -286,6 +286,7 @@ async def get_my_chats(
         if user_role == "client":
             m_info = master_map.get(chat["master_id"], {})
             chat["client_info"] = {
+                "id": chat["master_id"],
                 "name": m_info.get("display_name") or m_info.get("username") or "Мастер",
                 "email": "",
                 "avatar_url": m_info.get("avatar_url") or "",
@@ -325,6 +326,7 @@ async def get_my_chats(
                     c_name = mc_match["name"]
             
             chat["client_info"] = {
+                "id": chat.get("client_id"),
                 "name": c_name or (mc_match.get("name") if mc_match else None) or c_email or (chat["leads"]["client_name"] if chat["leads"] and chat["leads"].get("client_name") else "Клиент"),
                 "email": c_email or (mc_match.get("email") if mc_match else "") or "",
                 "avatar_url": c_avatar or "",

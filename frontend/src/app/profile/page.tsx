@@ -288,7 +288,7 @@ export default function ProfilePage() {
                     </div>
                   )}
                 </div>
-                <OnlineIndicator lastSeen={new Date().toISOString()} size="lg" className="bottom-2 right-2 border-4 border-white dark:border-neutral-800" />
+                <OnlineIndicator userId={profile.id} lastSeen={new Date().toISOString()} size="lg" className="bottom-2 right-2 border-4 border-white dark:border-neutral-800" />
                 <button
                   onClick={() => avatarInputRef.current?.click()}
                   disabled={isUploading}

@@ -163,7 +163,7 @@ export default function BookMasterPage() {
                 <User className="w-12 h-12 text-neutral-500" />
               )}
             </div>
-            <OnlineIndicator lastSeen={master.last_seen} size="lg" className="bottom-1 right-1 border-4 border-white dark:border-neutral-950" />
+            <OnlineIndicator userId={master.id} lastSeen={master.last_seen} size="lg" className="bottom-1 right-1 border-4 border-white dark:border-neutral-950" />
           </div>
           <div className="mb-2 flex flex-wrap items-center justify-center gap-2.5">
             <h1 className="text-3xl font-extrabold tracking-tight">

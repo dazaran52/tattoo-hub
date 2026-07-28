@@ -52,7 +52,7 @@ test.describe('public master trust experience', () => {
     await page.goto('/book/trust-artist')
 
     await expect(page.getByRole('heading', { name: 'Anna Ink' })).toBeVisible()
-    await expect(page.getByLabel('Сертификат об обучении проверен Tattoo HUB')).toBeVisible()
+    await expect(page.getByLabel('Проверенный мастер Tattoo HUB')).toBeVisible()
     await expect(page.getByText('Прага', { exact: true })).toBeVisible()
     await expect(page.getByText('4.9', { exact: true })).toBeVisible()
     await expect(page.getByRole('heading', { name: 'Что произойдет после заявки' })).toBeVisible()
@@ -70,7 +70,7 @@ test.describe('public master trust experience', () => {
     await page.goto('/book/trust-artist')
 
     await expect(page.getByRole('heading', { name: 'New Artist' })).toBeVisible()
-    await expect(page.getByLabel('Сертификат об обучении проверен Tattoo HUB')).toHaveCount(0)
+    await expect(page.getByLabel('Проверенный мастер Tattoo HUB')).toHaveCount(0)
     await expect(page.getByText('unknown-city-id')).toHaveCount(0)
     await expect(page.getByRole('heading', { name: 'Что произойдет после заявки' })).toBeVisible()
   })
