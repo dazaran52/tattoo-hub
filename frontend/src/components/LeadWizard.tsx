@@ -30,6 +30,7 @@ export interface LeadWizardProps {
   };
   masterId?: string;
   source?: 'platform' | 'personal';
+  isLoggedIn?: boolean;
   themeClasses?: {
     card?: string;
     input?: string;
@@ -71,11 +72,14 @@ function ImagePreview({ file, onRemove }: { file: File; onRemove: () => void }) 
   )
 }
 
-export function LeadWizard({ master, masterId, source = 'platform', themeClasses, onSuccess, initialData }: LeadWizardProps) {
+export function LeadWizard({ master, masterId, source = 'platform', isLoggedIn, themeClasses, onSuccess, initialData }: LeadWizardProps) {
   const router = useRouter()
   const { t, lang } = useLanguage()
   const dateLocale = lang === 'en' ? enUS : lang === 'cs' ? cs : lang === 'uk' ? uk : ru
   const tClasses = { ...defaultThemeClasses, ...themeClasses }
+
+  const [authLoggedIn, setAuthLoggedIn] = useState(Boolean(isLoggedIn))
+  const isUserLoggedIn = Boolean(isLoggedIn || authLoggedIn)
 
   // Гарантированные структурные классы, которые никогда не затираются внешними темами
   const baseCardClass = `w-full rounded-3xl p-6 sm:p-8 md:p-10 transition-all duration-500 relative overflow-hidden ${tClasses.card}`
@@ -237,14 +241,17 @@ export function LeadWizard({ master, masterId, source = 'platform', themeClasses
 
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.access_token) {
+        setAuthLoggedIn(true)
         api.getProfile().then(p => {
           if (p.country_ids && p.country_ids.length > 0 && !selectedCountry && !initialData?.country_id) {
             setSelectedCountry(p.country_ids[0])
             setLocationPrefilled(true)
             setShowLocationSelect(false)
           }
-          if (p.display_name && !name && !initialData?.name) setName(p.display_name)
-          if (p.email && !email && !initialData?.email) setEmail(p.email)
+          const profileName = p.display_name || (p as any).full_name || (p as any).name || session.user?.user_metadata?.full_name || session.user?.user_metadata?.name
+          if (profileName && !name && !initialData?.name) setName(profileName)
+          const profileEmail = p.email || session.user?.email
+          if (profileEmail && !email && !initialData?.email) setEmail(profileEmail)
           if (p.phone && !contact && !initialData?.contact) setContact(p.phone)
           if ((p as any).instagram && !instagram && !initialData?.instagram) setInstagram((p as any).instagram)
         }).catch(err => console.error(err))
@@ -603,9 +610,16 @@ export function LeadWizard({ master, masterId, source = 'platform', themeClasses
             <ShieldCheck className="w-6 h-6" />
             {t('leadWizard.goToLeadAndChat', 'Перейти к заявке и чату с мастером ➔')}
           </button>
-          <p className="text-xs sm:text-sm text-neutral-400">
-            {t('leadWizard.safeLoginFor', 'Вход выполнится мгновенно и безопасно по защищенной ссылке для')} <span className="text-accent-400 font-semibold underline">{email}</span>
-          </p>
+          {!isUserLoggedIn ? (
+            <p className="text-xs sm:text-sm text-neutral-400">
+              {t('leadWizard.safeLoginFor', 'Вход выполнится мгновенно и безопасно по защищенной ссылке для')} <span className="text-accent-400 font-semibold underline">{email}</span>
+            </p>
+          ) : (
+            <p className="text-xs sm:text-sm text-neutral-400 flex items-center justify-center gap-1.5">
+              <ShieldCheck className="w-4 h-4 text-emerald-400 inline" />
+              <span>{t('leadWizard.savedToYourAccount', 'Заявка сохранена в вашем личном кабинете для')}</span> <span className="text-accent-400 font-semibold">{email}</span>
+            </p>
+          )}
         </div>
       </div>
     )
@@ -1235,47 +1249,83 @@ export function LeadWizard({ master, masterId, source = 'platform', themeClasses
               exit={{ opacity: 0, x: 15 }}
               className="space-y-8"
             >
-              <div className="bg-gradient-to-r from-accent-500/15 via-blue-500/15 to-primary-500/15 border border-accent-500/40 rounded-3xl p-5 sm:p-6 flex items-start gap-4 shadow-xl">
-                <div className="p-3 bg-accent-500/20 text-accent-300 rounded-2xl shrink-0 mt-0.5 shadow-inner">
-                  <Sparkles className="w-6 h-6" />
+              {isUserLoggedIn ? (
+                <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-3xl p-5 sm:p-6 flex items-center gap-3.5 text-emerald-300 text-sm sm:text-base font-medium shadow-xl">
+                  <div className="p-2.5 bg-emerald-500/20 text-emerald-400 rounded-2xl shrink-0 shadow-inner">
+                    <ShieldCheck className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <strong className="text-white text-base font-extrabold block mb-0.5">{t('leadWizard.loggedInNoticeTitle', 'Аккаунт подтвержден')}</strong>
+                    <span className="text-neutral-300 text-xs sm:text-sm leading-relaxed">{t('leadWizard.loggedInNoticeDesc', 'Вы вошли в систему. Эта заявка будет автоматически привязана к вашему личному кабинету.')}</span>
+                  </div>
                 </div>
-                <div className="text-xs sm:text-sm text-neutral-300 leading-relaxed">
-                  <strong className="text-white text-base font-extrabold block mb-1">{t('leadWizard.instantAccessTitle', 'Мгновенный доступ без паролей')}</strong>
-                  {t('leadWizard.instantAccessDesc', 'Мы создадим для вас безопасный личный кабинет по вашему Email. Входить в него можно будет в один клик по ссылке из письма или прямо с экрана завершения заявки!')}
+              ) : (
+                <div className="bg-gradient-to-r from-accent-500/15 via-blue-500/15 to-primary-500/15 border border-accent-500/40 rounded-3xl p-5 sm:p-6 flex items-start gap-4 shadow-xl">
+                  <div className="p-3 bg-accent-500/20 text-accent-300 rounded-2xl shrink-0 mt-0.5 shadow-inner">
+                    <Sparkles className="w-6 h-6" />
+                  </div>
+                  <div className="text-xs sm:text-sm text-neutral-300 leading-relaxed">
+                    <strong className="text-white text-base font-extrabold block mb-1">{t('leadWizard.instantAccessTitle', 'Мгновенный доступ без паролей')}</strong>
+                    {t('leadWizard.instantAccessDesc', 'Мы создадим для вас безопасный личный кабинет по вашему Email. Входить в него можно будет в один клик по ссылке из письма или прямо с экрана завершения заявки!')}
+                  </div>
                 </div>
-              </div>
+              )}
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-base font-bold text-white mb-2">
-                    {t('leadWizard.yourNameLabel', 'Ваше имя')} <span className="text-red-500">*</span>
-                  </label>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="block text-base font-bold text-white">
+                      {t('leadWizard.yourNameLabel', 'Ваше имя')} <span className="text-red-500">*</span>
+                    </label>
+                    {isUserLoggedIn && (
+                      <span className="text-[11px] font-semibold text-neutral-400 bg-white/5 border border-white/10 px-2 py-0.5 rounded-md flex items-center gap-1">
+                        <ShieldCheck className="w-3 h-3 text-emerald-400 inline" />
+                        {t('leadWizard.fromAccountBadge', 'Из аккаунта')}
+                      </span>
+                    )}
+                  </div>
                   <div className="relative">
                     <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500" />
                     <input
                       type="text"
                       required
                       value={name}
-                      onChange={(e) => setName(e.target.value)}
+                      onChange={(e) => !isUserLoggedIn && setName(e.target.value)}
+                      readOnly={isUserLoggedIn}
+                      disabled={isUserLoggedIn}
                       placeholder={t('leadWizard.namePlaceholder', 'Иван')}
-                      className={`${baseInputClass} pl-12 text-base font-medium`}
+                      className={`${baseInputClass} pl-12 text-base font-medium ${
+                        isUserLoggedIn ? 'opacity-70 cursor-not-allowed bg-neutral-800/80 border-neutral-700/50 text-neutral-300' : ''
+                      }`}
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-base font-bold text-white mb-2">
-                    {t('leadWizard.emailLabel', 'Email для входа в кабинет')} <span className="text-red-500">*</span>
-                  </label>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="block text-base font-bold text-white">
+                      {isUserLoggedIn ? (t('leadWizard.emailSimpleLabel', 'Email') || 'Email') : (t('leadWizard.emailLabel', 'Email для входа в кабинет') || 'Email для входа в кабинет')} <span className="text-red-500">*</span>
+                    </label>
+                    {isUserLoggedIn && (
+                      <span className="text-[11px] font-semibold text-neutral-400 bg-white/5 border border-white/10 px-2 py-0.5 rounded-md flex items-center gap-1">
+                        <ShieldCheck className="w-3 h-3 text-emerald-400 inline" />
+                        {t('leadWizard.fromAccountBadge', 'Из аккаунта')}
+                      </span>
+                    )}
+                  </div>
                   <div className="relative">
                     <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500" />
                     <input
                       type="email"
                       required
                       value={email}
-                      onChange={(e) => setEmail(e.target.value)}
+                      onChange={(e) => !isUserLoggedIn && setEmail(e.target.value)}
+                      readOnly={isUserLoggedIn}
+                      disabled={isUserLoggedIn}
                       placeholder="example@mail.com"
-                      className={`${baseInputClass} pl-12 text-base font-medium`}
+                      className={`${baseInputClass} pl-12 text-base font-medium ${
+                        isUserLoggedIn ? 'opacity-70 cursor-not-allowed bg-neutral-800/80 border-neutral-700/50 text-neutral-300' : ''
+                      }`}
                     />
                   </div>
                 </div>

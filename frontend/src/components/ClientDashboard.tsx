@@ -715,6 +715,11 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
               <LeadWizard
                 masterId={selectedMasterForDirectBooking || undefined}
                 source={selectedMasterForDirectBooking ? 'personal' : 'platform'}
+                isLoggedIn={true}
+                initialData={{
+                  email: profile.email,
+                  name: profile.display_name || profile.email.split('@')[0]
+                }}
                 onSuccess={() => {
                   setIsFormOpen(false)
                   supabase.auth.getSession().then(({ data: { session } }) => {
