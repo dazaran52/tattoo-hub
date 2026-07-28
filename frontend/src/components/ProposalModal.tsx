@@ -1,7 +1,8 @@
-import { useState } from 'react'
-import { X, Send, AlertCircle } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { X, Send, AlertCircle, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 import { motion, AnimatePresence } from 'framer-motion'
+import { startOfWeek, endOfWeek, eachDayOfInterval, format, isSameDay, addWeeks, startOfDay } from 'date-fns'
 import { Lead } from './LeadsFeed'
 import { supabase } from '@/lib/supabase'
 
@@ -16,6 +17,47 @@ interface ProposalModalProps {
 export function ProposalModal({ isOpen, onClose, lead, onSuccess }: ProposalModalProps) {
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({ price_offer: '', proposed_dates: '' })
+
+  // Calendar state
+  const [sessions, setSessions] = useState<any[]>([])
+  const [daysOff, setDaysOff] = useState<any[]>([])
+  const [calendarLoading, setCalendarLoading] = useState(false)
+  const [weekOffset, setWeekOffset] = useState(0)
+
+  useEffect(() => {
+    if (isOpen) {
+      fetchSchedule()
+    } else {
+      setWeekOffset(0)
+    }
+  }, [isOpen])
+
+  const fetchSchedule = async () => {
+    try {
+      setCalendarLoading(true)
+      const { data: { session } } = await supabase.auth.getSession()
+      const token = session?.access_token
+      if (!token) return
+
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+      const [sessRes, daysRes] = await Promise.all([
+        fetch(`${apiUrl}/api/crm/sessions`, { headers: { 'Authorization': `Bearer ${token}` } }),
+        fetch(`${apiUrl}/api/crm/days-off`, { headers: { 'Authorization': `Bearer ${token}` } })
+      ])
+
+      if (sessRes.ok) setSessions(await sessRes.json())
+      if (daysRes.ok) setDaysOff(await daysRes.json())
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setCalendarLoading(false)
+    }
+  }
+
+  const baseDate = addWeeks(new Date(), weekOffset)
+  const startDate = startOfWeek(baseDate, { weekStartsOn: 1 })
+  const endDate = endOfWeek(addWeeks(baseDate, 1), { weekStartsOn: 1 })
+  const calendarDays = eachDayOfInterval({ start: startDate, end: endDate })
 
   if (!isOpen || !lead) return null
 
@@ -117,6 +159,61 @@ export function ProposalModal({ isOpen, onClose, lead, onSuccess }: ProposalModa
 
             <div>
               <label className="mb-2 block text-sm font-bold text-neutral-700 dark:text-neutral-300">Свободные даты</label>
+              
+              <div className="mb-4 rounded-2xl border border-neutral-200 p-4 dark:border-neutral-700 bg-neutral-50/50 dark:bg-neutral-900/50">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-sm font-bold text-neutral-900 dark:text-white">Ваш график</span>
+                  <div className="flex gap-1">
+                    <button type="button" onClick={() => setWeekOffset(prev => prev - 1)} className="p-1.5 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-800 text-neutral-500 transition-colors"><ChevronLeft className="w-4 h-4" /></button>
+                    <button type="button" onClick={() => setWeekOffset(prev => prev + 1)} className="p-1.5 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-800 text-neutral-500 transition-colors"><ChevronRight className="w-4 h-4" /></button>
+                  </div>
+                </div>
+                
+                {calendarLoading ? (
+                  <div className="flex justify-center py-6"><Loader2 className="w-5 h-5 animate-spin text-neutral-400" /></div>
+                ) : (
+                  <div className="grid grid-cols-7 gap-1">
+                    {['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'].map(d => (
+                      <div key={d} className="text-center text-[10px] font-bold text-neutral-500 mb-1">{d}</div>
+                    ))}
+                    {calendarDays.map(day => {
+                      const hasSession = sessions.filter(s => s.session_date && isSameDay(new Date(s.session_date), day))
+                      const isOff = daysOff.some(d => d.date && isSameDay(new Date(d.date), day))
+                      const isPast = startOfDay(day) < startOfDay(new Date())
+                      
+                      let bg = 'bg-white dark:bg-neutral-800'
+                      let text = 'text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-white/5'
+                      let badge = null
+
+                      if (isOff) {
+                        bg = 'bg-red-50 dark:bg-red-900/20'
+                        text = 'text-red-500 border border-red-100 dark:border-red-900/50'
+                      } else if (hasSession.length > 0) {
+                        bg = 'bg-primary-50 dark:bg-primary-900/20'
+                        text = 'text-primary-600 dark:text-primary-400 font-bold border border-primary-100 dark:border-primary-900/50'
+                        badge = <div className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-primary-500" />
+                      }
+
+                      if (isPast) {
+                        bg = 'bg-transparent'
+                        text = 'text-neutral-300 dark:text-neutral-700 border border-transparent'
+                        badge = null
+                      }
+
+                      return (
+                        <div 
+                          key={day.toISOString()} 
+                          className={`relative aspect-square flex flex-col items-center justify-center rounded-lg text-xs ${bg} ${text}`}
+                        >
+                          {badge}
+                          <span>{format(day, 'd')}</span>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
+
               <textarea
                 required
                 className="w-full resize-none rounded-2xl border border-transparent bg-neutral-100 px-5 py-3 text-neutral-900 outline-none focus:border-primary-500 dark:bg-neutral-800 dark:text-white"

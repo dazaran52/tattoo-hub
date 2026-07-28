@@ -928,10 +928,11 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
                   )}
                 </div>
 
-                <div className="flex items-center gap-2 text-xs text-neutral-400 mb-4 font-medium font-mono">
-                  <span>#ID-{lead.id.substring(0, 6)}</span>
-                  <span>•</span>
+                <div className="flex items-center justify-between text-xs text-neutral-400 mb-4 font-medium">
                   {lead.created_at && <span>{new Date(lead.created_at).toLocaleDateString()}</span>}
+                  <span className="text-[10px] text-neutral-300 dark:text-neutral-700 font-mono opacity-0 group-hover:opacity-100 transition-opacity duration-300 cursor-default" title={`ID: ${lead.id}`}>
+                    #{lead.id.substring(0, 6)}
+                  </span>
                 </div>
 
                 <p className="text-neutral-600 dark:text-neutral-400 text-sm mb-6 leading-relaxed flex-1 line-clamp-4">
@@ -964,14 +965,7 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
                     )}
                   </div>
                   
-                  {!isMarketplace && !lead.is_unlocked && !isAdmin && (
-                    <div className="mt-3 flex items-center justify-between">
-                      <span className="text-xs text-neutral-500 font-medium">Стоимость:</span>
-                      <span className="bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white text-xs px-3 py-1.5 rounded-lg font-bold">
-                        {lead.unlock_price_local} {lead.master_currency}
-                      </span>
-                    </div>
-                  )}
+
                 </div>
               </div>
               
