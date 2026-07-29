@@ -48,7 +48,7 @@ export function ProposalModal({ isOpen, onClose, lead, onSuccess }: ProposalModa
       const [sessRes, daysRes, profileRes] = await Promise.all([
         fetch(`${apiUrl}/api/crm/sessions`, { headers: { 'Authorization': `Bearer ${token}` } }),
         fetch(`${apiUrl}/api/crm/days-off`, { headers: { 'Authorization': `Bearer ${token}` } }),
-        supabase.table('users').select('balance_amount').eq('id', session.user.id).single()
+        supabase.from('users').select('balance_amount').eq('id', session.user.id).single()
       ])
 
       if (sessRes.ok) setSessions(await sessRes.json())
