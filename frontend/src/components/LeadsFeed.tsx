@@ -50,6 +50,7 @@ export interface Lead {
   style?: string
   body_place?: string
   size?: string
+  session_date?: string
 }
 
 interface LeadsFeedProps {
@@ -913,6 +914,11 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
                   {lead.size && (
                     <span className="px-2.5 py-1 bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-xs font-semibold rounded-md border border-neutral-200/50 dark:border-white/5 flex items-center gap-1">
                       <span>📏</span> {lead.size}
+                    </span>
+                  )}
+                  {lead.session_date && (
+                    <span className="px-2.5 py-1 bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 text-xs font-semibold rounded-md border border-purple-200/50 dark:border-purple-700/50 flex items-center gap-1">
+                      <span>📅</span> {new Date(lead.session_date).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' })}
                     </span>
                   )}
                   {(lead.country_id || lead.city_id) && (

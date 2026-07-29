@@ -60,11 +60,13 @@ export function ProposalModal({ isOpen, onClose, lead, onSuccess }: ProposalModa
 
   const modifiers = {
     dayOff: daysOff.map(d => new Date(d.date)),
-    session: sessions.filter(s => s.session_date).map(s => new Date(s.session_date))
+    session: sessions.filter(s => s.session_date).map(s => new Date(s.session_date)),
+    clientDate: lead?.session_date ? [new Date(lead.session_date)] : []
   }
   const modifiersStyles = {
     dayOff: { backgroundColor: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', fontWeight: 'bold' },
-    session: { backgroundColor: 'rgba(6, 182, 212, 0.1)', color: '#06b6d4', fontWeight: 'bold', borderBottom: '2px solid #06b6d4' }
+    session: { backgroundColor: 'rgba(6, 182, 212, 0.1)', color: '#06b6d4', fontWeight: 'bold', borderBottom: '2px solid #06b6d4' },
+    clientDate: { backgroundColor: 'rgba(168, 85, 247, 0.2)', color: '#a855f7', fontWeight: 'bold', borderBottom: '2px solid #a855f7' }
   }
 
   if (!isOpen || !lead) return null
@@ -172,7 +174,14 @@ export function ProposalModal({ isOpen, onClose, lead, onSuccess }: ProposalModa
             )}
 
             <div>
-              <label className="mb-2 block text-sm font-bold text-neutral-700 dark:text-neutral-300">Свободные даты</label>
+              <div className="mb-2 flex items-center justify-between">
+                <label className="block text-sm font-bold text-neutral-700 dark:text-neutral-300">Свободные даты</label>
+                <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-neutral-500">
+                  <div className="flex items-center gap-1"><div className="h-1.5 w-1.5 rounded-full bg-cyan-500"></div>Сеансы</div>
+                  <div className="flex items-center gap-1"><div className="h-1.5 w-1.5 rounded-full bg-red-500"></div>Выходные</div>
+                  {lead.session_date && <div className="flex items-center gap-1 text-purple-600 dark:text-purple-400"><div className="h-1.5 w-1.5 rounded-full bg-purple-500"></div>Выбор клиента</div>}
+                </div>
+              </div>
               
               <div className="mb-4 rounded-3xl border border-neutral-200 p-4 dark:border-white/10 bg-neutral-50 dark:bg-black/50 flex justify-center overflow-x-auto shadow-inner">
                 <style>{`
