@@ -75,16 +75,23 @@ async def get_marketplace_leads(
         except ValueError as exc:
             raise HTTPException(status_code=403, detail=str(exc)) from exc
 
+        seven_days_ago = (datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=7)).isoformat()
         raw_res = await supabase.table("leads") \
             .select("*, cities(country_id)") \
             .neq("status", "closed") \
+            .gte("created_at", seven_days_ago) \
             .order("created_at", desc=True) \
             .limit(2000) \
             .execute()
         raw_leads = raw_res.data or []
+        
+        rejected_res = await supabase.table("lead_proposals").select("lead_id").eq("user_id", current_user.user_id).eq("status", "rejected").execute()
+        rejected_lead_ids = {p["lead_id"] for p in (rejected_res.data or [])}
+        
         leads = [
             lead for lead in raw_leads
             if not lead.get("is_personal")
+            and lead["id"] not in rejected_lead_ids
             and (
                 lead.get("assigned_master_id") is None
                 or lead.get("assigned_master_id") == current_user.user_id
@@ -244,12 +251,18 @@ def get_leads(
             raise HTTPException(status_code=403, detail=str(exc)) from exc
         master_currency = profile.get("currency", "CZK")
 
-        # Fetch all public leads (and exclusive paid leads)
-        raw_res = supabase.table("leads").select("*, cities(country_id)").order("created_at", desc=True).limit(2000).execute()
+        # Fetch all public leads (and exclusive paid leads) within 7 days
+        seven_days_ago = (datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=7)).isoformat()
+        raw_res = supabase.table("leads").select("*, cities(country_id)").neq("status", "closed").gte("created_at", seven_days_ago).order("created_at", desc=True).limit(2000).execute()
         raw_leads = raw_res.data or []
+        
+        rejected_res = supabase.table("lead_proposals").select("lead_id").eq("user_id", current_user.user_id).eq("status", "rejected").execute()
+        rejected_lead_ids = {p["lead_id"] for p in (rejected_res.data or [])}
+        
         leads = [
             l for l in raw_leads
-            if l.get("assigned_master_id") is None or (l.get("assigned_master_id") == current_user.user_id and not l.get("is_personal", False))
+            if l["id"] not in rejected_lead_ids
+            and (l.get("assigned_master_id") is None or (l.get("assigned_master_id") == current_user.user_id and not l.get("is_personal", False)))
         ]
 
         paginated_leads = leads[offset:offset+limit]
@@ -701,6 +714,8 @@ async def get_client_leads(
         proposals_by_lead = {}
         accepted_masters = {}
         for p in proposals:
+            if p.get("status") == "rejected":
+                continue
             lid = p["lead_id"]
             proposals_count[lid] = proposals_count.get(lid, 0) + 1
             master = p.get("users") or {}
@@ -832,6 +847,25 @@ async def accept_client_proposal(
     }
 
 
+@router.post("/client/{lead_id}/proposals/{master_id}/reject")
+async def reject_client_proposal(
+    lead_id: str,
+    master_id: str,
+    current_user: AuthUser = Depends(get_current_user),
+    supabase: AsyncClient = Depends(get_async_supabase_client),
+):
+    """Let an authenticated lead owner reject a marketplace proposal."""
+    lead_res = await supabase.table("leads").select("id").eq("id", lead_id).eq("client_id", current_user.user_id).execute()
+    if not lead_res.data:
+        raise HTTPException(status_code=404, detail="LEAD_NOT_FOUND")
+
+    res = await supabase.table("lead_proposals").update({"status": "rejected"}).eq("lead_id", lead_id).eq("user_id", master_id).execute()
+    if not res.data:
+        raise HTTPException(status_code=404, detail="PROPOSAL_NOT_FOUND")
+
+    return {"success": True}
+
+
 class ClientLeadUpdate(BaseModel):
     description: str | None = None
     style: str | None = None
@@ -936,7 +970,7 @@ def create_proposal(
             raise HTTPException(status_code=409, detail="ACCEPTED_PROPOSAL_CANNOT_BE_EDITED")
         try:
             ensure_proposal_slot_available(
-                [item["user_id"] for item in existing],
+                [item["user_id"] for item in existing if item.get("status") != "rejected"],
                 current_user.user_id,
             )
         except ValueError as exc:
@@ -951,7 +985,7 @@ def create_proposal(
         except ValueError as exc:
             raise HTTPException(status_code=400, detail=str(exc)) from exc
             
-        if (profile_res.data.get("balance") or 0) < fee:
+        if (profile_res.data.get("balance") or 0) < 0:
             raise HTTPException(status_code=402, detail="INSUFFICIENT_BALANCE_FOR_COMMISSION")
         proposed_dates = proposal.proposed_dates.strip()
         if not proposed_dates:

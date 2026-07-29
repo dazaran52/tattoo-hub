@@ -161,6 +161,36 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
     }
   }
 
+  const [rejectingProposalId, setRejectingProposalId] = useState<string | null>(null)
+
+  const handleRejectProposal = async (leadId: string, proposal: any) => {
+    const proposalKey = `${leadId}:${proposal.master_id}`
+    setRejectingProposalId(proposalKey)
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) throw new Error('Войдите в аккаунт, чтобы отказать мастеру')
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+      const response = await fetch(`${apiUrl}/api/leads/client/${leadId}/proposals/${proposal.master_id}/reject`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${session.access_token}` }
+      })
+      if (!response.ok) throw new Error('Не удалось отказать мастеру')
+      setLeads(current => current.map(lead => lead.id !== leadId ? lead : {
+        ...lead,
+        proposals: (lead.proposals || []).map((item: any) => ({
+          ...item,
+          status: item.master_id === proposal.master_id ? 'rejected' : item.status
+        }))
+      }))
+      import('react-hot-toast').then(mod => mod.default.success('Предложение отклонено.'))
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Ошибка при отклонении'
+      import('react-hot-toast').then(mod => mod.default.error(message))
+    } finally {
+      setRejectingProposalId(null)
+    }
+  }
+
   useEffect(() => {
     if (isFormOpen || editingLead) {
       document.body.style.overflow = 'hidden'
@@ -461,6 +491,24 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
                 </div>
 
                 <div className="flex flex-wrap gap-2 mb-5">
+                  {lead.client_priority && lead.client_priority !== 'normal' && (
+                    <span className={`px-3 py-1.5 text-xs font-semibold rounded-lg flex items-center gap-1.5 border ${
+                      lead.client_priority === 'fast' ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-200/50 dark:border-amber-500/20' :
+                      lead.client_priority === 'quality' ? 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-200/50 dark:border-purple-500/20' :
+                      'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-200/50 dark:border-emerald-500/20'
+                    }`}>
+                      <span>
+                        {lead.client_priority === 'fast' ? '⚡' : lead.client_priority === 'quality' ? '💎' : '💸'}
+                      </span>
+                      {lead.client_priority === 'fast' ? 'В кратчайшие сроки' : lead.client_priority === 'quality' ? 'Макс. качество' : 'Важна цена'}
+                    </span>
+                  )}
+                  {lead.session_date && (
+                    <span className="px-3 py-1.5 bg-neutral-100 dark:bg-neutral-800/50 text-neutral-700 dark:text-neutral-300 text-xs font-semibold rounded-lg flex items-center gap-1.5 border border-neutral-200/50 dark:border-white/5">
+                      <span>📅</span>
+                      {new Date(lead.session_date).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+                    </span>
+                  )}
                   {lead.style && lead.style !== 'Не определился' && (
                     <span className="px-3 py-1.5 bg-neutral-100 dark:bg-neutral-800/50 text-neutral-700 dark:text-neutral-300 text-xs font-semibold rounded-lg flex items-center gap-1.5 border border-neutral-200/50 dark:border-white/5">
                       <span>🎨</span>
@@ -602,8 +650,11 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
                             </div>
                             <div className="mt-4 flex gap-2">
                               {proposal.master_username && <button onClick={() => setSelectedMasterUsernameForModal(proposal.master_username)} className="flex-1 rounded-xl bg-neutral-100 px-3 py-2 text-xs font-bold text-neutral-700 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-200">Портфолио</button>}
-                              <button disabled={acceptingProposalId !== null} onClick={() => setProposalToConfirm({ leadId: lead.id, proposal })} className="flex-1 rounded-xl bg-primary-600 px-3 py-2 text-xs font-bold text-white hover:bg-primary-500 disabled:opacity-60">
+                              <button disabled={acceptingProposalId !== null || rejectingProposalId !== null} onClick={() => setProposalToConfirm({ leadId: lead.id, proposal })} className="flex-1 rounded-xl bg-primary-600 px-3 py-2 text-xs font-bold text-white hover:bg-primary-500 disabled:opacity-60">
                                 {acceptingProposalId === proposalKey ? <span className="inline-flex items-center gap-1"><Loader2 className="h-3.5 w-3.5 animate-spin" /> Выбираем</span> : 'Выбрать мастера'}
+                              </button>
+                              <button disabled={acceptingProposalId !== null || rejectingProposalId !== null} onClick={() => handleRejectProposal(lead.id, proposal)} className="rounded-xl bg-red-100 px-3 py-2 text-xs font-bold text-red-600 hover:bg-red-200 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20 disabled:opacity-60 flex items-center justify-center min-w-[80px]">
+                                {rejectingProposalId === proposalKey ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Отказать'}
                               </button>
                             </div>
                           </div>
@@ -615,8 +666,8 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
 
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pt-5 border-t border-neutral-100 dark:border-neutral-800">
                   <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-500/10 flex items-center justify-center">
-                      <DollarSign className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                    <div className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-500/10 flex items-center justify-center text-lg">
+                      💰
                     </div>
                     <div>
                       <p className="text-[10px] font-extrabold text-neutral-500 uppercase tracking-wider">{t('budgetLabel', 'Бюджет')}</p>

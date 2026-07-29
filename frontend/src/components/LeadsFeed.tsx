@@ -836,18 +836,18 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
                   {/* Status Badges on Image (Top Left) */}
                   <div className="absolute top-3 left-3 flex flex-col gap-2">
                     {lead.client_priority === 'fast' && (
-                      <span className="px-2 py-1 bg-rose-500/90 backdrop-blur-md text-white text-[10px] font-bold uppercase rounded-md shadow-sm">
-                        ⚡ Как можно быстрее
+                      <span className="px-2 py-1 bg-amber-500/90 backdrop-blur-md text-white text-[10px] font-bold uppercase rounded-md shadow-sm flex items-center gap-1">
+                        <span>⚡</span> В кратчайшие сроки
                       </span>
                     )}
                     {lead.client_priority === 'cheap' && (
-                      <span className="px-2 py-1 bg-emerald-500/90 backdrop-blur-md text-white text-[10px] font-bold uppercase rounded-md shadow-sm">
-                        💸 Важна цена
+                      <span className="px-2 py-1 bg-emerald-500/90 backdrop-blur-md text-white text-[10px] font-bold uppercase rounded-md shadow-sm flex items-center gap-1">
+                        <span>💸</span> Важна цена
                       </span>
                     )}
                     {lead.client_priority === 'quality' && (
-                      <span className="px-2 py-1 bg-amber-500/90 backdrop-blur-md text-white text-[10px] font-bold uppercase rounded-md shadow-sm">
-                        💎 Максимальное качество
+                      <span className="px-2 py-1 bg-purple-500/90 backdrop-blur-md text-white text-[10px] font-bold uppercase rounded-md shadow-sm flex items-center gap-1">
+                        <span>💎</span> Макс. качество
                       </span>
                     )}
                   </div>
@@ -873,7 +873,7 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
               <div className="p-5 flex-1 relative z-10 flex flex-col">
                 
                 <div className="flex flex-col gap-1 min-w-0 mb-4">
-                  {!hasImages && lead.client_priority && lead.client_priority !== 'quality' && (
+                  {!hasImages && lead.client_priority && lead.client_priority !== 'normal' && (
                     <div className="flex gap-2 mb-2">
                       {lead.client_priority === 'fast' && (
                         <span className="px-2 py-1 bg-rose-500/10 text-rose-600 dark:text-rose-400 text-[10px] font-bold uppercase rounded-md">
@@ -909,36 +909,36 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
                   )}
                 </div>
 
-                <div className="flex flex-col gap-1.5 mt-1 border-t border-dashed border-neutral-200 dark:border-white/10 pt-3 mb-4">
+                <div className="flex flex-wrap gap-1.5 mt-1 border-t border-dashed border-neutral-200 dark:border-white/10 pt-3 mb-4">
                   {lead.style && lead.style !== 'Не определился' && (
-                    <div className="text-xs font-medium text-neutral-700 dark:text-neutral-300 flex items-center gap-1.5">
-                      <Palette className="w-3.5 h-3.5 text-neutral-400 shrink-0" />
+                    <span className="px-2.5 py-1 bg-neutral-100 dark:bg-neutral-800/50 text-neutral-700 dark:text-neutral-300 text-[11px] font-semibold rounded-lg flex items-center gap-1.5 border border-neutral-200/50 dark:border-white/5">
+                      <span>🎨</span>
                       {lead.style}
-                    </div>
+                    </span>
                   )}
                   {lead.body_place && lead.body_place !== 'Не определился' && (
-                    <div className="text-xs font-medium text-neutral-700 dark:text-neutral-300 flex items-center gap-1.5">
-                      <MapPin className="w-3.5 h-3.5 text-neutral-400 shrink-0" />
-                      Место: {lead.body_place}
-                    </div>
+                    <span className="px-2.5 py-1 bg-neutral-100 dark:bg-neutral-800/50 text-neutral-700 dark:text-neutral-300 text-[11px] font-semibold rounded-lg flex items-center gap-1.5 border border-neutral-200/50 dark:border-white/5">
+                      <span>👤</span>
+                      {lead.body_place}
+                    </span>
                   )}
                   {lead.size && (
-                    <div className="text-xs font-medium text-neutral-700 dark:text-neutral-300 flex items-center gap-1.5">
-                      <Maximize2 className="w-3.5 h-3.5 text-neutral-400 shrink-0" />
-                      Размер: {lead.size}
-                    </div>
+                    <span className="px-2.5 py-1 bg-neutral-100 dark:bg-neutral-800/50 text-neutral-700 dark:text-neutral-300 text-[11px] font-semibold rounded-lg flex items-center gap-1.5 border border-neutral-200/50 dark:border-white/5">
+                      <span>📏</span>
+                      {lead.size}
+                    </span>
                   )}
                   {(lead.country_id || lead.city_id) && (
-                    <div className="text-xs font-medium text-neutral-700 dark:text-neutral-300 flex items-center gap-1.5">
-                      <MapPin className="w-3.5 h-3.5 text-neutral-400 shrink-0" />
-                      Город: {cities.find(c => c.id === lead.city_id)?.name_ru || countries.find(c => c.id === lead.country_id)?.name_ru || ''}
-                    </div>
+                    <span className="px-2.5 py-1 bg-neutral-100 dark:bg-neutral-800/50 text-neutral-700 dark:text-neutral-300 text-[11px] font-semibold rounded-lg flex items-center gap-1.5 border border-neutral-200/50 dark:border-white/5">
+                      <span>📍</span>
+                      {cities.find(c => c.id === lead.city_id)?.name_ru || countries.find(c => c.id === lead.country_id)?.name_ru || ''}
+                    </span>
                   )}
                   {lead.display_budget && (
-                    <div className="text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5 mt-1">
-                      <Wallet className="w-3.5 h-3.5 shrink-0" />
-                      Бюджет: {lead.display_budget}
-                    </div>
+                    <span className="px-2.5 py-1 bg-emerald-50 dark:bg-emerald-900/10 text-emerald-700 dark:text-emerald-400 text-[11px] font-bold rounded-lg flex items-center gap-1.5 border border-emerald-200/50 dark:border-emerald-800/30">
+                      <span>💰</span>
+                      {lead.display_budget}
+                    </span>
                   )}
                 </div>
 
