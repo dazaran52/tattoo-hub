@@ -174,20 +174,23 @@ export function ProposalModal({ isOpen, onClose, lead, onSuccess }: ProposalModa
             <div>
               <label className="mb-2 block text-sm font-bold text-neutral-700 dark:text-neutral-300">Свободные даты</label>
               
-              <div className="mb-4 rounded-2xl border border-neutral-200 p-4 dark:border-neutral-700 bg-neutral-50/50 dark:bg-neutral-900/50 flex justify-center text-sm">
+              <div className="mb-4 rounded-3xl border border-neutral-200 p-4 dark:border-white/10 bg-neutral-50 dark:bg-black/50 flex justify-center overflow-x-auto shadow-inner">
                 <style>{`
-                  .rdp { 
-                    --rdp-cell-size: 38px; 
+                  .rdp-root { 
+                    --rdp-day-height: 40px; 
+                    --rdp-day-width: 40px;
                     --rdp-accent-color: #06b6d4 !important; 
                     --rdp-accent-background-color: rgba(6, 182, 212, 0.25) !important;
                     margin: 0; 
                   }
                   .rdp-day_button { 
-                    border-radius: 10px !important; 
+                    border-radius: 12px !important; 
                     font-weight: 600; 
                     transition: all 0.2s;
                   }
-                  .rdp-day_button:hover:not([disabled]):not(.rdp-selected) { background-color: rgba(150, 150, 150, 0.15); }
+                  .dark .rdp-day_button { color: #e5e5e5; }
+                  .rdp-day_button:hover:not([disabled]):not(.rdp-selected) { background-color: rgba(0, 0, 0, 0.05); }
+                  .dark .rdp-day_button:hover:not([disabled]):not(.rdp-selected) { background-color: rgba(255, 255, 255, 0.15); }
                 `}</style>
                 {calendarLoading ? (
                   <div className="flex justify-center py-6"><Loader2 className="w-5 h-5 animate-spin text-neutral-400" /></div>
