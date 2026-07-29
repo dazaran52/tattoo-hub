@@ -166,10 +166,11 @@ export function ProposalModal({ isOpen, onClose, lead, onSuccess }: ProposalModa
                 type="number"
                 min="1"
                 required
-                className="w-full rounded-2xl border border-transparent bg-neutral-100 px-5 py-3 text-neutral-900 outline-none focus:border-primary-500 dark:bg-neutral-800 dark:text-white"
+                className="w-full rounded-2xl border border-transparent bg-neutral-100 px-5 py-3 text-neutral-900 outline-none focus:border-primary-500 dark:bg-neutral-800 dark:text-white [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                 placeholder="Например: 3500"
                 value={formData.price_offer}
                 onChange={(event) => setFormData({ ...formData, price_offer: event.target.value })}
+                onWheel={(e) => (e.target as HTMLInputElement).blur()}
               />
             </div>
 
