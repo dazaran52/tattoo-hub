@@ -556,7 +556,7 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
                           <button
                             onClick={() => {
                               setSelectedChatId(lead.chat_id)
-                              setSelectedChatTitle(lead.title)
+                              setSelectedChatTitle(`Заявка #${lead.id.substring(0, 6)}`)
                               setSelectedChatMaster(lead.master.name)
                               setSelectedChatAvatar(lead.master.avatar_url || null)
                               setSelectedChatLastSeen(lead.master.last_seen || null)

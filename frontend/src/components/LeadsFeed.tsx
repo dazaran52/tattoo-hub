@@ -4,7 +4,7 @@ import Image from 'next/image'
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { SkeletonCard } from '@/components/SkeletonCard'
-import { RefreshCw, Search, Loader2, Plus, Edit2, Trash2, XCircle, ChevronLeft, ChevronRight, Image as ImageIcon, Clock, Bell, BellOff, MapPin } from 'lucide-react'
+import { RefreshCw, Search, Loader2, Plus, Edit2, Trash2, XCircle, ChevronLeft, ChevronRight, Image as ImageIcon, Clock, Bell, BellOff, MapPin, Calendar, Palette, Maximize2 } from 'lucide-react'
 import { getTranslation, Language } from '@/lib/i18n'
 import { LowBalanceModal } from '@/components/LowBalanceModal'
 import { MasterLeadModal } from '@/components/MasterLeadModal'
@@ -895,47 +895,64 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
               </div>
 
               <div className="p-5 flex-1 relative z-10 flex flex-col">
-                <h3 className="font-extrabold text-xl text-neutral-900 dark:text-white leading-tight mb-3 group-hover:text-accent-600 dark:group-hover:text-accent-400 transition-colors">
-                  {lead.title}
-                </h3>
                 
-                {/* Unified Tags section */}
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {lead.style && lead.style !== 'Не определился' && (
-                    <span className="px-2.5 py-1 bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-xs font-semibold rounded-md border border-neutral-200/50 dark:border-white/5 flex items-center gap-1">
-                      <span>🎨</span> {lead.style}
-                    </span>
+                <div className="flex flex-col gap-1 min-w-0 mb-4">
+                  {lead.session_date ? (
+                    <div className="flex items-center gap-2 text-xs font-bold text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20 px-2 py-1.5 rounded-lg w-fit max-w-full">
+                      <Calendar className="w-4 h-4 shrink-0 mt-0.5 self-start sm:self-auto sm:my-auto" />
+                      <span className="whitespace-normal break-words leading-none">
+                        {new Date(lead.session_date).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+                      </span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2 text-xs font-bold text-neutral-500 bg-neutral-100 dark:bg-neutral-800 px-2 py-1.5 rounded-lg w-fit max-w-full">
+                      <Calendar className="w-4 h-4 shrink-0 mt-0.5 self-start sm:self-auto sm:my-auto" />
+                      <span className="whitespace-normal break-words leading-none">
+                        Дата не указана
+                      </span>
+                    </div>
                   )}
-                  {lead.body_place && lead.body_place !== 'Не определился' && (
-                    <span className="px-2.5 py-1 bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-xs font-semibold rounded-md border border-neutral-200/50 dark:border-white/5 flex items-center gap-1">
-                      <span>🦵</span> {lead.body_place}
-                    </span>
-                  )}
-                  {lead.size && (
-                    <span className="px-2.5 py-1 bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-xs font-semibold rounded-md border border-neutral-200/50 dark:border-white/5 flex items-center gap-1">
-                      <span>📏</span> {lead.size}
-                    </span>
-                  )}
-                  {lead.session_date && (
-                    <span className="px-2.5 py-1 bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 text-xs font-semibold rounded-md border border-purple-200/50 dark:border-purple-700/50 flex items-center gap-1">
-                      <span>📅</span> {new Date(lead.session_date).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' })}
-                    </span>
-                  )}
-                  {(lead.country_id || lead.city_id) && (
-                    <span className="px-2.5 py-1 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-xs font-semibold rounded-md border border-blue-200/50 dark:border-blue-700/50 flex items-center gap-1">
-                      <span>📍</span> 
-                      {cities.find(c => c.id === lead.city_id)?.name_ru || countries.find(c => c.id === lead.country_id)?.name_ru || ''}
-                    </span>
-                  )}
-                  {lead.display_budget && (
-                    <span className="px-2.5 py-1 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 text-xs font-extrabold rounded-md border border-emerald-200/50 dark:border-emerald-700/50 flex items-center gap-1 shadow-sm">
-                      <span>💰</span> {lead.display_budget}
+                  {lead.created_at && (
+                    <span className="text-[10px] text-neutral-400 font-medium ml-1">
+                      Создано: {new Date(lead.created_at).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute:'2-digit' })}
                     </span>
                   )}
                 </div>
 
+                <div className="flex flex-col gap-1.5 mt-1 border-t border-dashed border-neutral-200 dark:border-white/10 pt-3 mb-4">
+                  {lead.style && lead.style !== 'Не определился' && (
+                    <div className="text-xs font-medium text-neutral-700 dark:text-neutral-300 flex items-center gap-1.5">
+                      <Palette className="w-3.5 h-3.5 text-neutral-400 shrink-0" />
+                      {lead.style}
+                    </div>
+                  )}
+                  {lead.body_place && lead.body_place !== 'Не определился' && (
+                    <div className="text-xs font-medium text-neutral-700 dark:text-neutral-300 flex items-center gap-1.5">
+                      <MapPin className="w-3.5 h-3.5 text-neutral-400 shrink-0" />
+                      Место: {lead.body_place}
+                    </div>
+                  )}
+                  {lead.size && (
+                    <div className="text-xs font-medium text-neutral-700 dark:text-neutral-300 flex items-center gap-1.5">
+                      <Maximize2 className="w-3.5 h-3.5 text-neutral-400 shrink-0" />
+                      Размер: {lead.size}
+                    </div>
+                  )}
+                  {(lead.country_id || lead.city_id) && (
+                    <div className="text-xs font-medium text-neutral-700 dark:text-neutral-300 flex items-center gap-1.5">
+                      <MapPin className="w-3.5 h-3.5 text-neutral-400 shrink-0" />
+                      Город: {cities.find(c => c.id === lead.city_id)?.name_ru || countries.find(c => c.id === lead.country_id)?.name_ru || ''}
+                    </div>
+                  )}
+                  {lead.display_budget && (
+                    <div className="text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5 mt-1">
+                      <span>💰</span>
+                      Бюджет: {lead.display_budget}
+                    </div>
+                  )}
+                </div>
+
                 <div className="flex items-center justify-between text-xs text-neutral-400 mb-4 font-medium">
-                  {lead.created_at && <span>{new Date(lead.created_at).toLocaleDateString()}</span>}
                   <span className="text-[10px] text-neutral-300 dark:text-neutral-700 font-mono opacity-0 group-hover:opacity-100 transition-opacity duration-300 cursor-default" title={`ID: ${lead.id}`}>
                     #{lead.id.substring(0, 6)}
                   </span>

@@ -267,7 +267,7 @@ export function CRMBoard() {
                 reference_images: lead.image_urls || [],
                 master_clients: {
                   id: lead.id,
-                  name: lead.title || t('crmBoard.newLeadFallbackName'),
+                  name: t('crmBoard.newLeadFallbackName') || `Заявка #${lead.id.substring(0, 6)}`,
                   phone: lead.contacts || t('crmBoard.hiddenContact'),
                   notes: lead.description,
                   is_lead: true,

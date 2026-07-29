@@ -175,7 +175,7 @@ export function AdminLeads() {
                   )}
                 </div>
 
-                <h4 className="font-bold text-base text-neutral-900 dark:text-white mb-1 line-clamp-1">{lead.title || 'Без названия'}</h4>
+                <h4 className="font-bold text-base text-neutral-900 dark:text-white mb-1 line-clamp-1">Заявка #{lead.id.substring(0, 6)}</h4>
                 <p className="text-xs text-neutral-600 dark:text-neutral-400 mb-3 line-clamp-2">{lead.description?.replace(/\s*(Бюджет|Город):.*?(?=(\n|$))/gi, '')}</p>
 
                 <div className="bg-neutral-50 dark:bg-neutral-950 p-2.5 rounded-lg border border-neutral-200/60 dark:border-neutral-800 space-y-1.5 text-xs mb-4">
