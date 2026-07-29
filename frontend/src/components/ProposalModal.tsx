@@ -131,16 +131,17 @@ export function ProposalModal({ isOpen, onClose, lead, onSuccess }: ProposalModa
           initial={{ opacity: 0, scale: 0.95, y: 10 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 10 }}
-          className="w-full max-w-md overflow-hidden rounded-3xl border border-neutral-200 bg-white shadow-2xl dark:border-white/10 dark:bg-neutral-900"
+          className="w-full max-w-md max-h-[90vh] flex flex-col overflow-hidden rounded-3xl border border-neutral-200 bg-white shadow-2xl dark:border-white/10 dark:bg-neutral-900"
         >
-          <div className="flex items-center justify-between border-b border-neutral-100 p-4 dark:border-white/5 lg:p-6">
+          <div className="flex shrink-0 items-center justify-between border-b border-neutral-100 p-4 dark:border-white/5 lg:p-6">
             <h2 className="text-xl font-bold text-neutral-900 dark:text-white">Сделать предложение</h2>
             <button type="button" onClick={onClose} aria-label="Закрыть" className="rounded-full bg-neutral-100 p-2 text-neutral-500 dark:bg-neutral-800">
               <X className="h-5 w-5" />
             </button>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-5 p-4 lg:p-6">
+          <form onSubmit={handleSubmit} className="flex flex-1 flex-col min-h-0">
+            <div className="flex-1 overflow-y-auto custom-scrollbar p-4 lg:p-6 space-y-5">
             <div className="flex items-start gap-3 rounded-2xl bg-primary-500/10 p-4 text-sm text-primary-600 dark:text-primary-400">
               <AlertCircle className="mt-0.5 h-5 w-5 shrink-0" />
               <p>Отправка бесплатна. Комиссия спишется только если клиент выберет вас. Чат и контакты откроются после выбора.</p>
@@ -224,10 +225,13 @@ export function ProposalModal({ isOpen, onClose, lead, onSuccess }: ProposalModa
                 onChange={(event) => setFormData({ ...formData, proposed_dates: event.target.value })}
               />
             </div>
+            </div>
 
-            <button type="submit" disabled={loading} className="flex w-full items-center justify-center gap-2 rounded-2xl bg-primary-500 py-4 font-bold text-white shadow-lg shadow-primary-500/25 hover:bg-primary-600 disabled:opacity-50">
-              {loading ? <div className="h-6 w-6 animate-spin rounded-full border-2 border-white/20 border-t-white" /> : <><span>Отправить бесплатно</span><Send className="h-5 w-5" /></>}
-            </button>
+            <div className="shrink-0 border-t border-neutral-100 p-4 dark:border-white/5 lg:p-6 bg-white dark:bg-neutral-900">
+              <button type="submit" disabled={loading} className="flex w-full items-center justify-center gap-2 rounded-2xl bg-primary-500 py-4 font-bold text-white shadow-lg shadow-primary-500/25 hover:bg-primary-600 disabled:opacity-50">
+                {loading ? <div className="h-6 w-6 animate-spin rounded-full border-2 border-white/20 border-t-white" /> : <><span>Отправить бесплатно</span><Send className="h-5 w-5" /></>}
+              </button>
+            </div>
           </form>
         </motion.div>
       </div>
