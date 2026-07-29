@@ -4,7 +4,7 @@ import Image from 'next/image'
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { SkeletonCard } from '@/components/SkeletonCard'
-import { RefreshCw, Search, Loader2, Plus, Edit2, Trash2, XCircle, ChevronLeft, ChevronRight, Image as ImageIcon, Clock, Bell, BellOff, MapPin, Calendar, Palette, Maximize2 } from 'lucide-react'
+import { RefreshCw, Search, Loader2, Plus, Edit2, Trash2, XCircle, ChevronLeft, ChevronRight, Image as ImageIcon, Clock, Bell, BellOff, MapPin, Calendar, Palette, Maximize2, Wallet } from 'lucide-react'
 import { getTranslation, Language } from '@/lib/i18n'
 import { LowBalanceModal } from '@/components/LowBalanceModal'
 import { MasterLeadModal } from '@/components/MasterLeadModal'
@@ -897,6 +897,20 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
               <div className="p-5 flex-1 relative z-10 flex flex-col">
                 
                 <div className="flex flex-col gap-1 min-w-0 mb-4">
+                  {!hasImages && lead.client_priority && lead.client_priority !== 'quality' && (
+                    <div className="flex gap-2 mb-2">
+                      {lead.client_priority === 'fast' && (
+                        <span className="px-2 py-1 bg-rose-500/10 text-rose-600 dark:text-rose-400 text-[10px] font-bold uppercase rounded-md">
+                          ⚡ Как можно быстрее
+                        </span>
+                      )}
+                      {lead.client_priority === 'cheap' && (
+                        <span className="px-2 py-1 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold uppercase rounded-md">
+                          💸 Важна цена
+                        </span>
+                      )}
+                    </div>
+                  )}
                   {lead.session_date ? (
                     <div className="flex items-center gap-2 text-xs font-bold text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20 px-2 py-1.5 rounded-lg w-fit max-w-full">
                       <Calendar className="w-4 h-4 shrink-0 mt-0.5 self-start sm:self-auto sm:my-auto" />
@@ -946,7 +960,7 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
                   )}
                   {lead.display_budget && (
                     <div className="text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5 mt-1">
-                      <span>💰</span>
+                      <Wallet className="w-3.5 h-3.5 shrink-0" />
                       Бюджет: {lead.display_budget}
                     </div>
                   )}

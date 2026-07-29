@@ -31,6 +31,10 @@ class LeadResponse(BaseModel):
     created_at: str | None = None
     country_id: str | None = None
     city_id: str | None = None
+    style: str | None = None
+    body_place: str | None = None
+    size: str | None = None
+    session_date: str | None = None
     trust_score: int = 100
     unlock_status: str | None = None
     unlock_count: int = 0
@@ -321,6 +325,10 @@ def get_leads(
                 created_at=lead.get("created_at"),
                 country_id=lead.get("country_id") or (lead.get("cities", {}).get("country_id") if lead.get("cities") else None),
                 city_id=lead.get("city_id"),
+                style=lead.get("style"),
+                body_place=lead.get("body_place"),
+                size=lead.get("size"),
+                session_date=lead.get("session_date"),
                 trust_score=lead.get("trust_score", 100),
                 unlock_status=unlock_status,
                 unlock_count=lead_proposal_count,
