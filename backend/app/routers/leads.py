@@ -822,8 +822,6 @@ async def accept_client_proposal(
         }).execute()
     except Exception as exc:
         message = str(exc)
-        if "INSUFFICIENT_BALANCE" in message:
-            raise HTTPException(status_code=409, detail="MASTER_BALANCE_NOT_READY") from exc
         if "PROPOSAL_ALREADY_ACCEPTED" in message:
             raise HTTPException(status_code=409, detail="PROPOSAL_ALREADY_ACCEPTED") from exc
         raise HTTPException(status_code=400, detail="PROPOSAL_ACCEPT_FAILED") from exc
@@ -985,7 +983,7 @@ def create_proposal(
         except ValueError as exc:
             raise HTTPException(status_code=400, detail=str(exc)) from exc
             
-        if (profile_res.data.get("balance") or 0) < 0:
+        if (profile_res.data.get("balance") or 0) < fee.amount:
             raise HTTPException(status_code=402, detail="INSUFFICIENT_BALANCE_FOR_COMMISSION")
         proposed_dates = proposal.proposed_dates.strip()
         if not proposed_dates:
