@@ -912,7 +912,7 @@ def create_proposal(
     """Submit or edit a free proposal; fee and chat activate only on acceptance."""
     try:
         profile_res = supabase.table("users").select(
-            "role, is_verified_master, currency, balance_amount"
+            "role, is_verified_master, currency, balance"
         ).eq("id", current_user.user_id).single().execute()
         try:
             ensure_master_can_access_marketplace(profile_res.data or {})
@@ -951,7 +951,7 @@ def create_proposal(
         except ValueError as exc:
             raise HTTPException(status_code=400, detail=str(exc)) from exc
             
-        if (profile_res.data.get("balance_amount") or 0) < fee:
+        if (profile_res.data.get("balance") or 0) < fee:
             raise HTTPException(status_code=402, detail="INSUFFICIENT_BALANCE_FOR_COMMISSION")
         proposed_dates = proposal.proposed_dates.strip()
         if not proposed_dates:

@@ -48,12 +48,12 @@ export function ProposalModal({ isOpen, onClose, lead, onSuccess }: ProposalModa
       const [sessRes, daysRes, profileRes] = await Promise.all([
         fetch(`${apiUrl}/api/crm/sessions`, { headers: { 'Authorization': `Bearer ${token}` } }),
         fetch(`${apiUrl}/api/crm/days-off`, { headers: { 'Authorization': `Bearer ${token}` } }),
-        supabase.from('users').select('balance_amount').eq('id', session.user.id).single()
+        supabase.from('users').select('balance').eq('id', session.user.id).single()
       ])
 
       if (sessRes.ok) setSessions(await sessRes.json())
       if (daysRes.ok) setDaysOff(await daysRes.json())
-      if (profileRes.data) setBalance(profileRes.data.balance_amount || 0)
+      if (profileRes.data) setBalance(profileRes.data.balance || 0)
     } catch (e) {
       console.error(e)
     } finally {
@@ -163,14 +163,17 @@ export function ProposalModal({ isOpen, onClose, lead, onSuccess }: ProposalModa
             <div>
               <label className="mb-2 block text-sm font-bold text-neutral-700 dark:text-neutral-300">Ваша примерная цена ({currency})</label>
               <input
-                type="number"
-                min="1"
+                type="text"
+                inputMode="numeric"
+                pattern="\d*"
                 required
-                className="w-full rounded-2xl border border-transparent bg-neutral-100 px-5 py-3 text-neutral-900 outline-none focus:border-primary-500 dark:bg-neutral-800 dark:text-white [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                className="w-full rounded-2xl border border-transparent bg-neutral-100 px-5 py-3 text-neutral-900 outline-none focus:border-primary-500 dark:bg-neutral-800 dark:text-white"
                 placeholder="Например: 3500"
                 value={formData.price_offer}
-                onChange={(event) => setFormData({ ...formData, price_offer: event.target.value })}
-                onWheel={(e) => (e.target as HTMLInputElement).blur()}
+                onChange={(event) => {
+                  const val = event.target.value.replace(/\D/g, '')
+                  setFormData({ ...formData, price_offer: val })
+                }}
               />
             </div>
 
