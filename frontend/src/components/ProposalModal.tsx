@@ -21,6 +21,7 @@ export function ProposalModal({ isOpen, onClose, lead, onSuccess }: ProposalModa
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({ price_offer: '', proposed_dates: '' })
   const [selectedDates, setSelectedDates] = useState<Date[] | undefined>([])
+  const [balance, setBalance] = useState<number>(0)
 
   // Calendar state
   const [sessions, setSessions] = useState<any[]>([])
@@ -44,13 +45,15 @@ export function ProposalModal({ isOpen, onClose, lead, onSuccess }: ProposalModa
       if (!token) return
 
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
-      const [sessRes, daysRes] = await Promise.all([
+      const [sessRes, daysRes, profileRes] = await Promise.all([
         fetch(`${apiUrl}/api/crm/sessions`, { headers: { 'Authorization': `Bearer ${token}` } }),
-        fetch(`${apiUrl}/api/crm/days-off`, { headers: { 'Authorization': `Bearer ${token}` } })
+        fetch(`${apiUrl}/api/crm/days-off`, { headers: { 'Authorization': `Bearer ${token}` } }),
+        supabase.table('users').select('balance_amount').eq('id', session.user.id).single()
       ])
 
       if (sessRes.ok) setSessions(await sessRes.json())
       if (daysRes.ok) setDaysOff(await daysRes.json())
+      if (profileRes.data) setBalance(profileRes.data.balance_amount || 0)
     } catch (e) {
       console.error(e)
     } finally {
@@ -75,6 +78,7 @@ export function ProposalModal({ isOpen, onClose, lead, onSuccess }: ProposalModa
   const price = Number(formData.price_offer) || 0
   const feeRate = 0.10
   const feeAmount = Math.round(price * feeRate * 100) / 100
+  const isBalanceInsufficient = price > 0 && balance < feeAmount
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault()
@@ -111,6 +115,9 @@ export function ProposalModal({ isOpen, onClose, lead, onSuccess }: ProposalModa
       if (!response.ok) {
         if (responseData.detail === 'MAX_PROPOSALS_REACHED') {
           throw new Error('Лимит: клиент уже получил 5 предложений')
+        }
+        if (responseData.detail === 'INSUFFICIENT_BALANCE_FOR_COMMISSION') {
+          throw new Error('Недостаточно средств на балансе для оплаты комиссии')
         }
         throw new Error(responseData.detail || 'Не удалось отправить предложение')
       }
@@ -170,7 +177,16 @@ export function ProposalModal({ isOpen, onClose, lead, onSuccess }: ProposalModa
               <div className="rounded-2xl border border-neutral-200 p-4 text-sm dark:border-neutral-700">
                 <div className="flex justify-between"><span>Комиссия Tattoo HUB</span><strong>{feeRate * 100}%</strong></div>
                 <div className="mt-2 flex justify-between text-base"><span>Спишется при выборе</span><strong>{feeAmount} {currency}</strong></div>
-                <p className="mt-2 text-xs text-neutral-500">Единая комиссия — 10% от цены предложения.</p>
+                <div className="mt-2 flex justify-between text-xs text-neutral-500">
+                  <span>Ваш баланс:</span>
+                  <span className={isBalanceInsufficient ? 'text-red-500 font-bold' : ''}>{balance} {currency}</span>
+                </div>
+                {isBalanceInsufficient && (
+                  <div className="mt-3 text-xs font-bold text-red-500 bg-red-500/10 p-2 rounded-xl text-center">
+                    Пополните баланс, чтобы предложить эту цену
+                  </div>
+                )}
+                <p className="mt-2 text-xs text-neutral-500 text-center border-t border-neutral-200 dark:border-neutral-700 pt-2">Единая комиссия — 10% от цены предложения.</p>
               </div>
             )}
 
@@ -228,8 +244,8 @@ export function ProposalModal({ isOpen, onClose, lead, onSuccess }: ProposalModa
             </div>
 
             <div className="shrink-0 border-t border-neutral-100 p-4 dark:border-white/5 lg:p-6 bg-white dark:bg-neutral-900">
-              <button type="submit" disabled={loading} className="flex w-full items-center justify-center gap-2 rounded-2xl bg-primary-500 py-4 font-bold text-white shadow-lg shadow-primary-500/25 hover:bg-primary-600 disabled:opacity-50">
-                {loading ? <div className="h-6 w-6 animate-spin rounded-full border-2 border-white/20 border-t-white" /> : <><span>Отправить бесплатно</span><Send className="h-5 w-5" /></>}
+              <button type="submit" disabled={loading || isBalanceInsufficient} className="flex w-full items-center justify-center gap-2 rounded-2xl bg-primary-500 py-4 font-bold text-white shadow-lg shadow-primary-500/25 hover:bg-primary-600 disabled:opacity-50">
+                {loading ? <div className="h-6 w-6 animate-spin rounded-full border-2 border-white/20 border-t-white" /> : <><span>{isBalanceInsufficient ? 'Недостаточно средств' : 'Отправить бесплатно'}</span><Send className="h-5 w-5" /></>}
               </button>
             </div>
           </form>
