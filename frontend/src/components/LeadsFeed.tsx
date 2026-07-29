@@ -654,9 +654,8 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
                   className="w-full bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg px-3 py-2 text-sm text-neutral-900 dark:text-white"
                 >
                   <option value="newest">Сначала новые</option>
-                  <option value="trust_desc">Высокий Trust Score</option>
                   <option value="budget_desc">Сначала дорогие</option>
-                  <option value="budget_asc">Сначала дешевые</option>
+                  <option value="budget_asc">Сначала недорогие</option>
                 </select>
               </div>
 
@@ -717,16 +716,6 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
 
               <div>
                 <div className="flex gap-4">
-                  <div className="flex-1">
-                    <label className="block text-xs font-bold text-neutral-500 mb-2 uppercase">Min Trust</label>
-                    <input 
-                      type="number" 
-                      placeholder="0"
-                      value={minTrust}
-                      onChange={e => setMinTrust(e.target.value ? Number(e.target.value) : '')}
-                      className="w-full bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg px-3 py-2 text-sm text-neutral-900 dark:text-white"
-                    />
-                  </div>
                   <div className="flex-1">
                     <label className="block text-xs font-bold text-neutral-500 mb-2 uppercase">Min Бюджет</label>
                     <input 
@@ -863,20 +852,7 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
                     )}
                   </div>
                   
-                  {/* Trust Score on Image (Top Right) */}
-                  {lead.trust_score !== undefined && (
-                    <div className="absolute top-3 right-3">
-                        <span className={`text-[10px] uppercase font-bold px-2 py-1 rounded-md shadow-sm flex items-center gap-1 backdrop-blur-md ${
-                          lead.trust_score >= 80
-                            ? 'bg-emerald-500/90 text-white'
-                            : lead.trust_score >= 50
-                            ? 'bg-amber-500/90 text-white'
-                            : 'bg-red-500/90 text-white'
-                        }`}>
-                          🛡️ Trust: {lead.trust_score}%
-                        </span>
-                    </div>
-                  )}
+                  {/* Trust Score removed */}
                 </div>
               )}
               
