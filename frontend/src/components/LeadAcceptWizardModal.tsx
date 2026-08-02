@@ -24,7 +24,6 @@ interface DayOff {
 export function LeadAcceptWizardModal({ isOpen, onClose, onSuccess, session, allSessions, onSessionClick }: LeadAcceptWizardModalProps) {
   const [step, setStep] = useState(1)
   const [loading, setLoading] = useState(false)
-  const [b2bLoading, setB2bLoading] = useState(false)
   const [price, setPrice] = useState(session.price?.toString() || '')
   const [startTime, setStartTime] = useState(session.start_time || '10:00')
   const [endTime, setEndTime] = useState(session.end_time || '14:00')
@@ -155,37 +154,7 @@ export function LeadAcceptWizardModal({ isOpen, onClose, onSuccess, session, all
     }
   }
 
-  const handleSellB2b = async () => {
-    try {
-      if (!session.lead_id) return
-      setB2bLoading(true)
-      const { data: { session: authSession } } = await supabase.auth.getSession()
-      if (!authSession) {
-        toast.error('Ошибка авторизации')
-        return
-      }
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/master/${session.lead_id}/sell_b2b`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${authSession.access_token}`
-        }
-      })
-      if (!res.ok) {
-        const err = await res.json()
-        throw new Error(err.detail || 'Ошибка отправки на маркетплейс')
-      }
-      
-      toast.success('Лид успешно передан на маркетплейс!')
-      onClose()
-      onSuccess()
-    } catch (error: any) {
-      console.error(error)
-      toast.error(error.message)
-    } finally {
-      setB2bLoading(false)
-    }
-  }
 
   const leadData = (session.master_clients?.leads as any) || {}
   const parsedBudgetFromDesc = leadData.description?.match(/Бюджет:\s*(.+)/)?.[1]
@@ -416,7 +385,7 @@ export function LeadAcceptWizardModal({ isOpen, onClose, onSuccess, session, all
             {step > 1 && (
               <button
                 onClick={handlePrev}
-                disabled={loading || b2bLoading}
+                disabled={loading}
                 className="px-6 py-3 font-bold rounded-xl text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-800 transition-colors disabled:opacity-50"
               >
                 Назад
@@ -433,26 +402,13 @@ export function LeadAcceptWizardModal({ isOpen, onClose, onSuccess, session, all
             ) : (
               <button
                 onClick={handleAccept}
-                disabled={loading || b2bLoading}
+                disabled={loading}
                 className="px-8 py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-xl transition-all shadow-md hover:shadow-lg disabled:opacity-50 flex items-center gap-2"
               >
                 {loading ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : 'Всё готово!'}
               </button>
             )}
           </div>
-          
-          {session.lead_id && (
-            <div className="flex justify-center mt-2">
-              <button 
-                onClick={handleSellB2b}
-                disabled={loading || b2bLoading}
-                className="text-xs text-neutral-400 hover:text-primary-500 underline underline-offset-2 transition-colors flex items-center gap-1.5"
-              >
-                {b2bLoading ? <div className="w-3 h-3 border border-current border-t-transparent rounded-full animate-spin" /> : null}
-                Не могу взять, отправить на маркетплейс
-              </button>
-            </div>
-          )}
         </div>
       </div>
     </div>

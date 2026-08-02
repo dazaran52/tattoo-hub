@@ -25,6 +25,39 @@ export function LeadDetailsModal({ isOpen, onClose, session, onAccept, onReject,
   const [isClientModalOpen, setIsClientModalOpen] = useState(false)
   const [isRejecting, setIsRejecting] = useState(false)
   const [rejectReason, setRejectReason] = useState('')
+  const [b2bLoading, setB2bLoading] = useState(false)
+  
+  const handleSellB2b = async () => {
+    try {
+      if (!session.lead_id) return
+      setB2bLoading(true)
+      const { data: { session: authSession } } = await supabase.auth.getSession()
+      if (!authSession) {
+        toast.error('Ошибка авторизации')
+        return
+      }
+
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/master/${session.lead_id}/sell_b2b`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${authSession.access_token}`
+        }
+      })
+      if (!res.ok) {
+        const err = await res.json()
+        throw new Error(err.detail || 'Ошибка отправки на маркетплейс')
+      }
+      
+      toast.success('Лид успешно передан на маркетплейс!')
+      onClose()
+      onUpdate?.()
+    } catch (error: any) {
+      console.error(error)
+      toast.error(error.message)
+    } finally {
+      setB2bLoading(false)
+    }
+  }
   
   const submitReject = () => {
     if (!rejectReason.trim()) {
@@ -112,6 +145,29 @@ export function LeadDetailsModal({ isOpen, onClose, session, onAccept, onReject,
               </div>
             </div>
 
+            {/* City Location */}
+            {cityText && (
+              <div className="flex items-center gap-2 text-neutral-600 dark:text-neutral-400 bg-neutral-100 dark:bg-neutral-800/50 w-fit px-3 py-1.5 rounded-lg border border-neutral-200 dark:border-neutral-700">
+                <MapPin className="w-4 h-4 shrink-0" />
+                <span className="text-sm font-medium">{cityText}</span>
+              </div>
+            )}
+
+            {/* Images Carousel */}
+            {images.length > 0 && (
+              <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-neutral-200 dark:scrollbar-thumb-neutral-700">
+                {images.map((img: string, i: number) => (
+                  <div 
+                    key={i} 
+                    className="relative w-24 h-24 sm:w-32 sm:h-32 rounded-xl overflow-hidden shrink-0 cursor-pointer border border-neutral-200 dark:border-white/10 group"
+                    onClick={() => setSelectedImage(img)}
+                  >
+                    <Image src={img} alt="Reference" fill className="object-cover group-hover:scale-110 transition-transform" />
+                  </div>
+                ))}
+              </div>
+            )}
+
             {/* Preferences / Badges */}
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {/* Style Badge */}
@@ -134,16 +190,6 @@ export function LeadDetailsModal({ isOpen, onClose, session, onAccept, onReject,
                 </div>
               )}
 
-              {/* City Badge */}
-              {cityText && (
-                <div className="bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-400 px-4 py-3 rounded-2xl flex items-center gap-3 border border-indigo-100 dark:border-indigo-500/20">
-                  <MapPin className="w-5 h-5 shrink-0" />
-                  <div className="text-sm">
-                    <span className="font-bold block">Город</span>
-                    {cityText}
-                  </div>
-                </div>
-              )}
 
               {/* Date Badge */}
               {(leadData.session_date || (!leadData.id && session.session_date)) && (
@@ -231,6 +277,19 @@ export function LeadDetailsModal({ isOpen, onClose, session, onAccept, onReject,
               </>
             )}
           </div>
+
+          {session.status === 'new' && session.lead_id && (
+            <div className="pb-4 px-6 bg-white dark:bg-neutral-900 flex justify-center border-t-0">
+              <button 
+                onClick={handleSellB2b}
+                disabled={b2bLoading}
+                className="text-sm text-neutral-400 hover:text-primary-500 underline underline-offset-2 transition-colors flex items-center gap-2"
+              >
+                {b2bLoading ? <div className="w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin" /> : null}
+                Не могу взять, отправить на маркетплейс
+              </button>
+            </div>
+          )}
 
           {isRejecting && (
             <div className="absolute inset-0 bg-white/95 dark:bg-neutral-900/95 backdrop-blur-sm z-10 flex flex-col items-center justify-center p-6">
