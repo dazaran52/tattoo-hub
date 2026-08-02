@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Query, Response, status, BackgroundTasks
+from fastapi import APIRouter, Depends, HTTPException, Query, Response, status, BackgroundTasks, Body
 from pydantic import BaseModel
 from app.middleware.auth import get_current_user, AuthUser, get_optional_user
 from app.database import get_supabase_client, get_async_supabase_client
