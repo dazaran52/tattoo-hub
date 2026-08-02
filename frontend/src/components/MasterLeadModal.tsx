@@ -1,10 +1,8 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { X } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 import { getTranslation, Language } from '@/lib/i18n'
 import { supabase } from '@/lib/supabase'
-
-
 interface MasterLeadModalProps {
   isOpen: boolean
   onClose: () => void
@@ -12,18 +10,34 @@ interface MasterLeadModalProps {
   language: string
   cities: any[]
   countries: any[]
+  initialData?: {
+    title: string
+    description: string
+    contacts: string
+  }
 }
 
-export function MasterLeadModal({ isOpen, onClose, onSuccess, language, cities, countries }: MasterLeadModalProps) {
+export function MasterLeadModal({ isOpen, onClose, onSuccess, language, cities, countries, initialData }: MasterLeadModalProps) {
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    contacts: '',
+    title: initialData?.title || '',
+    description: initialData?.description || '',
+    contacts: initialData?.contacts || '',
     country_id: '',
     city_id: '',
-    price_credits: 50
   })
+
+  // Update when initialData changes
+  useEffect(() => {
+    if (initialData) {
+      setFormData(prev => ({
+        ...prev,
+        title: initialData.title || prev.title,
+        description: initialData.description || prev.description,
+        contacts: initialData.contacts || prev.contacts
+      }))
+    }
+  }, [initialData])
 
   const t = (key: Parameters<typeof getTranslation>[1]) => getTranslation(language as Language, key)
 

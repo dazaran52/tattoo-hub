@@ -62,7 +62,7 @@ type Translations = {
     logout: string;
     allLeads: string;
     myLeads: string;
-    auctions: string;
+
     myCrm: string;
     messages: string;
     
@@ -283,7 +283,7 @@ const translations: Translations = {
     logout: 'Odhlásit se',
     allLeads: 'Všechny poptávky',
     myLeads: 'Moje poptávky',
-    auctions: 'Aukce',
+
     myCrm: 'Moje CRM',
     messages: 'Zprávy',
     
@@ -495,7 +495,7 @@ const translations: Translations = {
     logout: 'Выйти',
     allLeads: 'Все лиды',
     myLeads: 'Мои лиды',
-    auctions: 'Аукционы',
+
     myCrm: 'Моя CRM',
     messages: 'Сообщения',
     
@@ -707,7 +707,7 @@ const translations: Translations = {
     logout: 'Logout',
     allLeads: 'All Leads',
     myLeads: 'My Leads',
-    auctions: 'Auctions',
+
     myCrm: 'My CRM',
     messages: 'Messages',
     
@@ -919,7 +919,7 @@ const translations: Translations = {
     logout: 'Вийти',
     allLeads: 'Всі ліди',
     myLeads: 'Мої ліди',
-    auctions: 'Аукціони',
+
     myCrm: 'Моя CRM',
     messages: 'Повідомлення',
     

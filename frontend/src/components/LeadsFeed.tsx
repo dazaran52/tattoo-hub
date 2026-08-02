@@ -4,7 +4,7 @@ import Image from 'next/image'
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { SkeletonCard } from '@/components/SkeletonCard'
-import { RefreshCw, Search, Loader2, Plus, Edit2, Trash2, XCircle, ChevronLeft, ChevronRight, Image as ImageIcon, Clock, Bell, BellOff, MapPin, Calendar, Palette, Maximize2, Wallet } from 'lucide-react'
+import { RefreshCw, Search, Loader2, Plus, Edit2, Trash2, XCircle, ChevronLeft, ChevronRight, Image as ImageIcon, Clock, Bell, BellOff, MapPin, Calendar, Palette, Maximize2, Wallet, PersonStanding, Scale3d } from 'lucide-react'
 import { getTranslation, Language } from '@/lib/i18n'
 import { LowBalanceModal } from '@/components/LowBalanceModal'
 import { MasterLeadModal } from '@/components/MasterLeadModal'
@@ -20,12 +20,15 @@ import { CityMultiSelect } from '@/components/CityMultiSelect'
 import { useLanguage } from '@/i18n/LanguageContext'
 import { TATTOO_STYLES, BODY_PLACES } from '@/lib/constants'
 import { Filter } from 'lucide-react'
+import { usePresence } from '@/components/PresenceContext'
 
 export interface Lead {
   id: string
   title: string
   description: string
   contacts: string
+  client_id?: string
+  client_last_seen?: string
   unlock_price_local?: number
   master_currency?: string
   base_unlock_price_eur?: number
@@ -51,6 +54,7 @@ export interface Lead {
   body_place?: string
   size?: string
   session_date?: string
+  proposals?: any[]
 }
 
 interface LeadsFeedProps {
@@ -67,6 +71,7 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [actionLoadingId, setActionLoadingId] = useState<string | null>(null)
+  const [viewMode, setViewMode] = useState<'all' | 'my-shared'>('all')
   const [filterText, setFilterText] = useState('')
   const [selectedCityFilters, setSelectedCityFilters] = useState<string[]>(userCities || [])
 
@@ -77,6 +82,8 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
   const [minTrust, setMinTrust] = useState<number | ''>('')
   const [minBudget, setMinBudget] = useState<number | ''>('')
   const [sortBy, setSortBy] = useState<'newest' | 'trust_desc' | 'budget_desc' | 'budget_asc'>('newest')
+  const [onlineOnly, setOnlineOnly] = useState(false)
+  const { isOnline } = usePresence()
 
   
   // Custom Confirm Modal State
@@ -214,7 +221,7 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [])
+  }, [viewMode])
 
   const fetchLeads = async (background = false, pageNum = 1) => {
     try {
@@ -233,7 +240,7 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
       if (isAdmin && !isMarketplace) {
         endpoint = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/admin/leads?offset=${(pageNum - 1) * 20}&limit=20`
       } else if (isMarketplace) {
-        endpoint = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/leads/marketplace?offset=${(pageNum - 1) * 20}&limit=20`
+        endpoint = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/leads/marketplace${viewMode === 'my-shared' ? '/my-shared' : ''}?offset=${(pageNum - 1) * 20}&limit=20`
       }
 
       const response = await fetch(endpoint, {
@@ -371,13 +378,42 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
       setIsModalOpen(false)
       toast.success(isEditing ? 'Lead updated!' : 'Lead created!')
     } catch (err: any) {
-      toast.error(err.message)
+      setError(err.message)
     } finally {
-      setIsSubmitting(false)
+      setIsLoading(false)
+      setIsLoadingMore(false)
     }
   }
 
-  const deleteLead = (leadId: string) => {
+  const handleAcceptB2BProposal = async (leadId: string, masterId: string) => {
+    setActionLoadingId(`${leadId}-${masterId}`)
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) return
+
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+      const res = await fetch(`${apiUrl}/api/leads/master/${leadId}/proposals/${masterId}/accept`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${session.access_token}` }
+      })
+      if (!res.ok) {
+        const err = await res.json()
+        throw new Error(err.detail || 'Failed to accept proposal')
+      }
+      
+      toast.success('Лид успешно передан мастеру! 🎉')
+      playSuccessSound()
+      triggerHaptic('success')
+      fetchLeads()
+    } catch (err: any) {
+      toast.error(err.message || 'Ошибка принятия предложения')
+      playErrorSound()
+    } finally {
+      setActionLoadingId(null)
+    }
+  }
+
+  const handleDeleteLead = async (leadId: string) => {
     const lead = leads.find(l => l.id === leadId)
     const leadTitle = lead ? lead.title : 'этот лид'
 
@@ -463,6 +499,9 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
   }
 
   // Apply advanced filters
+  if (onlineOnly) {
+    filteredLeads = filteredLeads.filter(l => l.client_id && isOnline(l.client_id, l.client_last_seen))
+  }
   if (selectedStyles.length > 0) {
     filteredLeads = filteredLeads.filter(l => l.style && selectedStyles.includes(l.style))
   }
@@ -566,6 +605,24 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
             />
           </div>
         </div>
+
+        {isMarketplace && (
+          <div className="flex bg-neutral-100 dark:bg-neutral-800 p-1 rounded-lg w-full sm:w-auto">
+            <button
+              onClick={() => setViewMode('all')}
+              className={`flex-1 sm:flex-none px-4 py-1.5 text-sm font-bold rounded-md transition-colors ${viewMode === 'all' ? 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white shadow-sm' : 'text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'}`}
+            >
+              Все заявки
+            </button>
+            <button
+              onClick={() => setViewMode('my-shared')}
+              className={`flex-1 sm:flex-none px-4 py-1.5 text-sm font-bold rounded-md transition-colors ${viewMode === 'my-shared' ? 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white shadow-sm' : 'text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'}`}
+            >
+              Мои выставленные
+            </button>
+          </div>
+        )}
+
         <div className="flex flex-wrap gap-2 w-full sm:w-auto">
           {isAdmin ? (
             <button
@@ -729,6 +786,22 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
                 </div>
               </div>
 
+              <div className="lg:col-span-4 md:col-span-2 flex items-center justify-between p-3 bg-neutral-50 dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700">
+                <div className="flex flex-col">
+                  <span className="text-sm font-bold text-neutral-900 dark:text-white">Только от клиентов онлайн</span>
+                  <span className="text-xs text-neutral-500 dark:text-neutral-400">Показывать заявки только от тех клиентов, которые в данный момент на сайте</span>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input 
+                    type="checkbox" 
+                    className="sr-only peer" 
+                    checked={onlineOnly}
+                    onChange={(e) => setOnlineOnly(e.target.checked)}
+                  />
+                  <div className="w-11 h-6 bg-neutral-200 peer-focus:outline-none rounded-full peer dark:bg-neutral-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-neutral-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-neutral-600 peer-checked:bg-primary-600"></div>
+                </label>
+              </div>
+
             </div>
           </motion.div>
         )}
@@ -791,7 +864,7 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
                     <Edit2 className="w-4 h-4" />
                   </button>
                   <button 
-                    onClick={() => deleteLead(lead.id)}
+                    onClick={() => handleDeleteLead(lead.id)}
                     disabled={actionLoadingId === lead.id}
                     className="p-2 bg-white/90 dark:bg-neutral-900/90 hover:bg-red-50 dark:hover:bg-red-900/30 text-neutral-600 hover:text-red-600 rounded-lg shadow-sm backdrop-blur-sm transition-colors disabled:opacity-50"
                   >
@@ -912,19 +985,19 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
                 <div className="flex flex-wrap gap-1.5 mt-1 border-t border-dashed border-neutral-200 dark:border-white/10 pt-3 mb-4">
                   {lead.style && lead.style !== 'Не определился' && (
                     <span className="px-2.5 py-1 bg-neutral-100 dark:bg-neutral-800/50 text-neutral-700 dark:text-neutral-300 text-[11px] font-semibold rounded-lg flex items-center gap-1.5 border border-neutral-200/50 dark:border-white/5">
-                      <span>🎨</span>
+                      <Palette className="w-3 h-3" />
                       {lead.style}
                     </span>
                   )}
                   {lead.body_place && lead.body_place !== 'Не определился' && (
                     <span className="px-2.5 py-1 bg-neutral-100 dark:bg-neutral-800/50 text-neutral-700 dark:text-neutral-300 text-[11px] font-semibold rounded-lg flex items-center gap-1.5 border border-neutral-200/50 dark:border-white/5">
-                      <span>👤</span>
+                      <PersonStanding className="w-3 h-3" />
                       {lead.body_place}
                     </span>
                   )}
                   {lead.size && (
                     <span className="px-2.5 py-1 bg-neutral-100 dark:bg-neutral-800/50 text-neutral-700 dark:text-neutral-300 text-[11px] font-semibold rounded-lg flex items-center gap-1.5 border border-neutral-200/50 dark:border-white/5">
-                      <span>📏</span>
+                      <Scale3d className="w-3 h-3" />
                       {lead.size}
                     </span>
                   )}
@@ -983,7 +1056,51 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
               </div>
               
               <div className="p-5 border-t border-neutral-100 dark:border-neutral-800/80 bg-neutral-50/50 dark:bg-neutral-900/50 backdrop-blur-sm">
-                {lead.proposal_status && ['accepted', 'booked', 'completed'].includes(lead.proposal_status) ? (
+                {viewMode === 'my-shared' ? (
+                  <div className="space-y-4">
+                    <h4 className="font-bold text-neutral-900 dark:text-white mb-2">Отклики мастеров ({lead.proposals?.length || 0})</h4>
+                    {lead.proposals && lead.proposals.length > 0 ? (
+                      <div className="space-y-3">
+                        {lead.proposals.map(prop => (
+                          <div key={prop.id} className="p-4 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl">
+                            <div className="flex justify-between items-start mb-3">
+                              <div className="flex items-center gap-3">
+                                {prop.users?.avatar_url ? (
+                                  <img src={prop.users.avatar_url} className="w-10 h-10 rounded-full object-cover" />
+                                ) : (
+                                  <div className="w-10 h-10 rounded-full bg-neutral-200 dark:bg-neutral-700 flex items-center justify-center">
+                                    <PersonStanding className="w-5 h-5 text-neutral-500" />
+                                  </div>
+                                )}
+                                <div>
+                                  <p className="font-bold text-sm dark:text-white">{prop.users?.full_name || 'Мастер'}</p>
+                                  <p className="text-xs text-neutral-500">Предлагает за сеанс: <span className="font-bold text-accent-600">{prop.price_offer} CZK</span></p>
+                                </div>
+                              </div>
+                            </div>
+                            {prop.status === 'accepted' ? (
+                              <div className="w-full py-2 px-3 bg-green-50 text-green-700 text-sm font-bold text-center rounded-lg">Вы выбрали этого мастера</div>
+                            ) : prop.status === 'pending' ? (
+                              <div className="flex gap-2">
+                                <button
+                                  onClick={() => handleAcceptB2BProposal(lead.id, prop.user_id)}
+                                  disabled={actionLoadingId === `${lead.id}-${prop.user_id}`}
+                                  className="flex-1 py-2 bg-accent-600 hover:bg-accent-700 text-white font-bold rounded-lg text-sm transition-colors"
+                                >
+                                  {actionLoadingId === `${lead.id}-${prop.user_id}` ? 'Принятие...' : `Отдать (ваш заработок: ${prop.price_offer * 0.08} CZK)`}
+                                </button>
+                              </div>
+                            ) : (
+                              <div className="w-full py-2 px-3 bg-red-50 text-red-700 text-sm font-bold text-center rounded-lg">Отклонено</div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-neutral-500 text-center py-4">Пока нет предложений от других мастеров.</p>
+                    )}
+                  </div>
+                ) : lead.proposal_status && ['accepted', 'booked', 'completed'].includes(lead.proposal_status) ? (
                   <div className="space-y-3">
                     <div className="w-full py-3 px-4 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-900/50 rounded-xl text-sm font-bold shadow-inner flex items-center justify-center gap-2">
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
@@ -1040,6 +1157,9 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
                     ) : (
                       <>
                         Сделать предложение — бесплатно
+                        <div className="absolute -top-3 -right-3 bg-red-500 text-white text-[10px] font-bold px-2 py-1 rounded-full animate-bounce shadow-lg">
+                          10% fee if accepted
+                        </div>
                       </>
                     )}
                   </button>

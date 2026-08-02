@@ -22,6 +22,8 @@ export default function DashboardPage() {
   const [currentSession, setCurrentSession] = useState<any>(null)
   const [activeTab, setActiveTab] = useState<'feed' | 'crm' | 'messages' | 'portfolio'>('crm')
   const [unreadMessages, setUnreadMessages] = useState(0)
+  const [viewLeadId, setViewLeadId] = useState<string | null>(null)
+  const [viewSessionId, setViewSessionId] = useState<string | null>(null)
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -318,9 +320,22 @@ export default function DashboardPage() {
             {/* Content Rendering based on Tab */}
             {activeTab === 'feed' && <LeadsFeed onUnlockSuccess={handleUnlockSuccess} isAdmin={profile.is_admin} userCities={profile.city_ids || []} />}
 
-          {activeTab === 'crm' && <CRMBoard />}
+          {activeTab === 'crm' && <CRMBoard initialViewLeadId={viewLeadId} initialViewSessionId={viewSessionId} />}
           {activeTab === 'portfolio' && <PortfolioTab profile={profile} />}
-          {activeTab === 'messages' && <MessagesList />}
+          {activeTab === 'messages' && (
+            <MessagesList 
+              onViewLead={(lead) => {
+                setViewLeadId(lead.id)
+                setViewSessionId(null)
+                setActiveTab('crm')
+              }}
+              onViewSession={(sessionId) => {
+                setViewSessionId(sessionId)
+                setViewLeadId(null)
+                setActiveTab('crm')
+              }}
+            />
+          )}
         </>
         )}
       </main>

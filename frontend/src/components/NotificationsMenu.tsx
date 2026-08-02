@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { Bell, Check, Info, DollarSign, Settings, Archive, X, BellRing, ArrowLeft } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+import { toast } from 'react-hot-toast'
 
 interface Notification {
   id: string
@@ -149,17 +150,35 @@ export function NotificationsMenu() {
     }
   }
 
-  const requestPushPermission = async () => {
+  const requestPushPermission = async (e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault()
+      e.stopPropagation()
+    }
     try {
+      if (!('Notification' in window)) {
+        toast.error('Ваш браузер не поддерживает уведомления')
+        setHideBanner(true)
+        return
+      }
+      
       const permission = await Notification.requestPermission()
       if (permission === 'granted') {
         setPushEnabled(true)
         // Attempt subscription
         const { subscribeToPush } = await import('@/lib/push')
         await subscribeToPush()
+        toast.success('Уведомления включены!')
+      } else if (permission === 'denied') {
+        setPushDenied(true)
+        toast.error('Вы запретили уведомления в браузере')
+      } else {
+        setHideBanner(true)
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to request push permissions:', err)
+      toast.error('Ошибка: ' + (err.message || 'Не удалось включить уведомления'))
+      setHideBanner(true)
     }
   }
 
@@ -294,7 +313,7 @@ export function NotificationsMenu() {
               </div>
               <button 
                 onClick={requestPushPermission}
-                className="text-xs font-bold px-3 py-1.5 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors shadow-sm"
+                className="text-xs font-bold px-3 py-1.5 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors shadow-sm cursor-pointer relative z-50 pointer-events-auto"
               >
                 Включить
               </button>

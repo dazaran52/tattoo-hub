@@ -1113,7 +1113,7 @@ export function LeadWizard({ master, masterId, source = 'platform', isLoggedIn, 
                       value={budgetVal}
                       onChange={(e) => setBudgetVal(e.target.value)}
                       placeholder={t('leadWizard.budgetPlaceholder', 'Например: 5000')}
-                      className={`${baseInputClass} pl-12 pr-20 text-lg font-bold`}
+                      className={`${baseInputClass} pl-12 pr-20 text-lg font-bold [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
                     />
                     <div className="absolute right-4 top-1/2 -translate-y-1/2 font-bold text-neutral-400 text-sm bg-neutral-800/80 px-2.5 py-1 rounded-lg">
                       Kč / CZK
@@ -1439,7 +1439,7 @@ export function LeadWizard({ master, masterId, source = 'platform', isLoggedIn, 
                   ) : (
                     <>
                       <Send className="w-5 h-5" />
-                      <span>{t('leadWizard.submitBtn', 'Отправить заявку мастеру 🚀')}</span>
+                      <span>{masterId ? t('leadWizard.submitBtnDirect', 'Отправить заявку мастеру 🚀') : t('leadWizard.submitBtnMarketplace', 'Отправить заявку мастерам 🚀')}</span>
                     </>
                   )}
                 </button>

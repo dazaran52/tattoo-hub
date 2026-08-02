@@ -51,11 +51,68 @@ class LeadResponse(BaseModel):
     master_currency: str | None = None
     proposal_count: int = 0
     max_proposals: int = MAX_PROPOSALS_PER_LEAD
+    proposals: list[dict] = []
 
 class UnlockResponse(BaseModel):
     contacts: str
     is_unlocked: bool
     current_credits: int
+
+@router.get("/marketplace/my-shared", response_model=List[LeadResponse])
+async def get_my_shared_leads(
+    current_user: AuthUser = Depends(get_current_user),
+    supabase: AsyncClient = Depends(get_async_supabase_client)
+):
+    """Return leads created by the master (B2B leads) and their proposals."""
+    try:
+        user_res = await supabase.table("users").select("currency").eq("id", current_user.user_id).single().execute()
+        master_currency = (user_res.data or {}).get("currency") or "CZK"
+
+        raw_res = await supabase.table("leads") \
+            .select("*, cities(country_id)") \
+            .eq("creator_master_id", current_user.user_id) \
+            .order("created_at", desc=True) \
+            .execute()
+        
+        leads = raw_res.data or []
+        lead_ids = [lead["id"] for lead in leads]
+        
+        proposals = []
+        if lead_ids:
+            proposal_res = await supabase.table("lead_proposals").select(
+                "*, users!lead_proposals_user_id_fkey(full_name, avatar_url)"
+            ).in_("lead_id", lead_ids).execute()
+            proposals = proposal_res.data or []
+            
+        proposal_counts: dict[str, int] = {}
+        for proposal in proposals:
+            proposal_counts[proposal["lead_id"]] = proposal_counts.get(proposal["lead_id"], 0) + 1
+
+        processed = []
+        for lead in leads:
+            lead_dict = {**lead}
+            # Add proposals specifically for the creator to view
+            lead_dict["proposals"] = [p for p in proposals if p["lead_id"] == lead["id"]]
+            lead_dict["proposal_count"] = proposal_counts.get(lead["id"], 0)
+            lead_dict["max_proposals"] = MAX_PROPOSALS_PER_LEAD
+            lead_dict["master_currency"] = master_currency
+            
+            budget = lead.get("client_budget")
+            budget_currency = lead.get("client_currency") or "CZK"
+            lead_dict["display_budget"] = (
+                f"{budget} {budget_currency}" if budget else "По договоренности"
+            )
+            if lead_dict.get("cities"):
+                lead_dict["country_id"] = lead_dict["cities"].get("country_id")
+            
+            # Since creator_master_id is the owner, contacts are always visible to them
+            lead_dict["is_unlocked"] = True
+            processed.append(lead_dict)
+
+        return processed
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+
 
 @router.get("/marketplace", response_model=List[LeadResponse])
 async def get_marketplace_leads(
@@ -77,7 +134,7 @@ async def get_marketplace_leads(
 
         seven_days_ago = (datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=7)).isoformat()
         raw_res = await supabase.table("leads") \
-            .select("*, cities(country_id)") \
+            .select("*, cities(country_id), users!leads_client_id_fkey(id, last_seen)") \
             .neq("status", "closed") \
             .gte("created_at", seven_days_ago) \
             .order("created_at", desc=True) \
@@ -158,6 +215,8 @@ async def get_marketplace_leads(
             )
             if lead_dict.get("cities"):
                 lead_dict["country_id"] = lead_dict["cities"].get("country_id")
+            if lead_dict.get("users"):
+                lead_dict["client_last_seen"] = lead_dict["users"].get("last_seen")
             processed.append(lead_dict)
         return processed
     except HTTPException:
@@ -420,6 +479,90 @@ def create_master_lead(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@router.post("/master/{lead_id}/sell_b2b")
+async def sell_lead_b2b(
+    lead_id: str,
+    price_credits: int = Body(..., embed=True),
+    current_user: AuthUser = Depends(get_current_user),
+    supabase: AsyncClient = Depends(get_async_supabase_client)
+):
+    """Convert a direct lead in CRM to a B2B marketplace lead."""
+    lead_res = await supabase.table("leads").select("*").eq("id", lead_id).eq("master_id", current_user.user_id).execute()
+    if not lead_res.data:
+        raise HTTPException(status_code=404, detail="LEAD_NOT_FOUND_OR_UNAUTHORIZED")
+        
+    lead = lead_res.data[0]
+    
+    if not lead.get("is_personal"):
+        raise HTTPException(status_code=400, detail="LEAD_ALREADY_IN_MARKETPLACE")
+        
+    # Update lead
+    update_res = await supabase.table("leads").update({
+        "is_personal": False,
+        "master_id": None,
+        "creator_master_id": current_user.user_id,
+        "price_credits": price_credits,
+        "status": "new"
+    }).eq("id", lead_id).execute()
+    
+    if not update_res.data:
+        raise HTTPException(status_code=500, detail="FAILED_TO_UPDATE_LEAD")
+        
+    # Update CRM client record
+    await supabase.table("master_clients").update({
+        "kanban_status": "marketplace"
+    }).eq("lead_id", lead_id).eq("master_id", current_user.user_id).execute()
+    
+    return update_res.data[0]
+
+
+@router.post("/master/{lead_id}/proposals/{master_id}/accept")
+async def accept_master_proposal(
+    lead_id: str,
+    master_id: str,
+    background_tasks: BackgroundTasks,
+    current_user: AuthUser = Depends(get_current_user),
+    supabase: AsyncClient = Depends(get_async_supabase_client),
+):
+    """Let an authenticated master owner (creator) choose one marketplace proposal for their B2B lead."""
+    lead_res = await supabase.table("leads").select(
+        "id, creator_master_id, client_token, title"
+    ).eq("id", lead_id).eq("creator_master_id", current_user.user_id).execute()
+    
+    if not lead_res.data:
+        raise HTTPException(status_code=404, detail="LEAD_NOT_FOUND_OR_UNAUTHORIZED")
+
+    lead = lead_res.data[0]
+    try:
+        acceptance = await supabase.rpc("accept_marketplace_proposal", {
+            "p_lead_id": lead_id,
+            "p_master_id": master_id,
+            "p_client_token": lead.get("client_token"),
+        }).execute()
+    except Exception as exc:
+        message = str(exc)
+        if "PROPOSAL_ALREADY_ACCEPTED" in message:
+            raise HTTPException(status_code=409, detail="PROPOSAL_ALREADY_ACCEPTED") from exc
+        raise HTTPException(status_code=400, detail="PROPOSAL_ACCEPT_FAILED") from exc
+
+    if not acceptance.data or not acceptance.data.get("success"):
+        raise HTTPException(status_code=400, detail="PROPOSAL_ACCEPT_FAILED")
+
+    if not acceptance.data.get("already_charged"):
+        background_tasks.add_task(
+            send_push_notification,
+            user_id=master_id,
+            title="Сделка B2B подтверждена! 🎉",
+            body=f"Мастер передал вам клиента по заявке '{lead.get('title')}'.",
+            url="/dashboard?tab=messages",
+        )
+
+    return {
+        "success": True,
+        "chat_id": acceptance.data.get("chat_id"),
+        "already_charged": acceptance.data.get("already_charged", False),
+    }
+
 class ClientLeadCreate(BaseModel):
     description: str
     email: str | None = None
@@ -498,9 +641,7 @@ async def _create_client_lead(
         # Format the lead for the DB
         style_display = lead_data.style if lead_data.style and lead_data.style != 'Не определился' else ''
         body_display = lead_data.body_place if lead_data.body_place and lead_data.body_place != 'Не определился' else ''
-        title = f"Татуировка {body_display}".strip() if body_display else "Новая заявка на татуировку"
-        if style_display:
-            title += f" ({style_display})"
+        title = "Новая заявка"
 
         full_description = lead_data.description or ""
         if lead_data.session_time:

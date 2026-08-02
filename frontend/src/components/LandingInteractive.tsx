@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useRouter } from 'next/navigation'
 import { Logo } from '@/components/Logo'
-import { Sparkles, UserCircle2, Brush, LogIn, UserPlus, ArrowRight, ShieldCheck, CheckCircle2 } from 'lucide-react'
+import { Sparkles, UserCircle2, Brush, LogIn, UserPlus, ArrowRight, Award, CheckCircle2 } from 'lucide-react'
 import { useLanguage } from '@/i18n/LanguageContext'
 import { LanguageSelector } from '@/i18n/LanguageSelector'
 
@@ -47,13 +47,13 @@ export function LandingInteractive() {
   const masterSlides = [
     { title: t('guide.master_slide1_title'), desc: t('guide.master_slide1_desc'), icon: <Sparkles className="w-16 h-16 text-orange-400" /> },
     { title: t('guide.master_slide2_title'), desc: t('guide.master_slide2_desc'), icon: <CheckCircle2 className="w-16 h-16 text-amber-400" /> },
-    { title: t('guide.shield_title'), desc: t('guide.shield_desc'), icon: <ShieldCheck className="w-16 h-16 text-yellow-400" /> }
+    { title: t('guide.shield_title'), desc: t('guide.shield_desc'), icon: <div className="flex items-center justify-center w-20 h-20 rounded-full bg-yellow-400/20 border-2 border-yellow-400/50"><Award className="w-10 h-10 text-yellow-400" /></div> }
   ]
 
   const clientSlides = [
     { title: t('guide.client_slide1_title'), desc: t('guide.client_slide1_desc'), icon: <CheckCircle2 className="w-16 h-16 text-primary-400" /> },
     { title: t('guide.client_slide2_title'), desc: t('guide.client_slide2_desc'), icon: <ArrowRight className="w-16 h-16 text-primary-400" /> },
-    { title: t('guide.shield_title'), desc: t('guide.client_shield_desc'), icon: <ShieldCheck className="w-16 h-16 text-yellow-400" /> }
+    { title: t('guide.shield_title'), desc: t('guide.client_shield_desc'), icon: <div className="flex items-center justify-center w-20 h-20 rounded-full bg-yellow-400/20 border-2 border-yellow-400/50"><Award className="w-10 h-10 text-yellow-400" /></div> }
   ]
 
   const currentSlides = role === 'master' ? masterSlides : clientSlides

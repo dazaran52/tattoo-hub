@@ -148,6 +148,14 @@ async def get_profile(
         if response.data:
             data = response.data
             
+            # Sync avatar if missing
+            if not data.get("avatar_url"):
+                metadata_avatar = current_user.user_metadata.get("avatar_url") or current_user.user_metadata.get("picture")
+                if metadata_avatar:
+                    update_resp = await supabase.table("users").update({"avatar_url": metadata_avatar}).eq("id", current_user.user_id).execute()
+                    if update_resp.data and len(update_resp.data) > 0:
+                        data = update_resp.data[0]
+            
     except Exception:
         # Profile not found, will create below
         pass
@@ -163,11 +171,13 @@ async def get_profile(
             # start as clients; master promotion is an administrator action.
             role = "client"
             status_val = "approved"
+            metadata_avatar = current_user.user_metadata.get("avatar_url") or current_user.user_metadata.get("picture")
             
             new_profile = {
                 "id": current_user.user_id,
                 "username": None,
                 "email": current_user.email,
+                "avatar_url": metadata_avatar,
                 "credits": 0,
                 "own_referral_code": str(uuid.uuid4())[:8].upper(),
                 "portfolio_url": portfolio_url,
@@ -493,19 +503,9 @@ async def get_my_leads(
             
         leads = leads_res.data or []
         
-        # Check active auctions to hide contacts
-        auctions_res = await supabase.table("auctions") \
-            .select("lead_id") \
-            .eq("status", "active") \
-            .execute()
-        auction_lead_ids = {a["lead_id"] for a in (auctions_res.data or [])}
-        
         processed_leads = []
         for lead in leads:
-            if lead["id"] in auction_lead_ids:
-                contact_info = "******** [Лид на аукционе]"
-            else:
-                contact_info = lead["contacts"]
+            contact_info = lead["contacts"]
                 
             processed_leads.append({
                 "id": lead["id"],

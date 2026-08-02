@@ -1,5 +1,5 @@
 import Image from 'next/image'
-import { X, Calendar, Palette, User, MessageCircle, Send, Phone, Scale3d, PersonStanding } from 'lucide-react'
+import { X, Calendar, Palette, User, MessageCircle, Send, Phone, Scale3d, PersonStanding, MapPin, DollarSign } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useState } from 'react'
 import { toast } from 'react-hot-toast'
@@ -41,6 +41,23 @@ export function LeadDetailsModal({ isOpen, onClose, session, onAccept, onReject,
   if (!isOpen || !session) return null
 
   const leadData = session.master_clients?.leads || {}
+  const isClient = session.status === 'client'
+  
+  // Parse description to extract embedded budget/city if present
+  const rawDescription = session.notes || leadData.description || 'Клиент не оставил подробного описания.'
+  const parsedBudgetMatch = rawDescription.match(/Бюджет:\s*(.+?)(?=\n|$)/)
+  const parsedCityMatch = rawDescription.match(/Город:\s*(.+?)(?=\n|$)/)
+  
+  const budgetText = leadData.display_budget || leadData.client_budget ? `${leadData.client_budget} ${leadData.client_currency || ''}` : (parsedBudgetMatch ? parsedBudgetMatch[1] : null)
+  const cityText = leadData.city_name || (parsedCityMatch ? parsedCityMatch[1] : null)
+  const styleText = session.style || (leadData.title && leadData.title !== 'Новая заявка на татуировку' ? leadData.title : 'Не выбрано')
+
+  const cleanDescription = rawDescription
+    .replace(/Желаемое время:.*\n?/g, '')
+    .replace(/Бюджет:.*\n?/g, '')
+    .replace(/Город:.*\n?/g, '')
+    .trim()
+
   const clientName = session.master_clients?.name || 'Неизвестный клиент'
   const clientContact = session.master_clients?.phone || session.master_clients?.telegram || session.master_clients?.email || 'Скрыто'
 
@@ -95,53 +112,53 @@ export function LeadDetailsModal({ isOpen, onClose, session, onAccept, onReject,
               </div>
             </div>
 
-            {/* Description */}
-            <div className="bg-neutral-50 dark:bg-neutral-800/50 rounded-2xl p-5 border border-neutral-100 dark:border-white/5">
-              <h4 className="text-sm font-bold text-neutral-900 dark:text-white mb-2 flex items-center gap-2">
-                <Palette className="w-4 h-4 text-primary-500" />
-                Стиль и описание
-              </h4>
-              <div className="mb-3">
-                <span className="inline-block bg-white dark:bg-neutral-800 px-3 py-1 rounded-lg text-sm font-medium border border-neutral-200 dark:border-white/10 shadow-sm">
-                  {session.style || (leadData.title && leadData.title !== 'Новая заявка на татуировку' ? leadData.title : 'Не выбрано')}
-                </span>
-              </div>
-              <p className="text-neutral-600 dark:text-neutral-300 text-sm leading-relaxed whitespace-pre-wrap">
-                {(session.notes || leadData.description || 'Клиент не оставил подробного описания.').replace(/Желаемое время:.*\n?/g, '')}
-              </p>
-            </div>
-
-            {/* Photos */}
-            {images.length > 0 && (
-              <div>
-                <h4 className="text-sm font-bold text-neutral-900 dark:text-white mb-3">Прикрепленные фото ({images.length})</h4>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                  {images.map((img: string, idx: number) => (
-                    <div 
-                      key={idx} 
-                      onClick={() => setSelectedImage(img)}
-                      className="aspect-square rounded-xl overflow-hidden cursor-pointer border border-neutral-200 dark:border-white/10 hover:ring-2 hover:ring-primary-500 transition-all"
-                    >
-                      <Image src={img || ''} alt="reference" className="w-full h-full object-cover hover:scale-110 transition-transform duration-500"  width={800} height={800} />
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Preferences */}
-            <div className="flex gap-4 flex-wrap">
-              {(leadData.session_date || (!leadData.id && session.session_date)) && (
-              <div className="bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 px-4 py-3 rounded-2xl flex-1 min-w-[120px] flex items-center gap-3 border border-emerald-100 dark:border-emerald-500/20">
-                <Calendar className="w-5 h-5 shrink-0" />
+            {/* Preferences / Badges */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              {/* Style Badge */}
+              <div className="bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-400 px-4 py-3 rounded-2xl flex items-center gap-3 border border-purple-100 dark:border-purple-500/20">
+                <Palette className="w-5 h-5 shrink-0" />
                 <div className="text-sm">
-                  <span className="font-bold block">Желаемая дата</span>
-                  {new Date(leadData.session_date || session.session_date).toLocaleDateString('ru-RU')}{(leadData.session_time || session.start_time) ? ` ${(leadData.session_time || session.start_time).slice(0, 5)}` : ''}
+                  <span className="font-bold block">Стиль</span>
+                  {styleText}
                 </div>
               </div>
+
+              {/* Budget Badge */}
+              {budgetText && (
+                <div className="bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 px-4 py-3 rounded-2xl flex items-center gap-3 border border-emerald-100 dark:border-emerald-500/20">
+                  <DollarSign className="w-5 h-5 shrink-0" />
+                  <div className="text-sm">
+                    <span className="font-bold block">Бюджет</span>
+                    {budgetText}
+                  </div>
+                </div>
               )}
+
+              {/* City Badge */}
+              {cityText && (
+                <div className="bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-400 px-4 py-3 rounded-2xl flex items-center gap-3 border border-indigo-100 dark:border-indigo-500/20">
+                  <MapPin className="w-5 h-5 shrink-0" />
+                  <div className="text-sm">
+                    <span className="font-bold block">Город</span>
+                    {cityText}
+                  </div>
+                </div>
+              )}
+
+              {/* Date Badge */}
+              {(leadData.session_date || (!leadData.id && session.session_date)) && (
+                <div className="bg-rose-50 dark:bg-rose-900/20 text-rose-700 dark:text-rose-400 px-4 py-3 rounded-2xl flex items-center gap-3 border border-rose-100 dark:border-rose-500/20">
+                  <Calendar className="w-5 h-5 shrink-0" />
+                  <div className="text-sm">
+                    <span className="font-bold block">Дата</span>
+                    {new Date(leadData.session_date || session.session_date).toLocaleDateString('ru-RU')}{(leadData.session_time || session.start_time) ? ` ${(leadData.session_time || session.start_time).slice(0, 5)}` : ''}
+                  </div>
+                </div>
+              )}
+
+              {/* Place Badge */}
               {leadData.body_place && (
-                <div className="bg-sky-50 dark:bg-sky-900/20 text-sky-700 dark:text-sky-400 px-4 py-3 rounded-2xl flex-1 min-w-[120px] flex items-center gap-3 border border-sky-100 dark:border-sky-500/20">
+                <div className="bg-sky-50 dark:bg-sky-900/20 text-sky-700 dark:text-sky-400 px-4 py-3 rounded-2xl flex items-center gap-3 border border-sky-100 dark:border-sky-500/20">
                   <PersonStanding className="w-5 h-5 shrink-0" />
                   <div className="text-sm">
                     <span className="font-bold block">Место</span>
@@ -149,8 +166,10 @@ export function LeadDetailsModal({ isOpen, onClose, session, onAccept, onReject,
                   </div>
                 </div>
               )}
+
+              {/* Size Badge */}
               {leadData.size && (
-                <div className="bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 px-4 py-3 rounded-2xl flex-1 min-w-[120px] flex items-center gap-3 border border-amber-100 dark:border-amber-500/20">
+                <div className="bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 px-4 py-3 rounded-2xl flex items-center gap-3 border border-amber-100 dark:border-amber-500/20">
                   <Scale3d className="w-5 h-5 shrink-0" />
                   <div className="text-sm">
                     <span className="font-bold block">Размер</span>
@@ -158,6 +177,13 @@ export function LeadDetailsModal({ isOpen, onClose, session, onAccept, onReject,
                   </div>
                 </div>
               )}
+            </div>
+
+            {/* Description */}
+            <div className="bg-neutral-50 dark:bg-neutral-800/50 rounded-2xl p-5 border border-neutral-100 dark:border-white/5">
+              <p className="text-neutral-600 dark:text-neutral-300 text-sm leading-relaxed whitespace-pre-wrap">
+                {cleanDescription || 'Клиент не оставил подробного описания.'}
+              </p>
             </div>
 
           </div>

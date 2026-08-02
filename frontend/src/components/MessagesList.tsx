@@ -1,6 +1,6 @@
 import Image from 'next/image'
 import { useState, useEffect, useRef } from 'react'
-import { MessageCircle, Clock, Send, AlertCircle, Search, ChevronLeft, Image as ImageIcon, Calendar, Paperclip, Check, CheckCheck } from 'lucide-react'
+import { MessageCircle, Clock, Send, AlertCircle, Search, ChevronLeft, Image as ImageIcon, Calendar, Paperclip, Check, CheckCheck, User } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { supabase } from '@/lib/supabase'
 import { toast } from 'react-hot-toast'
@@ -59,9 +59,11 @@ interface ChatPreview {
 
 interface MessagesListProps {
   userRole?: 'client' | 'master'
+  onViewLead?: (lead: any) => void
+  onViewSession?: (chatId: string) => void
 }
 
-export function MessagesList({ userRole = 'master' }: MessagesListProps) {
+export function MessagesList({ userRole = 'master', onViewLead, onViewSession }: MessagesListProps) {
   const { isOnline } = usePresence()
   const [chats, setChats] = useState<ChatPreview[]>([])
   const [loading, setLoading] = useState(true)
@@ -429,10 +431,8 @@ export function MessagesList({ userRole = 'master' }: MessagesListProps) {
                   <div className="w-14 h-14 bg-neutral-100 dark:bg-neutral-800 rounded-full flex items-center justify-center overflow-hidden border border-neutral-200 dark:border-white/10">
                     {chat.client_info?.avatar_url ? (
                       <Image src={chat.client_info.avatar_url || ''} alt="avatar" className="w-full h-full object-cover" width={800} height={800} />
-                    ) : chat.leads?.image_urls && chat.leads.image_urls.length > 0 ? (
-                      <Image src={chat.leads.image_urls[0] || ''} alt="tattoo" className="w-full h-full object-cover" width={800} height={800} />
                     ) : (
-                      <MessageCircle className="w-6 h-6 text-neutral-400" />
+                      <User className="w-6 h-6 text-neutral-400" />
                     )}
                   </div>
                   <OnlineIndicator userId={userRole === 'client' ? chat.master_id : (chat.client_id || chat.client_info?.id)} lastSeen={chat.client_info?.last_seen} size="md" className="-bottom-1 -right-1 border-2 border-white dark:border-neutral-900" />
@@ -552,10 +552,8 @@ export function MessagesList({ userRole = 'master' }: MessagesListProps) {
                   <div className="w-14 h-14 bg-neutral-100 dark:bg-neutral-800 rounded-full flex items-center justify-center overflow-hidden border border-neutral-200 dark:border-white/10">
                     {selectedChat.client_info?.avatar_url ? (
                       <Image src={selectedChat.client_info.avatar_url || ''} alt="avatar" className="w-full h-full object-cover" width={800} height={800} />
-                    ) : selectedChat.leads?.image_urls && selectedChat.leads.image_urls.length > 0 ? (
-                      <Image src={selectedChat.leads.image_urls[0] || ''} alt="tattoo" className="w-full h-full object-cover" width={800} height={800} />
                     ) : (
-                      <MessageCircle className="w-5 h-5 text-neutral-400" />
+                      <User className="w-6 h-6 text-neutral-400" />
                     )}
                   </div>
                   <OnlineIndicator userId={userRole === 'client' ? selectedChat.master_id : (selectedChat.client_id || selectedChat.client_info?.id)} lastSeen={selectedChat.client_info?.last_seen} size="md" className="-bottom-1 -right-1 border-2 border-white dark:border-neutral-900" />
@@ -630,9 +628,17 @@ export function MessagesList({ userRole = 'master' }: MessagesListProps) {
                                   {userRole === 'client' ? 'Вам назначен сеанс!' : 'Вы назначили сеанс.'} <br />
                                   {new Date(cardData.date).toLocaleDateString('ru-RU')} в {cardData.time}
                                 </p>
-                                <div className="bg-neutral-50 dark:bg-neutral-900/50 rounded-xl py-2 px-4 text-sm font-medium text-neutral-900 dark:text-white border border-neutral-100 dark:border-white/5">
+                                <div className="bg-neutral-50 dark:bg-neutral-900/50 rounded-xl py-2 px-4 text-sm font-medium text-neutral-900 dark:text-white border border-neutral-100 dark:border-white/5 mb-4">
                                   Стоимость: {cardData.price} CZK
                                 </div>
+                                {onViewSession && selectedChat?.client_session_id && (
+                                  <button
+                                    onClick={() => onViewSession(selectedChat.client_session_id!)}
+                                    className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-bold rounded-xl transition-colors w-full"
+                                  >
+                                    Посмотреть
+                                  </button>
+                                )}
                               </>
                             )}
                             {cardData.type === 'master_rejected' && (
@@ -653,9 +659,19 @@ export function MessagesList({ userRole = 'master' }: MessagesListProps) {
                             {cardData.type === 'new_lead' && (
                               <>
                                 <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-4 whitespace-pre-wrap">
-                                  <strong>{cardData.title}</strong><br /><br />
+                                  {cardData.title !== 'Новая заявка' && cardData.title !== 'Новая заявка (Персональная)' && (
+                                    <><strong>{cardData.title}</strong><br /><br /></>
+                                  )}
                                   {userRole === 'client' ? 'Вы отправили новую заявку. Ожидайте ответа.' : 'Клиент создал новую заявку на татуировку. Обсудите детали и предложите сеанс.'}
                                 </p>
+                                {onViewLead && selectedChat?.leads && (
+                                  <button
+                                    onClick={() => onViewLead(selectedChat.leads)}
+                                    className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-bold rounded-xl transition-colors w-full"
+                                  >
+                                    Посмотреть
+                                  </button>
+                                )}
                               </>
                             )}
                           </div>

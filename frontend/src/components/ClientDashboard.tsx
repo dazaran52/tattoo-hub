@@ -3,16 +3,18 @@
 import Image from 'next/image'
 import { useState, useEffect } from 'react'
 import { Profile, supabase } from '@/lib/supabase'
-import { PlusCircle, Heart, Clock, X, MoreVertical, Edit2, Pause, Play, Trash2, MessageCircle, DollarSign, ShieldCheck, Loader2, Filter, XCircle } from 'lucide-react'
+import { PlusCircle, Heart, Clock, X, MoreVertical, Edit2, Pause, Play, Trash2, MessageCircle, DollarSign, ShieldCheck, Loader2, Filter, XCircle, Palette, PersonStanding, Scale3d, Calendar } from 'lucide-react'
 import { LeadWizard } from '@/components/LeadWizard'
 import { CityMultiSelect } from '@/components/CityMultiSelect'
 import { ChatModal } from '@/components/ChatModal'
 import { MessagesList } from '@/components/MessagesList'
 import { MasterProfileModal } from '@/components/MasterProfileModal'
+import { ClientLeadDetailsModal } from '@/components/ClientLeadDetailsModal'
 import { useLanguage } from '@/i18n/LanguageContext'
 import { TATTOO_STYLES } from '@/lib/constants'
 import { motion, AnimatePresence } from 'framer-motion'
 import { OnlineIndicator } from '@/components/OnlineIndicator'
+import { usePresence } from '@/components/PresenceContext'
 import { VerifiedMasterBadge } from '@/components/PublicMasterTrust'
 
 export function ClientDashboard({ profile }: { profile: Profile }) {
@@ -25,6 +27,7 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
   const [selectedMasterForDirectBooking, setSelectedMasterForDirectBooking] = useState<string | null>(null)
   const [selectedMasterUsernameForModal, setSelectedMasterUsernameForModal] = useState<string | null>(null)
   const [isMasterSelectModalOpen, setIsMasterSelectModalOpen] = useState(false)
+  const [selectedLeadForModal, setSelectedLeadForModal] = useState<any | null>(null)
   const [leads, setLeads] = useState<any[]>([])
   const [topMasters, setTopMasters] = useState<any[]>([])
   const [cities, setCities] = useState<any[]>([])
@@ -38,12 +41,14 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
   const [selectedChatMaster, setSelectedChatMaster] = useState('')
   const [selectedChatAvatar, setSelectedChatAvatar] = useState<string | null>(null)
   const [selectedChatLastSeen, setSelectedChatLastSeen] = useState<string | null>(null)
+  const [showMasterFilters, setShowMasterFilters] = useState(false)
+  const [masterSortBy, setMasterSortBy] = useState<'rating_desc' | 'rating_asc' | 'reviews_desc'>('rating_desc')
+  const [selectedMasterStyles, setSelectedMasterStyles] = useState<string[]>([])
+  const [onlineOnly, setOnlineOnly] = useState(false)
+  const { isOnline } = usePresence()
   const [acceptingProposalId, setAcceptingProposalId] = useState<string | null>(null)
   const [proposalToConfirm, setProposalToConfirm] = useState<{ leadId: string; proposal: any } | null>(null)
   const [lightboxImage, setLightboxImage] = useState<string | null>(null)
-  const [selectedMasterStyles, setSelectedMasterStyles] = useState<string[]>([])
-  const [masterSortBy, setMasterSortBy] = useState<'rating_desc' | 'rating_asc' | 'reviews_desc'>('rating_desc')
-  const [showMasterFilters, setShowMasterFilters] = useState(false)
 
   const toggleFavorite = async (masterId: string, e: React.MouseEvent) => {
     e.stopPropagation()
@@ -314,6 +319,7 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
   let filteredMasters = topMasters
     .filter(m => masterTab === 'rating' || favoriteMasterIds.has(m.id))
     .filter(m => selectedMasterCities.length === 0 || (m.city_ids && m.city_ids.some((id: string) => selectedMasterCities.includes(id))))
+    .filter(m => !onlineOnly || isOnline(m.id, m.last_seen))
 
   if (selectedMasterStyles.length > 0) {
     filteredMasters = filteredMasters.filter(m => m.styles && m.styles.some((s: string) => selectedMasterStyles.includes(s)))
@@ -505,25 +511,25 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
                   )}
                   {lead.session_date && (
                     <span className="px-3 py-1.5 bg-neutral-100 dark:bg-neutral-800/50 text-neutral-700 dark:text-neutral-300 text-xs font-semibold rounded-lg flex items-center gap-1.5 border border-neutral-200/50 dark:border-white/5">
-                      <span>📅</span>
+                      <Calendar className="w-3.5 h-3.5" />
                       {new Date(lead.session_date).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' })}
                     </span>
                   )}
                   {lead.style && lead.style !== 'Не определился' && (
                     <span className="px-3 py-1.5 bg-neutral-100 dark:bg-neutral-800/50 text-neutral-700 dark:text-neutral-300 text-xs font-semibold rounded-lg flex items-center gap-1.5 border border-neutral-200/50 dark:border-white/5">
-                      <span>🎨</span>
+                      <Palette className="w-3.5 h-3.5" />
                       {lead.style}
                     </span>
                   )}
                   {lead.body_place && lead.body_place !== 'Не определился' && (
                     <span className="px-3 py-1.5 bg-neutral-100 dark:bg-neutral-800/50 text-neutral-700 dark:text-neutral-300 text-xs font-semibold rounded-lg flex items-center gap-1.5 border border-neutral-200/50 dark:border-white/5">
-                      <span>👤</span>
+                      <PersonStanding className="w-3.5 h-3.5" />
                       {lead.body_place}
                     </span>
                   )}
                   {lead.size && (
                     <span className="px-3 py-1.5 bg-neutral-100 dark:bg-neutral-800/50 text-neutral-700 dark:text-neutral-300 text-xs font-semibold rounded-lg flex items-center gap-1.5 border border-neutral-200/50 dark:border-white/5">
-                      <span>📏</span>
+                      <Scale3d className="w-3.5 h-3.5" />
                       {lead.size}
                     </span>
                   )}
@@ -708,7 +714,15 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
         </div>
       ) : activeTab === 'messages' ? (
         <div className="w-full">
-          <MessagesList userRole="client" />
+          <MessagesList 
+            userRole="client" 
+            onViewLead={(lead) => {
+              setSelectedLeadForModal(lead)
+            }}
+            onViewSession={(sessionId) => {
+              setActiveTab('leads')
+            }}
+          />
         </div>
       ) : (
         <div className="space-y-6">
@@ -814,6 +828,22 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
                         ))}
                       </div>
                     )}
+                  </div>
+                  
+                  <div className="md:col-span-2 flex items-center justify-between p-3 bg-neutral-50 dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700">
+                    <div className="flex flex-col">
+                      <span className="text-sm font-bold text-neutral-900 dark:text-white">Только сейчас онлайн</span>
+                      <span className="text-xs text-neutral-500 dark:text-neutral-400">Показывать мастеров, которые в данный момент на сайте</span>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input 
+                        type="checkbox" 
+                        className="sr-only peer" 
+                        checked={onlineOnly}
+                        onChange={(e) => setOnlineOnly(e.target.checked)}
+                      />
+                      <div className="w-11 h-6 bg-neutral-200 peer-focus:outline-none rounded-full peer dark:bg-neutral-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-neutral-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-neutral-600 peer-checked:bg-primary-600"></div>
+                    </label>
                   </div>
                 </div>
               </motion.div>
@@ -1038,6 +1068,18 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
           onBook={(masterId) => {
             setSelectedMasterForDirectBooking(masterId)
             setIsFormOpen(true)
+          }}
+        />
+      )}
+      
+      {selectedLeadForModal && (
+        <ClientLeadDetailsModal
+          isOpen={true}
+          onClose={() => setSelectedLeadForModal(null)}
+          lead={selectedLeadForModal}
+          onNavigateToCRM={() => {
+            setSelectedLeadForModal(null)
+            setActiveTab('leads')
           }}
         />
       )}

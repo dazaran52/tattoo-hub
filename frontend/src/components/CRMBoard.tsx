@@ -3,7 +3,7 @@ import { useState, useEffect, useRef, useMemo } from 'react'
 import { createPortal } from 'react-dom'
 import { motion, AnimatePresence, useMotionValue } from 'framer-motion'
 import { toast } from 'react-hot-toast'
-import { Clock, CheckCircle, Calendar, Flag, MessageCircle, UserPlus, LayoutGrid, CalendarDays, Search, Users, PlayCircle, Palette, Trash2, X, Pencil, Send, Phone, Settings2, MapPin, Maximize2, FileText } from 'lucide-react'
+import { Clock, CheckCircle, Calendar, Flag, MessageCircle, UserPlus, LayoutGrid, CalendarDays, Search, Users, PlayCircle, Palette, Trash2, X, Pencil, Send, Phone, Settings2, MapPin, Maximize2, FileText, RefreshCw } from 'lucide-react'
 import * as Icons from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { SessionModal } from '@/components/SessionModal'
@@ -15,6 +15,7 @@ import { SessionsList } from '@/components/SessionsList'
 import { LeadAcceptWizardModal } from '@/components/LeadAcceptWizardModal'
 import { KanbanColumnEditor } from '@/components/KanbanColumnEditor'
 import { LeadDetailsModal } from '@/components/LeadDetailsModal'
+import { MasterLeadModal } from '@/components/MasterLeadModal'
 import { ImageViewerModal } from '@/components/ImageViewerModal'
 import { SkeletonKanban, SkeletonTable } from '@/components/SkeletonCard'
 import { CreateDisputeModal } from '@/components/CreateDisputeModal'
@@ -49,6 +50,7 @@ export interface CRMSession {
     lead_id?: string
     is_lead?: boolean
     leads?: {
+      id?: string
       title: string
       image_urls: string[]
       is_personal?: boolean
@@ -96,7 +98,7 @@ const COLOR_STYLES: Record<string, { bg: string, border: string, leftBorder: str
 
 const DATE_LOCALES: Record<string, string> = { ru: 'ru-RU', en: 'en-US', cs: 'cs-CZ', uk: 'uk-UA' }
 
-export function CRMBoard() {
+export function CRMBoard({ initialViewLeadId, initialViewSessionId }: { initialViewLeadId?: string | null, initialViewSessionId?: string | null }) {
   const { t, lang } = useLanguage()
   const dateLocale = DATE_LOCALES[lang] || 'en-US'
 
@@ -148,6 +150,22 @@ export function CRMBoard() {
 
   const [dateFilter, setDateFilter] = useState<'today'|'this_week'|'this_month'|'all'>('all')
   const [sessionToEdit, setSessionToEdit] = useState<CRMSession | null>(null)
+  const [sellLeadSession, setSellLeadSession] = useState<CRMSession | null>(null)
+  const [cities, setCities] = useState<any[]>([])
+  const [countries, setCountries] = useState<any[]>([])
+
+  // Fetch locations for sell lead modal when needed
+  useEffect(() => {
+    if (sellLeadSession && cities.length === 0) {
+      supabase.from('cities').select('*').order('name_ru').then(res => {
+        if (res.data) setCities(res.data)
+      })
+      supabase.from('countries').select('*').order('name_ru').then(res => {
+        if (res.data) setCountries(res.data)
+      })
+    }
+  }, [sellLeadSession, cities.length])
+
   const [sessionToAccept, setSessionToAccept] = useState<CRMSession | null>(null)
   const [sessionDetails, setSessionDetails] = useState<CRMSession | null>(null)
   const [viewerImage, setViewerImage] = useState<string | null>(null)
@@ -298,12 +316,39 @@ export function CRMBoard() {
         }
       }
         
-    } catch (err) {
-      console.error(err)
+    } catch (e) {
+      console.error(e)
     } finally {
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    fetchData()
+  }, [])
+
+  // Handle opening lead or session from initial props
+  useEffect(() => {
+    if (sessions.length > 0) {
+      if (initialViewSessionId) {
+        const sessionToView = sessions.find(s => s.id === initialViewSessionId)
+        if (sessionToView) {
+          handleSessionClick(sessionToView)
+        }
+      } else if (initialViewLeadId) {
+        // Find session that has this lead
+        const sessionToView = sessions.find(s => s.master_clients?.leads?.id === initialViewLeadId || s.lead_id === initialViewLeadId)
+        if (sessionToView) {
+          // If the status is new, open AcceptWizard, else open LeadDetails
+          if (sessionToView.status === 'new') {
+            setSessionToAccept(sessionToView)
+          } else {
+            setSessionDetails(sessionToView)
+          }
+        }
+      }
+    }
+  }, [sessions, initialViewLeadId, initialViewSessionId])
 
   const updateSessionStatus = async (sessionId: string, newStatus: string, reason?: string) => {
     try {
@@ -530,6 +575,14 @@ export function CRMBoard() {
         
         {mainTab === 'sessions' && sessionView !== 'calendar' && (
           <div className="flex items-center gap-3">
+            <button
+              onClick={() => fetchData()}
+              disabled={loading}
+              className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl text-sm font-bold text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white hover:border-neutral-600 transition-colors disabled:opacity-50"
+            >
+              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+              {t('refresh') || 'Обновить'}
+            </button>
             <button
               onClick={() => setIsSessionModalOpen(true)}
               className="flex items-center gap-2 px-5 py-2.5 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-bold shadow-md hover:shadow-lg transition-all hover:-translate-y-0.5"
@@ -897,6 +950,7 @@ export function CRMBoard() {
           }}
           editSession={sessionToEdit}
           existingClients={clientsForModal}
+          onSellLead={setSellLeadSession}
         />
       )}
 
@@ -1009,6 +1063,32 @@ export function CRMBoard() {
           }
         }}
       />
+
+      {sellLeadSession && (
+        <MasterLeadModal
+          isOpen={true}
+          onClose={() => setSellLeadSession(null)}
+          onSuccess={() => {
+            setSellLeadSession(null)
+            toast.success("Лид выставлен на продажу!")
+          }}
+          language={lang}
+          cities={cities}
+          countries={countries}
+          initialData={{
+            title: sellLeadSession.master_clients?.name || 'Клиент',
+            description: [
+              sellLeadSession.style ? `Стиль: ${sellLeadSession.style}` : '',
+              sellLeadSession.body_place ? `Место: ${sellLeadSession.body_place}` : '',
+              sellLeadSession.size ? `Размер: ${sellLeadSession.size}` : '',
+              sellLeadSession.notes || ''
+            ].filter(Boolean).join('. '),
+            contacts: sellLeadSession.master_clients?.telegram 
+              ? `@${sellLeadSession.master_clients.telegram}` 
+              : sellLeadSession.master_clients?.phone || ''
+          }}
+        />
+      )}
 
       <CreateDisputeModal
         isOpen={!!disputeLeadId}

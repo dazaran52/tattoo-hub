@@ -18,9 +18,10 @@ interface SessionModalProps {
   initialClientId?: string | null
   existingClients: CRMClient[]
   editSession?: CRMSession | null
+  onSellLead?: (session: CRMSession) => void
 }
 
-export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialClientId, existingClients, editSession }: SessionModalProps) {
+export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialClientId, existingClients, editSession, onSellLead }: SessionModalProps) {
   const [loading, setLoading] = useState(false)
   const [isNewClient, setIsNewClient] = useState(false)
   const [clientSearchText, setClientSearchText] = useState('')
@@ -330,18 +331,19 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm overflow-y-auto" onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
-      <div className="bg-white dark:bg-neutral-900 rounded-3xl w-full max-w-2xl shadow-2xl overflow-hidden my-8">
-        <div className="flex justify-between items-center p-6 border-b border-neutral-200 dark:border-neutral-800">
+      <div className="bg-white dark:bg-neutral-900 rounded-3xl w-full max-w-2xl shadow-2xl overflow-hidden my-8 flex flex-col max-h-[90vh]">
+        <div className="flex justify-between items-center p-6 border-b border-neutral-200 dark:border-neutral-800 shrink-0">
           <h2 className="text-xl font-bold flex items-center gap-2 text-neutral-900 dark:text-white">
             <CalendarIcon className="w-5 h-5 text-accent-500" />
             {editSession ? 'Редактировать сеанс' : 'Создать сеанс'}
           </h2>
-          <button onClick={onClose} className="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-full transition-colors text-neutral-500">
+          <button type="button" onClick={onClose} className="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-full transition-colors text-neutral-500">
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+        <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+          <div className="p-6 space-y-6 overflow-y-auto custom-scrollbar flex-1">
           {/* Client Selection */}
           <div className="space-y-4 bg-neutral-50 dark:bg-neutral-800/50 p-4 rounded-2xl border border-neutral-200 dark:border-neutral-800">
             <div className="flex items-center justify-between">
@@ -719,8 +721,9 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
             </div>
             )}
           </div>
+          </div>
 
-          <div className="pt-2 flex gap-3">
+          <div className="p-6 border-t border-neutral-200 dark:border-neutral-800 shrink-0 flex gap-3 bg-white dark:bg-neutral-900">
             {editSession && !showDeleteConfirm && (
               <button
                 type="button"
@@ -730,6 +733,17 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
                 title="Удалить сеанс"
               >
                 <Trash2 className="w-5 h-5" />
+              </button>
+            )}
+            {editSession && !showDeleteConfirm && onSellLead && (
+              <button
+                type="button"
+                onClick={() => onSellLead(editSession)}
+                disabled={loading || isUploading}
+                className="flex items-center justify-center p-3.5 bg-accent-50 dark:bg-accent-500/10 text-accent-600 dark:text-accent-400 rounded-xl hover:bg-accent-100 dark:hover:bg-accent-500/20 transition-colors disabled:opacity-50"
+                title="Передать / Продать лида"
+              >
+                <Tag className="w-5 h-5" />
               </button>
             )}
             {showDeleteConfirm && (

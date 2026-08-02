@@ -14,12 +14,25 @@ export async function GET(request: Request) {
     
     if (!error) {
       const role = searchParams.get('role')
-      if (role && data?.user) {
-        // Only set role if user doesn't already have one (first login)
-        if (!data.user.user_metadata?.role) {
+      if (data?.user) {
+        // Sync role if missing
+        if (role && !data.user.user_metadata?.role) {
           await supabase.auth.updateUser({
             data: { role: role }
           })
+        }
+        
+        // Sync avatar to public.users if missing
+        const avatar = data.user.user_metadata?.avatar_url || data.user.user_metadata?.picture
+        if (avatar) {
+          try {
+            const { data: dbUser } = await supabase.from('users').select('avatar_url').eq('id', data.user.id).single()
+            if (dbUser && !dbUser.avatar_url) {
+              await supabase.from('users').update({ avatar_url: avatar }).eq('id', data.user.id)
+            }
+          } catch (err) {
+            console.error('Failed to sync avatar during auth callback', err)
+          }
         }
       }
       return NextResponse.redirect(`${origin}${next}`)
