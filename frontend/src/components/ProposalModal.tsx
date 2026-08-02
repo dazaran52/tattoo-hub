@@ -66,7 +66,7 @@ export function ProposalModal({ isOpen, onClose, lead, onSuccess }: ProposalModa
 
   const modifiers = {
     dayOff: daysOff.map(d => new Date(d.date)),
-    session: sessions.filter(s => s.session_date).map(s => new Date(s.session_date)),
+    session: sessions.filter(s => s.session_date && !['discussing', 'cancelled', 'rejected'].includes(s.status)).map(s => new Date(s.session_date)),
     clientDate: lead?.session_date ? [new Date(lead.session_date)] : []
   }
   const modifiersStyles = {
