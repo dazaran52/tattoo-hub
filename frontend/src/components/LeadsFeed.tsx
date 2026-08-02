@@ -975,6 +975,14 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
                       </span>
                     </div>
                   )}
+                  {(lead.country_id || lead.city_id) && (
+                    <div className="flex items-center gap-1.5 text-neutral-600 dark:text-neutral-400 bg-neutral-100 dark:bg-neutral-800/50 px-2 py-1.5 rounded-lg border border-neutral-200 dark:border-neutral-700 w-fit">
+                      <MapPin className="w-3.5 h-3.5 shrink-0" />
+                      <span className="text-[11px] font-medium">
+                        {cities.find(c => c.id === lead.city_id)?.name_ru || countries.find(c => c.id === lead.country_id)?.name_ru || ''}
+                      </span>
+                    </div>
+                  )}
                   {lead.created_at && (
                     <span className="text-[10px] text-neutral-400 font-medium ml-1">
                       Создано: {new Date(lead.created_at).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute:'2-digit' })}
@@ -1001,15 +1009,10 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
                       {lead.size}
                     </span>
                   )}
-                  {(lead.country_id || lead.city_id) && (
-                    <span className="px-2.5 py-1 bg-neutral-100 dark:bg-neutral-800/50 text-neutral-700 dark:text-neutral-300 text-[11px] font-semibold rounded-lg flex items-center gap-1.5 border border-neutral-200/50 dark:border-white/5">
-                      <span>📍</span>
-                      {cities.find(c => c.id === lead.city_id)?.name_ru || countries.find(c => c.id === lead.country_id)?.name_ru || ''}
-                    </span>
-                  )}
+
                   {lead.display_budget && (
                     <span className="px-2.5 py-1 bg-emerald-50 dark:bg-emerald-900/10 text-emerald-700 dark:text-emerald-400 text-[11px] font-bold rounded-lg flex items-center gap-1.5 border border-emerald-200/50 dark:border-emerald-800/30">
-                      <span>💰</span>
+                      <DollarSign className="w-3 h-3" />
                       {lead.display_budget}
                     </span>
                   )}
@@ -1157,9 +1160,6 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
                     ) : (
                       <>
                         Сделать предложение — бесплатно
-                        <div className="absolute -top-3 -right-3 bg-red-500 text-white text-[10px] font-bold px-2 py-1 rounded-full animate-bounce shadow-lg">
-                          10% fee if accepted
-                        </div>
                       </>
                     )}
                   </button>

@@ -29,6 +29,8 @@ class LeadResponse(BaseModel):
     is_unlocked: bool
     image_urls: List[str] = []
     created_at: str | None = None
+    client_id: str | None = None
+    client_last_seen: str | None = None
     country_id: str | None = None
     city_id: str | None = None
     style: str | None = None
