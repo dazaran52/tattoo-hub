@@ -80,7 +80,7 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
     }
   }
   const handlePauseResume = async (leadId: string, currentStatus: string) => {
-    if (!['new', 'active', 'paused'].includes(currentStatus)) return
+    if (!['new', 'open', 'active', 'paused'].includes(currentStatus)) return
     try {
       const newStatus = currentStatus === 'paused' ? 'active' : 'paused'
       const { data: { session } } = await supabase.auth.getSession()
@@ -431,11 +431,11 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
                       </span>
                     )}
 
-                    <span className={`px-3 py-1 border text-xs font-extrabold tracking-wide uppercase rounded-full ${['new', 'active'].includes(lead.status) ? 'bg-amber-100 dark:bg-amber-500/10 border-amber-200 dark:border-amber-500/20 text-amber-700 dark:text-amber-400' :
+                    <span className={`px-3 py-1 border text-xs font-extrabold tracking-wide uppercase rounded-full ${['new', 'open', 'active'].includes(lead.status) ? 'bg-amber-100 dark:bg-amber-500/10 border-amber-200 dark:border-amber-500/20 text-amber-700 dark:text-amber-400' :
                         ['accepted', 'booked'].includes(lead.status) ? 'bg-emerald-100 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/20 text-emerald-700 dark:text-emerald-400' :
                           'bg-neutral-100 dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-400'
                       }`}>
-                      {['new', 'active'].includes(lead.status) ? (lead.is_personal ? t('statusPending', 'Ожидает ответа') : t('statusSearching', 'В поиске')) :
+                      {['new', 'open', 'active'].includes(lead.status) ? (lead.is_personal ? t('statusPending', 'Ожидает ответа') : t('statusSearching', 'В поиске')) :
                         ['accepted', 'booked'].includes(lead.status) ? t('statusAccepted', 'В работе') :
                           lead.status === 'completed' ? t('statusCompleted', 'Завершено') :
                             lead.status === 'paused' ? t('statusPaused', 'Приостановлена') :
@@ -458,7 +458,7 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
                         <>
                           <div className="fixed inset-0 z-[5]" onClick={(e) => { e.stopPropagation(); setOpenMenuId(null); }} />
                           <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl shadow-xl overflow-hidden z-10 py-1">
-                            {['new', 'active', 'paused'].includes(lead.status) && (
+                            {['new', 'open', 'active', 'paused'].includes(lead.status) && (
                               <button
                                 onClick={() => { setOpenMenuId(null); setEditingLead(lead) }}
                                 className="w-full text-left px-4 py-2.5 text-sm font-semibold text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors flex items-center gap-2"
@@ -466,7 +466,7 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
                                 <Edit2 className="w-4 h-4" /> {t('editLead', 'Редактировать заявку')}
                               </button>
                             )}
-                            {['new', 'active', 'paused'].includes(lead.status) && <>
+                            {['new', 'open', 'active', 'paused'].includes(lead.status) && <>
                               <button
                                 onClick={() => { setOpenMenuId(null); handlePauseResume(lead.id, lead.status) }}
                                 className="w-full text-left px-4 py-2.5 text-sm font-medium flex items-center gap-2 hover:bg-neutral-50 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300 transition-colors"
@@ -475,7 +475,7 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
                               </button>
                               <div className="h-px w-full bg-neutral-100 dark:bg-neutral-800 my-1" />
                             </>}
-                            {['new', 'active', 'paused', 'closed'].includes(lead.status) && (
+                            {['new', 'open', 'active', 'paused', 'closed'].includes(lead.status) && (
                               <button
                                 onClick={() => { setOpenMenuId(null); handleDelete(lead.id) }}
                                 className="w-full text-left px-4 py-2.5 text-sm font-medium flex items-center gap-2 hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400 transition-colors"
