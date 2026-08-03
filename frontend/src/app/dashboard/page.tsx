@@ -15,6 +15,7 @@ import { PortfolioTab } from '@/components/PortfolioTab'
 import { useLanguage } from '@/i18n/LanguageContext'
 import { MessageCircle, LayoutDashboard, Share2, Link as LinkIcon, Image as ImageIcon, ShoppingBag } from 'lucide-react'
 import { BottomNav } from '@/components/BottomNav'
+import { CommandPaletteModal } from '@/components/CommandPaletteModal'
 
 export default function DashboardPage() {
   const router = useRouter()
@@ -28,6 +29,7 @@ export default function DashboardPage() {
   const [unreadMessages, setUnreadMessages] = useState(0)
   const [viewLeadId, setViewLeadId] = useState<string | null>(null)
   const [viewSessionId, setViewSessionId] = useState<string | null>(null)
+  const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false)
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -240,7 +242,7 @@ export default function DashboardPage() {
         )}
       </div>
 
-      <Header profile={profile} onLogout={handleLogout} maxWidthClass={activeTab === 'crm' ? 'max-w-[1600px]' : 'max-w-7xl'} />
+      <Header profile={profile} onLogout={handleLogout} maxWidthClass={activeTab === 'crm' ? 'max-w-[1600px]' : 'max-w-7xl'} onOpenCommandPalette={() => setIsCommandPaletteOpen(true)} />
 
       <main className={`mx-auto px-4 sm:px-6 lg:px-8 py-8 relative ${activeTab === 'crm' ? 'max-w-[1600px]' : 'max-w-7xl'}`}>
         {profile.role === 'client' ? (
@@ -412,12 +414,19 @@ export default function DashboardPage() {
         )}
       </main>
       {profile && (
-        <BottomNav 
-          activeTab={activeTab} 
-          setActiveTab={setActiveTab} 
-          unreadMessagesCount={unreadMessages} 
-          userRole={profile.role as 'master' | 'client'} 
-        />
+        <>
+          <BottomNav 
+            activeTab={activeTab} 
+            setActiveTab={setActiveTab} 
+            unreadMessagesCount={unreadMessages} 
+            userRole={profile.role as 'master' | 'client'} 
+          />
+          <CommandPaletteModal 
+            isOpen={isCommandPaletteOpen} 
+            onClose={() => setIsCommandPaletteOpen(false)} 
+            onSelectTab={setActiveTab} 
+          />
+        </>
       )}
     </div>
   )

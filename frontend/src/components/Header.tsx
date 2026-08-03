@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { LogOut, Gem, Menu, X, LayoutDashboard, Settings, Plus, Moon, Sun, Globe, Ticket, Copy, Bell, BarChart2, HelpCircle, Shield, User } from 'lucide-react'
+import { LogOut, Gem, Menu, X, LayoutDashboard, Settings, Plus, Moon, Sun, Globe, Ticket, Copy, Bell, BarChart2, HelpCircle, Shield, User, Search } from 'lucide-react'
 import { Profile } from '@/lib/supabase'
 import { subscribeToPush } from '@/lib/push'
 import { useLanguage } from '@/i18n/LanguageContext'
@@ -16,9 +16,10 @@ interface HeaderProps {
   profile: Profile
   onLogout: () => void
   maxWidthClass?: string
+  onOpenCommandPalette?: () => void
 }
 
-export function Header({ profile, onLogout, maxWidthClass = 'max-w-7xl' }: HeaderProps) {
+export function Header({ profile, onLogout, maxWidthClass = 'max-w-7xl', onOpenCommandPalette }: HeaderProps) {
   const [menuOpen, setMenuOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
   
@@ -184,6 +185,19 @@ export function Header({ profile, onLogout, maxWidthClass = 'max-w-7xl' }: Heade
                   <Plus className="w-4 h-4 group-hover:scale-110 transition-transform" />
                 </button>
               </div>
+            )}
+
+            {/* Command Palette Trigger (Desktop) */}
+            {onOpenCommandPalette && (
+              <button
+                onClick={onOpenCommandPalette}
+                className="hidden md:flex items-center gap-2 px-3 py-1.5 glass-card rounded-xl text-xs font-semibold text-neutral-400 hover:text-white transition-colors border border-white/10"
+                title="Поиск и Команды (Cmd+K / Ctrl+K)"
+              >
+                <Search className="w-3.5 h-3.5 text-primary-400" />
+                <span>Поиск...</span>
+                <kbd className="bg-white/10 text-[10px] font-mono px-1.5 py-0.5 rounded text-neutral-300">⌘K</kbd>
+              </button>
             )}
 
             {/* Notifications Menu — for ALL non-admin users */}
