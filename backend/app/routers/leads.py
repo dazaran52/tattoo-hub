@@ -1243,7 +1243,7 @@ def update_lead_status(
     Update the status of a lead (e.g. active, paused, open, archived).
     Must be the owner of the lead.
     """
-    valid_statuses = {'new', 'active', 'paused', 'closed'}
+    valid_statuses = {'new', 'open', 'active', 'paused', 'closed'}
     if payload.status not in valid_statuses:
         raise HTTPException(status_code=400, detail="Invalid status")
 
@@ -1257,6 +1257,7 @@ def update_lead_status(
         current_status = lead.get("status") or "new"
         allowed_transitions = {
             "new": {"active", "paused", "closed"},
+            "open": {"active", "paused", "closed"},
             "active": {"paused", "closed"},
             "paused": {"active", "closed"},
             "closed": set(),

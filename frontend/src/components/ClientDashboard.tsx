@@ -478,7 +478,7 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
                                   onClick={() => { setOpenMenuId(null); handlePauseResume(lead.id, lead.status) }}
                                   className="w-full text-left px-4 py-2.5 text-sm font-medium flex items-center gap-2 hover:bg-neutral-50 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300 transition-colors"
                                 >
-                                  {lead.status === 'paused' ? <><Play className="w-4 h-4" /> {t('resume') || 'Возобновить'}</> : <><Pause className="w-4 h-4" /> {t('pause') || 'Приостановить'}</>}
+                                  {lead.status === 'paused' ? <><Play className="w-4 h-4" /> {t('resume', 'Возобновить')}</> : <><Pause className="w-4 h-4" /> {t('pause', 'Приостановить')}</>}
                                 </button>
                                 <div className="h-px w-full bg-neutral-100 dark:bg-neutral-800 my-1" />
                               </>}
