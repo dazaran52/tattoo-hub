@@ -43,7 +43,7 @@ def apply_anti_bypass_filter(content: str) -> str:
 
 
 def filter_accepted_chats(supabase: Client, chats: list[dict]) -> list[dict]:
-    """Exclude stale chats unless their selected master has an accepted proposal."""
+    """Exclude stale chats unless their selected master has an accepted proposal or it's a personal lead."""
     lead_ids = [chat.get("lead_id") for chat in chats if chat.get("lead_id")]
     if not lead_ids:
         return []
@@ -57,16 +57,22 @@ def filter_accepted_chats(supabase: Client, chats: list[dict]) -> list[dict]:
         for proposal in (proposals_res.data or [])
     }
     leads_res = supabase.table("leads").select(
-        "id, assigned_master_id"
+        "id, assigned_master_id, is_personal"
     ).in_("id", lead_ids).execute()
     assigned_pairs = {
         (lead["id"], lead.get("assigned_master_id"))
         for lead in (leads_res.data or [])
     }
+    personal_leads = {
+        lead["id"]
+        for lead in (leads_res.data or [])
+        if lead.get("is_personal")
+    }
     return [
         chat for chat in chats
-        if (chat.get("lead_id"), chat.get("master_id")) in accepted_pairs
-        and (chat.get("lead_id"), chat.get("master_id")) in assigned_pairs
+        if ((chat.get("lead_id"), chat.get("master_id")) in accepted_pairs
+            and (chat.get("lead_id"), chat.get("master_id")) in assigned_pairs)
+        or (chat.get("lead_id") in personal_leads and (chat.get("lead_id"), chat.get("master_id")) in assigned_pairs)
     ]
 
 @router.get("/{chat_id}/messages", response_model=List[MessageResponse])
