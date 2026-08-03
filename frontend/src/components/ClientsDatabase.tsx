@@ -19,6 +19,8 @@ export interface CRMClient {
   notes: string
   lead_id?: string
   chat_id?: string
+  is_unlocked?: boolean
+  kanban_status?: string
   created_at: string
   leads?: {
     title: string
