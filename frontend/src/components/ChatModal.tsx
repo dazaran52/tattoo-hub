@@ -301,7 +301,6 @@ export function ChatModal({ isOpen, onClose, chatId, leadTitle, currentUserRole 
                            {cardData.type === 'new_lead' && (
                              <>
                                <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-4 whitespace-pre-wrap">
-                                 <strong>{cardData.title}</strong><br/><br/>
                                  {currentUserRole === 'client' ? 'Вы отправили новую заявку. Ожидайте ответа.' : 'Клиент создал новую заявку на татуировку. Обсудите детали и предложите сеанс.'}
                                </p>
                              </>
