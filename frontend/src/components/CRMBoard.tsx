@@ -339,12 +339,7 @@ export function CRMBoard({ initialViewLeadId, initialViewSessionId }: { initialV
         // Find session that has this lead
         const sessionToView = sessions.find(s => s.master_clients?.leads?.id === initialViewLeadId || s.lead_id === initialViewLeadId)
         if (sessionToView) {
-          // If the status is new, open AcceptWizard, else open LeadDetails
-          if (sessionToView.status === 'new') {
-            setSessionToAccept(sessionToView)
-          } else {
-            setSessionDetails(sessionToView)
-          }
+          setSessionDetails(sessionToView)
         }
       }
     }

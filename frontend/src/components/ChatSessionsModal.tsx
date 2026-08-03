@@ -2,7 +2,7 @@ import Image from 'next/image'
 import { useState, useEffect } from 'react'
 import { X } from 'lucide-react'
 import { supabase } from '../lib/supabase'
-import { LeadAcceptWizardModal } from './LeadAcceptWizardModal'
+import { LeadDetailsModal } from './LeadDetailsModal'
 
 interface ChatSessionsModalProps {
   chatId: string
@@ -119,7 +119,7 @@ export function ChatSessionsModal({ chatId, clientInfo, userRole, onClose, onUpd
                         onClick={() => setSelectedSessionForAccept(session)}
                         className="flex-1 py-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-medium rounded-xl transition-colors"
                       >
-                        Принять заявку
+                        Посмотреть
                       </button>
                     </div>
                   )}
@@ -131,12 +131,16 @@ export function ChatSessionsModal({ chatId, clientInfo, userRole, onClose, onUpd
       </div>
 
       {selectedSessionForAccept && (
-        <LeadAcceptWizardModal
+        <LeadDetailsModal
           session={selectedSessionForAccept}
-          allSessions={sessions}
           isOpen={true}
           onClose={() => setSelectedSessionForAccept(null)}
-          onSuccess={() => {
+          onAccept={() => {
+            setSelectedSessionForAccept(null)
+            fetchSessions()
+            onUpdate()
+          }}
+          onReject={() => {
             setSelectedSessionForAccept(null)
             fetchSessions()
             onUpdate()
