@@ -148,7 +148,7 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId: 
                 <div className="flex items-center gap-2">
                   {isPersonal ? (
                     <span className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
-                      Личная заявка (/book)
+                      Личная заявка
                     </span>
                   ) : isUnlocked ? (
                     <span className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
@@ -342,64 +342,11 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId: 
                   )}
                 </div>
 
-                {/* Lead Parameters Badges */}
-                {(styleText || budgetText || cityText || lead.body_place || lead.size) && (
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold text-neutral-400 uppercase tracking-wider flex items-center gap-1.5">
-                      <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-                      <span>Параметры татуировки</span>
-                    </label>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                      {styleText && (
-                        <div className="bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-400 px-3.5 py-2.5 rounded-2xl flex items-center gap-2.5 border border-purple-100 dark:border-purple-500/20">
-                          <Palette className="w-4 h-4 shrink-0" />
-                          <div className="text-xs">
-                            <span className="font-bold block uppercase text-[9px] opacity-70">Стиль</span>
-                            <span className="font-semibold">{styleText}</span>
-                          </div>
-                        </div>
-                      )}
-
-                      {budgetText && (
-                        <div className="bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 px-3.5 py-2.5 rounded-2xl flex items-center gap-2.5 border border-emerald-100 dark:border-emerald-500/20">
-                          <DollarSign className="w-4 h-4 shrink-0" />
-                          <div className="text-xs">
-                            <span className="font-bold block uppercase text-[9px] opacity-70">Бюджет</span>
-                            <span className="font-semibold">{budgetText}</span>
-                          </div>
-                        </div>
-                      )}
-
-                      {cityText && (
-                        <div className="bg-orange-50 dark:bg-orange-900/20 text-orange-700 dark:text-orange-400 px-3.5 py-2.5 rounded-2xl flex items-center gap-2.5 border border-orange-100 dark:border-orange-500/20">
-                          <MapPin className="w-4 h-4 shrink-0" />
-                          <div className="text-xs">
-                            <span className="font-bold block uppercase text-[9px] opacity-70">Город</span>
-                            <span className="font-semibold">{cityText}</span>
-                          </div>
-                        </div>
-                      )}
-
-                      {lead.body_place && (
-                        <div className="bg-sky-50 dark:bg-sky-900/20 text-sky-700 dark:text-sky-400 px-3.5 py-2.5 rounded-2xl flex items-center gap-2.5 border border-sky-100 dark:border-sky-500/20">
-                          <PersonStanding className="w-4 h-4 shrink-0" />
-                          <div className="text-xs">
-                            <span className="font-bold block uppercase text-[9px] opacity-70">Место</span>
-                            <span className="font-semibold">{lead.body_place}</span>
-                          </div>
-                        </div>
-                      )}
-
-                      {lead.size && (
-                        <div className="bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 px-3.5 py-2.5 rounded-2xl flex items-center gap-2.5 border border-amber-100 dark:border-amber-500/20">
-                          <Maximize2 className="w-4 h-4 shrink-0" />
-                          <div className="text-xs">
-                            <span className="font-bold block uppercase text-[9px] opacity-70">Размер</span>
-                            <span className="font-semibold">{lead.size}</span>
-                          </div>
-                        </div>
-                      )}
-                    </div>
+                {/* City Badge in Info tab */}
+                {cityText && (
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-orange-600 dark:text-orange-400 bg-orange-500/10 px-3 py-1.5 rounded-xl border border-orange-500/20 w-fit">
+                    <MapPin className="w-3.5 h-3.5" />
+                    <span>Город: {cityText}</span>
                   </div>
                 )}
 
@@ -532,6 +479,32 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId: 
                             </div>
                           </div>
                         </div>
+
+                        {/* Tattoo Parameters Pills */}
+                        {(s.style || styleText || (s as any).body_place || lead.body_place || (s as any).size || lead.size || budgetText) && (
+                          <div className="flex flex-wrap gap-1.5 pt-2 border-t border-neutral-200/50 dark:border-white/5">
+                            {(s.style || styleText) && (
+                              <span className="text-[10px] font-bold px-2.5 py-1 rounded-lg bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center gap-1 border border-purple-500/20">
+                                <Palette className="w-3 h-3" /> {s.style || styleText}
+                              </span>
+                            )}
+                            {((s as any).body_place || lead.body_place) && (
+                              <span className="text-[10px] font-bold px-2.5 py-1 rounded-lg bg-sky-500/10 text-sky-600 dark:text-sky-400 flex items-center gap-1 border border-sky-500/20">
+                                <PersonStanding className="w-3 h-3" /> {(s as any).body_place || lead.body_place}
+                              </span>
+                            )}
+                            {((s as any).size || lead.size) && (
+                              <span className="text-[10px] font-bold px-2.5 py-1 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center gap-1 border border-amber-500/20">
+                                <Maximize2 className="w-3 h-3" /> {(s as any).size || lead.size}
+                              </span>
+                            )}
+                            {budgetText && (
+                              <span className="text-[10px] font-bold px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center gap-1 border border-emerald-500/20">
+                                <DollarSign className="w-3 h-3" /> {budgetText}
+                              </span>
+                            )}
+                          </div>
+                        )}
 
                         {s.reference_images && s.reference_images.length > 0 && (
                           <div className="w-full flex gap-2 overflow-x-auto custom-scrollbar pb-1 border-t border-neutral-200 dark:border-white/5 pt-3">
