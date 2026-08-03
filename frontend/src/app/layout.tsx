@@ -10,6 +10,7 @@ import { CustomCursor } from '@/components/CustomCursor'
 import { TouchEffect } from '@/components/TouchEffect'
 import { CookieBanner } from '@/components/CookieBanner'
 import { OnlinePresenceTracker } from '@/components/OnlinePresenceTracker'
+import { OfflineIndicator } from '@/components/OfflineIndicator'
 
 import { PresenceProvider } from '@/components/PresenceContext'
 
@@ -84,7 +85,27 @@ export default function RootLayout({
             <CustomCursor />
             <TouchEffect />
             <ThemeProvider />
-            <Toaster position="top-center" reverseOrder={false} />
+            <Toaster 
+              position="top-center" 
+              reverseOrder={false} 
+              toastOptions={{
+                className: '!bg-neutral-900/90 !text-white !backdrop-blur-xl !border !border-white/10 !rounded-2xl !shadow-[0_10px_30px_rgba(0,0,0,0.5)] !text-sm !font-semibold',
+                duration: 4000,
+                success: {
+                  iconTheme: {
+                    primary: '#10B981',
+                    secondary: '#090A0F',
+                  },
+                },
+                error: {
+                  iconTheme: {
+                    primary: '#EF4444',
+                    secondary: '#090A0F',
+                  },
+                },
+              }}
+            />
+            <OfflineIndicator />
             {children}
             <ChatWidget />
             <InstallPrompt />
