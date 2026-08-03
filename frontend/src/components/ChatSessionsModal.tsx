@@ -90,7 +90,11 @@ export function ChatSessionsModal({ chatId, clientInfo, userRole, onClose, onUpd
                 )}
                 <div className="flex-1 min-w-0">
                   <div className="flex justify-between items-start mb-2">
-                    <h3 className="font-bold dark:text-white truncate pr-2">{session.master_clients?.leads?.title || 'Сеанс тату'}</h3>
+                    <h3 className="font-bold dark:text-white truncate pr-2">
+                      {(!session.master_clients?.leads?.title || session.master_clients.leads.title.startsWith('Татуировка') || session.master_clients.leads.title === 'Новая заявка на татуировку') 
+                        ? 'Новая заявка' 
+                        : session.master_clients.leads.title}
+                    </h3>
                     <span className="text-xs px-2 py-1 bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300 rounded-lg shrink-0">
                       {session.status || 'new'}
                     </span>

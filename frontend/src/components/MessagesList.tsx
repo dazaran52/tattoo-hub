@@ -356,7 +356,9 @@ export function MessagesList({ userRole = 'master', onViewLead, onViewSession }:
   }
 
   const filteredChats = chats.filter(chat => {
-    const clientName = chat.client_info?.name || chat.leads?.title || 'Клиент'
+    const rawTitle = chat.leads?.title
+    const fallbackTitle = (!rawTitle || rawTitle.startsWith('Татуировка') || rawTitle === 'Новая заявка на татуировку') ? 'Клиент' : rawTitle
+    const clientName = chat.client_info?.name || fallbackTitle
     return clientName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       chat.client_info?.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       chat.leads?.title?.toLowerCase().includes(searchQuery.toLowerCase())
@@ -413,7 +415,9 @@ export function MessagesList({ userRole = 'master', onViewLead, onViewSession }:
         <div className="flex-1 overflow-y-auto divide-y divide-neutral-100 dark:divide-white/5">
           {filteredChats.map(chat => {
             const isSelected = selectedChat?.id === chat.id
-            const clientName = chat.client_info?.name || chat.leads?.title || 'Неизвестный клиент'
+            const rawTitleItem = chat.leads?.title
+            const fallbackTitleItem = (!rawTitleItem || rawTitleItem.startsWith('Татуировка') || rawTitleItem === 'Новая заявка на татуировку') ? 'Неизвестный клиент' : rawTitleItem
+            const clientName = chat.client_info?.name || fallbackTitleItem
 
             return (
               <div
