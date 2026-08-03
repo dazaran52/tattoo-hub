@@ -35,7 +35,7 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId: 
   // B2B Sell Modal State
   const [b2bSellData, setB2bSellData] = useState<{ leadId: string; sessionTitle?: string; clientName?: string } | null>(null)
 
-  const lead = client.leads || {}
+  const lead: any = client.leads || {}
   const isPersonal = client.source === 'manual' || client.source === 'direct' || Boolean(lead.is_personal) || !client.lead_id
   const isUnlocked = isPersonal || Boolean(client.is_unlocked) || ['accepted', 'in_progress', 'completed', 'discussing', 'booked'].includes(client.kanban_status || '')
   const isMarketplaceSold = client.kanban_status === 'marketplace'
