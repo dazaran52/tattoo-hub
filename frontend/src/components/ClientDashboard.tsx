@@ -453,46 +453,48 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
                       <Clock className="w-3.5 h-3.5" />
                       {new Date(lead.created_at).toLocaleDateString()}
                     </span>
-                    <div className="relative">
-                      <button
-                        onClick={() => setOpenMenuId(openMenuId === lead.id ? null : lead.id)}
-                        className="p-1.5 rounded-xl hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-400 hover:text-neutral-900 dark:hover:text-white transition-colors"
-                      >
-                        <MoreVertical className="w-5 h-5" />
-                      </button>
-                      {openMenuId === lead.id && (
-                        <>
-                          <div className="fixed inset-0 z-[5]" onClick={(e) => { e.stopPropagation(); setOpenMenuId(null); }} />
-                          <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl shadow-xl overflow-hidden z-10 py-1">
-                            {['new', 'open', 'active', 'paused'].includes(lead.status) && (
-                              <button
-                                onClick={() => { setOpenMenuId(null); setEditingLead(lead) }}
-                                className="w-full text-left px-4 py-2.5 text-sm font-semibold text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors flex items-center gap-2"
-                              >
-                                <Edit2 className="w-4 h-4" /> {t('editLead', 'Редактировать заявку')}
-                              </button>
-                            )}
-                            {['new', 'open', 'active', 'paused'].includes(lead.status) && <>
-                              <button
-                                onClick={() => { setOpenMenuId(null); handlePauseResume(lead.id, lead.status) }}
-                                className="w-full text-left px-4 py-2.5 text-sm font-medium flex items-center gap-2 hover:bg-neutral-50 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300 transition-colors"
-                              >
-                                {lead.status === 'paused' ? <><Play className="w-4 h-4" /> {t('resume') || 'Возобновить'}</> : <><Pause className="w-4 h-4" /> {t('pause') || 'Приостановить'}</>}
-                              </button>
-                              <div className="h-px w-full bg-neutral-100 dark:bg-neutral-800 my-1" />
-                            </>}
-                            {['new', 'open', 'active', 'paused', 'closed'].includes(lead.status) && (
-                              <button
-                                onClick={() => { setOpenMenuId(null); handleDelete(lead.id) }}
-                                className="w-full text-left px-4 py-2.5 text-sm font-medium flex items-center gap-2 hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400 transition-colors"
-                              >
-                                <Trash2 className="w-4 h-4 text-red-500" /> <span className="text-red-500">{t('deleteLead', 'Удалить заявку')}</span>
-                              </button>
-                            )}
-                          </div>
-                        </>
-                      )}
-                    </div>
+                    {['new', 'open', 'active', 'paused', 'closed'].includes(lead.status) && (
+                      <div className="relative">
+                        <button
+                          onClick={() => setOpenMenuId(openMenuId === lead.id ? null : lead.id)}
+                          className="p-1.5 rounded-xl hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-400 hover:text-neutral-900 dark:hover:text-white transition-colors"
+                        >
+                          <MoreVertical className="w-5 h-5" />
+                        </button>
+                        {openMenuId === lead.id && (
+                          <>
+                            <div className="fixed inset-0 z-[5]" onClick={(e) => { e.stopPropagation(); setOpenMenuId(null); }} />
+                            <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl shadow-xl overflow-hidden z-10 py-1">
+                              {['new', 'open', 'active', 'paused'].includes(lead.status) && (
+                                <button
+                                  onClick={() => { setOpenMenuId(null); setEditingLead(lead) }}
+                                  className="w-full text-left px-4 py-2.5 text-sm font-semibold text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors flex items-center gap-2"
+                                >
+                                  <Edit2 className="w-4 h-4" /> {t('editLead', 'Редактировать заявку')}
+                                </button>
+                              )}
+                              {['new', 'open', 'active', 'paused'].includes(lead.status) && <>
+                                <button
+                                  onClick={() => { setOpenMenuId(null); handlePauseResume(lead.id, lead.status) }}
+                                  className="w-full text-left px-4 py-2.5 text-sm font-medium flex items-center gap-2 hover:bg-neutral-50 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300 transition-colors"
+                                >
+                                  {lead.status === 'paused' ? <><Play className="w-4 h-4" /> {t('resume') || 'Возобновить'}</> : <><Pause className="w-4 h-4" /> {t('pause') || 'Приостановить'}</>}
+                                </button>
+                                <div className="h-px w-full bg-neutral-100 dark:bg-neutral-800 my-1" />
+                              </>}
+                              {['new', 'open', 'active', 'paused', 'closed'].includes(lead.status) && (
+                                <button
+                                  onClick={() => { setOpenMenuId(null); handleDelete(lead.id) }}
+                                  className="w-full text-left px-4 py-2.5 text-sm font-medium flex items-center gap-2 hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400 transition-colors"
+                                >
+                                  <Trash2 className="w-4 h-4 text-red-500" /> <span className="text-red-500">{t('deleteLead', 'Удалить заявку')}</span>
+                                </button>
+                              )}
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
 
