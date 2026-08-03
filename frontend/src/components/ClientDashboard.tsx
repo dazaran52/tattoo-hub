@@ -3,7 +3,7 @@
 import Image from 'next/image'
 import { useState, useEffect } from 'react'
 import { Profile, supabase } from '@/lib/supabase'
-import { PlusCircle, Heart, Clock, X, MoreVertical, Edit2, Pause, Play, Trash2, MessageCircle, DollarSign, ShieldCheck, Loader2, Filter, XCircle, Palette, PersonStanding, Maximize2, Calendar } from 'lucide-react'
+import { PlusCircle, Heart, Clock, X, MoreVertical, Edit2, Pause, Play, Trash2, MessageCircle, DollarSign, ShieldCheck, Loader2, Filter, XCircle, Palette, PersonStanding, Maximize2, Calendar, MapPin } from 'lucide-react'
 import { LeadWizard } from '@/components/LeadWizard'
 import { CityMultiSelect } from '@/components/CityMultiSelect'
 import { ChatModal } from '@/components/ChatModal'
@@ -531,6 +531,12 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
                     <span className="px-3 py-1.5 bg-neutral-100 dark:bg-neutral-800/50 text-neutral-700 dark:text-neutral-300 text-xs font-semibold rounded-lg flex items-center gap-1.5 border border-neutral-200/50 dark:border-white/5">
                       <Maximize2 className="w-3.5 h-3.5" />
                       {lead.size}
+                    </span>
+                  )}
+                  {(lead.cities?.name_ru || lead.city_name) && (
+                    <span className="px-3 py-1.5 bg-neutral-100 dark:bg-neutral-800/50 text-neutral-700 dark:text-neutral-300 text-xs font-semibold rounded-lg flex items-center gap-1.5 border border-neutral-200/50 dark:border-white/5">
+                      <MapPin className="w-3.5 h-3.5" />
+                      {lead.cities?.name_ru || lead.city_name}
                     </span>
                   )}
                 </div>
