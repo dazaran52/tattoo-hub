@@ -1005,7 +1005,7 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
                   )}
                   {lead.size && (
                     <span className="px-2.5 py-1 bg-neutral-100 dark:bg-neutral-800/50 text-neutral-700 dark:text-neutral-300 text-[11px] font-semibold rounded-lg flex items-center gap-1.5 border border-neutral-200/50 dark:border-white/5">
-                      <Scale3d className="w-3 h-3" />
+                      <Maximize2 className="w-3 h-3" />
                       {lead.size}
                     </span>
                   )}

@@ -1,5 +1,5 @@
 import Image from 'next/image'
-import { X, Calendar, Palette, User, MessageCircle, Send, Phone, Scale3d, PersonStanding, MapPin, DollarSign } from 'lucide-react'
+import { X, Calendar, Palette, User, MessageCircle, Send, Phone, Scale3d, PersonStanding, MapPin, DollarSign, Maximize2 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useState } from 'react'
 import { toast } from 'react-hot-toast'
@@ -216,7 +216,7 @@ export function LeadDetailsModal({ isOpen, onClose, session, onAccept, onReject,
               {/* Size Badge */}
               {leadData.size && (
                 <div className="bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 px-4 py-3 rounded-2xl flex items-center gap-3 border border-amber-100 dark:border-amber-500/20">
-                  <Scale3d className="w-5 h-5 shrink-0" />
+                  <Maximize2 className="w-5 h-5 shrink-0" />
                   <div className="text-sm">
                     <span className="font-bold block">Размер</span>
                     {leadData.size}

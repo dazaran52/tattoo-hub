@@ -3,7 +3,7 @@ import { useState, useEffect, useRef, useMemo } from 'react'
 import { createPortal } from 'react-dom'
 import { motion, AnimatePresence, useMotionValue } from 'framer-motion'
 import { toast } from 'react-hot-toast'
-import { Clock, CheckCircle, Calendar, Flag, MessageCircle, UserPlus, LayoutGrid, CalendarDays, Search, Users, PlayCircle, Palette, Trash2, X, Pencil, Send, Phone, Settings2, MapPin, Maximize2, FileText, RefreshCw } from 'lucide-react'
+import { Clock, CheckCircle, Calendar, Flag, MessageCircle, UserPlus, LayoutGrid, CalendarDays, Search, Users, PlayCircle, Palette, Trash2, X, Pencil, Send, Phone, Settings2, MapPin, Maximize2, FileText, RefreshCw, PersonStanding } from 'lucide-react'
 import * as Icons from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { SessionModal } from '@/components/SessionModal'
@@ -803,7 +803,7 @@ export function CRMBoard({ initialViewLeadId, initialViewSessionId }: { initialV
                                   )}
                                   {item.body_place && (
                                     <div className="text-xs font-medium text-neutral-700 dark:text-neutral-300 flex items-center gap-1.5">
-                                      <MapPin className="w-3.5 h-3.5 text-neutral-400 shrink-0" />
+                                      <PersonStanding className="w-3.5 h-3.5 text-neutral-400 shrink-0" />
                                       {t('crmBoard.placeLabel')}: {item.body_place}
                                     </div>
                                   )}
