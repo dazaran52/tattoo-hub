@@ -1,5 +1,7 @@
-import React from 'react'
-import { X, Calendar, Palette, Maximize2, MapPin, DollarSign, Clock } from 'lucide-react'
+import React, { useState } from 'react'
+import Image from 'next/image'
+import { X, Calendar, Palette, Maximize2, MapPin, DollarSign, Clock, PersonStanding } from 'lucide-react'
+import { ImageViewerModal } from './ImageViewerModal'
 
 interface ClientLeadDetailsModalProps {
   isOpen: boolean
@@ -9,7 +11,17 @@ interface ClientLeadDetailsModalProps {
 }
 
 export function ClientLeadDetailsModal({ isOpen, onClose, lead, onNavigateToCRM }: ClientLeadDetailsModalProps) {
+  const [selectedImage, setSelectedImage] = useState<string | null>(null)
+
   if (!isOpen || !lead) return null
+
+  let images = lead.reference_images?.length ? lead.reference_images : lead.image_urls || []
+  if (typeof images === 'string') {
+    try { images = JSON.parse(images) } catch (e) { images = [images] }
+  }
+  if (!Array.isArray(images)) images = []
+
+  const cleanDescription = lead.description?.replace(/(?:Желаемое время|Бюджет|Город):\s*[^\n]*(?:\n|$)/gi, '').trim()
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm overflow-y-auto" onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
@@ -46,11 +58,23 @@ export function ClientLeadDetailsModal({ isOpen, onClose, lead, onNavigateToCRM 
 
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-500/10 flex items-center justify-center text-blue-600 dark:text-blue-400">
-              <MapPin className="w-5 h-5" />
+              <PersonStanding className="w-5 h-5" />
             </div>
             <div>
               <p className="text-xs text-neutral-500 font-bold uppercase">Место</p>
               <p className="font-semibold text-neutral-900 dark:text-white">{lead.body_place || 'Не указано'}</p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-orange-100 dark:bg-orange-500/10 flex items-center justify-center text-orange-600 dark:text-orange-400">
+              <MapPin className="w-5 h-5" />
+            </div>
+            <div>
+              <p className="text-xs text-neutral-500 font-bold uppercase">Город</p>
+              <p className="font-semibold text-neutral-900 dark:text-white">
+                {lead.cities?.name_ru || lead.city_name || 'Не указан'}
+              </p>
             </div>
           </div>
 
@@ -79,9 +103,26 @@ export function ClientLeadDetailsModal({ isOpen, onClose, lead, onNavigateToCRM 
           </div>
         </div>
 
-        {lead.description && (
+        {images.length > 0 && (
+          <div className="mt-6">
+            <p className="text-xs text-neutral-500 font-bold uppercase mb-3">Референсы ({images.length})</p>
+            <div className="flex gap-2 overflow-x-auto pb-2 snap-x">
+              {images.map((img: string, i: number) => (
+                <div 
+                  key={i} 
+                  className="w-24 h-24 shrink-0 rounded-xl overflow-hidden relative border border-neutral-200 dark:border-white/10 snap-start cursor-pointer group"
+                  onClick={() => setSelectedImage(img)}
+                >
+                  <Image src={img} alt="Reference" fill className="object-cover group-hover:scale-110 transition-transform" />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {cleanDescription && (
           <div className="mt-6 p-4 bg-neutral-50 dark:bg-neutral-800/50 rounded-2xl border border-neutral-100 dark:border-neutral-800">
-            <p className="text-sm text-neutral-700 dark:text-neutral-300 whitespace-pre-wrap">{lead.description}</p>
+            <p className="text-sm text-neutral-700 dark:text-neutral-300 whitespace-pre-wrap">{cleanDescription}</p>
           </div>
         )}
 
@@ -96,6 +137,12 @@ export function ClientLeadDetailsModal({ isOpen, onClose, lead, onNavigateToCRM 
           )}
         </div>
       </div>
+
+      <ImageViewerModal
+        isOpen={!!selectedImage}
+        onClose={() => setSelectedImage(null)}
+        imageUrl={selectedImage || ''}
+      />
     </div>
   )
 }
