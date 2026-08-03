@@ -940,7 +940,7 @@ async def get_client_leads(
                 master_info = accepted_masters[lead["id"]]
                 lead["status"] = "accepted" # Ensure status is accepted if proposal is accepted
 
-            if session and session.get("status") in ["appointment_set", "completed"]:
+            if session and session.get("status") in ["booked", "in_progress", "completed", "cancelled"]:
                  lead["status"] = session["status"]
 
             chat_id = None
