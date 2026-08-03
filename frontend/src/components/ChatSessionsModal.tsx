@@ -1,6 +1,6 @@
 import Image from 'next/image'
 import { useState, useEffect } from 'react'
-import { X } from 'lucide-react'
+import { X, DollarSign } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { LeadDetailsModal } from './LeadDetailsModal'
 
@@ -106,8 +106,8 @@ export function ChatSessionsModal({ chatId, clientInfo, userRole, onClose, onUpd
                         </div>
                       )}
                       {session.price && (
-                        <div className="px-2 py-1 bg-neutral-100 dark:bg-white/5 rounded-lg text-neutral-600 dark:text-neutral-300">
-                          💰 {session.price} Kč
+                        <div className="px-2 py-1 bg-neutral-100 dark:bg-white/5 rounded-lg text-neutral-600 dark:text-neutral-300 flex items-center gap-1">
+                          <DollarSign className="w-3.5 h-3.5" /> {session.price} Kč
                         </div>
                       )}
                     </div>

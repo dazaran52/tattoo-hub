@@ -29,6 +29,8 @@ export interface Lead {
   contacts: string
   client_id?: string
   client_last_seen?: string
+  creator_master_id?: string
+  creator_master_last_seen?: string
   unlock_price_local?: number
   master_currency?: string
   base_unlock_price_eur?: number
@@ -500,7 +502,11 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
 
   // Apply advanced filters
   if (onlineOnly) {
-    filteredLeads = filteredLeads.filter(l => l.client_id && isOnline(l.client_id, l.client_last_seen))
+    filteredLeads = filteredLeads.filter(l => {
+      if (l.client_id) return isOnline(l.client_id, l.client_last_seen)
+      if (l.creator_master_id) return isOnline(l.creator_master_id, l.creator_master_last_seen)
+      return false
+    })
   }
   if (selectedStyles.length > 0) {
     filteredLeads = filteredLeads.filter(l => l.style && selectedStyles.includes(l.style))

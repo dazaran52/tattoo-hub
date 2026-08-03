@@ -31,6 +31,8 @@ class LeadResponse(BaseModel):
     created_at: str | None = None
     client_id: str | None = None
     client_last_seen: str | None = None
+    creator_master_id: str | None = None
+    creator_master_last_seen: str | None = None
     country_id: str | None = None
     city_id: str | None = None
     style: str | None = None
@@ -353,6 +355,19 @@ def get_leads(
             lead_id = proposal["lead_id"]
             proposal_counts[lead_id] = proposal_counts.get(lead_id, 0) + 1
 
+        # Fetch last_seen for clients and creators
+        user_ids_to_fetch = set()
+        for lead in paginated_leads:
+            if lead.get("client_id"):
+                user_ids_to_fetch.add(lead["client_id"])
+            if lead.get("creator_master_id"):
+                user_ids_to_fetch.add(lead["creator_master_id"])
+        
+        last_seen_map = {}
+        if user_ids_to_fetch:
+            users_res = supabase.table("users").select("id, last_seen").in_("id", list(user_ids_to_fetch)).execute()
+            for u in (users_res.data or []):
+                last_seen_map[u["id"]] = u.get("last_seen")
 
         processed_leads = []
         for lead in paginated_leads:
@@ -397,6 +412,10 @@ def get_leads(
                 is_unlocked=is_unlocked,
                 image_urls=lead.get("image_urls") or [],
                 created_at=lead.get("created_at"),
+                client_id=lead.get("client_id"),
+                client_last_seen=last_seen_map.get(lead.get("client_id")),
+                creator_master_id=lead.get("creator_master_id"),
+                creator_master_last_seen=last_seen_map.get(lead.get("creator_master_id")),
                 country_id=lead.get("country_id") or (lead.get("cities", {}).get("country_id") if lead.get("cities") else None),
                 city_id=lead.get("city_id"),
                 style=lead.get("style"),

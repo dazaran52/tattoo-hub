@@ -1,5 +1,5 @@
 import React from 'react'
-import { X, Calendar, Palette, Scale3d, MapPin, DollarSign, Clock } from 'lucide-react'
+import { X, Calendar, Palette, Maximize2, MapPin, DollarSign, Clock } from 'lucide-react'
 
 interface ClientLeadDetailsModalProps {
   isOpen: boolean
@@ -26,7 +26,7 @@ export function ClientLeadDetailsModal({ isOpen, onClose, lead, onNavigateToCRM 
         <div className="space-y-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-primary-100 dark:bg-primary-500/10 flex items-center justify-center text-primary-600 dark:text-primary-400">
-              <Scale3d className="w-5 h-5" />
+              <Maximize2 className="w-5 h-5" />
             </div>
             <div>
               <p className="text-xs text-neutral-500 font-bold uppercase">Размер</p>

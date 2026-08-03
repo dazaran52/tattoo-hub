@@ -1,5 +1,5 @@
 import Image from 'next/image'
-import { X, Calendar, Palette, User, MessageCircle, Send, Phone, Scale3d, PersonStanding, MapPin, DollarSign, Maximize2 } from 'lucide-react'
+import { X, Calendar, Palette, User, MessageCircle, Send, Phone, PersonStanding, MapPin, DollarSign, Maximize2 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useState } from 'react'
 import { toast } from 'react-hot-toast'
@@ -86,16 +86,17 @@ export function LeadDetailsModal({ isOpen, onClose, session, onAccept, onReject,
   const styleText = session.style || (leadData.title && leadData.title !== 'Новая заявка на татуировку' ? leadData.title : 'Не выбрано')
 
   const cleanDescription = rawDescription
-    .replace(/Желаемое время:.*\n?/g, '')
-    .replace(/Бюджет:.*\n?/g, '')
-    .replace(/Город:.*\n?/g, '')
+    .replace(/(?:Желаемое время|Бюджет|Город):\s*[^\n]*(?:\n|$)/g, '')
     .trim()
 
   const clientName = session.master_clients?.name || 'Неизвестный клиент'
   const clientContact = session.master_clients?.phone || session.master_clients?.telegram || session.master_clients?.email || 'Скрыто'
 
-  const images = session.reference_images?.length ? session.reference_images : leadData.image_urls || []
-
+  let images = session.reference_images?.length ? session.reference_images : leadData.image_urls || []
+  if (typeof images === 'string') {
+    try { images = JSON.parse(images) } catch (e) { images = [images] }
+  }
+  if (!Array.isArray(images)) images = []
   return (
     <AnimatePresence>
       <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-black/60 backdrop-blur-md" onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>

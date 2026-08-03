@@ -193,7 +193,7 @@ export function ProposalModal({ isOpen, onClose, lead, onSuccess }: ProposalModa
                     Пополните баланс, чтобы предложить эту цену
                   </div>
                 )}
-                <p className="mt-2 text-xs text-neutral-500 text-center border-t border-neutral-200 dark:border-neutral-700 pt-2">Единая комиссия — 10% от цены предложения.</p>
+
               </div>
             )}
 

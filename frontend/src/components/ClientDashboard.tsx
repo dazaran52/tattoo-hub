@@ -3,7 +3,7 @@
 import Image from 'next/image'
 import { useState, useEffect } from 'react'
 import { Profile, supabase } from '@/lib/supabase'
-import { PlusCircle, Heart, Clock, X, MoreVertical, Edit2, Pause, Play, Trash2, MessageCircle, DollarSign, ShieldCheck, Loader2, Filter, XCircle, Palette, PersonStanding, Scale3d, Calendar } from 'lucide-react'
+import { PlusCircle, Heart, Clock, X, MoreVertical, Edit2, Pause, Play, Trash2, MessageCircle, DollarSign, ShieldCheck, Loader2, Filter, XCircle, Palette, PersonStanding, Maximize2, Calendar } from 'lucide-react'
 import { LeadWizard } from '@/components/LeadWizard'
 import { CityMultiSelect } from '@/components/CityMultiSelect'
 import { ChatModal } from '@/components/ChatModal'
@@ -529,7 +529,7 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
                   )}
                   {lead.size && (
                     <span className="px-3 py-1.5 bg-neutral-100 dark:bg-neutral-800/50 text-neutral-700 dark:text-neutral-300 text-xs font-semibold rounded-lg flex items-center gap-1.5 border border-neutral-200/50 dark:border-white/5">
-                      <Scale3d className="w-3.5 h-3.5" />
+                      <Maximize2 className="w-3.5 h-3.5" />
                       {lead.size}
                     </span>
                   )}
@@ -673,7 +673,7 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pt-5 border-t border-neutral-100 dark:border-neutral-800">
                   <div className="flex items-center gap-2">
                     <div className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-500/10 flex items-center justify-center text-lg">
-                      💰
+                      <DollarSign className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                     </div>
                     <div>
                       <p className="text-[10px] font-extrabold text-neutral-500 uppercase tracking-wider">{t('budgetLabel', 'Бюджет')}</p>
