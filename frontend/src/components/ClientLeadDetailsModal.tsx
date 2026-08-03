@@ -21,7 +21,7 @@ export function ClientLeadDetailsModal({ isOpen, onClose, lead, onNavigateToCRM 
   }
   if (!Array.isArray(images)) images = []
 
-  const cleanDescription = lead.description?.replace(/(?:Желаемое время|Бюджет|Город):\s*[^\n]*(?:\n|$)/gi, '').trim()
+  const cleanDescription = lead.description?.replace(/(?:Желаемое время|Бюджет|Город):[\s\S]*?(?=(?:Желаемое время|Бюджет|Город):|$)/gi, '').trim()
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm overflow-y-auto" onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>

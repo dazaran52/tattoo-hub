@@ -434,13 +434,13 @@ export function LeadWizard({ master, masterId, source = 'platform', isLoggedIn, 
         source: source
       }
 
-      const isDirectBooking = Boolean(resolvedMaster && source === 'personal')
       const targetMasterId = resolvedMaster?.id || masterId
-      const endpoint = isDirectBooking
+      const isDirectEndpoint = Boolean(targetMasterId)
+      const endpoint = isDirectEndpoint
         ? `/api/leads/client/direct/${targetMasterId}`
         : '/api/leads/client'
       const { data: { session } } = await supabase.auth.getSession()
-      if (isDirectBooking && !session) {
+      if (isDirectEndpoint && !session) {
         throw new Error(t('leadWizard.errorLoginRequired', 'Войдите в аккаунт, чтобы записаться к выбранному мастеру'))
       }
       if (!session) {

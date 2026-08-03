@@ -750,7 +750,7 @@ async def _create_client_lead(
                 print(f"Failed to ensure client user in public.users: {eu}")
             db_lead["client_id"] = client_id
 
-        if is_direct_booking and trusted_master_id:
+        if is_direct_booking and trusted_master_id and is_personal_booking:
             rpc_lead = {
                 key: (str(value) if isinstance(value, Decimal) else value)
                 for key, value in db_lead.items()
@@ -828,7 +828,35 @@ async def _create_client_lead(
 
                         background_tasks.add_task(send_submission_email)
 
-                    return {"success": True, "lead": new_lead, "login_link": login_link}
+                    chat_id = None
+                    if is_direct_booking and trusted_master_id and not is_personal_booking:
+                        chat_payload = {
+                            "lead_id": new_lead["id"],
+                            "master_id": trusted_master_id,
+                            "client_session_id": client_token,
+                            "client_id": client_id
+                        }
+                        # If client_id is None, Supabase might complain if not handled by unique constraint properly, but we'll insert what we have
+                        chat_res = await supabase.table("lead_chats").insert(chat_payload).execute()
+                        if chat_res.data:
+                            chat_id = chat_res.data[0]["id"]
+                            import json
+                            sys_content = f'[SYSTEM_CARD]: {json.dumps({"type": "new_lead", "lead_id": new_lead["id"], "title": "Новая заявка с маркетплейса"})}'
+                            await supabase.table("chat_messages").insert({
+                                "chat_id": chat_id,
+                                "sender_type": "system",
+                                "content": sys_content
+                            }).execute()
+
+                        background_tasks.add_task(
+                            send_push_notification,
+                            user_id=trusted_master_id,
+                            title="Новая заявка с маркетплейса! 🎯",
+                            body=f"Клиент {lead_data.name or 'Неизвестный'} выбрал вас на маркетплейсе.",
+                            url="/dashboard",
+                        )
+
+                    return {"success": True, "lead": new_lead, "login_link": login_link, "chat_id": chat_id}
                 if attempt == max_retries - 1:
                     raise HTTPException(status_code=400, detail="Failed to create lead")
             except Exception as e:
@@ -1162,6 +1190,33 @@ def create_proposal(
         }).execute()
         if not result.data:
             raise HTTPException(status_code=400, detail="Failed to submit proposal")
+        
+        is_targeted_marketplace = (lead_res.data.get("assigned_master_id") == current_user.user_id)
+        if is_targeted_marketplace:
+            accept_result = supabase.rpc("master_accept_targeted_lead", {
+                "p_lead_id": lead_id,
+                "p_master_id": current_user.user_id
+            }).execute()
+            
+            # Send notification to the client that the master accepted
+            client_id = lead_res.data.get("client_id")
+            if client_id:
+                background_tasks.add_task(
+                    send_push_notification,
+                    user_id=client_id,
+                    title="Мастер принял вашу заявку!",
+                    body=f"Мастер согласился на вашу заявку и предлагает сеанс за {proposal.price_offer} {proposal.currency or 'CZK'}.",
+                    url="/dashboard",
+                )
+            
+            return {
+                "success": True,
+                "proposal": result.data,
+                "chat_id": accept_result.data.get("chat_id") if accept_result.data else None,
+                "proposal_count": len(existing) if own else len(existing) + 1,
+                "max_proposals": MAX_PROPOSALS_PER_LEAD,
+            }
+
         return {
             "success": True,
             "proposal": result.data,

@@ -8,6 +8,7 @@ import { supabase, Profile } from '@/lib/supabase'
 import { LeadsFeed } from '@/components/LeadsFeed'
 import { CRMBoard } from '@/components/CRMBoard'
 import { MessagesList } from '@/components/MessagesList'
+import { ClientLeadDetailsModal } from '@/components/ClientLeadDetailsModal'
 import { toast } from 'react-hot-toast'
 import { ClientDashboard } from '@/components/ClientDashboard'
 import { PortfolioTab } from '@/components/PortfolioTab'
@@ -18,6 +19,8 @@ export default function DashboardPage() {
   const router = useRouter()
   const [profile, setProfile] = useState<Profile | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [isClientModalOpen, setIsClientModalOpen] = useState(false)
+  const [messagesViewLead, setMessagesViewLead] = useState<any>(null)
   const { t, lang: language } = useLanguage()
   const [currentSession, setCurrentSession] = useState<any>(null)
   const [activeTab, setActiveTab] = useState<'feed' | 'crm' | 'messages' | 'portfolio'>('crm')
@@ -323,18 +326,23 @@ export default function DashboardPage() {
           {activeTab === 'crm' && <CRMBoard initialViewLeadId={viewLeadId} initialViewSessionId={viewSessionId} />}
           {activeTab === 'portfolio' && <PortfolioTab profile={profile} />}
           {activeTab === 'messages' && (
-            <MessagesList 
-              onViewLead={(lead) => {
-                setViewLeadId(lead.id)
-                setViewSessionId(null)
-                setActiveTab('crm')
-              }}
-              onViewSession={(sessionId) => {
-                setViewSessionId(sessionId)
-                setViewLeadId(null)
-                setActiveTab('crm')
-              }}
-            />
+            <>
+              <MessagesList 
+                onViewLead={(lead) => {
+                  setMessagesViewLead(lead)
+                }}
+                onViewSession={(sessionId) => {
+                  setViewSessionId(sessionId)
+                  setViewLeadId(null)
+                  setActiveTab('crm')
+                }}
+              />
+              <ClientLeadDetailsModal
+                isOpen={!!messagesViewLead}
+                onClose={() => setMessagesViewLead(null)}
+                lead={messagesViewLead}
+              />
+            </>
           )}
         </>
         )}

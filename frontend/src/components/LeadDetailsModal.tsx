@@ -78,15 +78,15 @@ export function LeadDetailsModal({ isOpen, onClose, session, onAccept, onReject,
   
   // Parse description to extract embedded budget/city if present
   const rawDescription = session.notes || leadData.description || 'Клиент не оставил подробного описания.'
-  const parsedBudgetMatch = rawDescription.match(/Бюджет:\s*(.+?)(?=\n|$)/)
-  const parsedCityMatch = rawDescription.match(/Город:\s*(.+?)(?=\n|$)/)
+  const parsedBudgetMatch = rawDescription.match(/Бюджет:\s*([\s\S]*?)(?=(?:Желаемое время|Бюджет|Город):|$)/i)
+  const parsedCityMatch = rawDescription.match(/Город:\s*([\s\S]*?)(?=(?:Желаемое время|Бюджет|Город):|$)/i)
   
   const budgetText = leadData.display_budget || leadData.client_budget ? `${leadData.client_budget} ${leadData.client_currency || ''}` : (parsedBudgetMatch ? parsedBudgetMatch[1] : null)
   const cityText = leadData.city_name || (parsedCityMatch ? parsedCityMatch[1] : null)
   const styleText = session.style || (leadData.title && leadData.title !== 'Новая заявка на татуировку' ? leadData.title : 'Не выбрано')
 
   const cleanDescription = rawDescription
-    .replace(/(?:Желаемое время|Бюджет|Город):\s*[^\n]*(?:\n|$)/g, '')
+    .replace(/(?:Желаемое время|Бюджет|Город):[\s\S]*?(?=(?:Желаемое время|Бюджет|Город):|$)/gi, '')
     .trim()
 
   const clientName = session.master_clients?.name || 'Неизвестный клиент'

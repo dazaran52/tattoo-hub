@@ -125,8 +125,13 @@ export function ProposalModal({ isOpen, onClose, lead, onSuccess }: ProposalModa
         throw new Error(responseData.detail || 'Не удалось отправить предложение')
       }
 
-      toast.success('Предложение отправлено бесплатно')
-      onSuccess()
+      if (responseData.chat_id) {
+        toast.success('Заявка принята, вы можете начать общение!')
+        window.location.href = `/dashboard?tab=messages&chat_id=${responseData.chat_id}`
+      } else {
+        toast.success('Предложение отправлено бесплатно')
+        onSuccess()
+      }
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Ошибка отправки')
     } finally {
