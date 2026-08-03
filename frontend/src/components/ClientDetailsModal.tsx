@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { 
   X, Calendar, Phone, Mail, FileText, Plus, MessageCircle, PlayCircle, 
   Trash2, Edit3, CheckCircle, Share2, Lock, Palette, MapPin, DollarSign, 
-  PersonStanding, Maximize2, Send, ExternalLink, ShieldAlert, Sparkles 
+  PersonStanding, Maximize2, Send, ExternalLink, ShieldAlert, Sparkles, Eye 
 } from 'lucide-react'
 import { CRMClient } from './ClientsDatabase'
 import { ChatModal } from './ChatModal'
@@ -455,17 +455,26 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId: 
                                 </button>
                               )}
 
+                              {onSessionClick && (
+                                <button 
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    onSessionClick({ ...s, master_clients: { id: client.id, name: client.name } });
+                                  }} 
+                                  className="p-2 text-neutral-400 hover:text-sky-500 hover:bg-sky-500/10 rounded-lg transition-colors" 
+                                  title="Детали заявки"
+                                >
+                                  <Eye className="w-4 h-4" />
+                                </button>
+                              )}
+
                               <button 
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  if (onSessionClick) {
-                                    onSessionClick({ ...s, master_clients: { id: client.id, name: client.name } });
-                                  } else {
-                                    setSessionToEdit({ ...s, master_clients: { id: client.id, name: client.name } });
-                                  }
+                                  setSessionToEdit({ ...s, master_clients: { id: client.id, name: client.name } });
                                 }} 
                                 className="p-2 text-neutral-400 hover:text-primary-500 hover:bg-primary-500/10 rounded-lg transition-colors" 
-                                title="Редактировать"
+                                title="Редактировать сеанс"
                               >
                                 <Edit3 className="w-4 h-4" />
                               </button>

@@ -164,7 +164,7 @@ export function LeadAcceptWizardModal({ isOpen, onClose, onSuccess, session, all
   const clientPrefTime = leadData.description?.match(/Желаемое время:\s*(.+)/)?.[1] || 'Не указано'
 
   return (
-    <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
+    <div className="fixed inset-0 z-[130] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
       <div className={`bg-white dark:bg-neutral-900 rounded-3xl w-full shadow-2xl overflow-hidden my-8 transform transition-all duration-300 ${step === 1 ? 'max-w-md' : 'max-w-3xl'}`}>
         {/* Header */}
         <div className="flex justify-between items-center p-6 border-b border-neutral-200 dark:border-neutral-800">
