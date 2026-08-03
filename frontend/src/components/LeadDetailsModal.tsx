@@ -73,26 +73,26 @@ export function LeadDetailsModal({ isOpen, onClose, session, onAccept, onReject,
 
   if (!isOpen || !session) return null
 
-  const leadData = session.master_clients?.leads || {}
+  const leadData = session.master_clients?.leads || session.leads || session || {}
   const isClient = session.status === 'client'
   
   // Parse description to extract embedded budget/city if present
-  const rawDescription = session.notes || leadData.description || 'Клиент не оставил подробного описания.'
+  const rawDescription = session.notes || leadData.description || session.description || 'Клиент не оставил подробного описания.'
   const parsedBudgetMatch = rawDescription.match(/Бюджет:\s*([\s\S]*?)(?=(?:Желаемое время|Бюджет|Город):|$)/i)
   const parsedCityMatch = rawDescription.match(/Город:\s*([\s\S]*?)(?=(?:Желаемое время|Бюджет|Город):|$)/i)
   
-  const budgetText = leadData.display_budget || leadData.client_budget ? `${leadData.client_budget} ${leadData.client_currency || ''}` : (parsedBudgetMatch ? parsedBudgetMatch[1] : null)
-  const cityText = leadData.city_name || (parsedCityMatch ? parsedCityMatch[1] : null)
-  const styleText = session.style || (leadData.title && leadData.title !== 'Новая заявка на татуировку' ? leadData.title : 'Не выбрано')
+  const budgetText = leadData.display_budget || (leadData.client_budget ? `${leadData.client_budget} ${leadData.client_currency || ''}` : (leadData.is_negotiable_budget ? 'Договорная цена' : (parsedBudgetMatch ? parsedBudgetMatch[1] : null)))
+  const cityText = leadData.city_name || leadData.cities?.name_ru || session.city_name || (parsedCityMatch ? parsedCityMatch[1] : null)
+  const styleText = session.style || leadData.style || (leadData.title && leadData.title !== 'Новая заявка на татуировку' ? leadData.title : 'Не выбрано')
 
   const cleanDescription = rawDescription
     .replace(/(?:Желаемое время|Бюджет|Город):[\s\S]*?(?=(?:Желаемое время|Бюджет|Город):|$)/gi, '')
     .trim()
 
-  const clientName = session.master_clients?.name || 'Неизвестный клиент'
-  const clientContact = session.master_clients?.phone || session.master_clients?.telegram || session.master_clients?.email || 'Скрыто'
+  const clientName = session.master_clients?.name || session.client_name || session.name || 'Неизвестный клиент'
+  const clientContact = session.master_clients?.phone || session.master_clients?.telegram || session.master_clients?.email || session.contact || session.email || 'Скрыто'
 
-  let images = session.reference_images?.length ? session.reference_images : leadData.image_urls || []
+  let images = session.reference_images?.length ? session.reference_images : (leadData.image_urls || session.image_urls || [])
   if (typeof images === 'string') {
     try { images = JSON.parse(images) } catch (e) { images = [images] }
   }
@@ -204,23 +204,23 @@ export function LeadDetailsModal({ isOpen, onClose, session, onAccept, onReject,
               )}
 
               {/* Place Badge */}
-              {leadData.body_place && (
+              {(leadData.body_place || session.body_place) && (
                 <div className="bg-sky-50 dark:bg-sky-900/20 text-sky-700 dark:text-sky-400 px-4 py-3 rounded-2xl flex items-center gap-3 border border-sky-100 dark:border-sky-500/20">
                   <PersonStanding className="w-5 h-5 shrink-0" />
                   <div className="text-sm">
                     <span className="font-bold block">Место</span>
-                    {leadData.body_place}
+                    {leadData.body_place || session.body_place}
                   </div>
                 </div>
               )}
 
               {/* Size Badge */}
-              {leadData.size && (
+              {(leadData.size || session.size) && (
                 <div className="bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 px-4 py-3 rounded-2xl flex items-center gap-3 border border-amber-100 dark:border-amber-500/20">
                   <Maximize2 className="w-5 h-5 shrink-0" />
                   <div className="text-sm">
                     <span className="font-bold block">Размер</span>
-                    {leadData.size}
+                    {leadData.size || session.size}
                   </div>
                 </div>
               )}

@@ -8,7 +8,7 @@ import { supabase, Profile } from '@/lib/supabase'
 import { LeadsFeed } from '@/components/LeadsFeed'
 import { CRMBoard } from '@/components/CRMBoard'
 import { MessagesList } from '@/components/MessagesList'
-import { ClientLeadDetailsModal } from '@/components/ClientLeadDetailsModal'
+import { LeadDetailsModal } from '@/components/LeadDetailsModal'
 import { toast } from 'react-hot-toast'
 import { ClientDashboard } from '@/components/ClientDashboard'
 import { PortfolioTab } from '@/components/PortfolioTab'
@@ -328,8 +328,28 @@ export default function DashboardPage() {
           {activeTab === 'messages' && (
             <>
               <MessagesList 
-                onViewLead={(lead) => {
-                  setMessagesViewLead(lead)
+                onViewLead={(lead, chat) => {
+                  const sessionObj = {
+                    id: chat?.client_session_id || lead?.id,
+                    lead_id: lead?.id,
+                    status: chat?.kanban_status || lead?.status || 'new',
+                    style: lead?.style || lead?.title,
+                    body_place: lead?.body_place,
+                    size: lead?.size,
+                    notes: lead?.description,
+                    session_date: lead?.session_date,
+                    reference_images: lead?.image_urls,
+                    master_clients: {
+                      id: chat?.id,
+                      lead_id: lead?.id,
+                      name: chat?.other_user_name || lead?.client_name || 'Неизвестный клиент',
+                      email: chat?.other_user_email || lead?.email,
+                      phone: chat?.other_user_phone || lead?.contact,
+                      telegram: chat?.other_user_telegram,
+                      leads: lead
+                    }
+                  }
+                  setMessagesViewLead(sessionObj)
                 }}
                 onViewSession={(sessionId) => {
                   setViewSessionId(sessionId)
@@ -337,10 +357,53 @@ export default function DashboardPage() {
                   setActiveTab('crm')
                 }}
               />
-              <ClientLeadDetailsModal
+              <LeadDetailsModal
                 isOpen={!!messagesViewLead}
                 onClose={() => setMessagesViewLead(null)}
-                lead={messagesViewLead}
+                session={messagesViewLead}
+                onAccept={async () => {
+                  try {
+                    const sessionId = messagesViewLead?.id
+                    if (sessionId) {
+                      const { data: { session: authSession } } = await supabase.auth.getSession()
+                      await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/crm/sessions/${sessionId}`, {
+                        method: 'PUT',
+                        headers: {
+                          'Authorization': `Bearer ${authSession?.access_token}`,
+                          'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ status: 'in_progress' })
+                      })
+                      toast.success('Заявка принята в работу!')
+                    }
+                  } catch (e) {
+                    console.error(e)
+                  } finally {
+                    setMessagesViewLead(null)
+                  }
+                }}
+                onReject={async (reason) => {
+                  try {
+                    const sessionId = messagesViewLead?.id
+                    if (sessionId) {
+                      const { data: { session: authSession } } = await supabase.auth.getSession()
+                      await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/crm/sessions/${sessionId}`, {
+                        method: 'PUT',
+                        headers: {
+                          'Authorization': `Bearer ${authSession?.access_token}`,
+                          'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ status: 'cancelled', reject_reason: reason })
+                      })
+                      toast.success('Заявка отклонена')
+                    }
+                  } catch (e) {
+                    console.error(e)
+                  } finally {
+                    setMessagesViewLead(null)
+                  }
+                }}
+                onUpdate={() => setMessagesViewLead(null)}
               />
             </>
           )}

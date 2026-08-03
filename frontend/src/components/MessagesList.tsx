@@ -59,7 +59,7 @@ interface ChatPreview {
 
 interface MessagesListProps {
   userRole?: 'client' | 'master'
-  onViewLead?: (lead: any) => void
+  onViewLead?: (lead: any, chat?: any) => void
   onViewSession?: (chatId: string) => void
 }
 
@@ -664,7 +664,7 @@ export function MessagesList({ userRole = 'master', onViewLead, onViewSession }:
                                 </p>
                                 {onViewLead && selectedChat?.leads && (
                                   <button
-                                    onClick={() => onViewLead(selectedChat.leads)}
+                                    onClick={() => onViewLead(selectedChat.leads, selectedChat)}
                                     className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-bold rounded-xl transition-colors w-full"
                                   >
                                     Посмотреть
