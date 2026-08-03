@@ -14,6 +14,7 @@ import { ClientDashboard } from '@/components/ClientDashboard'
 import { PortfolioTab } from '@/components/PortfolioTab'
 import { useLanguage } from '@/i18n/LanguageContext'
 import { MessageCircle, LayoutDashboard, Share2, Link as LinkIcon, Image as ImageIcon, ShoppingBag } from 'lucide-react'
+import { BottomNav } from '@/components/BottomNav'
 
 export default function DashboardPage() {
   const router = useRouter()
@@ -410,6 +411,14 @@ export default function DashboardPage() {
         </>
         )}
       </main>
+      {profile && (
+        <BottomNav 
+          activeTab={activeTab} 
+          setActiveTab={setActiveTab} 
+          unreadMessagesCount={unreadMessages} 
+          userRole={profile.role as 'master' | 'client'} 
+        />
+      )}
     </div>
   )
 }

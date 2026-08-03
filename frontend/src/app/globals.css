@@ -22,46 +22,61 @@
   .text-balance {
     text-wrap: balance;
   }
-}
 
-/* Hide default cursor on desktop devices to show only custom cursor, except in form inputs */
-@media (pointer: fine) {
-  *:not(input, textarea, select, [contenteditable], [contenteditable="true"]) {
-    cursor: none !important;
+  /* Safe Area Helpers for iOS & Mobile PWA */
+  .pt-safe {
+    padding-top: env(safe-area-inset-top, 0px);
   }
-  input, textarea, [contenteditable], [contenteditable="true"] {
-    cursor: text !important;
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom, 20px);
   }
-  select {
-    cursor: pointer !important;
+  .mb-safe {
+    margin-bottom: env(safe-area-inset-bottom, 20px);
+  }
+
+  /* Glassmorphism & Cyber Neon Glows */
+  .glass-card {
+    @apply bg-neutral-900/60 backdrop-blur-xl border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.37)];
+  }
+  .glass-card-hover {
+    @apply hover:border-primary-500/30 hover:shadow-[0_8px_32px_rgba(168,85,247,0.15)] transition-all duration-300;
+  }
+  .glass-dock {
+    @apply bg-neutral-900/80 backdrop-blur-2xl border border-white/15 shadow-[0_10px_38px_rgba(0,0,0,0.5)];
+  }
+  .glow-primary {
+    box-shadow: 0 0 20px rgba(168, 85, 247, 0.35);
+  }
+  .glow-emerald {
+    box-shadow: 0 0 20px rgba(16, 185, 129, 0.35);
   }
 }
 
 /* Custom scrollbar for dark theme */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  @apply bg-neutral-900;
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-neutral-700 rounded-full;
+  @apply bg-neutral-800 rounded-full hover:bg-neutral-700 transition-colors;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  @apply bg-neutral-600;
-}
-
-/* Smooth scrolling */
+/* Smooth scrolling & Overscroll physics */
 html {
   scroll-behavior: smooth;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  overscroll-behavior-y: none;
 }
 
 /* Focus visible styles */
 :focus-visible {
-  @apply outline outline-2 outline-offset-2 outline-neutral-400;
+  @apply outline outline-2 outline-offset-2 outline-primary-500;
 }
-.pb-safe { padding-bottom: env(safe-area-inset-bottom, 20px); }
