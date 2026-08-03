@@ -647,7 +647,7 @@ export function CRMBoard({ initialViewLeadId, initialViewSessionId }: { initialV
                 return (
                   <div 
                     key={col.id} 
-                    className="flex-1 min-w-[280px] max-w-[300px] bg-neutral-50 dark:bg-neutral-900/50 rounded-3xl border border-neutral-200 dark:border-white/5 p-4 flex flex-col h-[75vh]"
+                    className="flex-1 min-w-[280px] max-w-[300px] glass-card rounded-3xl border border-white/10 p-4 flex flex-col h-[75vh] shadow-[0_10px_30px_rgba(0,0,0,0.3)]"
                     onDragOver={(e) => handleDragOver(e, 'none')}
                     onDrop={(e) => handleDrop(e, col.id)}
                   >

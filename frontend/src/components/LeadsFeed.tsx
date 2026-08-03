@@ -859,7 +859,7 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
                 exit={{ opacity: 0, scale: 0.9 }}
                 transition={{ duration: 0.3, delay: index * 0.05 }}
                 key={lead.id} 
-                className="group relative bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 overflow-hidden flex flex-col transition-all hover:shadow-2xl hover:border-neutral-300 dark:hover:border-neutral-600"
+                className="group relative glass-card glass-card-hover rounded-3xl border border-white/10 overflow-hidden flex flex-col transition-all duration-300 shadow-[0_10px_30px_rgba(0,0,0,0.4)]"
               >
               {isAdmin && (
                 <div className="absolute top-2 right-2 z-20 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
