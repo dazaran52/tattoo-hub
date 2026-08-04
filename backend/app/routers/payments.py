@@ -18,12 +18,29 @@ from app.config import get_settings
 
 class StripeCheckoutRequest(BaseModel):
     package_id: str
+    custom_amount: Optional[float] = None
     
 PACKAGES = {
-    "starter": {"name": "Starter Balance", "amounts": {"CZK": 300, "EUR": 12, "USD": 13}},
-    "standard": {"name": "Standard Balance", "amounts": {"CZK": 500, "EUR": 20, "USD": 22}},
-    "pro": {"name": "Pro Balance", "amounts": {"CZK": 1000, "EUR": 40, "USD": 44}},
-    "vip": {"name": "VIP Balance", "amounts": {"CZK": 2000, "EUR": 80, "USD": 88}},
+    "starter": {
+        "name": "Starter Balance",
+        "amounts": {"CZK": 300, "EUR": 12, "USD": 13},
+        "credit_amounts": {"CZK": 300, "EUR": 12, "USD": 13},
+    },
+    "standard": {
+        "name": "Standard Balance (+10% Bonus)",
+        "amounts": {"CZK": 500, "EUR": 20, "USD": 22},
+        "credit_amounts": {"CZK": 550, "EUR": 22, "USD": 24},
+    },
+    "pro": {
+        "name": "Pro Balance (+20% Bonus)",
+        "amounts": {"CZK": 1000, "EUR": 40, "USD": 44},
+        "credit_amounts": {"CZK": 1200, "EUR": 48, "USD": 53},
+    },
+    "vip": {
+        "name": "VIP Balance (+30% Bonus)",
+        "amounts": {"CZK": 2000, "EUR": 80, "USD": 88},
+        "credit_amounts": {"CZK": 2600, "EUR": 104, "USD": 114},
+    },
 }
 
 @router.post("/stripe/create-checkout-session")
@@ -37,42 +54,50 @@ async def create_stripe_checkout_session(
         raise HTTPException(status_code=500, detail="Stripe is not configured")
         
     stripe.api_key = settings.STRIPE_SECRET_KEY
-    
-    pkg = PACKAGES.get(req.package_id)
-    if not pkg:
-        raise HTTPException(status_code=400, detail="Invalid package ID")
 
     user_res = supabase.table("users").select("currency").eq("id", current_user.user_id).execute()
     if not user_res.data:
         raise HTTPException(status_code=404, detail="USER_NOT_FOUND")
     currency = (user_res.data[0].get("currency") or "CZK").upper()
-    amount = pkg["amounts"].get(currency)
-    if amount is None:
-        raise HTTPException(status_code=400, detail="UNSUPPORTED_WALLET_CURRENCY")
+
+    min_custom_amounts = {"CZK": 2000, "EUR": 80, "USD": 88}
+
+    if req.package_id == "custom":
+        if not req.custom_amount or req.custom_amount < min_custom_amounts.get(currency, 2000):
+            raise HTTPException(
+                status_code=400, 
+                detail=f"Custom amount must be at least {min_custom_amounts.get(currency, 2000)} {currency}"
+            )
+        amount_to_charge = float(req.custom_amount)
+        credit_amount = round(amount_to_charge * 1.30, 2) # +30% VIP Bonus
+        product_name = f"Custom VIP Balance ({amount_to_charge} {currency} + 30% Bonus)"
+    else:
+        pkg = PACKAGES.get(req.package_id)
+        if not pkg:
+            raise HTTPException(status_code=400, detail="Invalid package ID")
+        amount_to_charge = pkg["amounts"].get(currency)
+        credit_amount = pkg["credit_amounts"].get(currency)
+        product_name = pkg["name"]
+        if amount_to_charge is None or credit_amount is None:
+            raise HTTPException(status_code=400, detail="UNSUPPORTED_WALLET_CURRENCY")
         
-    # Assuming frontend runs on same domain or we pass it via headers.
-    # We can use a default or allow frontend to pass success_url, but for safety:
-    # We will hardcode the redirect logic or get it from headers.
     success_url = "https://tattoo-hub.xyz/dashboard?payment_success=true"
     cancel_url = "https://tattoo-hub.xyz/top-up"
-    
-    # In development, we might want localhost. We can use request origin if possible.
-    # But tattoo-hub.xyz is fine for production. Let's make it flexible.
     
     try:
         checkout_session = stripe.checkout.Session.create(
             customer_email=current_user.email,
             submit_type='pay',
             custom_text={
-                'submit': {'message': 'Спасибо, что выбираете Tattoo HUB! Средства будут зачислены мгновенно.'}
+                'submit': {'message': f'Зачисление {credit_amount} {currency} на баланс Tattoo HUB!'}
             },
             line_items=[
                 {
                     'price_data': {
                         'currency': currency.lower(),
-                        'unit_amount': amount * 100, # Stripe uses minor units
+                        'unit_amount': int(round(amount_to_charge * 100)),
                         'product_data': {
-                            'name': pkg['name'],
+                            'name': product_name,
                         },
                     },
                     'quantity': 1,
@@ -83,9 +108,10 @@ async def create_stripe_checkout_session(
             cancel_url=cancel_url,
             client_reference_id=current_user.user_id,
             metadata={
-                'wallet_currency': currency
+                'wallet_currency': currency,
+                'package_id': req.package_id,
+                'credit_amount': str(credit_amount),
             }
-        )
         return {"checkout_url": checkout_session.url}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

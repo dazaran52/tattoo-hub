@@ -49,11 +49,18 @@ async def stripe_webhook(
         if session.get('payment_status') != 'paid':
             return {"status": "ignored", "reason": "Payment is not paid"}
 
-        amount_paid = Decimal(amount_total) / Decimal(100)
+        meta = session.get('metadata') or {}
+        meta_credit = meta.get('credit_amount')
+        
+        if meta_credit:
+            credit_amount = Decimal(meta_credit)
+        else:
+            credit_amount = Decimal(amount_total) / Decimal(100)
+
         currency = session.get('currency', 'czk').upper()
         fulfillment = supabase.rpc("credit_stripe_balance", {
             "p_user_id": user_id,
-            "p_amount": format(amount_paid, 'f'),
+            "p_amount": format(credit_amount, 'f'),
             "p_currency": currency,
             "p_provider_tx_id": f"stripe_{session_id}",
         }).execute()
@@ -64,8 +71,8 @@ async def stripe_webhook(
         # Add notification
         supabase.table("notifications").insert({
             "user_id": user_id,
-            "title": "Баланс пополнен",
-            "message": f"Ваш баланс успешно пополнен на {amount_paid} {currency} через Stripe.",
+            "title": "Баланс пополнен 💎",
+            "message": f"Ваш баланс успешно пополнен на {credit_amount} {currency} через Stripe.",
             "type": "payment"
         }).execute()
         
