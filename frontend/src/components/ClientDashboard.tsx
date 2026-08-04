@@ -17,9 +17,25 @@ import { OnlineIndicator } from '@/components/OnlineIndicator'
 import { usePresence } from '@/components/PresenceContext'
 import { VerifiedMasterBadge } from '@/components/PublicMasterTrust'
 
-export function ClientDashboard({ profile }: { profile: Profile }) {
+export function ClientDashboard({ 
+  profile,
+  activeTab: externalActiveTab,
+  setActiveTab: externalSetActiveTab
+}: { 
+  profile: Profile
+  activeTab?: string
+  setActiveTab?: (tab: any) => void
+}) {
   const { t } = useLanguage()
-  const [activeTab, setActiveTab] = useState<'leads' | 'top_masters' | 'messages'>('leads')
+  const [internalActiveTab, setInternalActiveTab] = useState<'leads' | 'top_masters' | 'messages'>('leads')
+  
+  const activeTab = (externalActiveTab === 'leads' || externalActiveTab === 'top_masters' || externalActiveTab === 'messages') 
+    ? (externalActiveTab as 'leads' | 'top_masters' | 'messages') 
+    : internalActiveTab
+  const setActiveTab = (tab: any) => {
+    setInternalActiveTab(tab)
+    if (externalSetActiveTab) externalSetActiveTab(tab)
+  }
   const [masterTab, setMasterTab] = useState<'rating' | 'favorites'>('rating')
   const [favoriteMasterIds, setFavoriteMasterIds] = useState<Set<string>>(new Set())
   const [unreadMessages, setUnreadMessages] = useState(0)
@@ -343,7 +359,7 @@ export function ClientDashboard({ profile }: { profile: Profile }) {
           </p>
         </div>
 
-        <div className="mt-4 md:mt-0 flex p-1 bg-neutral-100 dark:bg-neutral-800 rounded-lg">
+        <div className="mt-4 md:mt-0 hidden md:flex p-1 bg-neutral-100 dark:bg-neutral-800 rounded-lg">
           <button
             onClick={() => setActiveTab('leads')}
             className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${activeTab === 'leads'

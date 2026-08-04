@@ -1,10 +1,10 @@
 import { motion } from 'framer-motion'
-import { LayoutDashboard, ShoppingBag, ImageIcon, MessageCircle } from 'lucide-react'
+import { LayoutDashboard, ShoppingBag, ImageIcon, MessageCircle, FileText, Users } from 'lucide-react'
 import { useLanguage } from '@/i18n/LanguageContext'
 
 interface BottomNavProps {
-  activeTab: 'crm' | 'feed' | 'portfolio' | 'messages'
-  setActiveTab: (tab: 'crm' | 'feed' | 'portfolio' | 'messages') => void
+  activeTab: string
+  setActiveTab: (tab: any) => void
   unreadMessagesCount?: number
   userRole?: 'master' | 'client'
 }
@@ -12,14 +12,18 @@ interface BottomNavProps {
 export function BottomNav({ activeTab, setActiveTab, unreadMessagesCount = 0, userRole = 'master' }: BottomNavProps) {
   const { t } = useLanguage()
 
-  const tabs = [
-    ...(userRole === 'master' ? [{ id: 'crm' as const, label: 'CRM', icon: LayoutDashboard }] : []),
-    { id: 'feed' as const, label: 'Маркетплейс', icon: ShoppingBag },
-    { id: 'portfolio' as const, label: 'Портфолио', icon: ImageIcon },
-    { id: 'messages' as const, label: t('messages') || 'Сообщения', icon: MessageCircle, badge: unreadMessagesCount },
+  const tabs = userRole === 'client' ? [
+    { id: 'leads', label: 'Мои заявки', icon: FileText },
+    { id: 'top_masters', label: 'Мастера', icon: Users },
+    { id: 'messages', label: t('messages') || 'Сообщения', icon: MessageCircle, badge: unreadMessagesCount },
+  ] : [
+    { id: 'crm', label: 'CRM', icon: LayoutDashboard },
+    { id: 'feed', label: 'Маркетплейс', icon: ShoppingBag },
+    { id: 'portfolio', label: 'Портфолио', icon: ImageIcon },
+    { id: 'messages', label: t('messages') || 'Сообщения', icon: MessageCircle, badge: unreadMessagesCount },
   ]
 
-  const handleTabClick = (tabId: 'crm' | 'feed' | 'portfolio' | 'messages') => {
+  const handleTabClick = (tabId: string) => {
     try {
       if (typeof window !== 'undefined' && window.navigator && typeof window.navigator.vibrate === 'function') {
         window.navigator.vibrate(10)
