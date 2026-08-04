@@ -46,6 +46,7 @@ class AdminUserResponse(BaseModel):
     is_admin: bool
     balance: float
     credits: int
+    currency: str = "CZK"
     telegram_id: int | None = None
     telegram_username: str | None = None
     whatsapp_number: str | None = None
@@ -158,6 +159,7 @@ async def get_users(
                 is_admin=u.get("is_admin") or False,
                 balance=float(u.get("balance") or 0.0) if float(u.get("balance") or 0.0) > 0 else float(u.get("credits") or 0),
                 credits=u.get("credits") or 0,
+                currency=u.get("currency") or "CZK",
                 created_at=u["created_at"],
                 portfolio_url=u.get("portfolio_url"),
                 role=u.get("role"),

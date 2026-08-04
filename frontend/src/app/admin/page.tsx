@@ -29,6 +29,7 @@ interface AdminUserResponse {
   is_admin: boolean
   balance: number
   credits: number
+  currency?: string
   created_at: string
   portfolio_url?: string
   role?: string
@@ -488,6 +489,7 @@ export default function AdminPage() {
                   <tr>
                     <th className="px-6 py-4 font-bold uppercase tracking-wider text-xs">{t('user')}</th>
                     <th className="px-6 py-4 font-bold uppercase tracking-wider text-xs">Баланс</th>
+                    <th className="px-6 py-4 font-bold uppercase tracking-wider text-xs">Валюта</th>
                     <th className="px-6 py-4 font-bold uppercase tracking-wider text-xs">{t('created')}</th>
                     <th className="px-6 py-4 font-bold uppercase tracking-wider text-xs">Status</th>
                     <th className="px-6 py-4 font-bold uppercase tracking-wider text-xs text-right">{t('actions')}</th>
@@ -520,13 +522,17 @@ export default function AdminPage() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-500 dark:text-neutral-400">
                         {(user.role === 'master' || user.is_admin || user.is_verified_master) ? (
-                          <>
-                            <div className="font-bold text-accent-600 dark:text-accent-400">{user.credits} CR</div>
-                            <div className="text-xs text-neutral-500 dark:text-neutral-400">{user.balance} CZK</div>
-                          </>
+                          <div className="font-extrabold text-accent-600 dark:text-accent-400 text-base">
+                            {user.balance} {user.currency || 'CZK'}
+                          </div>
                         ) : (
                           <div className="text-xs text-neutral-400 dark:text-neutral-500 font-medium">-</div>
                         )}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-xs">
+                        <span className="px-2.5 py-1 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 font-bold rounded-lg uppercase">
+                          {user.currency || 'CZK'}
+                        </span>
                       </td>
                       <td className="px-6 py-4 text-neutral-500 dark:text-neutral-400">
                         {new Date(user.created_at).toLocaleDateString()}
@@ -645,7 +651,7 @@ export default function AdminPage() {
                   ))}
                   {users.length === 0 && (
                     <tr>
-                      <td colSpan={5} className="py-8">
+                      <td colSpan={6} className="py-8">
                         <EmptyState
                           variant="compact"
                           icon={<Search className="w-7 h-7" />}
