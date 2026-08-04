@@ -244,7 +244,7 @@ export default function DashboardPage() {
 
       <Header profile={profile} onLogout={handleLogout} maxWidthClass={activeTab === 'crm' ? 'max-w-[1600px]' : 'max-w-7xl'} onOpenCommandPalette={() => setIsCommandPaletteOpen(true)} />
 
-      <main className={`mx-auto px-4 sm:px-6 lg:px-8 py-8 relative ${activeTab === 'crm' ? 'max-w-[1600px]' : 'max-w-7xl'}`}>
+      <main className={`mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-28 md:pb-8 relative ${activeTab === 'crm' ? 'max-w-[1600px]' : 'max-w-7xl'}`}>
         {profile.role === 'client' ? (
           <ClientDashboard profile={profile} />
         ) : (

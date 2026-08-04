@@ -29,7 +29,7 @@ export function BottomNav({ activeTab, setActiveTab, unreadMessagesCount = 0, us
   }
 
   return (
-    <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-[90] md:hidden w-[calc(100%-2rem)] max-w-md pointer-events-auto">
+    <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-[80] md:hidden w-[calc(100%-2rem)] max-w-md pointer-events-auto">
       <div className="glass-dock rounded-full p-1.5 flex items-center justify-around shadow-[0_12px_40px_rgba(0,0,0,0.6)] border border-white/15">
         {tabs.map((tab) => {
           const Icon = tab.icon
