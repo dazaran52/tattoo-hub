@@ -27,19 +27,43 @@ class MessageResponse(BaseModel):
     created_at: str
     is_read: Optional[bool] = False
 
-# Basic Anti-spam regex
-PHONE_REGEX = re.compile(r'(\+?\d{1,3}[-.\s]?)?(\(?\d{3}\)?[-.\s]?)?\d{3}[-.\s]?\d{4}')
-LINK_REGEX = re.compile(r'(http|https)://[^\s]+|www\.[^\s]+|@[A-Za-z0-9_]+')
+# Anti-bypass & contact masking regexes
+PHONE_REGEX = re.compile(r'(\+?\d{1,3}[-.\s]?)?(\(?\d{3}\)?[-.\s]?)?\d{3}[-.\s]?\d{3,4}')
+SOCIAL_REGEX = re.compile(r'(?:@[A-Za-z0-9_]{3,}|t\.me\/[A-Za-z0-9_]+|tg:\/\/|instagram\.com\/[A-Za-z0-9_]+|inst:\s*[A-Za-z0-9_]+|wa\.me\/\d+|whatsapp|viber|vk\.com\/[A-Za-z0-9_]+)', re.IGNORECASE)
+LINK_REGEX = re.compile(r'(?:https?:\/\/|www\.)[^\s]+', re.IGNORECASE)
+EMAIL_REGEX = re.compile(r'[\w\.-]+@[\w\.-]+\.\w+')
 
 def apply_anti_bypass_filter(content: str) -> str:
-    # Basic filter to hide potential phone numbers and links/socials
-    # Very rudimentary for MVP
-    filtered = LINK_REGEX.sub("[СКРЫТАЯ ССЫЛКА]", content)
-    # Simple digits count check, if more than 8 digits, likely a phone number
-    digits = sum(c.isdigit() for c in content)
+    """Mask phone numbers, emails, social handles, and external links to prevent platform bypass."""
+    text = content
+    text = EMAIL_REGEX.sub('[СКРЫТЫЙ EMAIL]', text)
+    text = LINK_REGEX.sub('[СКРЫТАЯ ССЫЛКА]', text)
+    text = SOCIAL_REGEX.sub('[СКРЫТЫЙ КОНТАКТ]', text)
+    
+    digits = sum(c.isdigit() for c in text)
     if digits >= 8:
-        filtered = "[СКРЫТЫЙ НОМЕР]"
-    return filtered
+        text = PHONE_REGEX.sub('[СКРЫТЫЙ НОМЕР]', text)
+    return text
+
+def extract_prices(text: str) -> list[float]:
+    """Extract price figures mentioned in master text to detect price undercutting/fraud."""
+    cleaned = re.sub(r'(\d)\s+(\d)', r'\1\2', text)
+    patterns = [
+        r'(\d+[\.,]?\d*)\s*(?:czk|kč|крон|kc|eur|евро|usd|\$|€)',
+        r'(?:цена|стоимость|стоит|сеанс|итого|с тебя|платить|оплата)\s*(?:будет|составит|всего)?\s*(\d+[\.,]?\d*)',
+        r'(\d+[\.,]?\d*)\s*(?:за сеанс|за всю тату|всего)'
+    ]
+    found = []
+    for pat in patterns:
+        matches = re.findall(pat, cleaned, flags=re.IGNORECASE)
+        for m in matches:
+            try:
+                val = float(m.replace(',', '.'))
+                if val >= 100:
+                    found.append(val)
+            except ValueError:
+                pass
+    return found
 
 
 def filter_accepted_chats(supabase: Client, chats: list[dict]) -> list[dict]:
@@ -380,7 +404,39 @@ async def send_message(
     }]):
         raise HTTPException(status_code=403, detail="CHAT_AVAILABLE_AFTER_ACCEPTANCE")
 
-    content = message.content
+    # 1. Mask contacts, emails and external links
+    content = apply_anti_bypass_filter(message.content)
+
+    # 2. Price Undercut Detection for Masters
+    if sender_type == "master":
+        extracted_prices = extract_prices(message.content)
+        if extracted_prices:
+            prop_res = supabase.table("lead_proposals").select("price_offer").eq("lead_id", lead_id).eq("user_id", master_id).execute()
+            if prop_res.data:
+                agreed_price = float(prop_res.data[0].get("price_offer") or 0)
+                max_price = max(extracted_prices)
+
+                # If master mentions a price > 25% higher than their proposal price
+                if agreed_price > 0 and max_price > (agreed_price * 1.25):
+                    # Lock chat access for master
+                    supabase.table("users").update({"can_chat": False}).eq("id", master_id).execute()
+
+                    # Notify admins
+                    master_user_res = supabase.table("users").select("email").eq("id", master_id).single().execute()
+                    master_email = (master_user_res.data or {}).get("email", master_id)
+                    admin_res = supabase.table("users").select("id").eq("is_admin", True).execute()
+                    for admin in (admin_res.data or []):
+                        supabase.table("notifications").insert({
+                            "user_id": admin["id"],
+                            "title": "🚨 ПОПЫТКА ЗАНИЖЕНИЯ КОМИССИИ!",
+                            "message": f"Мастер {master_email} написал цену {max_price} в чате по заявке, хотя отклик был на {agreed_price}. Чат мастера заблокирован.",
+                            "type": "system"
+                        }).execute()
+
+                    raise HTTPException(
+                        status_code=403,
+                        detail=f"PRICE_UNDERCUT_DETECTED: Названная цена ({max_price}) превышает цену отклика ({agreed_price}). Доступ к чату заблокирован до проверки администратором."
+                    )
 
     insert_res = supabase.table("chat_messages").insert({
         "chat_id": chat_id,
