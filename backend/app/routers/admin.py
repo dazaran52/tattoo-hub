@@ -853,10 +853,10 @@ async def sync_currency_rates(
 
 
 class UserPermissionsUpdate(BaseModel):
-    role: Optional[str] = None
-    is_verified_master: Optional[bool] = None
-    can_chat: Optional[bool] = None
-    can_create_leads: Optional[bool] = None
+    role: str | None = None
+    is_verified_master: bool | None = None
+    can_chat: bool | None = None
+    can_create_leads: bool | None = None
 
 @router.put("/users/{user_id}/permissions")
 async def update_user_permissions(
