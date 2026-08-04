@@ -8,6 +8,7 @@ import { subscribeToPush } from '@/lib/push'
 import { useLanguage } from '@/i18n/LanguageContext'
 import { TransactionHistoryModal } from '@/components/TransactionHistoryModal'
 import { NotificationsMenu } from '@/components/NotificationsMenu'
+import { MasterTierBadge } from '@/components/PublicMasterTrust'
 import { toast } from 'react-hot-toast'
 import { OnboardingTour } from '@/components/OnboardingTour'
 import { Logo } from '@/components/Logo'
@@ -134,6 +135,9 @@ export function Header({ profile, onLogout, maxWidthClass = 'max-w-7xl', onOpenC
                 }`}>
                   {profile.gamification_level}
                 </span>
+              )}
+              {profile.role === 'master' && profile.badge_tier && profile.badge_tier !== 'none' && (
+                <MasterTierBadge badgeTier={profile.badge_tier} />
               )}
             </div>
 

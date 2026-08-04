@@ -609,7 +609,10 @@ export function ClientDashboard({
                           </div>
                           <div>
                             <p className="text-xs font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-primary-500 to-primary-500 uppercase tracking-wider mb-1">{t('assignedMaster', 'Назначенный мастер')}</p>
-                            <h5 className="font-bold text-base text-neutral-900 dark:text-white leading-tight">{lead.master.name}</h5>
+                            <div className="flex items-center gap-2">
+                              <h5 className="font-bold text-base text-neutral-900 dark:text-white leading-tight">{lead.master.name}</h5>
+                              <MasterTierBadge badgeTier={lead.master.badge_tier} />
+                            </div>
                             <span className="text-xs font-medium text-neutral-500">@{lead.master.username}</span>
                           </div>
                         </div>
@@ -673,6 +676,7 @@ export function ClientDashboard({
                                 <div className="flex flex-wrap items-center gap-2">
                                   <p className="truncate text-sm font-extrabold text-neutral-900 dark:text-white">{proposal.master_name}</p>
                                   {proposal.certificate_verified && <VerifiedMasterBadge verified={true} className="h-4 w-4 text-primary-500" />}
+                                  <MasterTierBadge badgeTier={proposal.badge_tier} />
                                 </div>
                                 {proposal.proposed_dates && <p className="mt-1 text-xs text-neutral-500">{proposal.proposed_dates}</p>}
                                 <p className="mt-2 text-base font-extrabold text-neutral-900 dark:text-white">{proposal.price_offer} {proposal.offer_currency}</p>

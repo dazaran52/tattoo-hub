@@ -222,7 +222,7 @@ async def get_my_chats(
     master_ids = list(set([c["master_id"] for c in chats]))
     master_map = {}
     if master_ids:
-        master_users_res = supabase.table("users").select("id, display_name, username, avatar_url, last_seen").in_("id", master_ids).execute()
+        master_users_res = supabase.table("users").select("id, display_name, username, avatar_url, last_seen, badge_tier").in_("id", master_ids).execute()
         master_map = {u["id"]: u for u in (master_users_res.data or [])}
 
     # Fetch client info manually
@@ -321,7 +321,8 @@ async def get_my_chats(
                 "email": "",
                 "avatar_url": m_info.get("avatar_url") or "",
                 "last_seen": m_info.get("last_seen"),
-                "username": m_info.get("username")
+                "username": m_info.get("username"),
+                "badge_tier": m_info.get("badge_tier") or "none"
             }
         else:
             users_data = client_map.get(chat["client_id"], {})

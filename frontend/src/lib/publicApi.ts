@@ -9,6 +9,8 @@ export interface PublicMaster {
   city_ids?: string[]
   is_verified_master?: boolean
   certificate_status?: 'not_submitted' | 'pending' | 'approved' | 'rejected'
+  badge_tier?: string
+  badge_expires_at?: string
   portfolio_posts?: unknown[]
   theme?: string
   avatar_url?: string

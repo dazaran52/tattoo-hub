@@ -13,6 +13,7 @@ import { OnlineIndicator } from '@/components/OnlineIndicator'
 import { usePresence } from '@/components/PresenceContext'
 import { formatLastSeenText } from '@/lib/formatLastSeen'
 import { MasterProfileModal } from '@/components/MasterProfileModal'
+import { MasterTierBadge } from '@/components/PublicMasterTrust'
 
 interface Message {
   id: string
@@ -46,6 +47,7 @@ interface ChatPreview {
     avatar_url: string
     last_seen?: string
     username?: string
+    badge_tier?: string
   }
   last_message: {
     content: string
@@ -553,7 +555,13 @@ export function MessagesList({ userRole = 'master', onViewLead, onViewSession }:
                   <ChevronLeft className="w-5 h-5" />
                 </button>
                 <div className="relative w-14 h-14 shrink-0">
-                  <div className="w-14 h-14 bg-neutral-100 dark:bg-neutral-800 rounded-full flex items-center justify-center overflow-hidden border border-neutral-200 dark:border-white/10">
+                  <div className={`w-14 h-14 bg-neutral-100 dark:bg-neutral-800 rounded-full flex items-center justify-center overflow-hidden border-2 transition-all ${
+                    userRole === 'client' && selectedChat.client_info?.badge_tier === 'vip'
+                      ? 'border-amber-400 shadow-[0_0_12px_rgba(245,158,11,0.5)] ring-2 ring-amber-500/30'
+                      : userRole === 'client' && selectedChat.client_info?.badge_tier === 'pro'
+                        ? 'border-purple-500 shadow-[0_0_12px_rgba(168,85,247,0.5)] ring-2 ring-purple-500/30'
+                        : 'border-neutral-200 dark:border-white/10'
+                  }`}>
                     {selectedChat.client_info?.avatar_url ? (
                       <Image src={selectedChat.client_info.avatar_url || ''} alt="avatar" className="w-full h-full object-cover" width={800} height={800} />
                     ) : (
@@ -563,8 +571,9 @@ export function MessagesList({ userRole = 'master', onViewLead, onViewSession }:
                   <OnlineIndicator userId={userRole === 'client' ? selectedChat.master_id : (selectedChat.client_id || selectedChat.client_info?.id)} lastSeen={selectedChat.client_info?.last_seen} size="md" className="-bottom-1 -right-1 border-2 border-white dark:border-neutral-900" />
                 </div>
                 <div className="flex flex-col min-w-0">
-                  <h3 className="font-bold text-neutral-900 dark:text-white truncate leading-tight">
-                    {selectedChat.client_info?.name || selectedChat.leads?.title}
+                  <h3 className="font-bold text-neutral-900 dark:text-white truncate leading-tight flex items-center gap-2">
+                    <span>{selectedChat.client_info?.name || selectedChat.leads?.title}</span>
+                    {userRole === 'client' && <MasterTierBadge badgeTier={selectedChat.client_info?.badge_tier} />}
                   </h3>
                   <p className="text-xs mt-0.5 truncate font-medium">
                     {(() => {

@@ -930,7 +930,7 @@ async def get_client_leads(
 
         # Get proposals
         props_res = await supabase.table("lead_proposals") \
-            .select("lead_id, status, user_id, price_offer, proposed_dates, offer_currency, users(id, display_name, avatar_url, username, certificate_status, last_seen)") \
+            .select("lead_id, status, user_id, price_offer, proposed_dates, offer_currency, users(id, display_name, avatar_url, username, certificate_status, last_seen, badge_tier)") \
             .in_("lead_id", lead_ids) \
             .execute()
 
@@ -951,6 +951,7 @@ async def get_client_leads(
                 "master_avatar": master.get("avatar_url"),
                 "master_last_seen": master.get("last_seen"),
                 "certificate_verified": master.get("certificate_status") == "approved",
+                "badge_tier": master.get("badge_tier") or "none",
                 "price_offer": p.get("price_offer"),
                 "offer_currency": p.get("offer_currency") or "CZK",
                 "proposed_dates": p.get("proposed_dates"),
@@ -963,7 +964,8 @@ async def get_client_leads(
                     "username": u.get("username"),
                     "name": u.get("display_name") or u.get("username") or "Мастер",
                     "avatar_url": u.get("avatar_url"),
-                    "last_seen": u.get("last_seen")
+                    "last_seen": u.get("last_seen"),
+                    "badge_tier": u.get("badge_tier") or "none"
                 }
 
         # Get chats

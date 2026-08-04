@@ -30,6 +30,8 @@ export type Profile = {
   gamification_level?: string
   role?: string
   is_verified_master?: boolean
+  badge_tier?: string | null
+  badge_expires_at?: string | null
   certificate_url?: string | null
 }
 

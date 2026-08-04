@@ -8,7 +8,7 @@ import { format, parseISO } from 'date-fns'
 import { ru } from 'date-fns/locale'
 import { PostModal, PortfolioPost } from '@/components/PostModal'
 import { LeadWizard } from '@/components/LeadWizard'
-import { MasterTrustSummary, VerifiedMasterBadge, WhatHappensNext } from '@/components/PublicMasterTrust'
+import { MasterTrustSummary, VerifiedMasterBadge, MasterTierBadge, WhatHappensNext } from '@/components/PublicMasterTrust'
 import { publicApi, PublicMaster, PublicReview } from '@/lib/publicApi'
 import { OnlineIndicator } from '@/components/OnlineIndicator'
 
@@ -157,7 +157,13 @@ export default function BookMasterPage() {
         {/* Profile Card */}
         <div className={`rounded-3xl p-8 mb-8 text-center transition-colors duration-500 ${tClasses.card}`}>
           <div className="relative inline-block mb-5">
-            <div className="w-28 h-28 bg-gradient-to-br from-neutral-200 dark:from-neutral-800 to-neutral-300 dark:to-neutral-700 rounded-full mx-auto flex items-center justify-center border-4 border-white dark:border-neutral-950 shadow-xl overflow-hidden">
+            <div className={`w-28 h-28 rounded-full mx-auto flex items-center justify-center border-4 mx-auto overflow-hidden transition-all ${
+              master.badge_tier === 'vip'
+                ? 'border-amber-400 shadow-[0_0_20px_rgba(245,158,11,0.5)] ring-4 ring-amber-500/30'
+                : master.badge_tier === 'pro'
+                  ? 'border-purple-500 shadow-[0_0_20px_rgba(168,85,247,0.5)] ring-4 ring-purple-500/30'
+                  : 'border-white dark:border-neutral-950 shadow-xl'
+            }`}>
               {master.avatar_url ? (
                 <Image src={master.avatar_url || ''} alt="Avatar" className="w-full h-full object-cover"  width={800} height={800} />
               ) : (
@@ -171,6 +177,7 @@ export default function BookMasterPage() {
               {master.display_name || master.username || 'Мастер'}
             </h1>
             <VerifiedMasterBadge verified={master.certificate_status === 'approved'} />
+            <MasterTierBadge badgeTier={master.badge_tier} />
           </div>
           
           {(master.review_count || 0) > 0 && (

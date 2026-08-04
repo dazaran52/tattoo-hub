@@ -28,6 +28,8 @@ export interface Profile {
   is_verified_master?: boolean
   certificate_url?: string
   certificate_status?: 'not_submitted' | 'pending' | 'approved' | 'rejected'
+  badge_tier?: string
+  badge_expires_at?: string
   certificate_submitted_at?: string
   certificate_reviewed_at?: string
   certificate_rejection_reason?: string

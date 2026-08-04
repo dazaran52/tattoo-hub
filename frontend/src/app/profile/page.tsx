@@ -19,6 +19,7 @@ import { QrCode } from 'lucide-react'
 import { CertificateVerificationCard } from '@/components/CertificateVerificationCard'
 import { TATTOO_STYLES } from '@/lib/constants'
 import { OnlineIndicator } from '@/components/OnlineIndicator'
+import { MasterTierBadge } from '@/components/PublicMasterTrust'
 
 export default function ProfilePage() {
   const router = useRouter()
@@ -279,7 +280,13 @@ export default function ProfilePage() {
               <div className="absolute inset-0 bg-gradient-to-br from-primary-500/5 to-accent-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               
               <div className="relative inline-block mb-6">
-                <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-white dark:border-neutral-800 shadow-xl mx-auto">
+                <div className={`w-32 h-32 rounded-full overflow-hidden border-4 mx-auto transition-all ${
+                  profile.badge_tier === 'vip' 
+                    ? 'border-amber-400 shadow-[0_0_20px_rgba(245,158,11,0.5)] ring-4 ring-amber-500/30'
+                    : profile.badge_tier === 'pro'
+                      ? 'border-purple-500 shadow-[0_0_20px_rgba(168,85,247,0.5)] ring-4 ring-purple-500/30'
+                      : 'border-white dark:border-neutral-800 shadow-xl'
+                }`}>
                   {profile.avatar_url ? (
                     <Image src={profile.avatar_url || ''} alt="Avatar" className="w-full h-full object-cover"  width={800} height={800} />
                   ) : (
@@ -305,8 +312,9 @@ export default function ProfilePage() {
                 />
               </div>
 
-              <h2 className="text-2xl font-black text-neutral-900 dark:text-white mb-1">
-                {profile.display_name || 'Твое имя'}
+              <h2 className="text-2xl font-black text-neutral-900 dark:text-white mb-1 flex items-center justify-center gap-2">
+                <span>{profile.display_name || 'Твое имя'}</span>
+                <MasterTierBadge badgeTier={profile.badge_tier || 'none'} />
               </h2>
               <p className="text-primary-600 dark:text-primary-400 font-bold mb-4">
                 @{profile.username || 'username'}
