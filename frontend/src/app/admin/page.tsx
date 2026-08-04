@@ -24,6 +24,8 @@ interface AdminUserResponse {
   display_name?: string
   phone?: string
   is_verified_master: boolean
+  badge_tier?: string
+  badge_expires_at?: string
   is_admin: boolean
   balance: number
   credits: number
@@ -56,6 +58,54 @@ export default function AdminPage() {
   const [balanceModalUser, setBalanceModalUser] = useState<{ id: string, email: string, balance: number } | null>(null)
   const [newBalanceValue, setNewBalanceValue] = useState<string>('')
   const [certificateReviewUser, setCertificateReviewUser] = useState<CertificateReviewUser | null>(null)
+
+
+  // Badge Modal State
+  const [badgeModalUser, setBadgeModalUser] = useState<AdminUserResponse | null>(null)
+  const [selectedBadgeTier, setSelectedBadgeTier] = useState<'none' | 'pro' | 'vip'>('vip')
+  const [selectedDurationDays, setSelectedDurationDays] = useState<number>(30)
+  const [isSubmittingBadge, setIsSubmittingBadge] = useState<boolean>(false)
+
+  const handleOpenBadgeModal = (user: AdminUserResponse) => {
+    setBadgeModalUser(user)
+    setSelectedBadgeTier((user.badge_tier as any) || 'vip')
+    setSelectedDurationDays(30)
+  }
+
+  const submitUpdateBadge = async () => {
+    if (!badgeModalUser) return
+    setIsSubmittingBadge(true)
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) return
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/admin/users/${badgeModalUser.id}/badge`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify({
+          badge_tier: selectedBadgeTier,
+          duration_days: selectedDurationDays
+        })
+      })
+
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.detail || 'Failed to update user badge')
+      }
+
+      setUsers(prev => prev.map(u => u.id === badgeModalUser.id ? { ...u, badge_tier: selectedBadgeTier } : u))
+      setBadgeModalUser(null)
+      alert(`Статус профиля ${selectedBadgeTier.toUpperCase()} успешно установлен!`)
+    } catch (err: any) {
+      alert(err.message || 'Ошибка обновления статуса')
+    } finally {
+      setIsSubmittingBadge(false)
+    }
+  }
 
 
   const fetchAdminUsers = async (page: number, role: string) => {
@@ -522,6 +572,21 @@ export default function AdminPage() {
                                 {user.certificate_status === 'pending' ? 'Проверить сертификат' : 'Сертификат'}
                               </button>
                             )}
+                            {(user.role === 'master' || user.is_verified_master) && (
+                              <button
+                                onClick={() => handleOpenBadgeModal(user)}
+                                className={`px-3.5 py-2 border rounded-xl text-xs font-bold transition-all shadow-sm flex items-center gap-1 ${
+                                  user.badge_tier === 'vip'
+                                    ? 'bg-amber-500/20 text-amber-600 dark:text-amber-300 border-amber-500/40 hover:bg-amber-500/30'
+                                    : user.badge_tier === 'pro'
+                                      ? 'bg-purple-500/20 text-purple-600 dark:text-purple-300 border-purple-500/40 hover:bg-purple-500/30'
+                                      : 'bg-neutral-200/50 hover:bg-neutral-300 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300'
+                                }`}
+                                title="Изменить PRO / VIP статус"
+                              >
+                                {user.badge_tier === 'vip' ? '👑 VIP' : user.badge_tier === 'pro' ? '⭐ PRO' : '+ Статус'}
+                              </button>
+                            )}
                             {(user.role === 'master' || user.is_admin || user.is_verified_master) && (
                               <button
                                 onClick={() => handleUpdateCredits(user.id, user.balance, user.email)}
@@ -656,6 +721,91 @@ export default function AdminPage() {
                 className="px-5 py-3 bg-accent-600 hover:bg-accent-500 text-white font-bold rounded-xl transition-all shadow-md shadow-accent-600/20"
               >
                 Сохранить
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {badgeModalUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-200">
+          <div className="bg-white/90 dark:bg-neutral-900/90 backdrop-blur-2xl w-full max-w-md rounded-3xl shadow-2xl overflow-hidden p-6 border border-neutral-200/50 dark:border-white/10">
+            <h3 className="text-xl font-extrabold text-neutral-900 dark:text-white mb-1">Выдать статус PRO / VIP</h3>
+            <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-6 font-semibold">{badgeModalUser.email}</p>
+
+            <div className="space-y-5 mb-8">
+              <div>
+                <label className="block text-xs font-extrabold uppercase tracking-wider text-neutral-500 mb-2">Статус аккаунта</label>
+                <div className="grid grid-cols-3 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedBadgeTier('none')}
+                    className={`py-3 px-3 rounded-2xl font-bold text-xs border transition-all ${
+                      selectedBadgeTier === 'none'
+                        ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 border-neutral-900 dark:border-white shadow-md'
+                        : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 border-transparent hover:bg-neutral-200'
+                    }`}
+                  >
+                    Базовый
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedBadgeTier('pro')}
+                    className={`py-3 px-3 rounded-2xl font-bold text-xs border transition-all flex items-center justify-center gap-1 ${
+                      selectedBadgeTier === 'pro'
+                        ? 'bg-purple-600 text-white border-purple-500 shadow-lg shadow-purple-500/25'
+                        : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 border-transparent hover:bg-neutral-200'
+                    }`}
+                  >
+                    ⭐ PRO
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedBadgeTier('vip')}
+                    className={`py-3 px-3 rounded-2xl font-bold text-xs border transition-all flex items-center justify-center gap-1 ${
+                      selectedBadgeTier === 'vip'
+                        ? 'bg-gradient-to-r from-rose-500 to-amber-500 text-white border-amber-400 shadow-lg shadow-amber-500/25'
+                        : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 border-transparent hover:bg-neutral-200'
+                    }`}
+                  >
+                    👑 VIP
+                  </button>
+                </div>
+              </div>
+
+              {selectedBadgeTier !== 'none' && (
+                <div>
+                  <label className="block text-xs font-extrabold uppercase tracking-wider text-neutral-500 mb-2">Длительность статуса</label>
+                  <select
+                    value={selectedDurationDays}
+                    onChange={(e) => setSelectedDurationDays(Number(e.target.value))}
+                    className="w-full bg-white dark:bg-neutral-950 border border-neutral-200 dark:border-white/10 rounded-2xl px-4 py-3 text-sm font-bold text-neutral-900 dark:text-white outline-none focus:border-amber-500"
+                  >
+                    <option value={7}>7 дней (Пробный)</option>
+                    <option value={30}>30 дней (1 месяц)</option>
+                    <option value={90}>90 дней (3 месяца)</option>
+                    <option value={365}>365 дней (1 год)</option>
+                    <option value={3650}>3650 дней (Бессрочно)</option>
+                  </select>
+                </div>
+              )}
+            </div>
+
+            <div className="flex gap-3 justify-end">
+              <button
+                type="button"
+                onClick={() => setBadgeModalUser(null)}
+                className="px-5 py-3 bg-neutral-200/50 dark:bg-neutral-800 text-neutral-900 dark:text-white rounded-2xl font-bold text-sm hover:bg-neutral-300 dark:hover:bg-neutral-700 transition-all"
+              >
+                Отмена
+              </button>
+              <button
+                type="button"
+                onClick={submitUpdateBadge}
+                disabled={isSubmittingBadge}
+                className="px-6 py-3 bg-gradient-to-r from-amber-500 to-primary-600 hover:opacity-90 text-white font-extrabold text-sm rounded-2xl transition-all shadow-lg shadow-amber-500/20 flex items-center gap-2"
+              >
+                {isSubmittingBadge ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Сохранить статус'}
               </button>
             </div>
           </div>

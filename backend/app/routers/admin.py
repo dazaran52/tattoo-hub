@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks, Query, Response
 from pydantic import BaseModel
@@ -20,6 +20,10 @@ router = APIRouter(prefix="/api/admin", tags=["admin"])
 class UserStatusUpdate(BaseModel):
     status: str
 
+class UserBadgeUpdate(BaseModel):
+    badge_tier: str  # "none", "pro", "vip"
+    duration_days: int = 30
+
 
 class CertificateReview(BaseModel):
     status: str
@@ -37,6 +41,8 @@ class AdminUserResponse(BaseModel):
     bio: str | None = None
     status: str
     is_verified_master: bool
+    badge_tier: str = "none"
+    badge_expires_at: str | None = None
     is_admin: bool
     balance: float
     credits: int
@@ -147,6 +153,8 @@ async def get_users(
                 bio=u.get("bio"),
                 status=u.get("status", "pending"),
                 is_verified_master=u.get("is_verified_master") or False,
+                badge_tier=u.get("badge_tier") or "none",
+                badge_expires_at=u.get("badge_expires_at"),
                 is_admin=u.get("is_admin") or False,
                 balance=float(u.get("balance") or 0.0) if float(u.get("balance") or 0.0) > 0 else float(u.get("credits") or 0),
                 credits=u.get("credits") or 0,
@@ -270,6 +278,64 @@ async def update_user_status(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error updating user status: {str(e)}"
+        )
+
+
+@router.put("/users/{user_id}/badge")
+async def update_user_badge(
+    user_id: str,
+    update_data: UserBadgeUpdate,
+    admin_user: AuthUser = Depends(get_admin_user),
+    supabase: Client = Depends(get_supabase_client)
+):
+    """Grant or revoke PRO / VIP badge tier with custom duration."""
+    if update_data.badge_tier not in ["none", "pro", "vip"]:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid badge_tier. Must be 'none', 'pro', or 'vip'"
+        )
+        
+    try:
+        expires_at = None
+        if update_data.badge_tier != "none":
+            now_dt = datetime.now(timezone.utc)
+            expires_at = (now_dt + timedelta(days=update_data.duration_days)).isoformat()
+            
+        response = supabase.table("users") \
+            .update({
+                "badge_tier": update_data.badge_tier,
+                "badge_expires_at": expires_at
+            }) \
+            .eq("id", user_id) \
+            .execute()
+            
+        if not response.data:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found"
+            )
+
+        tier_title = "VIP 👑" if update_data.badge_tier == "vip" else "PRO ⭐" if update_data.badge_tier == "pro" else "Базовый"
+        duration_msg = f"на {update_data.duration_days} дней" if update_data.badge_tier != "none" else "отменен"
+
+        supabase.table("notifications").insert({
+            "user_id": user_id,
+            "title": "Обновлен статус профиля! 🌟",
+            "message": f"Администратор установил вам статус {tier_title} ({duration_msg}).",
+            "type": "system"
+        }).execute()
+        
+        return {
+            "message": f"User badge updated to {update_data.badge_tier}",
+            "badge_tier": update_data.badge_tier,
+            "badge_expires_at": expires_at
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error updating user badge: {str(e)}"
         )
 
 
