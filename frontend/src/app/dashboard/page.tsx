@@ -267,7 +267,7 @@ export default function DashboardPage() {
               </div>
               
               {/* Tabs */}
-                <div className="mt-4 md:mt-0 flex overflow-x-auto p-1 bg-white/40 dark:bg-neutral-900/40 backdrop-blur-md border border-neutral-200/50 dark:border-white/5 rounded-xl shadow-sm gap-1 no-scrollbar">
+                <div className="mt-4 md:mt-0 hidden md:flex overflow-x-auto p-1 bg-white/40 dark:bg-neutral-900/40 backdrop-blur-md border border-neutral-200/50 dark:border-white/5 rounded-xl shadow-sm gap-1 no-scrollbar">
                   <button
                     id="tour-crm"
                     onClick={() => setActiveTab('crm')}

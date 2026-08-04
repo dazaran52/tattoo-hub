@@ -136,6 +136,7 @@ export function CRMBoard({ initialViewLeadId, initialViewSessionId }: { initialV
     if (typeof window !== 'undefined' && window.innerWidth < 768) return 'list'
     return 'kanban'
   })
+  const [mobileColumnId, setMobileColumnId] = useState<string>('new')
   const [draggingGroupId, setDraggingGroupId] = useState<string | null>(null)
   
   // Custom drag ghost position tracking
@@ -616,13 +617,37 @@ export function CRMBoard({ initialViewLeadId, initialViewSessionId }: { initialV
         />
       ) : (
         <div className="relative">
-          {/* Scroll zones for dragging */}
+          {/* Mobile Column Selector Tabs */}
+          <div className="flex md:hidden overflow-x-auto gap-2 mb-4 pb-2 no-scrollbar">
+            {columns.map(col => {
+              const isColActive = mobileColumnId === col.id
+              const colCount = dateFilteredSessions.filter(i => (i.status === col.id || (i.status === 'scheduled' && col.id === 'booked'))).length
+              return (
+                <button
+                  key={`mob-tab-${col.id}`}
+                  onClick={() => setMobileColumnId(col.id)}
+                  className={`px-3 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all flex items-center gap-2 border ${
+                    isColActive 
+                      ? 'bg-primary-600 text-white border-primary-500 shadow-md scale-[1.02]' 
+                      : 'bg-neutral-900/60 text-neutral-400 border-white/10 hover:text-white'
+                  }`}
+                >
+                  <span>{getColumnTitle(col)}</span>
+                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-black ${isColActive ? 'bg-white/20 text-white' : 'bg-white/10 text-neutral-400'}`}>
+                    {colCount}
+                  </span>
+                </button>
+              )
+            })}
+          </div>
+
+          {/* Scroll zones for dragging (Desktop) */}
           <div 
-            className="absolute left-0 top-0 w-16 h-full z-10" 
+            className="hidden md:block absolute left-0 top-0 w-16 h-full z-10 pointer-events-none" 
             onDragOver={(e) => handleDragOver(e, 'left')} 
           />
           <div 
-            className="absolute right-0 top-0 w-16 h-full z-10" 
+            className="hidden md:block absolute right-0 top-0 w-16 h-full z-10 pointer-events-none" 
             onDragOver={(e) => handleDragOver(e, 'right')} 
           />
 
@@ -630,8 +655,10 @@ export function CRMBoard({ initialViewLeadId, initialViewSessionId }: { initialV
             ref={scrollContainerRef}
             className="overflow-x-auto pb-4 custom-scrollbar"
           >
-            <div className="flex gap-4 min-w-[1500px]">
+            <div className="flex flex-col md:flex-row gap-4 md:min-w-[1500px]">
               {columns.map(col => {
+                // On mobile, only render selected column
+                const isMobileVisible = mobileColumnId === col.id
                 const styles = COLOR_STYLES[col.color] || COLOR_STYLES.slate
                 const Icon = (Icons as any)[col.iconName] || Icons.Star
                 
@@ -647,7 +674,7 @@ export function CRMBoard({ initialViewLeadId, initialViewSessionId }: { initialV
                 return (
                   <div 
                     key={col.id} 
-                    className="flex-1 min-w-[280px] max-w-[300px] glass-card rounded-3xl border border-white/10 p-4 flex flex-col h-[75vh] shadow-[0_10px_30px_rgba(0,0,0,0.3)]"
+                    className={`flex-1 ${isMobileVisible ? 'flex' : 'hidden md:flex'} min-w-full md:min-w-[280px] md:max-w-[300px] glass-card rounded-3xl border border-white/10 p-4 flex-col h-auto md:h-[75vh] shadow-[0_10px_30px_rgba(0,0,0,0.3)]`}
                     onDragOver={(e) => handleDragOver(e, 'none')}
                     onDrop={(e) => handleDrop(e, col.id)}
                   >

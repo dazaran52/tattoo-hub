@@ -20,9 +20,11 @@ export function BottomNav({ activeTab, setActiveTab, unreadMessagesCount = 0, us
   ]
 
   const handleTabClick = (tabId: 'crm' | 'feed' | 'portfolio' | 'messages') => {
-    if (typeof window !== 'undefined' && window.navigator && window.navigator.vibrate) {
-      window.navigator.vibrate(10)
-    }
+    try {
+      if (typeof window !== 'undefined' && window.navigator && typeof window.navigator.vibrate === 'function') {
+        window.navigator.vibrate(10)
+      }
+    } catch (e) {}
     setActiveTab(tabId)
   }
 

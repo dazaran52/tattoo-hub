@@ -187,18 +187,7 @@ export function Header({ profile, onLogout, maxWidthClass = 'max-w-7xl', onOpenC
               </div>
             )}
 
-            {/* Command Palette Trigger (Desktop) */}
-            {onOpenCommandPalette && (
-              <button
-                onClick={onOpenCommandPalette}
-                className="hidden md:flex items-center gap-2 px-3 py-1.5 glass-card rounded-xl text-xs font-semibold text-neutral-400 hover:text-white transition-colors border border-white/10"
-                title="Поиск и Команды (Cmd+K / Ctrl+K)"
-              >
-                <Search className="w-3.5 h-3.5 text-primary-400" />
-                <span>Поиск...</span>
-                <kbd className="bg-white/10 text-[10px] font-mono px-1.5 py-0.5 rounded text-neutral-300">⌘K</kbd>
-              </button>
-            )}
+
 
             {/* Notifications Menu — for ALL non-admin users */}
             {!profile.is_admin && <NotificationsMenu />}
