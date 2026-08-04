@@ -487,108 +487,108 @@ export function CRMBoard({ initialViewLeadId, initialViewSessionId }: { initialV
 
   return (
     <div className="w-full pb-4 relative">
-      {/* Main Navigation Tabs */}
-      <div className="flex gap-4 mb-6 border-b border-neutral-200 dark:border-neutral-800 pb-2">
-        <button
-          onClick={() => setMainTab('sessions')}
-          className={`text-lg font-bold pb-2 border-b-2 transition-all ${mainTab === 'sessions' ? 'border-primary-500 text-primary-600 dark:text-primary-400' : 'border-transparent text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'}`}
-        >
-          {t('crmBoard.tabSessions')}
-        </button>
-        <button
-          onClick={() => setMainTab('clients')}
-          className={`text-lg font-bold pb-2 border-b-2 transition-all ${mainTab === 'clients' ? 'border-primary-500 text-primary-600 dark:text-primary-400' : 'border-transparent text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'}`}
-        >
-          {t('crmBoard.tabClients')}
-        </button>
-      </div>
-
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
-        <div className="flex flex-wrap items-center gap-4">
-          {mainTab === 'sessions' && (
-            <>
-              <div className="bg-neutral-200/50 dark:bg-neutral-800/50 p-1 rounded-xl flex items-center">
-                <button
-                  onClick={() => setSessionView('kanban')}
-                  className={`px-4 py-2 text-sm font-bold rounded-lg transition-all flex items-center gap-2 ${sessionView === 'kanban' ? 'bg-white dark:bg-neutral-900 shadow-sm text-neutral-900 dark:text-white' : 'text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'}`}
-                >
-                  <LayoutGrid className="w-4 h-4"/>
-                  {t('crmBoard.viewKanban')}
-                </button>
-                <button 
-                  onClick={() => setSessionView('list')}
-                  className={`px-4 py-2 text-sm font-bold rounded-lg transition-all flex items-center gap-2 ${sessionView === 'list' ? 'bg-white dark:bg-neutral-900 shadow-sm text-neutral-900 dark:text-white' : 'text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'}`}
-                >
-                  <Users className="w-4 h-4"/>
-                  {t('crmBoard.viewList')}
-                </button>
-                <button 
-                  onClick={() => setSessionView('calendar')}
-                  className={`px-4 py-2 text-sm font-bold rounded-lg transition-all flex items-center gap-2 ${sessionView === 'calendar' ? 'bg-white dark:bg-neutral-900 shadow-sm text-neutral-900 dark:text-white' : 'text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'}`}
-                >
-                  <CalendarDays className="w-4 h-4"/>
-                  {t('crmBoard.viewCalendar')}
-                </button>
-              </div>
-              
-              {(sessionView === 'kanban' || sessionView === 'list') && (
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
-                  <input 
-                    type="text" 
-                    placeholder={t('crmBoard.searchPlaceholder')} 
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl pl-9 pr-4 py-2 text-sm focus:ring-2 focus:ring-primary-500/20 outline-none w-64 transition-all"
-                  />
-                </div>
-              )}
-              {(sessionView === 'kanban' || sessionView === 'list') && (
-                <select 
-                  value={dateFilter}
-                  onChange={(e) => setDateFilter(e.target.value as any)}
-                  className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-primary-500/20 outline-none font-medium"
-                >
-                  <option value="today">{t('crmBoard.filterToday')}</option>
-                  <option value="this_week">{t('crmBoard.filterThisWeek')}</option>
-                  <option value="this_month">{t('crmBoard.filterThisMonth')}</option>
-                  <option value="all">{t('crmBoard.filterAllTime')}</option>
-                </select>
-              )}
-
-              {sessionView === 'kanban' && !isEditingColumns && (
-                <button
-                  onClick={() => setIsEditingColumns(true)}
-                  className="px-3 py-1.5 text-xs font-bold text-neutral-500 bg-neutral-200/50 hover:bg-neutral-200 dark:bg-neutral-800/50 dark:hover:bg-neutral-800 rounded-lg transition-colors flex items-center gap-1.5"
-                >
-                  <Settings2 className="w-4 h-4" />
-                  {t('crmBoard.configureColumns')}
-                </button>
-              )}
-            </>
-          )}
+      {/* Main Navigation Header Bar */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 border-b border-neutral-200 dark:border-neutral-800 pb-3">
+        <div className="flex gap-4">
+          <button
+            onClick={() => setMainTab('sessions')}
+            className={`text-lg font-bold pb-2 border-b-2 transition-all ${mainTab === 'sessions' ? 'border-primary-500 text-primary-600 dark:text-primary-400' : 'border-transparent text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'}`}
+          >
+            {t('crmBoard.tabSessions')}
+          </button>
+          <button
+            onClick={() => setMainTab('clients')}
+            className={`text-lg font-bold pb-2 border-b-2 transition-all ${mainTab === 'clients' ? 'border-primary-500 text-primary-600 dark:text-primary-400' : 'border-transparent text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'}`}
+          >
+            {t('crmBoard.tabClients')}
+          </button>
         </div>
-        
+
         {mainTab === 'sessions' && sessionView !== 'calendar' && (
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5 w-full sm:w-auto justify-end">
             <button
               onClick={() => fetchData()}
               disabled={loading}
-              className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl text-sm font-bold text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white hover:border-neutral-600 transition-colors disabled:opacity-50"
+              className="flex items-center justify-center gap-2 px-3.5 py-2 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl text-xs font-bold text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white transition-colors disabled:opacity-50"
             >
-              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-              {t('refresh') || 'Обновить'}
+              <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+              <span className="hidden sm:inline">{t('refresh') || 'Обновить'}</span>
             </button>
             <button
               onClick={() => setIsSessionModalOpen(true)}
-              className="flex items-center gap-2 px-5 py-2.5 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-bold shadow-md hover:shadow-lg transition-all hover:-translate-y-0.5"
+              className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-xl text-xs font-bold shadow-md hover:shadow-lg transition-all"
             >
               <Calendar className="w-4 h-4" />
-              {t('crmBoard.newSession')}
+              <span>{t('crmBoard.newSession')}</span>
             </button>
           </div>
         )}
       </div>
+
+      {/* Sub-toolbar Controls */}
+      {mainTab === 'sessions' && (
+        <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 mb-6">
+          <div className="flex items-center bg-neutral-200/50 dark:bg-neutral-900/80 p-1 rounded-2xl border border-white/10 w-full sm:w-auto justify-between sm:justify-start">
+            <button
+              onClick={() => setSessionView('kanban')}
+              className={`flex-1 sm:flex-none px-3.5 py-1.5 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 ${sessionView === 'kanban' ? 'bg-white dark:bg-neutral-800 shadow-sm text-neutral-900 dark:text-white' : 'text-neutral-400 hover:text-white'}`}
+            >
+              <LayoutGrid className="w-3.5 h-3.5"/>
+              <span>{t('crmBoard.viewKanban')}</span>
+            </button>
+            <button 
+              onClick={() => setSessionView('list')}
+              className={`flex-1 sm:flex-none px-3.5 py-1.5 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 ${sessionView === 'list' ? 'bg-white dark:bg-neutral-800 shadow-sm text-neutral-900 dark:text-white' : 'text-neutral-400 hover:text-white'}`}
+            >
+              <Users className="w-3.5 h-3.5"/>
+              <span>{t('crmBoard.viewList')}</span>
+            </button>
+            <button 
+              onClick={() => setSessionView('calendar')}
+              className={`flex-1 sm:flex-none px-3.5 py-1.5 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 ${sessionView === 'calendar' ? 'bg-white dark:bg-neutral-800 shadow-sm text-neutral-900 dark:text-white' : 'text-neutral-400 hover:text-white'}`}
+            >
+              <CalendarDays className="w-3.5 h-3.5"/>
+              <span>{t('crmBoard.viewCalendar')}</span>
+            </button>
+          </div>
+          
+          {(sessionView === 'kanban' || sessionView === 'list') && (
+            <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto">
+              <div className="relative flex-1 sm:flex-none min-w-[160px]">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-neutral-400" />
+                <input 
+                  type="text" 
+                  placeholder={t('crmBoard.searchPlaceholder')} 
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full sm:w-56 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl pl-9 pr-3 py-1.5 text-xs focus:ring-2 focus:ring-primary-500/20 outline-none transition-all text-neutral-900 dark:text-white"
+                />
+              </div>
+
+              <select 
+                value={dateFilter}
+                onChange={(e) => setDateFilter(e.target.value as any)}
+                className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl px-3 py-1.5 text-xs font-bold outline-none text-neutral-900 dark:text-white"
+              >
+                <option value="today">{t('crmBoard.filterToday')}</option>
+                <option value="this_week">{t('crmBoard.filterThisWeek')}</option>
+                <option value="this_month">{t('crmBoard.filterThisMonth')}</option>
+                <option value="all">{t('crmBoard.filterAllTime')}</option>
+              </select>
+
+              {sessionView === 'kanban' && !isEditingColumns && (
+                <button
+                  onClick={() => setIsEditingColumns(true)}
+                  className="px-3 py-1.5 text-xs font-bold text-neutral-400 bg-neutral-900/60 hover:bg-neutral-800 border border-white/10 rounded-xl transition-colors flex items-center gap-1.5"
+                >
+                  <Settings2 className="w-3.5 h-3.5" />
+                  <span>{t('crmBoard.configureColumns')}</span>
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+      )}
 
       {mainTab === 'clients' ? (
         <ClientsDatabase />

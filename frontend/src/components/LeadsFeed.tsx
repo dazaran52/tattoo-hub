@@ -597,105 +597,114 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
         </div>
       )}
 
-      {/* Toolbar */}
-      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-        <div className="flex items-center gap-2 w-full sm:w-auto">
-          <div className="relative flex-1 sm:flex-none">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-500 dark:text-neutral-400" />
+      {/* Responsive Toolbar */}
+      <div className="flex flex-col gap-3">
+        {/* Top Control Row */}
+        <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
+          <div className="relative flex-1">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
             <input
               type="text"
               placeholder={t('filterLeads')}
               value={filterText}
               onChange={(e) => setFilterText(e.target.value)}
-              className="w-full sm:w-64 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-lg pl-9 pr-4 py-2 text-sm text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:border-neutral-600"
+              className="w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl pl-10 pr-4 py-2 text-sm text-neutral-900 dark:text-white placeholder-neutral-500 outline-none focus:border-primary-500 transition-colors"
             />
+          </div>
+
+          <div className="flex items-center gap-2">
+            {isAdmin ? (
+              <button
+                onClick={() => openLeadModal()}
+                className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rounded-2xl text-xs font-bold shadow-md hover:shadow-lg transition-all"
+              >
+                <Plus className="w-4 h-4" />
+                <span>{t('createLead')}</span>
+              </button>
+            ) : (
+              <button
+                onClick={() => setIsMasterModalOpen(true)}
+                className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-accent-600 hover:bg-accent-700 text-white rounded-2xl text-xs font-bold shadow-md hover:shadow-lg transition-all whitespace-nowrap"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Разместить клиента</span>
+              </button>
+            )}
+
+            <button
+              onClick={() => fetchLeads()}
+              disabled={isLoading}
+              className="p-2 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl text-neutral-400 hover:text-white transition-colors"
+              title="Обновить"
+            >
+              <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+            </button>
           </div>
         </div>
 
-        {isMarketplace && (
-          <div className="flex bg-neutral-100 dark:bg-neutral-800 p-1 rounded-lg w-full sm:w-auto">
-            <button
-              onClick={() => setViewMode('all')}
-              className={`flex-1 sm:flex-none px-4 py-1.5 text-sm font-bold rounded-md transition-colors ${viewMode === 'all' ? 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white shadow-sm' : 'text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'}`}
-            >
-              Все заявки
-            </button>
-            <button
-              onClick={() => setViewMode('my-shared')}
-              className={`flex-1 sm:flex-none px-4 py-1.5 text-sm font-bold rounded-md transition-colors ${viewMode === 'my-shared' ? 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white shadow-sm' : 'text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'}`}
-            >
-              Мои выставленные
-            </button>
-          </div>
-        )}
-
-        <div className="flex flex-wrap gap-2 w-full sm:w-auto">
-          {isAdmin ? (
-            <button
-              onClick={() => openLeadModal()}
-              className="flex items-center gap-2 px-4 py-2 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rounded-lg text-sm font-bold shadow-md hover:shadow-lg transition-all"
-            >
-              <Plus className="w-4 h-4" />
-              {t('createLead')}
-            </button>
-          ) : (
-            <button
-              onClick={() => setIsMasterModalOpen(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-accent-600 hover:bg-accent-700 text-white rounded-lg text-sm font-bold shadow-md hover:shadow-lg transition-all whitespace-nowrap"
-            >
-              <Plus className="w-4 h-4" />
-              Разместить клиента
-            </button>
-          )}
-          {!showOnlyUnlocked && (
-            <div className="w-full sm:w-64 relative z-10">
-              <CityMultiSelect 
-                cities={cities}
-                selectedCityIds={selectedCityFilters}
-                onChange={setSelectedCityFilters}
-              />
+        {/* Sub-Filter Controls */}
+        <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-2 justify-between">
+          {isMarketplace && (
+            <div className="flex bg-neutral-100 dark:bg-neutral-900 p-1 rounded-2xl border border-white/10 w-full sm:w-auto">
+              <button
+                onClick={() => setViewMode('all')}
+                className={`flex-1 sm:flex-none px-4 py-1.5 text-xs font-bold rounded-xl transition-all ${viewMode === 'all' ? 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white shadow-sm' : 'text-neutral-400 hover:text-white'}`}
+              >
+                Все заявки
+              </button>
+              <button
+                onClick={() => setViewMode('my-shared')}
+                className={`flex-1 sm:flex-none px-4 py-1.5 text-xs font-bold rounded-xl transition-all ${viewMode === 'my-shared' ? 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white shadow-sm' : 'text-neutral-400 hover:text-white'}`}
+              >
+                Мои выставленные
+              </button>
             </div>
           )}
-          <button
-            onClick={togglePushNotifications}
-            className={`flex items-center gap-2.5 px-4 py-2 border rounded-full text-sm font-semibold transition-all duration-300 shadow-sm hover:scale-[1.02] ${
-              pushEnabled 
-                ? 'bg-emerald-500/10 dark:bg-emerald-500/20 border-emerald-500/30 dark:border-emerald-500/50 text-emerald-600 dark:text-emerald-400' 
-                : 'bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 text-neutral-500 hover:text-neutral-950 dark:hover:text-white'
-            }`}
-          >
-            {pushEnabled ? (
-              <>
-                <Bell className="w-4 h-4 text-emerald-500 dark:text-emerald-400 animate-pulse" />
-                <span>Уведомления: Вкл</span>
-              </>
-            ) : (
-              <>
-                <BellOff className="w-4 h-4 text-neutral-400" />
-                <span>Уведомления: Выкл</span>
-              </>
+
+          <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+            {!showOnlyUnlocked && (
+              <div className="flex-1 sm:w-56 relative z-10">
+                <CityMultiSelect 
+                  cities={cities}
+                  selectedCityIds={selectedCityFilters}
+                  onChange={setSelectedCityFilters}
+                />
+              </div>
             )}
-          </button>
-          <button
-            onClick={() => fetchLeads()}
-            disabled={isLoading}
-            className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-lg text-sm text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white hover:border-neutral-600 transition-colors disabled:opacity-50"
-          >
-            <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
-            {t('refresh')}
-          </button>
-          
-          <button
-            onClick={() => setShowFilters(!showFilters)}
-            className={`flex items-center gap-2 px-4 py-2 border rounded-lg text-sm font-semibold transition-colors ${
-              showFilters 
-                ? 'bg-primary-50 dark:bg-primary-900/30 border-primary-500 text-primary-600 dark:text-primary-400' 
-                : 'bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 text-neutral-700 dark:text-neutral-300 hover:border-neutral-600'
-            }`}
-          >
-            <Filter className="w-4 h-4" />
-            Фильтры
-          </button>
+
+            <button
+              onClick={togglePushNotifications}
+              className={`flex items-center justify-center gap-2 px-3.5 py-1.5 border rounded-2xl text-xs font-semibold transition-all duration-300 ${
+                pushEnabled 
+                  ? 'bg-emerald-500/10 dark:bg-emerald-500/20 border-emerald-500/30 text-emerald-600 dark:text-emerald-400' 
+                  : 'bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 text-neutral-400 hover:text-white'
+              }`}
+            >
+              {pushEnabled ? (
+                <>
+                  <Bell className="w-3.5 h-3.5 text-emerald-500 animate-pulse" />
+                  <span>Уведомления: Вкл</span>
+                </>
+              ) : (
+                <>
+                  <BellOff className="w-3.5 h-3.5 text-neutral-400" />
+                  <span>Уведомления: Выкл</span>
+                </>
+              )}
+            </button>
+
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              className={`flex items-center justify-center gap-1.5 px-3.5 py-1.5 border rounded-2xl text-xs font-bold transition-all ${
+                showFilters 
+                  ? 'bg-primary-500/20 border-primary-500/50 text-primary-400' 
+                  : 'bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 text-neutral-400 hover:text-white'
+              }`}
+            >
+              <Filter className="w-3.5 h-3.5" />
+              <span>Фильтры</span>
+            </button>
+          </div>
         </div>
       </div>
 
