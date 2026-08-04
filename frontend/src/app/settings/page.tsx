@@ -38,8 +38,7 @@ export default function SettingsPage() {
   const [profile, setProfile] = useState<Profile | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false)
-  const fileInputRef = useRef<HTMLInputElement>(null)
+
   
   // Settings state
   const [theme, setTheme] = useState('dark')
@@ -107,39 +106,7 @@ export default function SettingsPage() {
     }
   }
 
-  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files || e.target.files.length === 0) return
-    
-    try {
-      const file = e.target.files[0]
-      setIsUploadingAvatar(true)
-      
-      const compressionOptions = {
-        maxSizeMB: 1,
-        maxWidthOrHeight: 1024,
-        useWebWorker: true,
-      }
-      
-      const fileExt = file.name.split('.').pop()
-      const fileName = `avatar-${Math.random()}.${fileExt}`
-      const filePath = `${profile?.id}/${fileName}`
 
-      const compressedFile = await imageCompression(file, compressionOptions)
-      const { error: uploadError } = await supabase.storage.from('avatars').upload(filePath, compressedFile)
-      if (uploadError) throw uploadError
-
-      const { data } = supabase.storage.from('avatars').getPublicUrl(filePath)
-      
-      const updated = await api.updateProfile({ avatar_url: data.publicUrl })
-      setProfile(updated)
-      toast.success(language === 'ru' ? 'Аватар обновлен' : 'Avatar updated')
-    } catch (error: any) {
-      toast.error(language === 'ru' ? 'Ошибка загрузки аватара' : 'Upload error')
-      console.error(error)
-    } finally {
-      setIsUploadingAvatar(false)
-    }
-  }
 
   const loadSettings = () => {
     if (typeof window !== 'undefined') {
@@ -298,46 +265,7 @@ export default function SettingsPage() {
         )}
 
         <div className="bg-white/40 dark:bg-neutral-900/40 backdrop-blur-md border border-neutral-200/50 dark:border-white/5 shadow-xl rounded-3xl overflow-hidden">
-          {/* Avatar Upload */}
-          <div className="p-6 border-b border-neutral-200/50 dark:border-white/5 hover:bg-white/50 dark:hover:bg-neutral-800/50 transition-colors">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div className="flex items-center gap-4">
-                <div className="relative w-16 h-16 rounded-full bg-neutral-200 dark:bg-neutral-800 flex items-center justify-center overflow-hidden border-2 border-white dark:border-neutral-900 shadow-sm shrink-0">
-                  {profile?.avatar_url ? (
-                    <Image src={profile.avatar_url} alt="avatar" className="w-full h-full object-cover" width={800} height={800} />
-                  ) : (
-                    <User className="w-8 h-8 text-neutral-400" />
-                  )}
-                  {isUploadingAvatar && (
-                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center backdrop-blur-sm">
-                      <Loader2 className="w-6 h-6 text-white animate-spin" />
-                    </div>
-                  )}
-                </div>
-                <div>
-                  <p className="text-neutral-900 dark:text-white font-bold">{language === 'ru' ? 'Аватар профиля' : 'Profile Avatar'}</p>
-                  <p className="text-neutral-500 dark:text-neutral-400 text-sm mt-0.5">{language === 'ru' ? 'Загрузите фото, чтобы клиентам было проще вас узнать' : 'Upload a photo so clients can easily recognize you'}</p>
-                </div>
-              </div>
-              <div>
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  onChange={handleAvatarUpload}
-                  accept="image/jpeg,image/png,image/webp"
-                  className="hidden"
-                />
-                <button
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={isUploadingAvatar}
-                  className="flex items-center justify-center gap-2 px-5 py-2.5 bg-neutral-100 hover:bg-neutral-200 dark:bg-white/10 dark:hover:bg-white/20 text-neutral-900 dark:text-white rounded-xl font-bold transition-all disabled:opacity-50 w-full sm:w-auto"
-                >
-                  <Camera className="w-4 h-4" />
-                  {language === 'ru' ? 'Изменить фото' : 'Change photo'}
-                </button>
-              </div>
-            </div>
-          </div>
+
 
           {/* Language */}
           <div className="p-6 border-b border-neutral-200/50 dark:border-white/5 hover:bg-white/50 dark:hover:bg-neutral-800/50 transition-colors">
