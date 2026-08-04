@@ -357,6 +357,11 @@ async def send_message(
     lead_id = chat["lead_id"]
     master_id = chat["master_id"]
     
+    # Check if admin disabled chat access for this user
+    user_perm_res = supabase.table("users").select("can_chat").eq("id", current_user.user_id).single().execute()
+    if user_perm_res.data and user_perm_res.data.get("can_chat") is False:
+        raise HTTPException(status_code=403, detail="CHAT_DISABLED_BY_ADMIN: Отправка сообщений заблокирована администратором.")
+
     sender_type = None
 
     if chat["master_id"] == current_user.user_id:

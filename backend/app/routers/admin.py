@@ -47,6 +47,8 @@ class AdminUserResponse(BaseModel):
     balance: float
     credits: int
     currency: str = "CZK"
+    can_chat: bool = True
+    can_create_leads: bool = True
     telegram_id: int | None = None
     telegram_username: str | None = None
     whatsapp_number: str | None = None
@@ -160,6 +162,8 @@ async def get_users(
                 balance=float(u.get("balance") or 0.0) if float(u.get("balance") or 0.0) > 0 else float(u.get("credits") or 0),
                 credits=u.get("credits") or 0,
                 currency=u.get("currency") or "CZK",
+                can_chat=u.get("can_chat") if u.get("can_chat") is not None else True,
+                can_create_leads=u.get("can_create_leads") if u.get("can_create_leads") is not None else True,
                 created_at=u["created_at"],
                 portfolio_url=u.get("portfolio_url"),
                 role=u.get("role"),
@@ -846,3 +850,100 @@ async def sync_currency_rates(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to sync currency rates: {str(e)}"
         )
+
+
+class UserPermissionsUpdate(BaseModel):
+    role: Optional[str] = None
+    is_verified_master: Optional[bool] = None
+    can_chat: Optional[bool] = None
+    can_create_leads: Optional[bool] = None
+
+@router.put("/users/{user_id}/permissions")
+async def update_user_permissions(
+    user_id: str,
+    permissions: UserPermissionsUpdate,
+    admin_user: AuthUser = Depends(get_admin_user),
+    supabase: Client = Depends(get_supabase_client)
+):
+    """Update user role, verification status, and permissions (can_chat, can_create_leads)."""
+    try:
+        update_data = {}
+        if permissions.role is not None:
+            update_data["role"] = permissions.role
+        if permissions.is_verified_master is not None:
+            update_data["is_verified_master"] = permissions.is_verified_master
+        if permissions.can_chat is not None:
+            update_data["can_chat"] = permissions.can_chat
+        if permissions.can_create_leads is not None:
+            update_data["can_create_leads"] = permissions.can_create_leads
+
+        res = supabase.table("users").update(update_data).eq("id", user_id).execute()
+        if not res.data:
+            raise HTTPException(status_code=404, detail="User not found")
+        return res.data[0]
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/users/{user_id}/chats")
+async def get_user_chats_for_admin(
+    user_id: str,
+    admin_user: AuthUser = Depends(get_admin_user),
+    supabase: Client = Depends(get_supabase_client)
+):
+    """Get all lead_chats for a specific user as client or master."""
+    try:
+        res = supabase.table("lead_chats") \
+            .select("*, leads(title), client:users!lead_chats_client_id_fkey(full_name, email, avatar_url), master:users!lead_chats_master_id_fkey(full_name, email, avatar_url)") \
+            .or_(f"client_id.eq.{user_id},master_id.eq.{user_id}") \
+            .order("created_at", desc=True) \
+            .execute()
+        return res.data or []
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/chats/{chat_id}/messages")
+async def get_chat_messages_for_admin(
+    chat_id: str,
+    admin_user: AuthUser = Depends(get_admin_user),
+    supabase: Client = Depends(get_supabase_client)
+):
+    """Get all messages in a chat for admin inspection."""
+    try:
+        res = supabase.table("chat_messages") \
+            .select("*") \
+            .eq("chat_id", chat_id) \
+            .order("created_at", asc=True) \
+            .execute()
+        return res.data or []
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/users/{user_id}/leads")
+async def get_user_leads_for_admin(
+    user_id: str,
+    admin_user: AuthUser = Depends(get_admin_user),
+    supabase: Client = Depends(get_supabase_client)
+):
+    """Get all created leads or submitted proposals for a user."""
+    try:
+        user_res = supabase.table("users").select("role").eq("id", user_id).single().execute()
+        user_role = (user_res.data or {}).get("role", "client")
+
+        if user_role == "master":
+            res = supabase.table("lead_proposals") \
+                .select("*, leads(id, title, city_id, status)") \
+                .eq("user_id", user_id) \
+                .order("created_at", desc=True) \
+                .execute()
+            return {"type": "proposals", "data": res.data or []}
+        else:
+            res = supabase.table("leads") \
+                .select("*") \
+                .eq("client_id", user_id) \
+                .order("created_at", desc=True) \
+                .execute()
+            return {"type": "leads", "data": res.data or []}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

@@ -10,7 +10,7 @@ import { AdminDisputes } from '@/components/AdminDisputes'
 import { AdminCurrencies } from '@/components/AdminCurrencies'
 import { AdminLeads } from '@/components/AdminLeads'
 import { supabase, Profile } from '@/lib/supabase'
-import { CheckCircle, XCircle, Clock, Loader2, Plus, Edit2, Trash2, Link as LinkIcon, Search, Coins, Ban } from 'lucide-react'
+import { CheckCircle, XCircle, Clock, Loader2, Plus, Edit2, Trash2, Link as LinkIcon, Search, Coins, Ban, Eye, MessageSquare, Shield, Lock, Unlock, UserCheck, FileText, X, Check } from 'lucide-react'
 import { getTranslation, Language } from '@/lib/i18n'
 import toast from 'react-hot-toast'
 import { useLanguage } from '@/i18n/LanguageContext'
@@ -30,6 +30,8 @@ interface AdminUserResponse {
   balance: number
   credits: number
   currency?: string
+  can_chat?: boolean
+  can_create_leads?: boolean
   created_at: string
   portfolio_url?: string
   role?: string
@@ -66,6 +68,126 @@ export default function AdminPage() {
   const [selectedBadgeTier, setSelectedBadgeTier] = useState<'none' | 'pro' | 'vip'>('vip')
   const [selectedDurationDays, setSelectedDurationDays] = useState<number>(30)
   const [isSubmittingBadge, setIsSubmittingBadge] = useState<boolean>(false)
+
+  // User Detail & Inspector Modal State
+  const [detailModalUser, setDetailModalUser] = useState<AdminUserResponse | null>(null)
+  const [activeUserDetailTab, setActiveUserDetailTab] = useState<'profile' | 'chats' | 'leads'>('profile')
+  const [userChats, setUserChats] = useState<any[]>([])
+  const [userLeadsData, setUserLeadsData] = useState<{ type: string, data: any[] } | null>(null)
+  const [selectedChatMessages, setSelectedChatMessages] = useState<any[] | null>(null)
+  const [selectedChatTitle, setSelectedChatTitle] = useState<string>('')
+  const [isLoadingUserChats, setIsLoadingUserChats] = useState<boolean>(false)
+  const [isLoadingUserLeads, setIsLoadingUserLeads] = useState<boolean>(false)
+  const [isLoadingChatMessages, setIsLoadingChatMessages] = useState<boolean>(false)
+  const [isUpdatingPermissions, setIsUpdatingPermissions] = useState<boolean>(false)
+
+  const openUserDetailModal = async (user: AdminUserResponse) => {
+    setDetailModalUser(user)
+    setActiveUserDetailTab('profile')
+    setSelectedChatMessages(null)
+    loadUserChats(user.id)
+    loadUserLeads(user.id)
+  }
+
+  const loadUserChats = async (userId: string) => {
+    try {
+      setIsLoadingUserChats(true)
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) return
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/admin/users/${userId}/chats`, {
+        headers: { 'Authorization': `Bearer ${session.access_token}` }
+      })
+      if (res.ok) {
+        const data = await res.json()
+        setUserChats(data)
+      }
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setIsLoadingUserChats(false)
+    }
+  }
+
+  const loadUserLeads = async (userId: string) => {
+    try {
+      setIsLoadingUserLeads(true)
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) return
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/admin/users/${userId}/leads`, {
+        headers: { 'Authorization': `Bearer ${session.access_token}` }
+      })
+      if (res.ok) {
+        const data = await res.json()
+        setUserLeadsData(data)
+      }
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setIsLoadingUserLeads(false)
+    }
+  }
+
+  const openChatInspector = async (chatId: string, title: string) => {
+    try {
+      setIsLoadingChatMessages(true)
+      setSelectedChatTitle(title)
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) return
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/admin/chats/${chatId}/messages`, {
+        headers: { 'Authorization': `Bearer ${session.access_token}` }
+      })
+      if (res.ok) {
+        const data = await res.json()
+        setSelectedChatMessages(data)
+      }
+    } catch (e) {
+      toast.error('Не удалось загрузить сообщения')
+    } finally {
+      setIsLoadingChatMessages(false)
+    }
+  }
+
+  const updateUserPermissions = async (userId: string, permissions: { role?: string, is_verified_master?: boolean, can_chat?: boolean, can_create_leads?: boolean }) => {
+    try {
+      setIsUpdatingPermissions(true)
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) return
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/admin/users/${userId}/permissions`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify(permissions)
+      })
+      if (!res.ok) {
+        const err = await res.json()
+        throw new Error(err.detail || 'Не удалось обновить права')
+      }
+      const updated = await res.json()
+      setUsers(prev => prev.map(u => u.id === userId ? {
+        ...u,
+        role: updated.role,
+        is_verified_master: updated.is_verified_master,
+        can_chat: updated.can_chat,
+        can_create_leads: updated.can_create_leads
+      } : u))
+      if (detailModalUser && detailModalUser.id === userId) {
+        setDetailModalUser(prev => prev ? {
+          ...prev,
+          role: updated.role,
+          is_verified_master: updated.is_verified_master,
+          can_chat: updated.can_chat,
+          can_create_leads: updated.can_create_leads
+        } : null)
+      }
+      toast.success('Права пользователя успешно обновлены!')
+    } catch (e: any) {
+      toast.error(e.message || 'Ошибка обновления прав')
+    } finally {
+      setIsUpdatingPermissions(false)
+    }
+  }
 
   const handleOpenBadgeModal = (user: AdminUserResponse) => {
     setBadgeModalUser(user)
@@ -570,6 +692,14 @@ export default function AdminPage() {
                           </div>
                         ) : (
                           <div className="flex justify-end gap-2">
+                            <button
+                              onClick={() => openUserDetailModal(user)}
+                              className="px-3.5 py-2 bg-accent-500/10 hover:bg-accent-500/20 text-accent-600 dark:text-accent-400 border border-accent-500/20 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm"
+                              title="Открыть карточку пользователя и инспектор диалогов"
+                            >
+                              <Eye className="w-3.5 h-3.5" />
+                              Инспектор
+                            </button>
                             {user.role === 'master' && user.certificate_url && (
                               <button
                                 onClick={() => setCertificateReviewUser(user)}
@@ -602,7 +732,7 @@ export default function AdminPage() {
                                 Баланс
                               </button>
                             )}
-                            {user.status === 'pending' && (user.role === 'master' || user.is_admin || user.is_verified_master) && (
+                            {user.status === 'pending' && user.role === 'master' && (
                               <button
                                 onClick={() => updateUserStatus(user.id, 'approved')}
                                 disabled={user.role === 'master' && !user.portfolio_url}
@@ -612,7 +742,7 @@ export default function AdminPage() {
                                 Одобрить
                               </button>
                             )}
-                            {user.status === 'approved' && (user.role === 'master' || user.is_admin || user.is_verified_master) && (
+                            {user.status === 'approved' && user.role === 'master' && (
                               <button
                                 onClick={() => updateUserStatus(user.id, 'pending')}
                                 className="px-3.5 py-2 bg-amber-500/10 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 border border-amber-500/20 rounded-xl text-xs font-bold hover:bg-amber-500/20 transition-all"
@@ -814,6 +944,317 @@ export default function AdminPage() {
                 {isSubmittingBadge ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Сохранить статус'}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* User Detail & Inspector Modal */}
+      {detailModalUser && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-white/10 rounded-3xl p-6 sm:p-8 w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl animate-fade-in-up">
+            
+            {/* Header */}
+            <div className="flex items-center justify-between border-b border-neutral-200 dark:border-white/10 pb-4 mb-6">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-2xl bg-accent-500/20 text-accent-500 flex items-center justify-center font-bold text-xl">
+                  {detailModalUser.email[0].toUpperCase()}
+                </div>
+                <div>
+                  <h3 className="text-lg sm:text-xl font-extrabold text-neutral-900 dark:text-white flex items-center gap-2">
+                    {detailModalUser.display_name || detailModalUser.email}
+                    <span className="text-xs px-2.5 py-0.5 rounded-full font-black uppercase bg-accent-500/10 text-accent-500 border border-accent-500/20">
+                      {detailModalUser.role || 'client'}
+                    </span>
+                  </h3>
+                  <p className="text-xs text-neutral-400 font-mono">{detailModalUser.email} • ID: {detailModalUser.id}</p>
+                </div>
+              </div>
+
+              <button
+                onClick={() => setDetailModalUser(null)}
+                className="w-9 h-9 rounded-xl bg-neutral-100 dark:bg-neutral-800 text-neutral-500 hover:text-neutral-900 dark:hover:text-white flex items-center justify-center transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Navigation Tabs */}
+            <div className="flex items-center gap-2 border-b border-neutral-200 dark:border-white/10 mb-6 pb-2">
+              <button
+                onClick={() => setActiveUserDetailTab('profile')}
+                className={`px-4 py-2 rounded-xl text-xs font-extrabold transition-all flex items-center gap-2 ${
+                  activeUserDetailTab === 'profile'
+                    ? 'bg-accent-500 text-white shadow-md'
+                    : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200'
+                }`}
+              >
+                <Shield className="w-4 h-4" />
+                Профиль и Права
+              </button>
+
+              <button
+                onClick={() => setActiveUserDetailTab('chats')}
+                className={`px-4 py-2 rounded-xl text-xs font-extrabold transition-all flex items-center gap-2 ${
+                  activeUserDetailTab === 'chats'
+                    ? 'bg-accent-500 text-white shadow-md'
+                    : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200'
+                }`}
+              >
+                <MessageSquare className="w-4 h-4" />
+                Переписки ({userChats.length})
+              </button>
+
+              <button
+                onClick={() => setActiveUserDetailTab('leads')}
+                className={`px-4 py-2 rounded-xl text-xs font-extrabold transition-all flex items-center gap-2 ${
+                  activeUserDetailTab === 'leads'
+                    ? 'bg-accent-500 text-white shadow-md'
+                    : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200'
+                }`}
+              >
+                <FileText className="w-4 h-4" />
+                {detailModalUser.role === 'master' ? 'Отклики в маркете' : 'Созданные заявки'}
+              </button>
+            </div>
+
+            {/* TAB 1: PROFILE & PERMISSIONS */}
+            {activeUserDetailTab === 'profile' && (
+              <div className="space-y-6">
+                
+                {/* Role and Status Management */}
+                <div className="bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-white/5 rounded-2xl p-5">
+                  <h4 className="text-xs font-extrabold uppercase tracking-wider text-neutral-500 mb-4">Управление Ролью и Статусом</h4>
+                  
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-neutral-400 mb-1">Роль аккаунта</label>
+                      <div className="flex gap-2">
+                        {['client', 'master', 'admin'].map((r) => (
+                          <button
+                            key={r}
+                            onClick={() => updateUserPermissions(detailModalUser.id, { role: r })}
+                            disabled={isUpdatingPermissions}
+                            className={`px-3 py-1.5 rounded-xl text-xs font-bold uppercase transition-all border ${
+                              detailModalUser.role === r
+                                ? 'bg-accent-500 text-white border-accent-500'
+                                : 'bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 text-neutral-600 dark:text-neutral-400'
+                            }`}
+                          >
+                            {r}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-neutral-400 mb-1">Подтверждение мастера</label>
+                      <button
+                        onClick={() => updateUserPermissions(detailModalUser.id, { is_verified_master: !detailModalUser.is_verified_master })}
+                        disabled={isUpdatingPermissions}
+                        className={`w-full px-4 py-2 rounded-xl text-xs font-extrabold flex items-center justify-between transition-all border ${
+                          detailModalUser.is_verified_master
+                            ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-500'
+                            : 'bg-neutral-200/50 dark:bg-neutral-800 border-neutral-300 dark:border-neutral-700 text-neutral-500'
+                        }`}
+                      >
+                        <span>{detailModalUser.is_verified_master ? '✓ Верифицирован' : 'Не верифицирован'}</span>
+                        <UserCheck className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Access Control Permissions */}
+                <div className="bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-white/5 rounded-2xl p-5">
+                  <h4 className="text-xs font-extrabold uppercase tracking-wider text-neutral-500 mb-4">Блокировки и Права доступа</h4>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {/* Can Chat Toggle */}
+                    <div className="p-4 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-white/5 rounded-xl flex items-center justify-between">
+                      <div>
+                        <div className="font-bold text-sm text-neutral-900 dark:text-white flex items-center gap-2">
+                          <MessageSquare className="w-4 h-4 text-accent-500" />
+                          Отправка сообщений
+                        </div>
+                        <p className="text-xs text-neutral-500">Доступ к личным диалогам</p>
+                      </div>
+
+                      <button
+                        onClick={() => updateUserPermissions(detailModalUser.id, { can_chat: !(detailModalUser.can_chat ?? true) })}
+                        disabled={isUpdatingPermissions}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all flex items-center gap-1 ${
+                          (detailModalUser.can_chat ?? true)
+                            ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/30'
+                            : 'bg-red-500/10 text-red-500 border border-red-500/30'
+                        }`}
+                      >
+                        {(detailModalUser.can_chat ?? true) ? <Unlock className="w-3.5 h-3.5" /> : <Lock className="w-3.5 h-3.5" />}
+                        {(detailModalUser.can_chat ?? true) ? 'Разрешено' : 'Заблокировано'}
+                      </button>
+                    </div>
+
+                    {/* Can Create Leads Toggle */}
+                    <div className="p-4 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-white/5 rounded-xl flex items-center justify-between">
+                      <div>
+                        <div className="font-bold text-sm text-neutral-900 dark:text-white flex items-center gap-2">
+                          <FileText className="w-4 h-4 text-accent-500" />
+                          Публикация заявок
+                        </div>
+                        <p className="text-xs text-neutral-500">Доступ к Маркетплейсу</p>
+                      </div>
+
+                      <button
+                        onClick={() => updateUserPermissions(detailModalUser.id, { can_create_leads: !(detailModalUser.can_create_leads ?? true) })}
+                        disabled={isUpdatingPermissions}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all flex items-center gap-1 ${
+                          (detailModalUser.can_create_leads ?? true)
+                            ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/30'
+                            : 'bg-red-500/10 text-red-500 border border-red-500/30'
+                        }`}
+                      >
+                        {(detailModalUser.can_create_leads ?? true) ? <Unlock className="w-3.5 h-3.5" /> : <Lock className="w-3.5 h-3.5" />}
+                        {(detailModalUser.can_create_leads ?? true) ? 'Разрешено' : 'Заблокировано'}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Additional Metadata */}
+                <div className="bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-white/5 rounded-2xl p-5 text-xs space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-neutral-500">Баланс:</span>
+                    <strong className="text-amber-400">{detailModalUser.balance} {detailModalUser.currency || 'CZK'}</strong>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-neutral-500">VIP / PRO Статус:</span>
+                    <strong className="text-purple-400">{detailModalUser.badge_tier?.toUpperCase() || 'NONE'}</strong>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-neutral-500">Дата регистрации:</span>
+                    <span className="text-neutral-300">{new Date(detailModalUser.created_at).toLocaleString()}</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* TAB 2: CHATS & MESSAGES INSPECTOR */}
+            {activeUserDetailTab === 'chats' && (
+              <div className="space-y-4">
+                {isLoadingUserChats ? (
+                  <div className="py-12 text-center">
+                    <Loader2 className="w-8 h-8 text-accent-500 animate-spin mx-auto mb-2" />
+                    <p className="text-xs text-neutral-500">Загрузка переписок...</p>
+                  </div>
+                ) : userChats.length === 0 ? (
+                  <div className="py-12 text-center text-neutral-400 text-sm">
+                    У пользователя пока нет активных диалогов.
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Chat List */}
+                    <div className="space-y-2 max-h-[400px] overflow-y-auto pr-1">
+                      {userChats.map((chat) => {
+                        const counterpart = chat.client_id === detailModalUser.id ? chat.master : chat.client
+                        return (
+                          <div
+                            key={chat.id}
+                            onClick={() => openChatInspector(chat.id, chat.leads?.title || 'Диалог по заявке')}
+                            className="p-4 bg-neutral-50 dark:bg-neutral-950 hover:bg-accent-500/10 border border-neutral-200 dark:border-white/5 rounded-2xl cursor-pointer transition-all flex items-center justify-between"
+                          >
+                            <div>
+                              <h5 className="font-bold text-sm text-neutral-900 dark:text-white">
+                                {counterpart?.full_name || counterpart?.email || 'Собеседник'}
+                              </h5>
+                              <p className="text-xs text-neutral-400 mt-0.5">{chat.leads?.title || 'Заявка'}</p>
+                              <span className="text-[10px] text-neutral-500">{new Date(chat.created_at).toLocaleDateString()}</span>
+                            </div>
+                            <Eye className="w-4 h-4 text-accent-500 shrink-0" />
+                          </div>
+                        )
+                      })}
+                    </div>
+
+                    {/* Messages Viewer */}
+                    <div className="bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-white/5 rounded-2xl p-4 flex flex-col h-[400px]">
+                      {isLoadingChatMessages ? (
+                        <div className="my-auto text-center">
+                          <Loader2 className="w-6 h-6 text-accent-500 animate-spin mx-auto mb-2" />
+                          <p className="text-xs text-neutral-500">Загрузка сообщений...</p>
+                        </div>
+                      ) : selectedChatMessages ? (
+                        <>
+                          <h4 className="font-bold text-xs uppercase tracking-wider text-accent-400 pb-2 border-b border-neutral-200 dark:border-white/5 mb-3">
+                            Лог сообщений: {selectedChatTitle}
+                          </h4>
+
+                          <div className="flex-1 overflow-y-auto space-y-3 pr-1 text-xs">
+                            {selectedChatMessages.length === 0 ? (
+                              <p className="text-neutral-500 text-center my-auto">Сообщений в этом чате нет.</p>
+                            ) : (
+                              selectedChatMessages.map((msg) => (
+                                <div
+                                  key={msg.id}
+                                  className={`p-3 rounded-2xl max-w-[85%] ${
+                                    msg.sender_type === 'master'
+                                      ? 'bg-primary-500/10 border border-primary-500/20 text-primary-300 ml-auto'
+                                      : 'bg-accent-500/10 border border-accent-500/20 text-accent-300 mr-auto'
+                                  }`}
+                                >
+                                  <div className="flex items-center justify-between text-[10px] opacity-70 mb-1">
+                                    <span className="font-bold uppercase">{msg.sender_type}</span>
+                                    <span>{new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                  </div>
+                                  <p className="whitespace-pre-wrap">{msg.content}</p>
+                                </div>
+                              ))
+                            )}
+                          </div>
+                        </>
+                      ) : (
+                        <div className="my-auto text-center text-xs text-neutral-500">
+                          Выберите диалог слева для просмотра всех сообщений
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* TAB 3: LEADS & PROPOSALS */}
+            {activeUserDetailTab === 'leads' && (
+              <div className="space-y-4">
+                {isLoadingUserLeads ? (
+                  <div className="py-12 text-center">
+                    <Loader2 className="w-8 h-8 text-accent-500 animate-spin mx-auto mb-2" />
+                    <p className="text-xs text-neutral-500">Загрузка данных...</p>
+                  </div>
+                ) : !userLeadsData || userLeadsData.data.length === 0 ? (
+                  <div className="py-12 text-center text-neutral-400 text-sm">
+                    {detailModalUser.role === 'master' ? 'Мастер пока не отправлял отклики.' : 'Пользователь пока не публиковал заявки.'}
+                  </div>
+                ) : (
+                  <div className="space-y-2 max-h-[450px] overflow-y-auto pr-1">
+                    {userLeadsData.data.map((item: any) => (
+                      <div key={item.id} className="p-4 bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-white/5 rounded-2xl flex items-center justify-between">
+                        <div>
+                          <h5 className="font-bold text-sm text-neutral-900 dark:text-white">
+                            {userLeadsData.type === 'proposals' ? (item.leads?.title || 'Отклик на заявку') : item.title}
+                          </h5>
+                          <p className="text-xs text-neutral-400 mt-0.5">
+                            {userLeadsData.type === 'proposals' ? `Цена предл.: ${item.price_offer} CZK` : `Бюджет: ${item.budget || 'По договоренности'}`}
+                          </p>
+                        </div>
+                        <span className="px-3 py-1 bg-accent-500/10 text-accent-400 font-extrabold text-xs rounded-full uppercase">
+                          {item.status}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
           </div>
         </div>
       )}
