@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Award, CalendarCheck, MapPin, MessageCircle, Send } from 'lucide-react'
+import { Award, CalendarCheck, MapPin, MessageCircle, Send, Crown, Star } from 'lucide-react'
 import { publicApi } from '@/lib/publicApi'
 
 export function VerifiedMasterBadge({ verified, className = 'h-4 w-4 text-primary-500' }: { verified?: boolean; className?: string }) {
@@ -16,6 +16,36 @@ export function VerifiedMasterBadge({ verified, className = 'h-4 w-4 text-primar
       <Award className={className} aria-hidden="true" />
     </span>
   )
+}
+
+export function MasterTierBadge({ badgeTier }: { badgeTier?: string }) {
+  if (!badgeTier || badgeTier === 'none') return null
+
+  if (badgeTier === 'vip') {
+    return (
+      <span
+        title="VIP Мастер Tattoo HUB"
+        className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-rose-500/20 to-amber-500/20 border border-amber-500/40 px-2 py-0.5 text-[10px] font-black text-amber-300 shrink-0 shadow-[0_0_10px_rgba(245,158,11,0.3)]"
+      >
+        <Crown className="w-3 h-3 text-amber-400" />
+        <span>VIP</span>
+      </span>
+    )
+  }
+
+  if (badgeTier === 'pro') {
+    return (
+      <span
+        title="PRO Мастер Tattoo HUB"
+        className="inline-flex items-center gap-1 rounded-full bg-primary-500/20 border border-primary-500/40 px-2 py-0.5 text-[10px] font-black text-primary-300 shrink-0 shadow-[0_0_10px_rgba(168,85,247,0.3)]"
+      >
+        <Star className="w-3 h-3 text-primary-400" />
+        <span>PRO</span>
+      </span>
+    )
+  }
+
+  return null
 }
 
 interface MasterTrustSummaryProps {

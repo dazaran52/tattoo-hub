@@ -14,6 +14,8 @@ class PublicMasterResponse(BaseModel):
     portfolio_url: str | None = None
     city_ids: list[str] | None = None
     is_verified_master: bool = False
+    badge_tier: str = "none"
+    badge_expires_at: str | None = None
     certificate_status: str = "not_submitted"
     portfolio_posts: list[dict] = []
     theme: str = "system"
@@ -32,7 +34,7 @@ async def get_public_masters(
     """
     try:
         query = supabase.table("users").select(
-            "id, username, display_name, bio, portfolio_url, city_ids, styles, is_verified_master, certificate_status, status, role, theme, avatar_url, last_seen, portfolio_posts(id, media, description, created_at), master_reviews!master_reviews_master_id_fkey(rating), is_admin"
+            "id, username, display_name, bio, portfolio_url, city_ids, styles, is_verified_master, badge_tier, badge_expires_at, certificate_status, status, role, theme, avatar_url, last_seen, portfolio_posts(id, media, description, created_at), master_reviews!master_reviews_master_id_fkey(rating), is_admin"
         ).eq("role", "master").eq("is_verified_master", True).eq("status", "approved")
         
         response = await query.execute()

@@ -82,9 +82,8 @@ async def get_my_shared_leads(
         lead_ids = [lead["id"] for lead in leads]
         
         proposals = []
-        if lead_ids:
             proposal_res = await supabase.table("lead_proposals").select(
-                "*, users!lead_proposals_user_id_fkey(full_name, avatar_url)"
+                "*, users!lead_proposals_user_id_fkey(full_name, avatar_url, badge_tier)"
             ).in_("lead_id", lead_ids).execute()
             proposals = proposal_res.data or []
             

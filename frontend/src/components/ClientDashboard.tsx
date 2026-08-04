@@ -15,7 +15,7 @@ import { TATTOO_STYLES } from '@/lib/constants'
 import { motion, AnimatePresence } from 'framer-motion'
 import { OnlineIndicator } from '@/components/OnlineIndicator'
 import { usePresence } from '@/components/PresenceContext'
-import { VerifiedMasterBadge } from '@/components/PublicMasterTrust'
+import { VerifiedMasterBadge, MasterTierBadge } from '@/components/PublicMasterTrust'
 
 export function ClientDashboard({ 
   profile,
@@ -901,11 +901,12 @@ export function ClientDashboard({
                       <OnlineIndicator userId={master.id} lastSeen={master.last_seen} size="md" className="-bottom-1 -right-1" />
                     </div>
                     <div>
-                      <div className="flex items-center gap-1.5">
+                      <div className="flex flex-wrap items-center gap-1.5">
                         <h4 className="font-bold text-lg text-neutral-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
                           {master.display_name || master.username}
                         </h4>
                         <VerifiedMasterBadge verified={master.is_verified_master || master.certificate_status === 'approved'} className="h-4 w-4 text-primary-500" />
+                        <MasterTierBadge badgeTier={master.badge_tier} />
                       </div>
                       <p className="text-sm text-neutral-500 mb-2">@{master.username}</p>
 

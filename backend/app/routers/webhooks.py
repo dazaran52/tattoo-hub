@@ -64,15 +64,21 @@ async def stripe_webhook(
             "p_currency": currency,
             "p_provider_tx_id": f"stripe_{session_id}",
         }).execute()
-        result = fulfillment.data or {}
-        if not result.get("processed"):
-            return {"status": "already processed"}
+        pkg_id = meta.get('package_id')
+        if pkg_id in ('pro', 'vip', 'custom'):
+            badge_tier = 'vip' if pkg_id in ('vip', 'custom') else 'pro'
+            now_dt = datetime.datetime.now(datetime.timezone.utc)
+            expires_at = (now_dt + datetime.timedelta(days=30)).isoformat()
+            supabase.table("users").update({
+                "badge_tier": badge_tier,
+                "badge_expires_at": expires_at
+            }).eq("id", user_id).execute()
 
         # Add notification
         supabase.table("notifications").insert({
             "user_id": user_id,
             "title": "Баланс пополнен 💎",
-            "message": f"Ваш баланс успешно пополнен на {credit_amount} {currency} через Stripe.",
+            "message": f"Ваш баланс пополнен на {credit_amount} {currency}. {f'Активирован статус {badge_tier.upper()} на 30 дней!' if pkg_id in ('pro', 'vip', 'custom') else ''}",
             "type": "payment"
         }).execute()
         

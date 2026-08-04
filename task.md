@@ -1,0 +1,9 @@
+- [ ] Modify `LeadWizard.tsx` to post to `/api/leads/client/direct/{masterId}` for targeted marketplace leads.
+- [ ] Modify `backend/app/routers/leads.py` (`_create_client_lead`) to handle targeted marketplace leads correctly:
+  - Do not call `create_direct_booking` RPC.
+  - Insert lead with `assigned_master_id` and `is_personal = False`.
+  - Create chat and insert `[SYSTEM_CARD]` message "Новая заявка с маркетплейса".
+  - Send push notification.
+- [ ] Write a new database RPC `master_accept_targeted_lead` to handle auto-accepting the lead, deducting commission, creating CRM session, and marking the proposal/lead as accepted.
+- [ ] Modify `create_proposal` in `backend/app/routers/leads.py` to call `master_accept_targeted_lead` for targeted marketplace leads instead of regular proposal creation.
+- [ ] Verify changes end-to-end.
