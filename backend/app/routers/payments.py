@@ -29,17 +29,17 @@ PACKAGES = {
     "standard": {
         "name": "Standard Balance (+10% Bonus)",
         "amounts": {"CZK": 500, "EUR": 20, "USD": 22},
-        "credit_amounts": {"CZK": 550, "EUR": 22, "USD": 24},
+        "credit_amounts": {"CZK": 550, "EUR": 22, "USD": 24.2},
     },
     "pro": {
-        "name": "Pro Balance (+20% Bonus)",
+        "name": "Pro Balance (+15% Bonus)",
         "amounts": {"CZK": 1000, "EUR": 40, "USD": 44},
-        "credit_amounts": {"CZK": 1200, "EUR": 48, "USD": 53},
+        "credit_amounts": {"CZK": 1150, "EUR": 46, "USD": 50.6},
     },
     "vip": {
-        "name": "VIP Balance (+30% Bonus)",
+        "name": "VIP Balance (+20% Bonus)",
         "amounts": {"CZK": 2000, "EUR": 80, "USD": 88},
-        "credit_amounts": {"CZK": 2600, "EUR": 104, "USD": 114},
+        "credit_amounts": {"CZK": 2400, "EUR": 96, "USD": 105.6},
     },
 }
 
@@ -60,16 +60,16 @@ async def create_stripe_checkout_session(
         raise HTTPException(status_code=404, detail="USER_NOT_FOUND")
     currency = (user_res.data[0].get("currency") or "CZK").upper()
 
-    min_custom_amounts = {"CZK": 2000, "EUR": 80, "USD": 88}
+    min_custom_amounts = {"CZK": 3000, "EUR": 120, "USD": 132}
 
     if req.package_id == "custom":
-        if not req.custom_amount or req.custom_amount < min_custom_amounts.get(currency, 2000):
+        if not req.custom_amount or req.custom_amount < min_custom_amounts.get(currency, 3000):
             raise HTTPException(
                 status_code=400, 
-                detail=f"Custom amount must be at least {min_custom_amounts.get(currency, 2000)} {currency}"
+                detail=f"Custom amount must be at least {min_custom_amounts.get(currency, 3000)} {currency}"
             )
         amount_to_charge = float(req.custom_amount)
-        credit_amount = round(amount_to_charge * 1.30, 2) # +30% VIP Bonus
+        credit_amount = round(amount_to_charge * 1.30, 2) # +30% Custom Bonus
         product_name = f"Custom VIP Balance ({amount_to_charge} {currency} + 30% Bonus)"
     else:
         pkg = PACKAGES.get(req.package_id)

@@ -29,8 +29,8 @@ export default function TopUpPage() {
   // Custom amount state (for amounts >= VIP price)
   const [customAmount, setCustomAmount] = useState<string>('3000')
 
-  const minCustomAmounts: Record<string, number> = { CZK: 2000, EUR: 80, USD: 88 }
-  const currentMinCustom = minCustomAmounts[walletCurrency] || 2000
+  const minCustomAmounts: Record<string, number> = { CZK: 3000, EUR: 120, USD: 132 }
+  const currentMinCustom = minCustomAmounts[walletCurrency] || 3000
 
   useEffect(() => {
     const loadWallet = async () => {
@@ -121,10 +121,10 @@ export default function TopUpPage() {
       bonusText: '+10% БОНУС',
       popular: true,
       amounts: { CZK: 500, EUR: 20, USD: 22 },
-      creditAmounts: { CZK: 550, EUR: 22, USD: 24 },
+      creditAmounts: { CZK: 550, EUR: 22, USD: 24.2 },
       perks: [
         '+10% средств в подарок на баланс',
-        'Экономия комиссии на 1 сеанс',
+        'Приоритет откликов в маркете',
         'Мгновенное зачисление',
       ],
       color: 'from-primary-500/20 to-primary-500/5 dark:from-primary-900/30 dark:to-primary-900/10',
@@ -133,13 +133,13 @@ export default function TopUpPage() {
     {
       id: 'pro',
       name: 'Pro Pack',
-      badge: 'Выгода +20%',
-      bonusText: '+20% БОНУС',
+      badge: 'Выгода +15%',
+      bonusText: '+15% БОНУС',
       amounts: { CZK: 1000, EUR: 40, USD: 44 },
-      creditAmounts: { CZK: 1200, EUR: 48, USD: 53 },
+      creditAmounts: { CZK: 1150, EUR: 46, USD: 50.6 },
       perks: [
-        '+20% средств бесплатно на баланс',
-        '⭐ PRO Значок в поиске мастеров',
+        '+15% средств бесплатно на баланс',
+        '⭐ PRO Значок доверия',
         'Приоритет в списке каталога',
       ],
       color: 'from-amber-500/20 to-amber-500/5 dark:from-amber-900/30 dark:to-amber-900/10',
@@ -148,13 +148,13 @@ export default function TopUpPage() {
     {
       id: 'vip',
       name: 'VIP Pack',
-      badge: 'Макс. выгода +30%',
-      bonusText: '+30% БОНУС',
+      badge: 'Выгода +20%',
+      bonusText: '+20% БОНУС',
       vip: true,
       amounts: { CZK: 2000, EUR: 80, USD: 88 },
-      creditAmounts: { CZK: 2600, EUR: 104, USD: 114 },
+      creditAmounts: { CZK: 2400, EUR: 96, USD: 105.6 },
       perks: [
-        '+30% бонусных средств на баланс',
+        '+20% бонусных средств на баланс',
         '👑 VIP Золотой Значок доверия',
         'Приоритетный доступ к горячим лидам',
       ],
