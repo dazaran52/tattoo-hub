@@ -129,14 +129,36 @@ async def get_marketplace_leads(
     """Return marketplace leads only to masters with MVP access verification."""
     try:
         user_res = await supabase.table("users").select(
-            "role, is_verified_master, currency"
+            "role, is_verified_master, currency, badge_tier, badge_expires_at"
         ).eq("id", current_user.user_id).single().execute()
+        user_data = user_res.data or {}
         try:
-            ensure_master_can_access_marketplace(user_res.data or {})
+            ensure_master_can_access_marketplace(user_data)
         except ValueError as exc:
             raise HTTPException(status_code=403, detail=str(exc)) from exc
 
-        seven_days_ago = (datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=7)).isoformat()
+        # Calculate active badge tier
+        badge_tier = (user_data.get("badge_tier") or "none").lower()
+        badge_expires_at = user_data.get("badge_expires_at")
+        now_dt = datetime.datetime.now(datetime.timezone.utc)
+        is_badge_active = False
+        if badge_tier in ("pro", "vip"):
+            if not badge_expires_at:
+                is_badge_active = True
+            else:
+                try:
+                    exp_dt = datetime.datetime.fromisoformat(badge_expires_at.replace("Z", "+00:00"))
+                    if exp_dt > now_dt:
+                        is_badge_active = True
+                except Exception:
+                    is_badge_active = True
+
+        active_badge = badge_tier if is_badge_active else "none"
+
+        ten_min_ago = (now_dt - datetime.timedelta(minutes=10)).isoformat()
+        thirty_min_ago = (now_dt - datetime.timedelta(minutes=30)).isoformat()
+
+        seven_days_ago = (now_dt - datetime.timedelta(days=7)).isoformat()
         raw_res = await supabase.table("leads") \
             .select("*, cities(country_id), users!leads_client_id_fkey(id, last_seen)") \
             .neq("status", "closed") \
@@ -149,15 +171,28 @@ async def get_marketplace_leads(
         rejected_res = await supabase.table("lead_proposals").select("lead_id").eq("user_id", current_user.user_id).eq("status", "rejected").execute()
         rejected_lead_ids = {p["lead_id"] for p in (rejected_res.data or [])}
         
-        leads = [
-            lead for lead in raw_leads
-            if not lead.get("is_personal")
-            and lead["id"] not in rejected_lead_ids
-            and (
-                lead.get("assigned_master_id") is None
-                or lead.get("assigned_master_id") == current_user.user_id
-            )
-        ]
+        leads = []
+        for lead in raw_leads:
+            if lead.get("is_personal"):
+                continue
+            if lead["id"] in rejected_lead_ids:
+                continue
+            if lead.get("assigned_master_id") and lead.get("assigned_master_id") != current_user.user_id:
+                continue
+
+            # Access hierarchy filtering based on created_at
+            created_at_str = lead.get("created_at")
+            if created_at_str and lead.get("assigned_master_id") != current_user.user_id:
+                if active_badge == "vip":
+                    pass # VIP sees instantly (0 min delay)
+                elif active_badge == "pro":
+                    if created_at_str > ten_min_ago:
+                        continue # PRO sees leads older than 10 minutes
+                else:
+                    if created_at_str > thirty_min_ago:
+                        continue # Regular sees leads older than 30 minutes
+
+            leads.append(lead)
         paginated_leads = leads[offset:offset + limit]
         response.headers["X-Has-More"] = "true" if len(leads) > offset + limit else "false"
 

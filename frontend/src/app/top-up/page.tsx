@@ -109,6 +109,7 @@ export default function TopUpPage() {
       creditAmounts: { CZK: 300, EUR: 12, USD: 13 },
       perks: [
         'Базовое пополнение 1:1',
+        'Доступ к заявкам (задержка 30 мин)',
         'Мгновенное зачисление',
       ],
       color: 'from-blue-500/10 to-blue-500/5 dark:from-blue-900/20 dark:to-blue-900/5',
@@ -124,7 +125,7 @@ export default function TopUpPage() {
       creditAmounts: { CZK: 550, EUR: 22, USD: 24.2 },
       perks: [
         '+10% средств в подарок на баланс',
-        'Приоритет откликов в маркете',
+        'Доступ к заявкам (задержка 30 мин)',
         'Мгновенное зачисление',
       ],
       color: 'from-primary-500/20 to-primary-500/5 dark:from-primary-900/30 dark:to-primary-900/10',
@@ -140,7 +141,7 @@ export default function TopUpPage() {
       perks: [
         '+15% средств бесплатно на баланс',
         '⭐ PRO Значок доверия',
-        'Приоритет в списке каталога',
+        '⚡ Ранний доступ к заявкам (10 мин задержки)',
       ],
       color: 'from-amber-500/20 to-amber-500/5 dark:from-amber-900/30 dark:to-amber-900/10',
       borderColor: 'border-amber-500/50 shadow-lg shadow-amber-500/10'
@@ -156,7 +157,7 @@ export default function TopUpPage() {
       perks: [
         '+20% бонусных средств на баланс',
         '👑 VIP Золотой Значок доверия',
-        'Приоритетный доступ к горячим лидам',
+        '🔥 Мгновенный доступ к заявкам (0 мин задержки)',
       ],
       color: 'from-rose-500/20 to-rose-500/5 dark:from-rose-900/30 dark:to-rose-900/10',
       borderColor: 'border-rose-500/60 shadow-xl shadow-rose-500/25'
