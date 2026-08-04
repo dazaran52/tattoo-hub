@@ -4,7 +4,8 @@ from typing import Dict, Any
 from supabase import Client
 from app.utils.currency import ExchangeRateCache
 
-FRANKFURTER_API_URL = "https://api.frankfurter.app/latest?from=EUR"
+FRANKFURTER_API_URL = "https://api.frankfurter.dev/v1/latest?from=EUR"
+FRANKFURTER_FALLBACK_URL = "https://api.frankfurter.app/latest?from=EUR"
 
 async def fetch_and_update_ecb_rates(supabase: Client) -> Dict[str, Any]:
     """
@@ -12,13 +13,19 @@ async def fetch_and_update_ecb_rates(supabase: Client) -> Dict[str, Any]:
     via Frankfurter API and updates the `exchange_rates` table in Supabase.
     Also refreshes the in-memory cache.
     """
-    async with httpx.AsyncClient(timeout=10.0) as client:
+    async with httpx.AsyncClient(timeout=10.0, follow_redirects=True) as client:
         try:
             response = await client.get(FRANKFURTER_API_URL)
             response.raise_for_status()
             data = response.json()
-        except Exception as e:
-            raise RuntimeError(f"Failed to fetch exchange rates from Frankfurter API: {e}")
+        except Exception:
+            # Fallback URL with redirect handling
+            try:
+                response = await client.get(FRANKFURTER_FALLBACK_URL)
+                response.raise_for_status()
+                data = response.json()
+            except Exception as e:
+                raise RuntimeError(f"Failed to fetch exchange rates from Frankfurter API: {e}")
 
     rates_map = data.get("rates", {})
     if not rates_map:
