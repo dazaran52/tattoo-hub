@@ -112,6 +112,7 @@ async def create_stripe_checkout_session(
                 'package_id': req.package_id,
                 'credit_amount': str(credit_amount),
             }
+        )
         return {"checkout_url": checkout_session.url}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
