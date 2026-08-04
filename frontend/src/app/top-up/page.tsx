@@ -26,6 +26,12 @@ export default function TopUpPage() {
   const [walletError, setWalletError] = useState<string | null>(null)
   const [isLoadingPackage, setIsLoadingPackage] = useState<string | null>(null)
   
+  // Profile badge & balance state
+  const [badgeTier, setBadgeTier] = useState<string>('none')
+  const [badgeExpiresAt, setBadgeExpiresAt] = useState<string | null>(null)
+  const [currentBalance, setCurrentBalance] = useState<number>(0)
+  const [isExtendingVip, setIsExtendingVip] = useState<boolean>(false)
+
   // Custom amount state (for amounts >= VIP price)
   const [customAmount, setCustomAmount] = useState<string>('3000')
 
@@ -54,9 +60,42 @@ export default function TopUpPage() {
         return
       }
       setWalletCurrency(currency)
+      setBadgeTier(profile.badge_tier || 'none')
+      setBadgeExpiresAt(profile.badge_expires_at || null)
+      setCurrentBalance(profile.balance || profile.credits || 0)
     }
     loadWallet().catch(() => setWalletError('Не удалось загрузить валюту кошелька'))
   }, [])
+
+  const handleExtendVip = async () => {
+    try {
+      setIsExtendingVip(true)
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) return
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/payments/extend-vip`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`
+        }
+      })
+
+      if (!response.ok) {
+        const err = await response.json()
+        throw new Error(err.detail || 'Не удалось продлить статус')
+      }
+
+      const resData = await response.json()
+      setBadgeTier('vip')
+      setBadgeExpiresAt(resData.badge_expires_at)
+      setCurrentBalance(resData.new_balance)
+      alert(`👑 VIP-статус успешно продлен на 30 дней! Списано ${resData.cost} ${resData.currency}.`)
+    } catch (error: any) {
+      alert(error.message || 'Ошибка продления статуса')
+    } finally {
+      setIsExtendingVip(false)
+    }
+  }
 
   const handleBuyPackage = async (pkgId: string, customVal?: number) => {
     if (!userId || !walletCurrency || walletError) return
@@ -203,6 +242,39 @@ export default function TopUpPage() {
         {walletError && (
           <div className="max-w-xl mx-auto mb-8 rounded-2xl border border-red-200 bg-red-50 p-4 text-center font-semibold text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">
             {walletError}
+          </div>
+        )}
+        {/* VIP Extension Banner */}
+        {badgeTier !== 'none' && (
+          <div className="max-w-4xl mx-auto mb-10 bg-gradient-to-r from-amber-500/20 via-rose-500/20 to-primary-500/20 border border-amber-500/40 rounded-3xl p-6 backdrop-blur-xl flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xl">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-2xl bg-amber-500/20 flex items-center justify-center border border-amber-500/30 shrink-0">
+                <Crown className="w-6 h-6 text-amber-400" />
+              </div>
+              <div>
+                <h3 className="font-bold text-white text-base">
+                  Ваш {badgeTier === 'vip' ? '👑 VIP' : '⭐ PRO'} статус активен
+                </h3>
+                <p className="text-xs text-neutral-400">
+                  {badgeExpiresAt ? `Действителен до ${new Date(badgeExpiresAt).toLocaleDateString()}` : 'Активен'} • Текущий баланс: <strong className="text-amber-300">{currentBalance} {walletCurrency}</strong>
+                </p>
+              </div>
+            </div>
+
+            <button
+              onClick={handleExtendVip}
+              disabled={isExtendingVip}
+              className="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-amber-500 to-rose-500 hover:opacity-90 text-white font-extrabold text-xs uppercase tracking-wider rounded-2xl shadow-lg shadow-amber-500/20 transition-all flex items-center justify-center gap-2 whitespace-nowrap disabled:opacity-50"
+            >
+              {isExtendingVip ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <>
+                  <Sparkles className="w-4 h-4 text-amber-200" />
+                  Продлить VIP (+30 дней) за {walletCurrency === 'EUR' ? '12 EUR' : walletCurrency === 'USD' ? '13 USD' : '300 CZK'}
+                </>
+              )}
+            </button>
           </div>
         )}
 

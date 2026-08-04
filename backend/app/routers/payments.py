@@ -5,7 +5,7 @@ import httpx
 from fastapi import APIRouter, Header, Request, HTTPException, Depends
 from pydantic import BaseModel
 from typing import Optional, Dict, Any, List
-from app.database import get_supabase_client
+from app.database import get_supabase_client, get_async_supabase_client
 from app.middleware.auth import get_current_user, AuthUser
 import uuid
 
@@ -116,3 +116,28 @@ async def create_stripe_checkout_session(
         return {"checkout_url": checkout_session.url}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/extend-vip")
+async def extend_vip_status(
+    current_user: AuthUser = Depends(get_current_user),
+    supabase = Depends(get_async_supabase_client)
+):
+    """Extend VIP status for 30 days using existing wallet balance atomically."""
+    res = await supabase.rpc("extend_vip_status_from_balance", {
+        "p_user_id": current_user.user_id
+    }).execute()
+    
+    result = res.data or {}
+    if not result.get("success"):
+        err = result.get("error")
+        if err == "INSUFFICIENT_BALANCE":
+            required = result.get("required")
+            curr = result.get("currency")
+            raise HTTPException(
+                status_code=400, 
+                detail=f"INSUFFICIENT_BALANCE: Необходим баланс от {required} {curr}"
+            )
+        raise HTTPException(status_code=400, detail=err or "Failed to extend VIP status")
+        
+    return result
