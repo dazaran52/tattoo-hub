@@ -10,7 +10,8 @@ import { useLanguage } from '@/i18n/LanguageContext'
 import imageCompression from 'browser-image-compression'
 import { 
   User, Image as ImageIcon, Check, X, Camera, MapPin, 
-  Globe, AtSign, Link as LinkIcon, Share2, ArrowLeft, Trash2, Upload
+  Globe, AtSign, Link as LinkIcon, Share2, ArrowLeft, Trash2, Upload,
+  Crown, Sparkles, Zap, ArrowRight
 } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 import { ImageViewerModal } from '@/components/ImageViewerModal'
@@ -370,6 +371,71 @@ export default function ProfilePage() {
                 </div>
               </div>
             </div>
+
+            {/* Clickbait PRO/VIP Status Promo Banner */}
+            {profile.role === 'master' && (
+              <div className="relative overflow-hidden rounded-3xl border border-amber-500/30 bg-gradient-to-br from-amber-500/10 via-purple-500/10 to-rose-500/10 p-6 shadow-xl backdrop-blur-xl transition-all duration-300 hover:border-amber-500/60 hover:shadow-2xl hover:shadow-amber-500/10 group">
+                <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-amber-500/20 blur-2xl transition-all duration-500 group-hover:scale-125 pointer-events-none" />
+                <div className="absolute -left-8 -bottom-8 h-32 w-32 rounded-full bg-purple-500/20 blur-2xl pointer-events-none" />
+
+                <div className="relative z-10">
+                  {profile.badge_tier && profile.badge_tier !== 'none' ? (
+                    <>
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-2">
+                          <Crown className="w-6 h-6 text-amber-400 animate-bounce" />
+                          <span className="font-extrabold text-lg text-neutral-900 dark:text-white">
+                            {profile.badge_tier === 'vip' ? '👑 VIP статус активен!' : '⭐ PRO статус активен!'}
+                          </span>
+                        </div>
+                        <MasterTierBadge badgeTier={profile.badge_tier} />
+                      </div>
+                      <p className="text-xs text-neutral-600 dark:text-neutral-300 font-medium mb-4 leading-relaxed">
+                        {profile.badge_tier === 'vip' 
+                          ? 'Вы получаете мгновенный доступ к заявкам (0 мин) и выделены золотой короной!' 
+                          : 'Доступ к заявкам с ускорением (10 мин) и выделенный PRO-значок!'}
+                        {profile.badge_expires_at && (
+                          <span className="block mt-1.5 font-bold text-amber-500 dark:text-amber-400">
+                            Действует до: {new Date(profile.badge_expires_at).toLocaleDateString('ru-RU')}
+                          </span>
+                        )}
+                      </p>
+                      <button
+                        onClick={() => router.push('/top-up')}
+                        className="w-full py-3 px-4 rounded-2xl bg-gradient-to-r from-amber-500 to-primary-600 hover:opacity-95 text-white font-black text-sm transition-all shadow-lg shadow-amber-500/25 flex items-center justify-center gap-2 group/btn active:scale-95 cursor-pointer"
+                      >
+                        <Sparkles className="w-4 h-4 text-amber-200" />
+                        <span>Продлить статус от 300 CZK</span>
+                        <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <div className="flex items-center gap-2 mb-2">
+                        <Crown className="w-6 h-6 text-amber-400 animate-pulse" />
+                        <span className="font-black text-lg text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-rose-400 to-purple-400">
+                          Хочешь VIP / PRO статус? 👑
+                        </span>
+                      </div>
+                      <h4 className="text-sm font-extrabold text-neutral-900 dark:text-white mb-2 leading-snug">
+                        Забирай заявки первее всех и получи 👑 VIP-значок доверия от клиентов!
+                      </h4>
+                      <p className="text-xs text-neutral-600 dark:text-neutral-300 font-medium mb-4 leading-relaxed">
+                        ⚡ Мгновенный доступ к новым заказам + х3 больше доверия клиентов. Всего от <strong className="text-amber-500 dark:text-amber-400 font-black">300 CZK</strong> в месяц!
+                      </p>
+                      <button
+                        onClick={() => router.push('/top-up')}
+                        className="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-amber-500 via-rose-500 to-purple-600 hover:opacity-95 text-white font-black text-sm transition-all shadow-xl shadow-amber-500/25 flex items-center justify-center gap-2 group/btn hover:scale-[1.02] active:scale-98 cursor-pointer"
+                      >
+                        <Sparkles className="w-4 h-4 text-amber-200" />
+                        <span>Активировать PRO / VIP за 300 CZK</span>
+                        <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
+                      </button>
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Right Column: Settings & Portfolio */}
