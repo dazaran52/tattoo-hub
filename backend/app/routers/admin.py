@@ -31,7 +31,10 @@ class CertificateReview(BaseModel):
 
 class UserBalanceUpdate(BaseModel):
     credits: int | None = None
-    balance: Decimal | None = None
+    balance: float | None = None
+    operation: str | None = None
+    amount: float | None = None
+    reason: str | None = None
 
 class AdminUserResponse(BaseModel):
     id: str
@@ -445,51 +448,55 @@ async def delete_user(
         )
 
 @router.put("/users/{user_id}/balance")
+@router.post("/users/{user_id}/adjust-balance")
 async def update_user_balance(
     user_id: str,
     update_data: UserBalanceUpdate,
     admin_user: AuthUser = Depends(get_admin_user),
     supabase: Client = Depends(get_supabase_client)
 ):
-    """Update a user's credit balance."""
+    """Update a user's wallet balance."""
     try:
-        update_payload = build_admin_balance_update(
-            update_data.credits, update_data.balance
-        )
-    except ValueError as exc:
-        raise HTTPException(status_code=400, detail=str(exc)) from exc
-
-    try:
-        serialized_update = {
-            key: float(value) if key == "balance" else value
-            for key, value in update_payload.items()
-        }
-        response = supabase.table("users") \
-            .update(serialized_update) \
-            .eq("id", user_id) \
-            .execute()
-            
-        if not response.data:
+        user_res = supabase.table("users").select("balance, currency, email").eq("id", user_id).single().execute()
+        if not user_res.data:
             raise HTTPException(status_code=404, detail="User not found")
-            
-        # Send Email notification for balance change
-        updated_field, updated_value = next(iter(update_payload.items()))
-        user_email = response.data[0].get("email")
-        if user_email:
-            send_transactional_email(
-                to_email=user_email,
-                subject="Ваш баланс Tattoo Hub обновлён",
-                html_content=(
-                    "<h1>Ваш баланс обновлён</h1>"
-                    f"<p>{updated_field}: <strong>{updated_value}</strong>.</p>"
-                ),
-            )
+
+        current_bal = float(user_res.data.get("balance") or 0.0)
+        currency = user_res.data.get("currency") or "CZK"
+
+        if update_data.operation in {"add", "deduct"} and update_data.amount is not None:
+            change = abs(update_data.amount) if update_data.operation == "add" else -abs(update_data.amount)
+            new_balance = max(0.0, current_bal + change)
+        elif update_data.balance is not None:
+            new_balance = max(0.0, float(update_data.balance))
+        else:
+            raise HTTPException(status_code=400, detail="Must provide balance or operation + amount")
+
+        supabase.table("users").update({"balance": new_balance}).eq("id", user_id).execute()
+
+        sign_str = f"+{abs(update_data.amount or 0)}" if update_data.operation == "add" else f"-{abs(update_data.amount or 0)}"
+        reason_text = update_data.reason or "Корректировка администратором"
+
+        try:
+            supabase.table("notifications").insert({
+                "user_id": user_id,
+                "title": f"Изменение баланса: {sign_str} {currency}",
+                "message": f"Ваш баланс изменен администратором. Новый баланс: {new_balance} {currency}. Причина: {reason_text}.",
+                "type": "system"
+            }).execute()
+        except Exception as notif_err:
+            print(f"Failed to insert notification: {notif_err}")
 
         return {
             "message": "User balance updated",
-            "updated": serialized_update,
+            "success": True,
+            "new_balance": new_balance,
+            "currency": currency
         }
     except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error updating balance: {str(e)}")
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error updating credits: {str(e)}")
@@ -895,7 +902,7 @@ async def get_user_chats_for_admin(
     """Get all lead_chats for a specific user as client or master."""
     try:
         res = supabase.table("lead_chats") \
-            .select("*, leads(title), client:users!lead_chats_client_id_fkey(full_name, email, avatar_url), master:users!lead_chats_master_id_fkey(full_name, email, avatar_url)") \
+            .select("*, leads(title), client:users!lead_chats_client_id_fkey(display_name, email, avatar_url), master:users!lead_chats_master_id_fkey(display_name, email, avatar_url)") \
             .or_(f"client_id.eq.{user_id},master_id.eq.{user_id}") \
             .order("created_at", desc=True) \
             .execute()

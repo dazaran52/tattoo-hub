@@ -283,6 +283,14 @@ export default function AdminPage() {
       if (res.ok) {
         const data = await res.json()
         setAdminStats(data)
+      } else {
+        setAdminStats({
+          total_masters: users.filter(u => u.role === 'master').length,
+          total_clients: users.filter(u => u.role === 'client').length,
+          active_paid_masters: users.filter(u => u.badge_tier && u.badge_tier !== 'none').length,
+          open_leads: 0,
+          total_users: users.length || userTotalCount
+        })
       }
     } catch (e) {
       console.error('Failed to fetch admin stats:', e)
@@ -320,7 +328,10 @@ export default function AdminPage() {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) return
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/admin/users/${targetUserId}/adjust-balance`, {
+      const currentBal = detailModalUser?.id === targetUserId ? (detailModalUser.balance || 0) : (users.find(u => u.id === targetUserId)?.balance || 0)
+      const targetBal = adjustOperation === 'add' ? currentBal + num : Math.max(0, currentBal - num)
+
+      let res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/admin/users/${targetUserId}/adjust-balance`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${session.access_token}`,
@@ -334,18 +345,35 @@ export default function AdminPage() {
       })
 
       if (!res.ok) {
-        const err = await res.json()
+        res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/admin/users/${targetUserId}/balance`, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            balance: targetBal,
+            amount: num,
+            operation: adjustOperation,
+            reason: adjustReason || 'Корректировка администратором'
+          })
+        })
+      }
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
         throw new Error(err.detail || 'Не удалось изменить баланс')
       }
 
-      const resData = await res.json()
-      toast.success(`Баланс успешно изменен! Новый баланс: ${resData.new_balance} ${resData.currency}`)
+      const resData = await res.json().catch(() => ({}))
+      const finalBal = resData.new_balance !== undefined ? resData.new_balance : targetBal
+      toast.success(`Баланс успешно изменен! Новый баланс: ${finalBal} CZK`)
 
       setUsers(currentUsers =>
-        currentUsers.map(u => u.id === targetUserId ? { ...u, balance: resData.new_balance } : u)
+        currentUsers.map(u => u.id === targetUserId ? { ...u, balance: finalBal } : u)
       )
       if (detailModalUser && detailModalUser.id === targetUserId) {
-        setDetailModalUser({ ...detailModalUser, balance: resData.new_balance })
+        setDetailModalUser({ ...detailModalUser, balance: finalBal })
       }
     } catch (e: any) {
       toast.error(e.message || 'Ошибка изменения баланса')
