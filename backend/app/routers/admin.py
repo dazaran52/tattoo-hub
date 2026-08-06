@@ -947,3 +947,149 @@ async def get_user_leads_for_admin(
             return {"type": "leads", "data": res.data or []}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+class BalanceAdjustmentRequest(BaseModel):
+    amount: float
+    operation: str = "add"  # "add" or "deduct"
+    reason: str | None = "Административная корректировка"
+
+
+class BroadcastRequest(BaseModel):
+    target: str = "all"  # "all", "master", "client"
+    title: str
+    message: str
+
+
+@router.get("/stats")
+async def get_admin_stats(
+    admin_user: AuthUser = Depends(get_admin_user),
+    supabase: Client = Depends(get_supabase_client)
+):
+    """Get global platform metrics for admin dashboard."""
+    try:
+        users_res = supabase.table("users").select("role, badge_tier").execute()
+        users_data = users_res.data or []
+        
+        total_masters = sum(1 for u in users_data if u.get("role") == "master")
+        total_clients = sum(1 for u in users_data if u.get("role") == "client")
+        active_paid_masters = sum(1 for u in users_data if u.get("badge_tier") in {"pro", "vip"})
+
+        leads_res = supabase.table("leads").select("id, status").execute()
+        leads_data = leads_res.data or []
+        open_leads = sum(1 for l in leads_data if l.get("status") in {"open", "new", "active"})
+        
+        return {
+            "total_masters": total_masters,
+            "total_clients": total_clients,
+            "active_paid_masters": active_paid_masters,
+            "open_leads": open_leads,
+            "total_users": len(users_data)
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/users/{user_id}/adjust-balance")
+async def adjust_user_balance(
+    user_id: str,
+    payload: BalanceAdjustmentRequest,
+    admin_user: AuthUser = Depends(get_admin_user),
+    supabase: Client = Depends(get_supabase_client)
+):
+    """Direct wallet top-up / deduction by admin."""
+    try:
+        user_res = supabase.table("users").select("balance, currency, email").eq("id", user_id).single().execute()
+        if not user_res.data:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        current_bal = float(user_res.data.get("balance") or 0.0)
+        currency = user_res.data.get("currency") or "CZK"
+        
+        change = abs(payload.amount) if payload.operation == "add" else -abs(payload.amount)
+        new_balance = max(0.0, current_bal + change)
+        
+        supabase.table("users").update({"balance": new_balance}).eq("id", user_id).execute()
+        
+        sign_str = f"+{abs(payload.amount)}" if payload.operation == "add" else f"-{abs(payload.amount)}"
+        reason_text = payload.reason or "Корректировка администратором"
+        
+        supabase.table("notifications").insert({
+            "user_id": user_id,
+            "title": f"Изменение баланса: {sign_str} {currency}",
+            "message": f"Ваш баланс изменен администратором. Причина: {reason_text}.",
+            "type": "system"
+        }).execute()
+        
+        return {
+            "success": True,
+            "new_balance": new_balance,
+            "currency": currency
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/security-alerts")
+async def get_security_alerts(
+    admin_user: AuthUser = Depends(get_admin_user),
+    supabase: Client = Depends(get_supabase_client)
+):
+    """Fetch all security notifications / price undercut / contact bypass alerts for admin."""
+    try:
+        res = supabase.table("notifications") \
+            .select("*, users(email, display_name, role, can_chat)") \
+            .ilike("title", "%ПОПЫТКА%") \
+            .order("created_at", desc=True) \
+            .execute()
+        return res.data or []
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/broadcast")
+async def broadcast_notification(
+    payload: BroadcastRequest,
+    background_tasks: BackgroundTasks,
+    admin_user: AuthUser = Depends(get_admin_user),
+    supabase: Client = Depends(get_supabase_client)
+):
+    """Send system notification & push notification to all users or specific roles."""
+    try:
+        query = supabase.table("users").select("id")
+        if payload.target == "master":
+            query = query.eq("role", "master")
+        elif payload.target == "client":
+            query = query.eq("role", "client")
+            
+        users_res = query.execute()
+        users_list = users_res.data or []
+        
+        notifications_to_insert = [
+            {
+                "user_id": u["id"],
+                "title": payload.title,
+                "message": payload.message,
+                "type": "system"
+            }
+            for u in users_list
+        ]
+        
+        if notifications_to_insert:
+            for i in range(0, len(notifications_to_insert), 100):
+                supabase.table("notifications").insert(notifications_to_insert[i:i+100]).execute()
+
+            for u in users_list:
+                background_tasks.add_task(
+                    send_push_notification,
+                    user_id=u["id"],
+                    title=payload.title,
+                    body=payload.message,
+                    url="/dashboard"
+                )
+
+        return {"success": True, "recipients_count": len(users_list)}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

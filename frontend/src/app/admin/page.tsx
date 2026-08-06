@@ -55,13 +55,30 @@ export default function AdminPage() {
   const [userPage, setUserPage] = useState(1)
   const [userTotalPages, setUserTotalPages] = useState(1)
   const [userTotalCount, setUserTotalCount] = useState(0)
-  const [activeTab, setActiveTab] = useState<'users' | 'leads' | 'chats' | 'ai-chats' | 'locations' | 'disputes' | 'currencies'>('users')
+  const [activeTab, setActiveTab] = useState<'users' | 'leads' | 'chats' | 'ai-chats' | 'locations' | 'disputes' | 'currencies' | 'security'>('users')
   const [searchQuery, setSearchQuery] = useState('')
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest' | 'balance_desc' | 'balance_asc'>('newest')
   const [balanceModalUser, setBalanceModalUser] = useState<{ id: string, email: string, balance: number } | null>(null)
   const [newBalanceValue, setNewBalanceValue] = useState<string>('')
   const [certificateReviewUser, setCertificateReviewUser] = useState<CertificateReviewUser | null>(null)
 
+  // Global Metrics & Security Feed State
+  const [adminStats, setAdminStats] = useState<{ total_masters: number, total_clients: number, active_paid_masters: number, open_leads: number, total_users: number } | null>(null)
+  const [securityAlerts, setSecurityAlerts] = useState<any[]>([])
+  const [isLoadingSecurityAlerts, setIsLoadingSecurityAlerts] = useState<boolean>(false)
+
+  // Balance Adjust State (1-Click Wallet Adjustment)
+  const [adjustAmount, setAdjustAmount] = useState<string>('300')
+  const [adjustOperation, setAdjustOperation] = useState<'add' | 'deduct'>('add')
+  const [adjustReason, setAdjustReason] = useState<string>('Компенсация')
+  const [isSubmittingAdjustBalance, setIsSubmittingAdjustBalance] = useState<boolean>(false)
+
+  // Broadcast Modal State
+  const [broadcastModalOpen, setBroadcastModalOpen] = useState<boolean>(false)
+  const [broadcastTarget, setBroadcastTarget] = useState<'all' | 'master' | 'client'>('all')
+  const [broadcastTitle, setBroadcastTitle] = useState<string>('')
+  const [broadcastMessage, setBroadcastMessage] = useState<string>('')
+  const [isSendingBroadcast, setIsSendingBroadcast] = useState<boolean>(false)
 
   // Badge Modal State
   const [badgeModalUser, setBadgeModalUser] = useState<AdminUserResponse | null>(null)
@@ -256,6 +273,128 @@ export default function AdminPage() {
     }
   }
 
+  const fetchAdminStats = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) return
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/admin/stats`, {
+        headers: { 'Authorization': `Bearer ${session.access_token}` }
+      })
+      if (res.ok) {
+        const data = await res.json()
+        setAdminStats(data)
+      }
+    } catch (e) {
+      console.error('Failed to fetch admin stats:', e)
+    }
+  }
+
+  const fetchSecurityAlerts = async () => {
+    try {
+      setIsLoadingSecurityAlerts(true)
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) return
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/admin/security-alerts`, {
+        headers: { 'Authorization': `Bearer ${session.access_token}` }
+      })
+      if (res.ok) {
+        const data = await res.json()
+        setSecurityAlerts(data)
+      }
+    } catch (e) {
+      console.error('Failed to fetch security alerts:', e)
+    } finally {
+      setIsLoadingSecurityAlerts(false)
+    }
+  }
+
+  const submitAdjustBalance = async (targetUserId: string) => {
+    const num = parseFloat(adjustAmount)
+    if (isNaN(num) || num <= 0) {
+      toast.error('Укажите корректную сумму')
+      return
+    }
+
+    try {
+      setIsSubmittingAdjustBalance(true)
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) return
+
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/admin/users/${targetUserId}/adjust-balance`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          amount: num,
+          operation: adjustOperation,
+          reason: adjustReason || 'Корректировка администратором'
+        })
+      })
+
+      if (!res.ok) {
+        const err = await res.json()
+        throw new Error(err.detail || 'Не удалось изменить баланс')
+      }
+
+      const resData = await res.json()
+      toast.success(`Баланс успешно изменен! Новый баланс: ${resData.new_balance} ${resData.currency}`)
+
+      setUsers(currentUsers =>
+        currentUsers.map(u => u.id === targetUserId ? { ...u, balance: resData.new_balance } : u)
+      )
+      if (detailModalUser && detailModalUser.id === targetUserId) {
+        setDetailModalUser({ ...detailModalUser, balance: resData.new_balance })
+      }
+    } catch (e: any) {
+      toast.error(e.message || 'Ошибка изменения баланса')
+    } finally {
+      setIsSubmittingAdjustBalance(false)
+    }
+  }
+
+  const submitBroadcast = async () => {
+    if (!broadcastTitle.trim() || !broadcastMessage.trim()) {
+      toast.error('Заполните тему и текст рассылки')
+      return
+    }
+
+    try {
+      setIsSendingBroadcast(true)
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) return
+
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/admin/broadcast`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          target: broadcastTarget,
+          title: broadcastTitle,
+          message: broadcastMessage
+        })
+      })
+
+      if (!res.ok) {
+        const err = await res.json()
+        throw new Error(err.detail || 'Не удалось отправить рассылку')
+      }
+
+      const resData = await res.json()
+      toast.success(`📢 Рассылка успешно отправлена! Получателей: ${resData.recipients_count}`)
+      setBroadcastModalOpen(false)
+      setBroadcastTitle('')
+      setBroadcastMessage('')
+    } catch (e: any) {
+      toast.error(e.message || 'Ошибка рассылки')
+    } finally {
+      setIsSendingBroadcast(false)
+    }
+  }
+
   const checkAdminAndFetchData = async () => {
     try {
       const { data: { session } } = await supabase.auth.getSession()
@@ -286,6 +425,8 @@ export default function AdminPage() {
       }
 
       await fetchAdminUsers(userPage, userRoleTab)
+      await fetchAdminStats()
+      await fetchSecurityAlerts()
 
     } catch (err: any) {
       setError(err.message || 'An error occurred')
@@ -492,16 +633,55 @@ export default function AdminPage() {
           </div>
         </div>
 
+        {/* Global Admin Metrics Bar */}
+        {adminStats && (
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+            <div className="bg-white/60 dark:bg-neutral-900/60 backdrop-blur-xl border border-neutral-200/50 dark:border-white/5 rounded-2xl p-4 shadow-sm">
+              <p className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-1">Всего пользователей</p>
+              <div className="flex items-baseline gap-2">
+                <span className="text-2xl font-black text-neutral-900 dark:text-white">{adminStats.total_users}</span>
+                <span className="text-xs text-neutral-400 font-medium">({adminStats.total_masters} м / {adminStats.total_clients} к)</span>
+              </div>
+            </div>
+
+            <div className="bg-gradient-to-br from-amber-500/10 to-amber-500/5 border border-amber-500/30 rounded-2xl p-4 shadow-sm">
+              <p className="text-xs font-bold text-amber-500 uppercase tracking-wider mb-1">VIP & PRO Мастера</p>
+              <div className="flex items-baseline gap-2">
+                <span className="text-2xl font-black text-amber-400">{adminStats.active_paid_masters}</span>
+                <span className="text-xs text-amber-500/80 font-medium">активных подписок</span>
+              </div>
+            </div>
+
+            <div className="bg-gradient-to-br from-purple-500/10 to-purple-500/5 border border-purple-500/30 rounded-2xl p-4 shadow-sm">
+              <p className="text-xs font-bold text-purple-400 uppercase tracking-wider mb-1">Открытые Заявки</p>
+              <div className="flex items-baseline gap-2">
+                <span className="text-2xl font-black text-purple-300">{adminStats.open_leads}</span>
+                <span className="text-xs text-purple-400/80 font-medium">на маркетплейсе</span>
+              </div>
+            </div>
+
+            <div className="bg-white/60 dark:bg-neutral-900/60 backdrop-blur-xl border border-neutral-200/50 dark:border-white/5 rounded-2xl p-4 shadow-sm flex flex-col justify-center">
+              <button
+                onClick={() => setBroadcastModalOpen(true)}
+                className="w-full py-2.5 px-4 bg-gradient-to-r from-accent-500 to-primary-600 hover:opacity-95 text-white font-extrabold text-xs uppercase tracking-wider rounded-xl shadow-lg shadow-accent-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+              >
+                <MessageSquare className="w-4 h-4" />
+                📢 Глобальная рассылка
+              </button>
+            </div>
+          </div>
+        )}
+
         {error && (
           <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 rounded-2xl backdrop-blur-md">
             {error}
           </div>
         )}
 
-        <div className="flex bg-white/40 dark:bg-neutral-900/40 backdrop-blur-md border border-neutral-200/50 dark:border-white/5 p-1.5 rounded-2xl w-fit mb-6 shadow-sm">
+        <div className="flex flex-wrap bg-white/40 dark:bg-neutral-900/40 backdrop-blur-md border border-neutral-200/50 dark:border-white/5 p-1.5 rounded-2xl w-fit mb-6 shadow-sm gap-1">
           <button
             onClick={() => setActiveTab('users')}
-            className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all ${
+            className={`px-5 py-2.5 rounded-xl font-bold text-sm transition-all ${
               activeTab === 'users' ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-950 shadow-md scale-[1.02]' : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
             }`}
           >
@@ -509,15 +689,24 @@ export default function AdminPage() {
           </button>
           <button
             onClick={() => setActiveTab('leads')}
-            className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all ${
+            className={`px-5 py-2.5 rounded-xl font-bold text-sm transition-all ${
               activeTab === 'leads' ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-950 shadow-md scale-[1.02]' : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
             }`}
           >
             Заявки (TTL)
           </button>
           <button
+            onClick={() => { setActiveTab('security'); fetchSecurityAlerts(); }}
+            className={`px-5 py-2.5 rounded-xl font-bold text-sm transition-all flex items-center gap-2 ${
+              activeTab === 'security' ? 'bg-red-600 text-white shadow-md shadow-red-500/20 scale-[1.02]' : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
+            }`}
+          >
+            <Shield className="w-4 h-4 text-red-400" />
+            🚨 Анти-фрод ({securityAlerts.length})
+          </button>
+          <button
             onClick={() => setActiveTab('chats')}
-            className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all ${
+            className={`px-5 py-2.5 rounded-xl font-bold text-sm transition-all ${
               activeTab === 'chats' ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-950 shadow-md scale-[1.02]' : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
             }`}
           >
@@ -525,7 +714,7 @@ export default function AdminPage() {
           </button>
           <button
             onClick={() => setActiveTab('ai-chats')}
-            className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all ${
+            className={`px-5 py-2.5 rounded-xl font-bold text-sm transition-all ${
               activeTab === 'ai-chats' ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-950 shadow-md scale-[1.02]' : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
             }`}
           >
@@ -533,7 +722,7 @@ export default function AdminPage() {
           </button>
           <button
             onClick={() => setActiveTab('disputes')}
-            className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all ${
+            className={`px-5 py-2.5 rounded-xl font-bold text-sm transition-all ${
               activeTab === 'disputes' ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-950 shadow-md scale-[1.02]' : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
             }`}
           >
@@ -541,7 +730,7 @@ export default function AdminPage() {
           </button>
           <button
             onClick={() => setActiveTab('locations')}
-            className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all ${
+            className={`px-5 py-2.5 rounded-xl font-bold text-sm transition-all ${
               activeTab === 'locations' ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-950 shadow-md scale-[1.02]' : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
             }`}
           >
@@ -564,6 +753,73 @@ export default function AdminPage() {
         {activeTab === 'disputes' && <AdminDisputes />}
         {activeTab === 'currencies' && <AdminCurrencies />}
         
+        {activeTab === 'security' && (
+          <div className="bg-white/40 dark:bg-neutral-900/40 backdrop-blur-md border border-neutral-200/50 dark:border-white/5 rounded-3xl p-6 shadow-xl animate-fade-in-up">
+            <div className="flex items-center justify-between mb-6 border-b border-neutral-200/50 dark:border-white/5 pb-4">
+              <div>
+                <h3 className="text-xl font-extrabold text-neutral-900 dark:text-white flex items-center gap-2">
+                  <Shield className="w-5 h-5 text-red-500" />
+                  Монитор Анти-фрода и Безопасности
+                </h3>
+                <p className="text-xs text-neutral-500 dark:text-neutral-400 font-medium">
+                  Автоматические сработки на попытки передачи контактов и занижения стоимости сеансов
+                </p>
+              </div>
+
+              <button
+                onClick={fetchSecurityAlerts}
+                className="px-4 py-2 bg-neutral-200 dark:bg-neutral-800 hover:bg-neutral-300 font-bold text-xs rounded-xl transition-all cursor-pointer"
+              >
+                Обновить список
+              </button>
+            </div>
+
+            {isLoadingSecurityAlerts ? (
+              <div className="py-12 text-center text-neutral-400">
+                <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2" />
+                Загрузка алертов безопасности...
+              </div>
+            ) : securityAlerts.length === 0 ? (
+              <div className="py-12 text-center text-neutral-400 font-medium">
+                🛡️ Нарушений не зафиксировано. Платформа работает штатно!
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {securityAlerts.map((alert: any) => (
+                  <div key={alert.id} className="p-4 rounded-2xl bg-red-500/10 border border-red-500/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="px-2.5 py-0.5 rounded-full bg-red-500 text-white font-black text-[10px] uppercase">
+                          🚨 alert
+                        </span>
+                        <h4 className="font-extrabold text-sm text-neutral-900 dark:text-white">{alert.title}</h4>
+                        <span className="text-xs text-neutral-400">
+                          {new Date(alert.created_at).toLocaleString('ru-RU')}
+                        </span>
+                      </div>
+                      <p className="text-xs text-neutral-300 font-medium">{alert.message}</p>
+                      {alert.users && (
+                        <p className="text-xs text-neutral-400 font-mono">
+                          Пользователь: {alert.users.display_name || alert.users.email} ({alert.users.role}) • Чат заблокирован: {alert.users.can_chat === false ? 'ДА 🔴' : 'НЕТ 🟢'}
+                        </p>
+                      )}
+                    </div>
+
+                    {alert.user_id && (
+                      <button
+                        onClick={() => updateUserPermissions(alert.user_id, { can_chat: true })}
+                        className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-black text-xs transition-all shadow-md shrink-0 cursor-pointer"
+                      >
+                        🔓 Разблокировать чат
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
         {activeTab === 'users' && (
           <div className="bg-white/40 dark:bg-neutral-900/40 backdrop-blur-md border border-neutral-200/50 dark:border-white/5 rounded-3xl overflow-hidden shadow-xl animate-fade-in-up">
             <div className="p-4 border-b border-neutral-200/50 dark:border-white/5 bg-neutral-50/50 dark:bg-neutral-900/30">
@@ -1119,6 +1375,71 @@ export default function AdminPage() {
                   </div>
                 </div>
 
+                {/* Direct Wallet Balance Adjustment Section */}
+                <div className="bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-white/5 rounded-2xl p-5">
+                  <h4 className="text-xs font-extrabold uppercase tracking-wider text-neutral-500 mb-4 flex items-center gap-2">
+                    <Coins className="w-4 h-4 text-amber-400" />
+                    💳 Прямая Корректировка Баланса Кошелька
+                  </h4>
+
+                  <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-white/5 rounded-xl p-4 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-neutral-400 font-medium">Текущий баланс пользователя:</span>
+                      <strong className="text-base font-black text-amber-400">
+                        {detailModalUser.balance || 0} {detailModalUser.currency || 'CZK'}
+                      </strong>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div>
+                        <label className="block text-xs font-bold text-neutral-400 mb-1">Операция</label>
+                        <select
+                          value={adjustOperation}
+                          onChange={(e: any) => setAdjustOperation(e.target.value)}
+                          className="w-full px-3 py-2 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-xs font-bold"
+                        >
+                          <option value="add">➕ Начислить (+)</option>
+                          <option value="deduct">➖ Списать (-)</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-neutral-400 mb-1">Сумма ({detailModalUser.currency || 'CZK'})</label>
+                        <input
+                          type="number"
+                          value={adjustAmount}
+                          onChange={(e) => setAdjustAmount(e.target.value)}
+                          placeholder="300"
+                          className="w-full px-3 py-2 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-xs font-bold"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-neutral-400 mb-1">Причина</label>
+                        <input
+                          type="text"
+                          value={adjustReason}
+                          onChange={(e) => setAdjustReason(e.target.value)}
+                          placeholder="Компенсация / Оплата наличными"
+                          className="w-full px-3 py-2 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-xs font-medium"
+                        />
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={() => submitAdjustBalance(detailModalUser.id)}
+                      disabled={isSubmittingAdjustBalance}
+                      className="w-full py-2.5 px-4 bg-gradient-to-r from-amber-500 to-rose-600 hover:opacity-95 text-white font-black text-xs uppercase tracking-wider rounded-xl transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                    >
+                      {isSubmittingAdjustBalance ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <span>Сохранить и отправить системное уведомление ➔</span>
+                      )}
+                    </button>
+                  </div>
+                </div>
+
                 {/* Additional Metadata */}
                 <div className="bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-white/5 rounded-2xl p-5 text-xs space-y-2">
                   <div className="flex justify-between">
@@ -1255,6 +1576,81 @@ export default function AdminPage() {
               </div>
             )}
 
+          </div>
+        </div>
+      )}
+
+      {/* Global Broadcast Modal */}
+      {broadcastModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-white/10 rounded-3xl p-6 sm:p-8 w-full max-w-lg shadow-2xl animate-fade-in-up space-y-6">
+            <div className="flex items-center justify-between border-b border-neutral-200 dark:border-white/10 pb-4">
+              <h3 className="text-xl font-extrabold text-neutral-900 dark:text-white flex items-center gap-2">
+                <MessageSquare className="w-5 h-5 text-accent-500" />
+                📢 Глобальная рассылка
+              </h3>
+              <button
+                onClick={() => setBroadcastModalOpen(false)}
+                className="w-8 h-8 rounded-xl bg-neutral-100 dark:bg-neutral-800 text-neutral-500 hover:text-neutral-900 dark:hover:text-white flex items-center justify-center cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-neutral-400 mb-1">Получатели</label>
+                <select
+                  value={broadcastTarget}
+                  onChange={(e: any) => setBroadcastTarget(e.target.value)}
+                  className="w-full px-4 py-2.5 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm font-bold text-neutral-900 dark:text-white"
+                >
+                  <option value="all">👥 Все пользователи платформы</option>
+                  <option value="master">🎨 Только мастера</option>
+                  <option value="client">📱 Только клиенты</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-neutral-400 mb-1">Тема сообщения</label>
+                <input
+                  type="text"
+                  value={broadcastTitle}
+                  onChange={(e) => setBroadcastTitle(e.target.value)}
+                  placeholder="Внимание: важные обновления в выходные! 🎉"
+                  className="w-full px-4 py-2.5 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm font-medium text-neutral-900 dark:text-white"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-neutral-400 mb-1">Текст сообщения</label>
+                <textarea
+                  rows={4}
+                  value={broadcastMessage}
+                  onChange={(e) => setBroadcastMessage(e.target.value)}
+                  placeholder="Мы начислили +10% к пополнению баланса для всех мастеров до воскресенья!"
+                  className="w-full px-4 py-2.5 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm font-medium text-neutral-900 dark:text-white"
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-3 justify-end pt-2">
+              <button
+                type="button"
+                onClick={() => setBroadcastModalOpen(false)}
+                className="px-5 py-2.5 bg-neutral-200/50 dark:bg-neutral-800 text-neutral-900 dark:text-white rounded-xl font-bold text-xs cursor-pointer"
+              >
+                Отмена
+              </button>
+              <button
+                type="button"
+                onClick={submitBroadcast}
+                disabled={isSendingBroadcast}
+                className="px-6 py-2.5 bg-gradient-to-r from-accent-500 to-primary-600 hover:opacity-90 text-white font-extrabold text-xs rounded-xl shadow-lg shadow-accent-500/20 transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
+              >
+                {isSendingBroadcast ? <Loader2 className="w-4 h-4 animate-spin" /> : '🚀 Отправить рассылку всем'}
+              </button>
+            </div>
           </div>
         </div>
       )}
