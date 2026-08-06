@@ -195,7 +195,10 @@ export function AdminChat() {
           'Authorization': `Bearer ${session.access_token}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ balance: num })
+        body: JSON.stringify({ 
+          credits: num, // backward compatibility
+          balance: num 
+        })
       })
       if (!res.ok) throw new Error('Failed to update credits')
       toast.success('Баланс обновлен')

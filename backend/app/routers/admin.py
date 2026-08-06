@@ -448,7 +448,6 @@ async def delete_user(
         )
 
 @router.put("/users/{user_id}/balance")
-@router.post("/users/{user_id}/adjust-balance")
 async def update_user_balance(
     user_id: str,
     update_data: UserBalanceUpdate,

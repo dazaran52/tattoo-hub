@@ -345,6 +345,7 @@ export default function AdminPage() {
       })
 
       if (!res.ok) {
+        const finalBal = adjustOperation === 'add' ? targetBal + num : Math.max(0, targetBal - num);
         res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/admin/users/${targetUserId}/balance`, {
           method: 'PUT',
           headers: {
@@ -352,7 +353,8 @@ export default function AdminPage() {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            balance: targetBal,
+            credits: finalBal, // backward compatibility
+            balance: finalBal,
             amount: num,
             operation: adjustOperation,
             reason: adjustReason || 'Корректировка администратором'
@@ -590,7 +592,10 @@ export default function AdminPage() {
             'Authorization': `Bearer ${session.access_token}`,
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ balance: num })
+          body: JSON.stringify({ 
+            credits: num, // backward compatibility
+            balance: num 
+          })
         }
       )
 
