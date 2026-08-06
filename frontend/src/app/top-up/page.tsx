@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, Gem, Sparkles, CheckCircle2, ShieldCheck, Zap, Loader2, Star, Crown, Gift, Plus } from 'lucide-react'
+import { ArrowLeft, Gem, Sparkles, CheckCircle2, ShieldCheck, Zap, Loader2, Star, Crown, Gift, Plus, Coins } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
 interface Package {
@@ -217,13 +217,21 @@ export default function TopUpPage() {
       </div>
 
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 relative z-10">
-        <button
-          onClick={() => router.push('/dashboard')}
-          className="flex items-center gap-2 text-neutral-600 dark:text-neutral-400 hover:text-neutral-950 dark:hover:text-white transition-colors mb-8 font-semibold"
-        >
-          <ArrowLeft className="w-5 h-5" />
-          Вернуться на панель
-        </button>
+        <div className="flex items-center justify-between gap-4 mb-8">
+          <button
+            onClick={() => router.push('/dashboard')}
+            className="flex items-center gap-2 text-neutral-600 dark:text-neutral-400 hover:text-neutral-950 dark:hover:text-white transition-colors font-semibold"
+          >
+            <ArrowLeft className="w-5 h-5" />
+            Вернуться на панель
+          </button>
+
+          <div className="flex items-center gap-2 bg-gradient-to-r from-amber-500/10 via-rose-500/10 to-primary-500/10 border border-amber-500/30 rounded-2xl px-4 py-2 shadow-lg backdrop-blur-xl">
+            <Coins className="w-4 h-4 text-amber-400" />
+            <span className="text-xs font-bold text-neutral-400">Ваш баланс:</span>
+            <strong className="text-sm font-black text-amber-300">{currentBalance} {walletCurrency}</strong>
+          </div>
+        </div>
 
         <div className="text-center mb-12">
           <div className="w-20 h-20 bg-gradient-to-br from-accent-400 to-primary-600 rounded-3xl mx-auto flex items-center justify-center shadow-xl shadow-primary-500/25 mb-6">
@@ -264,22 +272,25 @@ export default function TopUpPage() {
                   : `Получайте мгновенные уведомления о новых заказах и выделяйтесь 👑 золотым значком доверия.`}
               </p>
               <p className="text-xs text-neutral-400 font-medium">
-                {badgeExpiresAt ? `Активен до: ${new Date(badgeExpiresAt).toLocaleDateString('ru-RU')}` : 'Активация за 300 CZK на 30 дней'} • Баланс: <strong className="text-amber-300 font-black">{currentBalance} {walletCurrency}</strong>
+                {badgeExpiresAt ? `Действует до: ${new Date(badgeExpiresAt).toLocaleDateString('ru-RU')}` : 'Активация статуса на 30 дней'}
               </p>
             </div>
           </div>
 
           <div className="w-full md:w-auto shrink-0 flex flex-col items-center gap-2">
             <button
-              onClick={handleExtendVip}
-              disabled={isExtendingVip || currentBalance < (walletCurrency === 'EUR' ? 12 : walletCurrency === 'USD' ? 13 : 300)}
-              className={`w-full md:w-auto px-6 py-4 rounded-2xl font-black text-sm uppercase tracking-wider transition-all flex items-center justify-center gap-2 whitespace-nowrap shadow-xl cursor-pointer ${
-                currentBalance >= (walletCurrency === 'EUR' ? 12 : walletCurrency === 'USD' ? 13 : 300)
-                  ? 'bg-gradient-to-r from-amber-500 via-rose-500 to-purple-600 hover:opacity-95 text-white shadow-amber-500/30 hover:scale-105 active:scale-95'
-                  : 'bg-neutral-800 text-neutral-400 border border-neutral-700 cursor-not-allowed'
-              }`}
+              onClick={() => {
+                const minCost = walletCurrency === 'EUR' ? 12 : walletCurrency === 'USD' ? 13 : 300
+                if (currentBalance >= minCost) {
+                  handleExtendVip()
+                } else {
+                  handleBuyPackage('starter')
+                }
+              }}
+              disabled={isExtendingVip || isLoadingPackage === 'starter'}
+              className="w-full md:w-auto px-6 py-4 rounded-2xl font-black text-sm uppercase tracking-wider transition-all flex items-center justify-center gap-2 whitespace-nowrap shadow-xl cursor-pointer bg-gradient-to-r from-amber-500 via-rose-500 to-purple-600 hover:opacity-95 text-white shadow-amber-500/30 hover:scale-105 active:scale-95 disabled:opacity-50"
             >
-              {isExtendingVip ? (
+              {isExtendingVip || isLoadingPackage === 'starter' ? (
                 <Loader2 className="w-5 h-5 animate-spin" />
               ) : (
                 <>
@@ -288,11 +299,6 @@ export default function TopUpPage() {
                 </>
               )}
             </button>
-            {currentBalance < (walletCurrency === 'EUR' ? 12 : walletCurrency === 'USD' ? 13 : 300) && (
-              <span className="text-[11px] text-amber-400/90 font-medium text-center">
-                💡 Для активации пополните баланс ниже ⬇️
-              </span>
-            )}
           </div>
         </div>
 
