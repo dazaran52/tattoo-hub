@@ -244,39 +244,57 @@ export default function TopUpPage() {
             {walletError}
           </div>
         )}
-        {/* VIP Extension Banner */}
-        {badgeTier !== 'none' && (
-          <div className="max-w-4xl mx-auto mb-10 bg-gradient-to-r from-amber-500/20 via-rose-500/20 to-primary-500/20 border border-amber-500/40 rounded-3xl p-6 backdrop-blur-xl flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xl">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-2xl bg-amber-500/20 flex items-center justify-center border border-amber-500/30 shrink-0">
-                <Crown className="w-6 h-6 text-amber-400" />
-              </div>
-              <div>
-                <h3 className="font-bold text-white text-base">
-                  Ваш {badgeTier === 'vip' ? '👑 VIP' : '⭐ PRO'} статус активен
-                </h3>
-                <p className="text-xs text-neutral-400">
-                  {badgeExpiresAt ? `Действителен до ${new Date(badgeExpiresAt).toLocaleDateString()}` : 'Активен'} • Текущий баланс: <strong className="text-amber-300">{currentBalance} {walletCurrency}</strong>
-                </p>
-              </div>
+        {/* VIP Status Activation & Extension Card */}
+        <div id="vip-section" className="max-w-4xl mx-auto mb-10 bg-gradient-to-r from-amber-500/20 via-rose-500/20 to-purple-500/20 border border-amber-500/50 rounded-3xl p-6 sm:p-8 backdrop-blur-xl flex flex-col md:flex-row items-center justify-between gap-6 shadow-2xl relative overflow-hidden group">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+          
+          <div className="flex items-start gap-4 min-w-0">
+            <div className="w-14 h-14 rounded-2xl bg-amber-500/20 flex items-center justify-center border border-amber-500/40 shrink-0 shadow-lg shadow-amber-500/10">
+              <Crown className="w-8 h-8 text-amber-400 animate-pulse" />
             </div>
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <h3 className="font-black text-white text-xl">
+                  {badgeTier === 'vip' ? '👑 Ваш VIP-статус активен!' : badgeTier === 'pro' ? '⭐ Ваш PRO-статус активен' : '👑 Статус VIP — Мгновенный доступ (0 мин задержки)'}
+                </h3>
+              </div>
+              <p className="text-sm text-neutral-300 font-medium leading-relaxed mb-2">
+                {badgeTier === 'vip' 
+                  ? `Вы получаете заявки первее всех (0 мин задержки) и выделены золотой короной!`
+                  : `Получайте мгновенные уведомления о новых заказах и выделяйтесь 👑 золотым значком доверия.`}
+              </p>
+              <p className="text-xs text-neutral-400 font-medium">
+                {badgeExpiresAt ? `Активен до: ${new Date(badgeExpiresAt).toLocaleDateString('ru-RU')}` : 'Активация за 300 CZK на 30 дней'} • Баланс: <strong className="text-amber-300 font-black">{currentBalance} {walletCurrency}</strong>
+              </p>
+            </div>
+          </div>
 
+          <div className="w-full md:w-auto shrink-0 flex flex-col items-center gap-2">
             <button
               onClick={handleExtendVip}
-              disabled={isExtendingVip}
-              className="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-amber-500 to-rose-500 hover:opacity-90 text-white font-extrabold text-xs uppercase tracking-wider rounded-2xl shadow-lg shadow-amber-500/20 transition-all flex items-center justify-center gap-2 whitespace-nowrap disabled:opacity-50"
+              disabled={isExtendingVip || currentBalance < (walletCurrency === 'EUR' ? 12 : walletCurrency === 'USD' ? 13 : 300)}
+              className={`w-full md:w-auto px-6 py-4 rounded-2xl font-black text-sm uppercase tracking-wider transition-all flex items-center justify-center gap-2 whitespace-nowrap shadow-xl cursor-pointer ${
+                currentBalance >= (walletCurrency === 'EUR' ? 12 : walletCurrency === 'USD' ? 13 : 300)
+                  ? 'bg-gradient-to-r from-amber-500 via-rose-500 to-purple-600 hover:opacity-95 text-white shadow-amber-500/30 hover:scale-105 active:scale-95'
+                  : 'bg-neutral-800 text-neutral-400 border border-neutral-700 cursor-not-allowed'
+              }`}
             >
               {isExtendingVip ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
+                <Loader2 className="w-5 h-5 animate-spin" />
               ) : (
                 <>
-                  <Sparkles className="w-4 h-4 text-amber-200" />
-                  Продлить VIP (+30 дней) за {walletCurrency === 'EUR' ? '12 EUR' : walletCurrency === 'USD' ? '13 USD' : '300 CZK'}
+                  <Sparkles className="w-5 h-5 text-amber-200" />
+                  <span>{badgeTier === 'vip' ? 'Продлить VIP (+30 дней)' : 'Активировать VIP на 30 дней'} ({walletCurrency === 'EUR' ? '12 EUR' : walletCurrency === 'USD' ? '13 USD' : '300 CZK'})</span>
                 </>
               )}
             </button>
+            {currentBalance < (walletCurrency === 'EUR' ? 12 : walletCurrency === 'USD' ? 13 : 300) && (
+              <span className="text-[11px] text-amber-400/90 font-medium text-center">
+                💡 Для активации пополните баланс ниже ⬇️
+              </span>
+            )}
           </div>
-        )}
+        </div>
 
         {/* Tariff Cards Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto mb-12">
