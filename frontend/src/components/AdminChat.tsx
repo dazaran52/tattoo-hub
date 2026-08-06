@@ -333,7 +333,7 @@ export function AdminChat() {
                     {usersMap[selectedUserId]?.email || 'Загрузка...'}
                   </div>
                   <div className="text-xs text-neutral-500 flex items-center gap-2 mt-0.5">
-                    <span className="text-accent-600 dark:text-accent-400 font-medium">{usersMap[selectedUserId]?.balance || 0} кредитов</span>
+                    <span className="text-accent-600 dark:text-accent-400 font-medium">{usersMap[selectedUserId]?.balance || 0} {usersMap[selectedUserId]?.currency || 'CZK'}</span>
                     •
                     <span className={usersMap[selectedUserId]?.status === 'approved' ? 'text-green-500' : 'text-amber-500'}>
                       {usersMap[selectedUserId]?.status}
@@ -441,7 +441,7 @@ export function AdminChat() {
             <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-4">{balanceModalUser.email}</p>
             
             <div className="mb-6">
-              <label className="block text-sm font-medium text-neutral-600 dark:text-neutral-400 mb-2">Новый баланс (кредитов)</label>
+              <label className="block text-sm font-medium text-neutral-600 dark:text-neutral-400 mb-2">Новый баланс кошелька</label>
               <input
                 type="number"
                 min="0"

@@ -1119,7 +1119,7 @@ export default function AdminPage() {
             <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-5 font-semibold">{balanceModalUser.email}</p>
             
             <div className="mb-6">
-              <label className="block text-sm font-semibold text-neutral-600 dark:text-neutral-400 mb-2">Новый баланс (кредитов)</label>
+              <label className="block text-sm font-semibold text-neutral-600 dark:text-neutral-400 mb-2">Новый баланс кошелька</label>
               <input
                 type="number"
                 min="0"
