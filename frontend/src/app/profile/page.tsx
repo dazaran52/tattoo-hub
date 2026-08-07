@@ -281,12 +281,19 @@ export default function ProfilePage() {
               <div className="absolute inset-0 bg-gradient-to-br from-primary-500/5 to-accent-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               
               <div className="relative inline-block mb-6">
-                <div className={`w-32 h-32 rounded-full flex items-center justify-center border-[3px] mx-auto overflow-hidden transition-all ${
+                <div className={`absolute inset-0 rounded-full pointer-events-none ${
                   profile.badge_tier === 'vip' 
-                    ? 'border-[#F59E0B] shadow-[0_0_25px_rgba(245,158,11,0.6)] ring-4 ring-[#F59E0B]/20 animate-pulse'
+                    ? 'border-[#F59E0B] border-[3px] shadow-[0_0_25px_rgba(245,158,11,0.6)] ring-4 ring-[#F59E0B]/20 animate-pulse'
                     : profile.badge_tier === 'pro'
-                      ? 'border-purple-500 shadow-[0_0_20px_rgba(168,85,247,0.5)] ring-4 ring-purple-500/30 animate-pulse'
-                      : 'border-white dark:border-neutral-800 shadow-xl'
+                      ? 'border-purple-500 border-[3px] shadow-[0_0_20px_rgba(168,85,247,0.5)] ring-4 ring-purple-500/30 animate-pulse'
+                      : ''
+                }`} />
+                <div className={`w-32 h-32 rounded-full flex items-center justify-center mx-auto overflow-hidden transition-all relative z-10 ${
+                  profile.badge_tier === 'vip' 
+                    ? 'border-[3px] border-transparent'
+                    : profile.badge_tier === 'pro'
+                      ? 'border-[3px] border-transparent'
+                      : 'border-[3px] border-white dark:border-neutral-800 shadow-xl'
                 }`}>
                   {profile.avatar_url ? (
                     <Image src={profile.avatar_url || ''} alt="Avatar" className="w-full h-full object-cover"  width={800} height={800} />
