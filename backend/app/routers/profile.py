@@ -53,7 +53,6 @@ class ProfileResponse(BaseModel):
     id: str
     username: str | None = None
     email: str
-    credits: int
     balance: float = 0.0
     currency: str = "CZK"
     created_at: str | None = None
@@ -136,7 +135,7 @@ async def get_profile(
     """
     Get current master profile.
     
-    If profile doesn't exist, creates it automatically with 0 credits.
+    If profile doesn't exist, creates it automatically.
     """
     data = None
     try:
@@ -192,8 +191,8 @@ async def get_profile(
                 "is_verified_master": False,
                 "certificate_url": None,
                 "certificate_status": "not_submitted",
-                "currency": "CZK",
                 "balance": 0.0,
+                "currency": "CZK",
                 "theme": "system"
             }
             
@@ -249,16 +248,12 @@ async def get_profile(
     elif unlocked_count >= 3:
         level = "Pro"
         
-    val_credits = data.get("credits") or 0
     val_balance = float(data.get("balance") or 0.0)
-    if val_balance == 0.0 and val_credits > 0:
-        val_balance = float(val_credits)
 
     return ProfileResponse(
         id=data["id"],
         username=data.get("username"),
         email=data["email"],
-        credits=val_credits,
         balance=val_balance,
         currency=data.get("currency") or "CZK",
         created_at=data.get("created_at"),
@@ -426,16 +421,12 @@ async def update_profile(
             level = "Pro"
             
         print(f"DEBUG PUT: Success, returning profile")
-        val_credits = data.get("credits") or 0
         val_balance = float(data.get("balance") or 0.0)
-        if val_balance == 0.0 and val_credits > 0:
-            val_balance = float(val_credits)
 
         return ProfileResponse(
             id=data["id"],
             username=data.get("username"),
             email=data["email"],
-            credits=val_credits,
             balance=val_balance,
             currency=data.get("currency") or "CZK",
             created_at=data.get("created_at"),

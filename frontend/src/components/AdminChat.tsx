@@ -196,11 +196,10 @@ export function AdminChat() {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({ 
-          credits: num, // backward compatibility
           balance: num 
         })
       })
-      if (!res.ok) throw new Error('Failed to update credits')
+      if (!res.ok) throw new Error('Failed to update balance')
       toast.success('Баланс обновлен')
       setUsersMap(prev => ({ ...prev, [userId]: { ...prev[userId], balance: num } }))
       setBalanceModalUser(null)

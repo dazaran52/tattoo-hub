@@ -60,7 +60,6 @@ class LeadResponse(BaseModel):
 class UnlockResponse(BaseModel):
     contacts: str
     is_unlocked: bool
-    current_credits: int
 
 @router.get("/marketplace/my-shared", response_model=List[LeadResponse])
 async def get_my_shared_leads(
@@ -772,7 +771,6 @@ async def _create_client_lead(
                     client_profile = {
                         "id": client_id,
                         "email": lead_data.email.strip().lower() if lead_data.email else f"{client_id}@client.tattoohub.xyz",
-                        "credits": 0,
                         "role": "client",
                         "status": "approved",
                         "display_name": lead_data.name or lead_data.client_name or "Клиент",

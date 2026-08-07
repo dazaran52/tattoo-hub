@@ -31,7 +31,7 @@ export function OnboardingTour({ startTour, onTourEnd }: OnboardingTourProps) {
           element: '#tour-balance',
           popover: {
             title: 'Ваш баланс',
-            description: 'Здесь отображается ваш текущий баланс кредитов и средств. Они используются для отклика на заявки клиентов.',
+            description: 'Здесь отображается ваш текущий баланс средств. Они используются для отклика на заявки клиентов.',
             side: 'bottom',
             align: 'start'
           }

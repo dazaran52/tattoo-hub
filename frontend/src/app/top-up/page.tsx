@@ -62,7 +62,7 @@ export default function TopUpPage() {
       setWalletCurrency(currency)
       setBadgeTier(profile.badge_tier || 'none')
       setBadgeExpiresAt(profile.badge_expires_at || null)
-      setCurrentBalance(profile.balance || profile.credits || 0)
+      setCurrentBalance(profile.balance || 0)
     }
     loadWallet().catch(() => setWalletError('Не удалось загрузить валюту кошелька'))
   }, [])
@@ -284,13 +284,13 @@ export default function TopUpPage() {
                 if (currentBalance >= minCost) {
                   handleExtendVip()
                 } else {
-                  handleBuyPackage('starter')
+                  handleBuyPackage('vip_direct')
                 }
               }}
-              disabled={isExtendingVip || isLoadingPackage === 'starter'}
+              disabled={isExtendingVip || isLoadingPackage === 'vip_direct'}
               className="w-full md:w-auto px-6 py-4 rounded-2xl font-black text-sm uppercase tracking-wider transition-all flex items-center justify-center gap-2 whitespace-nowrap shadow-xl cursor-pointer bg-gradient-to-r from-amber-500 via-rose-500 to-purple-600 hover:opacity-95 text-white shadow-amber-500/30 hover:scale-105 active:scale-95 disabled:opacity-50"
             >
-              {isExtendingVip || isLoadingPackage === 'starter' ? (
+              {isExtendingVip || isLoadingPackage === 'vip_direct' ? (
                 <Loader2 className="w-5 h-5 animate-spin" />
               ) : (
                 <>

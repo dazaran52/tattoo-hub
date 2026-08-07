@@ -15,7 +15,6 @@ class DailyActivity(BaseModel):
 
 class AnalyticsResponse(BaseModel):
     total_spent_balance: float
-    total_spent_credits: float
     total_leads_bought: int
     activity_by_day: List[DailyActivity]
 
@@ -63,7 +62,6 @@ async def get_analytics(
 
         return {
             "total_spent_balance": round(total_spent, 2),
-            "total_spent_credits": round(total_spent, 2),
             "total_leads_bought": total_leads,
             "activity_by_day": list(days_map.values())
         }

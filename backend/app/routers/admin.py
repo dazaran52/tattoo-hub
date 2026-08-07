@@ -30,7 +30,6 @@ class CertificateReview(BaseModel):
     reason: str | None = None
 
 class UserBalanceUpdate(BaseModel):
-    credits: int | None = None
     balance: float | None = None
     operation: str | None = None
     amount: float | None = None
@@ -48,7 +47,6 @@ class AdminUserResponse(BaseModel):
     badge_expires_at: str | None = None
     is_admin: bool
     balance: float
-    credits: int
     currency: str = "CZK"
     can_chat: bool = True
     can_create_leads: bool = True
@@ -162,8 +160,7 @@ async def get_users(
                 badge_tier=u.get("badge_tier") or "none",
                 badge_expires_at=u.get("badge_expires_at"),
                 is_admin=u.get("is_admin") or False,
-                balance=float(u.get("balance") or 0.0) if float(u.get("balance") or 0.0) > 0 else float(u.get("credits") or 0),
-                credits=u.get("credits") or 0,
+                balance=float(u.get("balance") or 0.0),
                 currency=u.get("currency") or "CZK",
                 can_chat=u.get("can_chat") if u.get("can_chat") is not None else True,
                 can_create_leads=u.get("can_create_leads") if u.get("can_create_leads") is not None else True,
@@ -471,7 +468,10 @@ async def update_user_balance(
         else:
             raise HTTPException(status_code=400, detail="Must provide balance or operation + amount")
 
-        supabase.table("users").update({"balance": new_balance}).eq("id", user_id).execute()
+        # Update balance
+        supabase.table("users").update({
+            "balance": new_balance
+        }).eq("id", user_id).execute()
 
         sign_str = f"+{abs(update_data.amount or 0)}" if update_data.operation == "add" else f"-{abs(update_data.amount or 0)}"
         reason_text = update_data.reason or "Корректировка администратором"
@@ -739,24 +739,20 @@ async def resolve_dispute(
             lead_res = supabase.table("leads").select("base_unlock_price_eur").eq("id", dispute["lead_id"]).single().execute()
             price = lead_res.data["base_unlock_price_eur"] if lead_res.data else 5.0
                 
-            user_res = supabase.table("users").select("credits").eq("id", user_id).single().execute()
+            user_res = supabase.table("users").select("balance").eq("id", user_id).single().execute()
             if user_res.data:
-                # We refund the original base_unlock_price in credits. 
-                # (Assuming 1 credit = 1 EUR for simplicity, or we should have price_credits on leads?)
-                # Actually, in leads.py price_credits is fixed at 50, but we'll fallback to price if price_credits doesn't exist
-                # Let's get price_credits if it exists, otherwise use 50.
                 lead_price_res = supabase.table("leads").select("price_credits").eq("id", dispute["lead_id"]).single().execute()
                 refund_amount = lead_price_res.data.get("price_credits") if lead_price_res.data and lead_price_res.data.get("price_credits") else 50
 
-                new_credits = float(user_res.data.get("credits", 0)) + float(refund_amount)
-                supabase.table("users").update({"credits": new_credits}).eq("id", user_id).execute()
+                new_balance = float(user_res.data.get("balance", 0)) + float(refund_amount)
+                supabase.table("users").update({"balance": new_balance}).eq("id", user_id).execute()
                 
             supabase.table("disputes").update({"status": "resolved"}).eq("id", dispute_id).execute()
             
             supabase.table("notifications").insert({
                 "user_id": user_id,
                 "title": "Спор разрешен (Возврат средств)",
-                "message": f"Ваш спор по лиду был удовлетворен. {price} кредитов возвращено. Комментарий: {resolution.admin_comment}",
+                "message": f"Ваш спор по лиду был удовлетворен. {price} возвращено. Комментарий: {resolution.admin_comment}",
                 "type": "system"
             }).execute()
         else:
@@ -1015,7 +1011,10 @@ async def adjust_user_balance(
         change = abs(payload.amount) if payload.operation == "add" else -abs(payload.amount)
         new_balance = max(0.0, current_bal + change)
         
-        supabase.table("users").update({"balance": new_balance}).eq("id", user_id).execute()
+        # Update balance
+        supabase.table("users").update({
+            "balance": new_balance
+        }).eq("id", user_id).execute()
         
         sign_str = f"+{abs(payload.amount)}" if payload.operation == "add" else f"-{abs(payload.amount)}"
         reason_text = payload.reason or "Корректировка администратором"

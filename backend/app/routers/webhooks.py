@@ -65,8 +65,8 @@ async def stripe_webhook(
             "p_provider_tx_id": f"stripe_{session_id}",
         }).execute()
         pkg_id = meta.get('package_id')
-        if pkg_id in ('pro', 'vip', 'custom'):
-            badge_tier = 'vip' if pkg_id in ('vip', 'custom') else 'pro'
+        if pkg_id in ('pro', 'vip', 'custom', 'vip_direct'):
+            badge_tier = 'vip' if pkg_id in ('vip', 'custom', 'vip_direct') else 'pro'
             now_dt = datetime.datetime.now(datetime.timezone.utc)
             expires_at = (now_dt + datetime.timedelta(days=30)).isoformat()
             supabase.table("users").update({
@@ -77,8 +77,8 @@ async def stripe_webhook(
         # Add notification
         supabase.table("notifications").insert({
             "user_id": user_id,
-            "title": "Баланс пополнен 💎",
-            "message": f"Ваш баланс пополнен на {credit_amount} {currency}. {f'Активирован статус {badge_tier.upper()} на 30 дней!' if pkg_id in ('pro', 'vip', 'custom') else ''}",
+            "title": "Успешная оплата 💎" if pkg_id == "vip_direct" else "Баланс пополнен 💎",
+            "message": f"Активирован статус {badge_tier.upper()} на 30 дней!" if pkg_id == "vip_direct" else f"Ваш баланс пополнен на {credit_amount} {currency}. {f'Активирован статус {badge_tier.upper()} на 30 дней!' if pkg_id in ('pro', 'vip', 'custom') else ''}",
             "type": "payment"
         }).execute()
         

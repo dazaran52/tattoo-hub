@@ -28,7 +28,6 @@ interface AdminUserResponse {
   badge_expires_at?: string
   is_admin: boolean
   balance: number
-  credits: number
   currency?: string
   can_chat?: boolean
   can_create_leads?: boolean
@@ -353,7 +352,6 @@ export default function AdminPage() {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            credits: finalBal, // backward compatibility
             balance: finalBal,
             amount: num,
             operation: adjustOperation,
@@ -592,8 +590,7 @@ export default function AdminPage() {
             'Authorization': `Bearer ${session.access_token}`,
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ 
-            credits: num, // backward compatibility
+          body: JSON.stringify({
             balance: num 
           })
         }

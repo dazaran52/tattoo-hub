@@ -21,6 +21,11 @@ class StripeCheckoutRequest(BaseModel):
     custom_amount: Optional[float] = None
     
 PACKAGES = {
+    "vip_direct": {
+        "name": "VIP Status (30 Days)",
+        "amounts": {"CZK": 300, "EUR": 12, "USD": 13},
+        "credit_amounts": {"CZK": 0, "EUR": 0, "USD": 0},
+    },
     "starter": {
         "name": "Starter Balance",
         "amounts": {"CZK": 300, "EUR": 12, "USD": 13},
@@ -89,7 +94,7 @@ async def create_stripe_checkout_session(
             customer_email=current_user.email,
             submit_type='pay',
             custom_text={
-                'submit': {'message': f'Зачисление {credit_amount} {currency} на баланс Tattoo HUB!'}
+                'submit': {'message': 'Активация VIP статуса на 30 дней!' if req.package_id == 'vip_direct' else f'Зачисление {credit_amount} {currency} на баланс Tattoo HUB!'}
             },
             line_items=[
                 {
