@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { toast } from 'react-hot-toast'
 import { ShieldAlert, RefreshCw, CheckCircle, Trash2, User, Globe, Clock, AlertTriangle } from 'lucide-react'
+import { supabase } from '@/lib/supabase'
 
 interface Lead {
   id: string
@@ -27,6 +28,9 @@ export function AdminLeads() {
   const fetchLeads = async () => {
     setLoading(true)
     try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) throw new Error('No active session')
+
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
       const url = new URL(`${apiUrl}/api/admin/leads`)
       if (statusFilter && statusFilter !== 'all') {
@@ -34,7 +38,7 @@ export function AdminLeads() {
       }
       const res = await fetch(url.toString(), {
         headers: {
-          'Authorization': `Bearer ${getCookie('sb-access-token')}`
+          'Authorization': `Bearer ${session.access_token}`
         }
       })
       if (!res.ok) throw new Error('Failed to fetch leads')
@@ -51,22 +55,18 @@ export function AdminLeads() {
     fetchLeads()
   }, [statusFilter])
 
-  const getCookie = (name: string) => {
-    const value = `; ${document.cookie}`
-    const parts = value.split(`; ${name}=`)
-    if (parts.length === 2) return parts.pop()?.split(';').shift()
-    return ''
-  }
-
   const handleUpdateLead = async (leadId: string, updates: Partial<Lead>, successMessage: string) => {
     setActionLoading(leadId)
     try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) throw new Error('No active session')
+
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
       const res = await fetch(`${apiUrl}/api/admin/leads/${leadId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${getCookie('sb-access-token')}`
+          'Authorization': `Bearer ${session.access_token}`
         },
         body: JSON.stringify(updates)
       })
@@ -84,11 +84,14 @@ export function AdminLeads() {
     if (!confirm('Вы уверены, что хотите удалить эту заявку?')) return
     setActionLoading(leadId)
     try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) throw new Error('No active session')
+
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
       const res = await fetch(`${apiUrl}/api/admin/leads/${leadId}`, {
         method: 'DELETE',
         headers: {
-          'Authorization': `Bearer ${getCookie('sb-access-token')}`
+          'Authorization': `Bearer ${session.access_token}`
         }
       })
       if (!res.ok) throw new Error('Failed to delete lead')

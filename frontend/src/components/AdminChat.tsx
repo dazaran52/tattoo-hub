@@ -53,7 +53,11 @@ export function AdminChat() {
         })
         if (res.ok) {
           const usersData = await res.json()
-          usersData.forEach((u: any) => uMap[u.id] = u)
+          if (usersData.users) {
+            usersData.users.forEach((u: any) => uMap[u.id] = u)
+          } else if (Array.isArray(usersData)) {
+            usersData.forEach((u: any) => uMap[u.id] = u)
+          }
           setUsersMap(uMap)
         }
       } catch (err) {
