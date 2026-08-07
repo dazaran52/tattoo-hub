@@ -10,6 +10,8 @@ export interface Profile {
   phone?: string
   bio?: string
   created_at: string
+  badge_tier?: string
+  badge_expires_at?: string
 }
 
 export interface Lead {

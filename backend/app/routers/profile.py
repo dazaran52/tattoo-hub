@@ -250,6 +250,20 @@ async def get_profile(
         
     val_balance = float(data.get("balance") or 0.0)
 
+    import datetime
+    raw_badge_tier = (data.get("badge_tier") or "none").lower()
+    badge_expires_at = data.get("badge_expires_at")
+    active_badge_tier = raw_badge_tier
+
+    if raw_badge_tier in ("pro", "vip") and badge_expires_at:
+        try:
+            now_dt = datetime.datetime.now(datetime.timezone.utc)
+            exp_dt = datetime.datetime.fromisoformat(badge_expires_at.replace("Z", "+00:00"))
+            if exp_dt <= now_dt:
+                active_badge_tier = "none"
+        except Exception:
+            pass
+
     return ProfileResponse(
         id=data["id"],
         username=data.get("username"),
@@ -272,6 +286,8 @@ async def get_profile(
         gamification_level=level,
         role=data.get("role"),
         is_verified_master=data.get("is_verified_master") or False,
+        badge_tier=active_badge_tier,
+        badge_expires_at=badge_expires_at,
         certificate_url=data.get("certificate_url"),
         certificate_status=data.get("certificate_status") or "not_submitted",
         certificate_submitted_at=data.get("certificate_submitted_at"),
