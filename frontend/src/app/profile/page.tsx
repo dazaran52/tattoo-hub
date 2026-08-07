@@ -405,7 +405,7 @@ export default function ProfilePage() {
                         className="w-full py-3 px-4 rounded-2xl bg-gradient-to-r from-amber-500 to-rose-600 hover:opacity-95 text-white font-black text-sm transition-all shadow-lg shadow-amber-500/25 flex items-center justify-center gap-2 group/btn active:scale-95 cursor-pointer"
                       >
                         <Sparkles className="w-4 h-4 text-amber-200" />
-                        <span>Продлить VIP за 300 CZK</span>
+                        <span>{profile.badge_tier === 'vip' ? 'Продлить VIP за 300 CZK' : 'Повысить до VIP за 300 CZK'}</span>
                         <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
                       </button>
                     </>

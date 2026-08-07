@@ -68,7 +68,21 @@ async def stripe_webhook(
         if pkg_id in ('pro', 'vip', 'custom', 'vip_direct'):
             badge_tier = 'vip' if pkg_id in ('vip', 'custom', 'vip_direct') else 'pro'
             now_dt = datetime.datetime.now(datetime.timezone.utc)
-            expires_at = (now_dt + datetime.timedelta(days=30)).isoformat()
+            
+            user_res = supabase.table("users").select("badge_expires_at").eq("id", user_id).single().execute()
+            current_expires_at = user_res.data.get("badge_expires_at") if user_res.data else None
+            
+            base_dt = now_dt
+            if current_expires_at:
+                try:
+                    exp_dt = datetime.datetime.fromisoformat(current_expires_at.replace("Z", "+00:00"))
+                    if exp_dt > now_dt:
+                        base_dt = exp_dt
+                except Exception:
+                    pass
+
+            expires_at = (base_dt + datetime.timedelta(days=30)).isoformat()
+            
             supabase.table("users").update({
                 "badge_tier": badge_tier,
                 "badge_expires_at": expires_at
