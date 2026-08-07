@@ -19,9 +19,11 @@ interface PhoneInputProps {
   value: string
   onChange: (value: string) => void
   placeholder?: string
+  disabled?: boolean
+  className?: string
 }
 
-export function PhoneInput({ value, onChange, placeholder = "Номер телефона" }: PhoneInputProps) {
+export function PhoneInput({ value, onChange, placeholder = "Номер телефона", disabled = false, className = "" }: PhoneInputProps) {
   const [isOpen, setIsOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
@@ -125,12 +127,12 @@ export function PhoneInput({ value, onChange, placeholder = "Номер теле
 
   return (
     <div className="relative w-full" ref={dropdownRef}>
-      <div className="flex items-center w-full bg-neutral-100 dark:bg-neutral-800 rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-primary-500/20 transition-all">
+      <div className={`flex border border-neutral-200 dark:border-neutral-800 rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-primary-500/20 bg-white dark:bg-neutral-900 transition-all ${className}`}>
         {/* Country Selector Dropdown Trigger */}
         <button
           type="button"
-          onClick={() => setIsOpen(!isOpen)}
-          className="flex items-center gap-1.5 pl-4 pr-3 py-2.5 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors border-r border-neutral-200 dark:border-neutral-700"
+          onClick={() => !disabled && setIsOpen(!isOpen)}
+          className={`flex items-center gap-1.5 pl-4 pr-3 py-2.5 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors border-r border-neutral-200 dark:border-neutral-700 ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
         >
           <span className="text-xl leading-none">{selectedCountry.flag}</span>
           <ChevronDown className="w-4 h-4 text-neutral-500" />
@@ -149,7 +151,8 @@ export function PhoneInput({ value, onChange, placeholder = "Номер теле
             value={displayValue}
             onChange={handleInputChange}
             placeholder={placeholder}
-            className="w-full bg-transparent border-none px-4 py-2.5 text-sm focus:ring-0 outline-none relative z-10 text-neutral-900 dark:text-white"
+            disabled={disabled}
+            className={`w-full bg-transparent border-none px-4 py-2.5 text-sm focus:ring-0 outline-none relative z-10 text-neutral-900 dark:text-white ${disabled ? 'cursor-not-allowed' : ''}`}
           />
           {selectedCountry.dialCode && maxLocalPartLength > 0 && (
             <div className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-bold z-20">

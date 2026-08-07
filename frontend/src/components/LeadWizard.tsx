@@ -20,6 +20,7 @@ import { TATTOO_STYLES, BODY_PLACES, TATTOO_SIZES } from '@/lib/constants'
 import imageCompression from 'browser-image-compression'
 import { toast } from 'react-hot-toast'
 import { motion, AnimatePresence } from 'framer-motion'
+import { PhoneInput } from './PhoneInput'
 
 export interface LeadWizardProps {
   master?: {
@@ -140,7 +141,8 @@ export function LeadWizard({ master, masterId, source = 'platform', isLoggedIn, 
 
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
-  const [contact, setContact] = useState('')
+  const [phone, setPhone] = useState('')
+  const [telegram, setTelegram] = useState('')
   const [instagram, setInstagram] = useState('')
 
   // Submission State
@@ -201,8 +203,8 @@ export function LeadWizard({ master, masterId, source = 'platform', isLoggedIn, 
       if (initialData.name || initialData.client_name) setName(initialData.name || initialData.client_name)
       if (initialData.email || initialData.contact) {
         const c = initialData.email || initialData.contact
-        if (String(c).includes('@')) setEmail(c)
-        else setContact(c)
+        if (String(c).includes('@') && !String(c).includes('Telegram')) setEmail(c)
+        else setPhone(c)
       }
       if (initialData.instagram) setInstagram(initialData.instagram)
       if (initialData.image_urls && Array.isArray(initialData.image_urls)) setUploadedUrls(initialData.image_urls)
@@ -228,8 +230,8 @@ export function LeadWizard({ master, masterId, source = 'platform', isLoggedIn, 
           if (pending.name || pending.client_name) setName(pending.name || pending.client_name)
           if (pending.email || pending.contact) {
             const c = pending.email || pending.contact
-            if (String(c).includes('@')) setEmail(c)
-            else setContact(c)
+            if (String(c).includes('@') && !String(c).includes('Telegram')) setEmail(c)
+            else setPhone(c)
           }
           if (pending.instagram) setInstagram(pending.instagram)
           if (pending.image_urls && Array.isArray(pending.image_urls)) setUploadedUrls(pending.image_urls)
@@ -252,7 +254,7 @@ export function LeadWizard({ master, masterId, source = 'platform', isLoggedIn, 
           if (profileName && !name && !initialData?.name) setName(profileName)
           const profileEmail = p.email || session.user?.email
           if (profileEmail && !email && !initialData?.email) setEmail(profileEmail)
-          if (p.phone && !contact && !initialData?.contact) setContact(p.phone)
+          if (p.phone && !phone && !initialData?.contact) setPhone(p.phone)
           if ((p as any).instagram && !instagram && !initialData?.instagram) setInstagram((p as any).instagram)
         }).catch(err => console.error(err))
       }
@@ -285,8 +287,8 @@ export function LeadWizard({ master, masterId, source = 'platform', isLoggedIn, 
   }, [sessionDate, sessionTime])
 
   useEffect(() => {
-    if (contact || instagram) setOpenStep3Details(true)
-  }, [contact, instagram])
+    if (phone || telegram || instagram) setOpenStep3Details(true)
+  }, [phone, telegram, instagram])
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || e.target.files.length === 0) return
@@ -424,7 +426,7 @@ export function LeadWizard({ master, masterId, source = 'platform', isLoggedIn, 
         city: city || null,
         country_id: selectedCountry || null,
         name: name.trim() || t('leadWizard.noNameDefault', 'Без имени'),
-        contact: contact.trim() || email.trim() || null,
+        contact: [phone, telegram ? `Telegram: ${telegram}` : null].filter(Boolean).join(' | ') || email.trim() || null,
         instagram: instagram.trim() || null,
         is_negotiable_budget: isNegotiable,
         image_urls: finalImageUrls,
@@ -505,7 +507,7 @@ export function LeadWizard({ master, masterId, source = 'platform', isLoggedIn, 
         city: city || null,
         country_id: selectedCountry || null,
         name: name.trim() || t('leadWizard.noNameDefault', 'Без имени'),
-        contact: contact.trim() || email.trim() || null,
+        contact: [phone, telegram ? `Telegram: ${telegram}` : null].filter(Boolean).join(' | ') || email.trim() || null,
         instagram: instagram.trim() || null,
         is_negotiable_budget: isNegotiable,
         image_urls: uploadedUrls,
@@ -1338,7 +1340,7 @@ export function LeadWizard({ master, masterId, source = 'platform', isLoggedIn, 
                 <div 
                   onClick={() => setOpenStep3Details(!openStep3Details)}
                   className={`w-full p-5 sm:p-6 rounded-3xl border transition-all cursor-pointer flex items-center justify-between text-left group ${
-                    openStep3Details || contact || instagram
+                    openStep3Details || phone || telegram || instagram
                       ? 'bg-gradient-to-br from-accent-500/10 via-primary-500/10 to-transparent border-accent-500/40 shadow-lg'
                       : 'bg-white/[0.03] hover:bg-white/[0.06] border-white/10'
                   }`}
@@ -1355,9 +1357,9 @@ export function LeadWizard({ master, masterId, source = 'platform', isLoggedIn, 
                         </span>
                       </div>
                       <div className="text-xs sm:text-sm text-neutral-400 leading-normal">
-                        {contact || instagram ? (
+                        {phone || telegram || instagram ? (
                           <span className="text-accent-400 font-semibold flex items-center gap-1.5">
-                            <Check className="w-4 h-4 inline" /> {t('leadWizard.addedContacts', 'Указаны доп. контакты')} ({[contact ? t('leadWizard.contactPhone', 'Телеграм/Телефон') : '', instagram ? 'Instagram' : ''].filter(Boolean).join(', ')})
+                            <Check className="w-4 h-4 inline" /> {t('leadWizard.addedContacts', 'Указаны доп. контакты')} ({[phone ? t('leadWizard.phoneLabel', 'Телефон') : '', telegram ? 'Telegram' : '', instagram ? 'Instagram' : ''].filter(Boolean).join(', ')})
                           </span>
                         ) : (
                           t('leadWizard.step3AccordionDesc', 'Если вам удобнее обсуждать детали эскиза в мессенджерах')
@@ -1382,15 +1384,28 @@ export function LeadWizard({ master, masterId, source = 'platform', isLoggedIn, 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                         <div>
                           <label className="block text-xs font-extrabold uppercase tracking-widest text-neutral-300 mb-2.5">
-                            {t('leadWizard.phoneOrTelegramLabel', 'Телефон или Telegram')}
+                            {t('leadWizard.phoneLabel', 'Телефон')}
+                          </label>
+                          <div className="dark">
+                            <PhoneInput
+                              value={phone}
+                              onChange={setPhone}
+                              className="bg-white/5 border-white/10"
+                            />
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-extrabold uppercase tracking-widest text-neutral-300 mb-2.5">
+                            Telegram
                           </label>
                           <div className="relative">
-                            <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500" />
+                            <Send className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500" />
                             <input
                               type="text"
-                              value={contact}
-                              onChange={(e) => setContact(e.target.value)}
-                              placeholder={t('leadWizard.phonePlaceholder', '+420... или @username')}
+                              value={telegram}
+                              onChange={(e) => setTelegram(e.target.value)}
+                              placeholder="@username"
                               className={`${baseInputClass} pl-12 text-base font-medium`}
                             />
                           </div>
