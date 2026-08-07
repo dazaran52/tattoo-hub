@@ -60,6 +60,20 @@ async def get_public_masters(
             # For simplicity, we just use rating + (reviews * 0.1) as a sort key
             sort_score = rating + (review_count * 0.1)
             
+            import datetime
+            raw_badge_tier = (data.get("badge_tier") or "none").lower()
+            badge_expires_at = data.get("badge_expires_at")
+            active_badge_tier = raw_badge_tier
+
+            if raw_badge_tier in ("pro", "vip") and badge_expires_at:
+                try:
+                    now_dt = datetime.datetime.now(datetime.timezone.utc)
+                    exp_dt = datetime.datetime.fromisoformat(badge_expires_at.replace("Z", "+00:00"))
+                    if exp_dt <= now_dt:
+                        active_badge_tier = "none"
+                except Exception:
+                    pass
+
             masters_list.append({
                 "master": PublicMasterResponse(
                     id=data["id"],
@@ -69,6 +83,8 @@ async def get_public_masters(
                     portfolio_url=data.get("portfolio_url"),
                     city_ids=data.get("city_ids", []),
                     is_verified_master=data.get("is_verified_master", False),
+                    badge_tier=active_badge_tier,
+                    badge_expires_at=badge_expires_at,
                     certificate_status=data.get("certificate_status") or "not_submitted",
                     portfolio_posts=top_posts,
                     theme=data.get("theme", "system"),
@@ -109,7 +125,7 @@ async def get_public_master(
             pass
 
         query = supabase.table("users").select(
-            "id, username, display_name, bio, portfolio_url, city_ids, styles, is_verified_master, certificate_status, status, role, theme, avatar_url, last_seen, portfolio_posts(id, media, description, created_at), master_reviews!master_reviews_master_id_fkey(rating)"
+            "id, username, display_name, bio, portfolio_url, city_ids, styles, is_verified_master, badge_tier, badge_expires_at, certificate_status, status, role, theme, avatar_url, last_seen, portfolio_posts(id, media, description, created_at), master_reviews!master_reviews_master_id_fkey(rating)"
         )
         
         if is_uuid:
@@ -137,6 +153,20 @@ async def get_public_master(
         review_count = len(reviews)
         rating = sum([r.get("rating", 0) for r in reviews]) / review_count if review_count > 0 else 0.0
 
+        import datetime
+        raw_badge_tier = (data.get("badge_tier") or "none").lower()
+        badge_expires_at = data.get("badge_expires_at")
+        active_badge_tier = raw_badge_tier
+
+        if raw_badge_tier in ("pro", "vip") and badge_expires_at:
+            try:
+                now_dt = datetime.datetime.now(datetime.timezone.utc)
+                exp_dt = datetime.datetime.fromisoformat(badge_expires_at.replace("Z", "+00:00"))
+                if exp_dt <= now_dt:
+                    active_badge_tier = "none"
+            except Exception:
+                pass
+
         return PublicMasterResponse(
             id=data["id"],
             username=data.get("username"),
@@ -145,6 +175,8 @@ async def get_public_master(
             portfolio_url=data.get("portfolio_url"),
             city_ids=data.get("city_ids", []),
             is_verified_master=data.get("is_verified_master", False),
+            badge_tier=active_badge_tier,
+            badge_expires_at=badge_expires_at,
             certificate_status=data.get("certificate_status") or "not_submitted",
             portfolio_posts=posts,
             theme=data.get("theme", "system"),
