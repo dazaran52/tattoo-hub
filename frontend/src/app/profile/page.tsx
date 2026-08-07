@@ -385,7 +385,7 @@ export default function ProfilePage() {
                         <div className="flex items-center gap-2">
                           <Crown className="w-6 h-6 text-amber-400 animate-bounce" />
                           <span className="font-extrabold text-lg text-neutral-900 dark:text-white">
-                            {profile.badge_tier === 'vip' ? '👑 VIP статус активен!' : '⭐ PRO статус активен!'}
+                            {profile.badge_tier === 'vip' ? 'VIP статус активен!' : 'PRO статус активен!'}
                           </span>
                         </div>
                         <MasterTierBadge badgeTier={profile.badge_tier} />
@@ -414,7 +414,7 @@ export default function ProfilePage() {
                       <div className="flex items-center gap-2 mb-2">
                         <Crown className="w-6 h-6 text-amber-400 animate-pulse" />
                         <span className="font-black text-lg text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-rose-400 to-purple-400">
-                          Хочешь VIP статус? 👑
+                          Хочешь VIP статус?
                         </span>
                       </div>
                       <h4 className="text-sm font-extrabold text-neutral-900 dark:text-white mb-2 leading-snug">

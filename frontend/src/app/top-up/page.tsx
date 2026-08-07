@@ -195,7 +195,7 @@ export default function TopUpPage() {
       creditAmounts: { CZK: 2400, EUR: 96, USD: 105.6 },
       perks: [
         '+20% бонусных средств на баланс',
-        '👑 VIP Золотой Значок доверия',
+        'VIP Золотой Значок доверия',
         '🔥 Мгновенный доступ к заявкам (0 мин задержки)',
       ],
       color: 'from-rose-500/20 to-rose-500/5 dark:from-rose-900/30 dark:to-rose-900/10',
@@ -263,13 +263,13 @@ export default function TopUpPage() {
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <h3 className="font-black text-white text-xl">
-                  {badgeTier === 'vip' ? '👑 Ваш VIP-статус активен!' : badgeTier === 'pro' ? '⭐ Ваш PRO-статус активен' : '👑 Статус VIP — Мгновенный доступ (0 мин задержки)'}
+                  {badgeTier === 'vip' ? 'Ваш VIP-статус активен!' : badgeTier === 'pro' ? 'Ваш PRO-статус активен' : 'Статус VIP — Мгновенный доступ (0 мин задержки)'}
                 </h3>
               </div>
               <p className="text-sm text-neutral-300 font-medium leading-relaxed mb-2">
                 {badgeTier === 'vip' 
                   ? `Вы получаете заявки первее всех (0 мин задержки) и выделены золотой короной!`
-                  : `Получайте мгновенные уведомления о новых заказах и выделяйтесь 👑 золотым значком доверия.`}
+                  : `Получайте мгновенные уведомления о новых заказах и выделяйтесь золотым значком доверия.`}
               </p>
               <p className="text-xs text-neutral-400 font-medium">
                 {badgeExpiresAt ? `Действует до: ${new Date(badgeExpiresAt).toLocaleDateString('ru-RU')}` : 'Активация статуса на 30 дней'}
