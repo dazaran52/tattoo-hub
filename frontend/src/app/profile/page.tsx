@@ -281,11 +281,11 @@ export default function ProfilePage() {
               <div className="absolute inset-0 bg-gradient-to-br from-primary-500/5 to-accent-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               
               <div className="relative inline-block mb-6">
-                <div className={`w-32 h-32 rounded-full overflow-hidden border-4 mx-auto transition-all ${
+                <div className={`w-32 h-32 rounded-full flex items-center justify-center border-[3px] mx-auto overflow-hidden transition-all ${
                   profile.badge_tier === 'vip' 
-                    ? 'border-amber-400 shadow-[0_0_20px_rgba(245,158,11,0.5)] ring-4 ring-amber-500/30'
+                    ? 'border-[#F59E0B] shadow-[0_0_25px_rgba(245,158,11,0.6)] ring-4 ring-[#F59E0B]/20 animate-pulse'
                     : profile.badge_tier === 'pro'
-                      ? 'border-purple-500 shadow-[0_0_20px_rgba(168,85,247,0.5)] ring-4 ring-purple-500/30'
+                      ? 'border-purple-500 shadow-[0_0_20px_rgba(168,85,247,0.5)] ring-4 ring-purple-500/30 animate-pulse'
                       : 'border-white dark:border-neutral-800 shadow-xl'
                 }`}>
                   {profile.avatar_url ? (

@@ -157,11 +157,11 @@ export default function BookMasterPage() {
         {/* Profile Card */}
         <div className={`rounded-3xl p-8 mb-8 text-center transition-colors duration-500 ${tClasses.card}`}>
           <div className="relative inline-block mb-5">
-            <div className={`w-28 h-28 rounded-full mx-auto flex items-center justify-center border-4 mx-auto overflow-hidden transition-all ${
+            <div className={`w-28 h-28 rounded-full flex items-center justify-center border-[3px] mx-auto overflow-hidden transition-all ${
               master.badge_tier === 'vip'
-                ? 'border-amber-400 shadow-[0_0_20px_rgba(245,158,11,0.5)] ring-4 ring-amber-500/30'
+                ? 'border-[#F59E0B] shadow-[0_0_25px_rgba(245,158,11,0.6)] ring-4 ring-[#F59E0B]/20 animate-pulse'
                 : master.badge_tier === 'pro'
-                  ? 'border-purple-500 shadow-[0_0_20px_rgba(168,85,247,0.5)] ring-4 ring-purple-500/30'
+                  ? 'border-purple-500 shadow-[0_0_20px_rgba(168,85,247,0.5)] ring-4 ring-purple-500/30 animate-pulse'
                   : 'border-white dark:border-neutral-950 shadow-xl'
             }`}>
               {master.avatar_url ? (
