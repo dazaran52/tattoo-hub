@@ -6,7 +6,9 @@ export const locales = ['en', 'cs', 'ru', 'uk'];
 
 export default getRequestConfig(async ({locale}) => {
   // Validate that the incoming `locale` parameter is valid
-  if (!locales.includes(locale as any)) notFound();
+  if (!locales.includes(locale as any)) {
+    throw new Error(`Invalid locale passed to getRequestConfig: "${locale}". Expected one of: ${locales.join(', ')}`);
+  }
 
   let messages;
   switch (locale) {
