@@ -85,9 +85,19 @@ export default async function RootLayout({
   let messages;
   try {
     messages = await getMessages();
-  } catch (error) {
+  } catch (error: any) {
     console.error('getMessages failed:', error);
-    notFound();
+    return (
+      <html lang={locale}>
+        <body>
+          <div style={{ padding: 20, color: 'red', background: 'white' }}>
+            <h1>GET_MESSAGES FAILED</h1>
+            <pre>{error.message}</pre>
+            <pre>{error.stack}</pre>
+          </div>
+        </body>
+      </html>
+    );
   }
 
   return (
