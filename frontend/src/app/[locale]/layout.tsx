@@ -17,8 +17,34 @@ import { PresenceProvider } from '@/components/PresenceContext'
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 
 export const metadata: Metadata = {
-  title: 'Tattoo HUB',
-  description: 'Premium B2B Lead Platform for Tattoo Masters',
+  title: {
+    template: '%s | Tattoo HUB',
+    default: 'Tattoo HUB | Find & Book the Best Tattoo Artists',
+  },
+  description: 'Premium B2B Lead Platform for Tattoo Masters. Discover top artists, book sessions, and elevate your tattoo experience.',
+  keywords: ['tattoo', 'tattoo artists', 'book tattoo', 'tattoo studio', 'prague tattoo', 'tattoo hub', 'tattoo leads'],
+  authors: [{ name: 'Tattoo HUB Team' }],
+  openGraph: {
+    title: 'Tattoo HUB',
+    description: 'Find & Book the Best Tattoo Artists',
+    url: 'https://tattoo-hub.xyz',
+    siteName: 'Tattoo HUB',
+    images: [
+      {
+        url: 'https://tattoo-hub.xyz/icon-512x512.png',
+        width: 512,
+        height: 512,
+      },
+    ],
+    locale: 'en_US',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Tattoo HUB',
+    description: 'Find & Book the Best Tattoo Artists',
+    images: ['https://tattoo-hub.xyz/icon-512x512.png'],
+  },
   manifest: '/manifest.json',
   icons: {
     icon: '/icon-192x192.png',
@@ -63,6 +89,37 @@ export default async function RootLayout({
   return (
     <html lang={locale}>
       <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebSite",
+              "name": "Tattoo HUB",
+              "url": "https://tattoo-hub.xyz/",
+              "potentialAction": {
+                "@type": "SearchAction",
+                "target": "https://tattoo-hub.xyz/en?q={search_term_string}",
+                "query-input": "required name=search_term_string"
+              }
+            })
+          }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Organization",
+              "name": "Tattoo HUB",
+              "url": "https://tattoo-hub.xyz",
+              "logo": "https://tattoo-hub.xyz/icon-512x512.png",
+              "sameAs": [
+                "https://instagram.com/tattoo_hub"
+              ]
+            })
+          }}
+        />
         <script
           dangerouslySetInnerHTML={{
             __html: `
