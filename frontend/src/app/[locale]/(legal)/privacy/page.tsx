@@ -37,7 +37,7 @@ export default function PrivacyPage() {
         <h2>4. Who Has Access to the Data?</h2>
         <p>
           We share your data with the Master with whom you create a booking or lead. 
-          We also use third-party processors (e.g., cloud service providers like Supabase, payment gateways).
+          We also use third-party processors (e.g., cloud service providers like Supabase, and payment gateways like Stripe).
         </p>
 
         <h2>5. Your Rights (GDPR)</h2>

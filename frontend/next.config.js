@@ -107,4 +107,7 @@ const nextConfig = {
   },
 }
 
-module.exports = withPWA(nextConfig)
+const createNextIntlPlugin = require('next-intl/plugin');
+const withNextIntl = createNextIntlPlugin();
+
+module.exports = withNextIntl(withPWA(nextConfig));

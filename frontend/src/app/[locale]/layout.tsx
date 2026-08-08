@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
-import './globals.css'
+import '../globals.css'
 import { ThemeProvider } from '@/components/ThemeProvider'
 import { ChatWidget } from '@/components/ChatWidget'
 import { Toaster } from 'react-hot-toast'
@@ -42,13 +42,26 @@ export const viewport = {
   userScalable: true,
 }
 
-export default function RootLayout({
+import { NextIntlClientProvider } from 'next-intl';
+import { getMessages } from 'next-intl/server';
+import { notFound } from 'next/navigation';
+
+export default async function RootLayout({
   children,
+  params: { locale }
 }: {
   children: React.ReactNode
+  params: { locale: string }
 }) {
+  let messages;
+  try {
+    messages = await getMessages();
+  } catch (error) {
+    notFound();
+  }
+
   return (
-    <html lang="ru">
+    <html lang={locale}>
       <head>
         <script
           dangerouslySetInnerHTML={{
@@ -60,59 +73,48 @@ export default function RootLayout({
                 } else {
                   document.documentElement.classList.remove('dark');
                 }
-                const supportedLanguages = ['ru', 'en', 'cs', 'uk'];
-                const appLang = localStorage.getItem('app_lang');
-                const legacyLang = localStorage.getItem('language');
-                const savedLang = appLang && supportedLanguages.includes(appLang)
-                  ? appLang
-                  : legacyLang && supportedLanguages.includes(legacyLang)
-                    ? legacyLang
-                    : null;
-                if (savedLang) {
-                  document.documentElement.lang = savedLang;
-                } else if (typeof navigator !== 'undefined' && navigator.language) {
-                  const browserLang = navigator.language.slice(0, 2);
-                  document.documentElement.lang = (browserLang === 'ru' || browserLang === 'uk' || browserLang === 'cs') ? browserLang : 'en';
-                }
               })();
             `,
           }}
         />
       </head>
       <body className={`${inter.variable} font-sans`}>
-        <PresenceProvider>
-          <LanguageProvider>
-            <CustomCursor />
-            <TouchEffect />
-            <ThemeProvider />
-            <Toaster 
-              position="top-center" 
-              reverseOrder={false} 
-              toastOptions={{
-                className: '!bg-neutral-900/90 !text-white !backdrop-blur-xl !border !border-white/10 !rounded-2xl !shadow-[0_10px_30px_rgba(0,0,0,0.5)] !text-sm !font-semibold',
-                duration: 4000,
-                success: {
-                  iconTheme: {
-                    primary: '#10B981',
-                    secondary: '#090A0F',
+        <NextIntlClientProvider messages={messages} locale={locale}>
+          <PresenceProvider>
+            <LanguageProvider>
+              <CustomCursor />
+              <TouchEffect />
+              <ThemeProvider />
+              <Toaster 
+                position="top-center" 
+                reverseOrder={false} 
+                toastOptions={{
+                  className: '!bg-neutral-900/90 !text-white !backdrop-blur-xl !border !border-white/10 !rounded-2xl !shadow-[0_10px_30px_rgba(0,0,0,0.5)] !text-sm !font-semibold',
+                  duration: 4000,
+                  success: {
+                    iconTheme: {
+                      primary: '#10B981',
+                      secondary: '#090A0F',
+                    },
                   },
-                },
-                error: {
-                  iconTheme: {
-                    primary: '#EF4444',
-                    secondary: '#090A0F',
+                  error: {
+                    iconTheme: {
+                      primary: '#EF4444',
+                      secondary: '#090A0F',
+                    },
                   },
-                },
-              }}
-            />
-            <OfflineIndicator />
-            {children}
-            <ChatWidget />
-            <InstallPrompt />
-            <CookieBanner />
-          </LanguageProvider>
-        </PresenceProvider>
+                }}
+              />
+              <OfflineIndicator />
+              {children}
+              <ChatWidget />
+              <InstallPrompt />
+              <CookieBanner />
+            </LanguageProvider>
+          </PresenceProvider>
+        </NextIntlClientProvider>
       </body>
     </html>
   )
 }
+

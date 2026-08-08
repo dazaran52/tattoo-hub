@@ -860,8 +860,56 @@ async def _create_client_lead(
                                 print(f"Error sending submission email: {e}")
 
                         background_tasks.add_task(send_submission_email)
+                        
+                    if not is_direct_booking and not is_personal_booking:
+                        # Marketplace lead - enqueue smart notifications
+                        async def enqueue_marketplace_notifications():
+                            from datetime import datetime, timedelta, timezone
+                            now = datetime.now(timezone.utc)
+                            query = supabase.table("users").select("id, email, badge_tier").eq("role", "master")
+                            if lead_data.city:
+                                query = query.eq("city", lead_data.city)
+                            elif lead_data.location:
+                                query = query.ilike("city", f"%{lead_data.location}%")
+                                
+                            masters_res = await query.execute()
+                            masters = masters_res.data or []
+                            
+                            queue_inserts = []
+                            for m in masters:
+                                if not m.get("email"): continue
+                                tier = m.get("badge_tier")
+                                delay_mins = 0 if tier == "vip" else (30 if tier == "pro" else 120)
+                                send_at = now + timedelta(minutes=delay_mins)
+                                
+                                queue_inserts.append({
+                                    "user_id": m["id"],
+                                    "event_type": "new_marketplace_lead",
+                                    "entity_id": new_lead["id"],
+                                    "send_at": send_at.isoformat(),
+                                    "payload": {
+                                        "email": m["email"],
+                                        "subject": "Новая заявка на Tattoo HUB! 🎯",
+                                        "html": f'''
+                                        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                                            <h2>Появилась новая заявка!</h2>
+                                            <p>Город: <b>{lead_data.city or lead_data.location or 'Не указан'}</b></p>
+                                            <p>Стиль: {lead_data.style or 'Любой'}</p>
+                                            <p>Бюджет: {lead_data.budget or 'Не указан'}</p>
+                                            <br/>
+                                            <a href="https://tattoo-hub.xyz/market" style="background: #7c3aed; color: #fff; padding: 12px 24px; text-decoration: none; border-radius: 8px;">Смотреть на маркете</a>
+                                        </div>
+                                        '''
+                                    }
+                                })
+                            
+                            if queue_inserts:
+                                # Chunk inserts if there are many masters
+                                for i in range(0, len(queue_inserts), 50):
+                                    await supabase.table("notification_queue").insert(queue_inserts[i:i+50]).execute()
+                                    
+                        background_tasks.add_task(enqueue_marketplace_notifications)
 
-                    chat_id = None
                     if is_direct_booking and trusted_master_id and not is_personal_booking:
                         chat_payload = {
                             "lead_id": new_lead["id"],

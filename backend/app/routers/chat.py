@@ -148,9 +148,14 @@ async def get_messages(
     
     try:
         service_client = get_service_client()
-        service_client.table("chat_messages").update({"is_read": True}).eq("chat_id", chat_id).neq("sender_type", user_role_for_read).eq("is_read", False).execute()
+        res = service_client.table("chat_messages").update({"is_read": True}).eq("chat_id", chat_id).neq("sender_type", user_role_for_read).eq("is_read", False).execute()
+        if res.data:
+            # Cancel pending notifications for the current user
+            user_id_to_cancel = chat["master_id"] if user_role_for_read == "master" else chat.get("client_id")
+            if user_id_to_cancel:
+                service_client.table("notification_queue").update({"status": "cancelled"}).eq("user_id", user_id_to_cancel).eq("entity_id", chat_id).eq("event_type", "new_chat_message").eq("status", "pending").execute()
     except Exception as e:
-        print(f"Failed to mark messages as read: {e}")
+        print(f"Failed to mark messages as read or cancel notifications: {e}")
     
     return data
 
@@ -464,14 +469,31 @@ async def send_message(
                     client_session_id = chat.get("client_session_id")
                     title = lead.get("title", "Заявка на тату")
                     
-                    from app.services.email_lead_agent import send_chat_notification_to_client
-                    import threading
+                    from datetime import datetime, timedelta, timezone
+                    now = datetime.now(timezone.utc)
+                    send_at = now + timedelta(minutes=2)
                     
-                    # Fire and forget email notification
-                    threading.Thread(
-                        target=send_chat_notification_to_client,
-                        args=(client_email, client_session_id, title, content[:150] + ("..." if len(content) > 150 else ""))
-                    ).start()
+                    # Queue notification for client (2 min delay)
+                    supabase.table("notification_queue").insert({
+                        "user_id": chat.get("client_id"),
+                        "event_type": "new_chat_message",
+                        "entity_id": chat_id,
+                        "send_at": send_at.isoformat(),
+                        "payload": {
+                            "email": client_email,
+                            "subject": f"Новое сообщение: {title}",
+                            "html": f'''
+                            <div style="font-family: Arial, sans-serif;">
+                                <h2>У вас новое сообщение!</h2>
+                                <p>Мастер ответил вам по заявке <b>"{title}"</b>:</p>
+                                <blockquote style="border-left: 4px solid #7c3aed; padding-left: 16px; color: #4b5563;">
+                                    {content[:150] + ("..." if len(content) > 150 else "")}
+                                </blockquote>
+                                <a href="https://tattoo-hub.xyz/login" style="background: #7c3aed; color: #fff; padding: 10px 20px; text-decoration: none; border-radius: 6px;">Ответить</a>
+                            </div>
+                            '''
+                        }
+                    }).execute()
         except Exception as e:
             # Don't fail the message send if email fails
             print(f"Failed to trigger chat email notification: {e}")
@@ -492,10 +514,23 @@ async def send_message(
             elif len(content) > 100:
                 push_text = content[:100] + "..."
                 
-            threading.Thread(
-                target=send_push_notification,
-                args=(master_id, f"Сообщение по заявке: {title}", push_text, f"/dashboard?tab=messages")
-            ).start()
+            from datetime import datetime, timedelta, timezone
+            now = datetime.now(timezone.utc)
+            send_at = now + timedelta(minutes=2)
+            
+            supabase.table("notification_queue").insert({
+                "user_id": master_id,
+                "event_type": "new_chat_message",
+                "entity_id": chat_id,
+                "send_at": send_at.isoformat(),
+                "payload": {
+                    "push": {
+                        "title": f"Сообщение по заявке: {title}",
+                        "body": push_text,
+                        "url": "/dashboard?tab=messages"
+                    }
+                }
+            }).execute()
         except Exception as e:
             print(f"Failed to send push notification to master: {e}")
 

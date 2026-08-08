@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion'
 import { LayoutDashboard, ShoppingBag, ImageIcon, MessageCircle, FileText, Users } from 'lucide-react'
-import { useLanguage } from '@/i18n/LanguageContext'
+import { useTranslations } from 'next-intl'
 
 interface BottomNavProps {
   activeTab: string
@@ -10,16 +10,16 @@ interface BottomNavProps {
 }
 
 export function BottomNav({ activeTab, setActiveTab, unreadMessagesCount = 0, userRole = 'master' }: BottomNavProps) {
-  const { t } = useLanguage()
+  const t = useTranslations()
 
   const tabs = userRole === 'client' ? [
-    { id: 'leads', label: 'Мои заявки', icon: FileText },
-    { id: 'top_masters', label: 'Мастера', icon: Users },
+    { id: 'leads', label: t('my_leads') || 'Мои заявки', icon: FileText },
+    { id: 'top_masters', label: t('masters') || 'Мастера', icon: Users },
     { id: 'messages', label: t('messages') || 'Сообщения', icon: MessageCircle, badge: unreadMessagesCount },
   ] : [
-    { id: 'crm', label: 'CRM', icon: LayoutDashboard },
-    { id: 'feed', label: 'Маркетплейс', icon: ShoppingBag },
-    { id: 'portfolio', label: 'Портфолио', icon: ImageIcon },
+    { id: 'crm', label: t('crm') || 'CRM', icon: LayoutDashboard },
+    { id: 'feed', label: t('marketplace') || 'Маркетплейс', icon: ShoppingBag },
+    { id: 'portfolio', label: t('portfolio') || 'Портфолио', icon: ImageIcon },
     { id: 'messages', label: t('messages') || 'Сообщения', icon: MessageCircle, badge: unreadMessagesCount },
   ]
 

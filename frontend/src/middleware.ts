@@ -1,11 +1,18 @@
 import { NextResponse, type NextRequest } from 'next/server'
+import createMiddleware from 'next-intl/middleware'
 
 const protectedRoutes = ['/dashboard', '/profile', '/settings']
+const locales = ['en', 'cs', 'ru', 'uk']
+
+const intlMiddleware = createMiddleware({
+  locales,
+  defaultLocale: 'en'
+})
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  // Check for Supabase auth cookie - try all possible names and chunked cookies
+  // Check for Supabase auth cookie
   const allCookies = request.cookies.getAll()
   const hasAuthCookie = allCookies.some(cookie => 
     cookie.name.includes('-auth-token') || 
@@ -13,30 +20,33 @@ export function middleware(request: NextRequest) {
     cookie.name === 'sb-refresh-token'
   )
 
+  // Because next-intl prefixes the locale (e.g. /en/dashboard), we check if the path starts with any locale + protected route
+  // Or we can just check if any protected route is included
   const isProtectedRoute = protectedRoutes.some(route => 
+    locales.some(locale => pathname.startsWith(`/${locale}${route}`) || pathname === `/${locale}${route}`) ||
     pathname.startsWith(route)
   )
 
-  // Redirect to login if accessing protected route without auth
+  const isLoginRoute = locales.some(locale => pathname === `/${locale}/login`) || pathname === '/login'
+
   if (isProtectedRoute && !hasAuthCookie) {
     const loginUrl = new URL('/login', request.url)
     return NextResponse.redirect(loginUrl)
   }
 
-  // Redirect logged-in users away from login page to dashboard
-  if (pathname === '/login' && hasAuthCookie) {
+  if (isLoginRoute && hasAuthCookie) {
     const dashboardUrl = new URL('/dashboard', request.url)
     return NextResponse.redirect(dashboardUrl)
   }
 
-  return NextResponse.next()
+  return intlMiddleware(request)
 }
 
 export const config = {
   matcher: [
-    '/dashboard/:path*',
-    '/profile/:path*',
-    '/settings/:path*',
-    '/login',
-  ],
+    // Match all pathnames except for
+    // - … if they start with `/api`, `/_next` or `/_vercel`
+    // - … the ones containing a dot (e.g. `favicon.ico`)
+    '/((?!api|_next|_vercel|.*\\..*).*)'
+  ]
 }

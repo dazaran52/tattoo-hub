@@ -159,9 +159,9 @@ export default function BookMasterPage() {
           <div className="relative inline-block mb-5">
             <div className={`absolute inset-0 rounded-full pointer-events-none ${
               master.badge_tier === 'vip' 
-                ? 'border-[#F59E0B] border-[3px] shadow-[0_0_25px_rgba(245,158,11,0.6)] ring-4 ring-[#F59E0B]/20 animate-pulse'
+                ? 'border-[#F59E0B] border-[3px] shadow-[0_0_25px_rgba(245,158,11,0.6)] ring-4 ring-[#F59E0B]/20 animate-pulse-border'
                 : master.badge_tier === 'pro'
-                  ? 'border-purple-500 border-[3px] shadow-[0_0_20px_rgba(168,85,247,0.5)] ring-4 ring-purple-500/30 animate-pulse'
+                  ? 'border-purple-500 border-[3px] shadow-[0_0_20px_rgba(168,85,247,0.5)] ring-4 ring-purple-500/30 animate-pulse-border'
                   : ''
             }`} />
             <div className={`w-28 h-28 rounded-full flex items-center justify-center mx-auto overflow-hidden transition-all relative z-10 ${

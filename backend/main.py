@@ -22,6 +22,9 @@ from app.routers.public import router as public_router
 from app.routers.reviews import router as reviews_router
 from app.routers import crm, favorites, disputes
 
+import asyncio
+from app.services.notification_worker import run_notification_worker
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan events."""
@@ -29,12 +32,12 @@ async def lifespan(app: FastAPI):
     settings = get_settings()
     print(f"🚀 Tattoo Hub API starting in {settings.APP_ENV} mode")
     
-
-    # Email parser background tasks have been completely extracted to `код_парсера_пока_не_применять.txt`
-    # to avoid accidental activation during development.
+    # Start the background notification worker
+    notification_task = asyncio.create_task(run_notification_worker())
     
     yield
     # Shutdown
+    notification_task.cancel()
     print("👋 Shutting down API")
 
 

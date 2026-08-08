@@ -67,6 +67,7 @@ module.exports = {
         'blob': 'blob 7s infinite',
         'fade-in-up': 'fadeInUp 0.5s ease-out forwards',
         'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        'pulse-border': 'pulse-border 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
       },
       keyframes: {
         blob: {
@@ -78,6 +79,10 @@ module.exports = {
         fadeInUp: {
           '0%': { opacity: '0', transform: 'translateY(20px)' },
           '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        'pulse-border': {
+          '0%, 100%': { opacity: '1', transform: 'scale(1)' },
+          '50%': { opacity: '0.5', transform: 'scale(1.05)' },
         }
       }
     },

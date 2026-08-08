@@ -6,6 +6,7 @@ import { LogOut, Gem, Menu, X, LayoutDashboard, Settings, Plus, Moon, Sun, Globe
 import { Profile } from '@/lib/supabase'
 import { subscribeToPush } from '@/lib/push'
 import { useLanguage } from '@/i18n/LanguageContext'
+import { useTranslations, useLocale } from 'next-intl'
 import { TransactionHistoryModal } from '@/components/TransactionHistoryModal'
 import { NotificationsMenu } from '@/components/NotificationsMenu'
 import { MasterTierBadge } from '@/components/PublicMasterTrust'
@@ -39,7 +40,8 @@ export function Header({ profile, onLogout, maxWidthClass = 'max-w-7xl', onOpenC
   }, [menuOpen])
 
   const router = useRouter()
-  const { lang: language, setLang, t } = useLanguage()
+  const locale = useLocale()
+  const t = useTranslations()
   const [showHistory, setShowHistory] = useState(false)
   const [isSubscribing, setIsSubscribing] = useState(false)
   const [startTour, setStartTour] = useState(false)
@@ -68,11 +70,11 @@ export function Header({ profile, onLogout, maxWidthClass = 'max-w-7xl', onOpenC
         const isMissingLocation = !profile.country_ids || profile.country_ids.length === 0
         const isMissingPortfolio = !profile.portfolio_url
         if (isMissingLocation || isMissingPortfolio) {
-          router.push('/onboarding')
+          router.push(`/${locale}/onboarding`)
         }
       }
     }
-  }, [profile, router])
+  }, [profile, router, locale])
 
   
   useEffect(() => {
@@ -102,9 +104,13 @@ export function Header({ profile, onLogout, maxWidthClass = 'max-w-7xl', onOpenC
 
   const toggleLanguage = () => {
     const langs = ['cs', 'en', 'ru', 'uk']
-    const currentIndex = langs.indexOf(language)
+    const currentIndex = langs.indexOf(locale)
     const newLang = langs[(currentIndex + 1) % langs.length] || 'cs'
-    setLang(newLang as any)
+    if (typeof window !== 'undefined') {
+      const pathname = window.location.pathname
+      const newPathname = pathname.replace(/^\/[a-z]{2}(\/|$)/, `/${newLang}/`)
+      router.push(newPathname || `/${newLang}`)
+    }
   }
   
   return (
@@ -225,7 +231,7 @@ export function Header({ profile, onLogout, maxWidthClass = 'max-w-7xl', onOpenC
                     
                     <button onClick={toggleLanguage} className="flex items-center gap-3 px-4 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 w-full text-left">
                       <Globe className="w-4 h-4" />
-                      {t('language')}: <span className="uppercase font-semibold">{language === 'cs' ? 'cz' : language}</span>
+                      {t('language')}: <span className="uppercase font-semibold">{locale === 'cs' ? 'cz' : locale}</span>
                     </button>
                     <button onClick={toggleTheme} className="flex items-center gap-3 px-4 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 w-full text-left">
                       {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
