@@ -86,8 +86,6 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   // Prevent hydration mismatch by not rendering children until language is determined
   // But to be SEO friendly we can render with default RU and suppress hydration warning in body
   // We'll just render it
-  
-  if (!isLoaded) return null // Optional: hide until lang loaded, prevents flash
 
   return (
     <LanguageContext.Provider value={{ lang, setLang, t }}>
