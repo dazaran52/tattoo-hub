@@ -8,8 +8,25 @@ export default getRequestConfig(async ({locale}) => {
   // Validate that the incoming `locale` parameter is valid
   if (!locales.includes(locale as any)) notFound();
 
+  let messages;
+  switch (locale) {
+    case 'en':
+      messages = (await import('./dictionaries/en.json')).default;
+      break;
+    case 'cs':
+      messages = (await import('./dictionaries/cs.json')).default;
+      break;
+    case 'uk':
+      messages = (await import('./dictionaries/uk.json')).default;
+      break;
+    case 'ru':
+    default:
+      messages = (await import('./dictionaries/ru.json')).default;
+      break;
+  }
+
   return {
     locale: locale as string,
-    messages: (await import(`./dictionaries/${locale}.json`)).default
+    messages
   };
 });

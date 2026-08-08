@@ -86,6 +86,7 @@ export default async function RootLayout({
   try {
     messages = await getMessages();
   } catch (error) {
+    console.error('getMessages failed:', error);
     notFound();
   }
 
