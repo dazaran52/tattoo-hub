@@ -1,9 +1,17 @@
 const puppeteer = require('puppeteer');
+
 (async () => {
-  const browser = await puppeteer.launch({ args: ['--no-sandbox', '--disable-setuid-sandbox'] });
+  const browser = await puppeteer.launch();
   const page = await browser.newPage();
+  
   page.on('console', msg => console.log('PAGE LOG:', msg.text()));
-  page.on('pageerror', error => console.log('PAGE ERROR:', error.message));
-  await page.goto('http://localhost:3000/ru', { waitUntil: 'networkidle0' });
+  page.on('pageerror', err => console.error('PAGE ERROR:', err.message));
+
+  console.log('Navigating to https://tattoo-hub.xyz/ru...');
+  await page.goto('https://tattoo-hub.xyz/ru', { waitUntil: 'networkidle0' });
+  
+  const html = await page.evaluate(() => document.documentElement.outerHTML);
+  console.log('Root node:', html.substring(0, 150));
+  
   await browser.close();
 })();
