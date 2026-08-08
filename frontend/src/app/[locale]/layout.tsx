@@ -90,37 +90,6 @@ export default async function RootLayout({
     <html lang={locale}>
       <head>
         <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "WebSite",
-              "name": "Tattoo HUB",
-              "url": "https://tattoo-hub.xyz/",
-              "potentialAction": {
-                "@type": "SearchAction",
-                "target": "https://tattoo-hub.xyz/en?q={search_term_string}",
-                "query-input": "required name=search_term_string"
-              }
-            })
-          }}
-        />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "Organization",
-              "name": "Tattoo HUB",
-              "url": "https://tattoo-hub.xyz",
-              "logo": "https://tattoo-hub.xyz/icon-512x512.png",
-              "sameAs": [
-                "https://instagram.com/tattoo_hub"
-              ]
-            })
-          }}
-        />
-        <script
           dangerouslySetInnerHTML={{
             __html: `
               (function() {
