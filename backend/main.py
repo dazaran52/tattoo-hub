@@ -24,6 +24,7 @@ from app.routers import crm, favorites, disputes
 
 import asyncio
 from app.services.notification_worker import run_notification_worker
+from app.services.currency_service import run_currency_worker
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -35,9 +36,13 @@ async def lifespan(app: FastAPI):
     # Start the background notification worker
     notification_task = asyncio.create_task(run_notification_worker())
     
+    # Start the currency daily sync worker
+    currency_task = asyncio.create_task(run_currency_worker())
+    
     yield
     # Shutdown
     notification_task.cancel()
+    currency_task.cancel()
     print("👋 Shutting down API")
 
 

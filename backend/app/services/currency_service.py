@@ -83,3 +83,25 @@ async def fetch_and_update_ecb_rates(supabase: Client) -> Dict[str, Any]:
         "updated_count": len(rows_to_upsert),
         "rates": updated_cache
     }
+
+import asyncio
+from app.database import get_supabase_client
+import logging
+
+logger = logging.getLogger(__name__)
+
+async def run_currency_worker():
+    """Background worker to automatically sync ECB currency rates every 24 hours."""
+    # Initial delay to not block startup too much
+    await asyncio.sleep(10)
+    
+    while True:
+        try:
+            supabase = get_supabase_client()
+            res = await fetch_and_update_ecb_rates(supabase)
+            logger.info(f"Currency rates synced automatically: {res['updated_count']} currencies updated")
+        except Exception as e:
+            logger.error(f"Failed to auto-sync currency rates: {e}")
+        
+        # Sleep for 24 hours
+        await asyncio.sleep(24 * 60 * 60)
