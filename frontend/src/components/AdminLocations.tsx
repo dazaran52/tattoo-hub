@@ -13,11 +13,15 @@ export function AdminLocations() {
   const [newCountryCode, setNewCountryCode] = useState('')
   const [newCountryRu, setNewCountryRu] = useState('')
   const [newCountryEn, setNewCountryEn] = useState('')
+  const [newCountryCs, setNewCountryCs] = useState('')
+  const [newCountryUk, setNewCountryUk] = useState('')
   
   const [selectedCountryForCity, setSelectedCountryForCity] = useState('')
   const [newCityRu, setNewCityRu] = useState('')
   const [newCityEn, setNewCityEn] = useState('')
-  const [translatingCity, setTranslatingCity] = useState<'ru'|'en'|null>(null)
+  const [newCityCs, setNewCityCs] = useState('')
+  const [newCityUk, setNewCityUk] = useState('')
+  const [translatingCity, setTranslatingCity] = useState<boolean>(false)
 
   const handleCountryCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const code = e.target.value.toUpperCase()
@@ -27,35 +31,64 @@ export function AdminLocations() {
       try {
         const ru = new Intl.DisplayNames(['ru'], { type: 'region' }).of(code)
         const en = new Intl.DisplayNames(['en'], { type: 'region' }).of(code)
+        const cs = new Intl.DisplayNames(['cs'], { type: 'region' }).of(code)
+        const uk = new Intl.DisplayNames(['uk'], { type: 'region' }).of(code)
         if (ru && ru !== code) setNewCountryRu(ru)
         if (en && en !== code) setNewCountryEn(en)
+        if (cs && cs !== code) setNewCountryCs(cs)
+        if (uk && uk !== code) setNewCountryUk(uk)
       } catch (err) {
         // Ignore invalid region codes
       }
     }
   }
 
-  const autoTranslateCity = async (sourceLang: 'ru'|'en') => {
-    const sourceText = sourceLang === 'ru' ? newCityRu : newCityEn
-    if (!sourceText) {
-      toast.error('Сначала введите название для перевода')
+  const autoTranslateCity = async () => {
+    const sources = [
+      { lang: 'ru', text: newCityRu },
+      { lang: 'en', text: newCityEn },
+      { lang: 'cs', text: newCityCs },
+      { lang: 'uk', text: newCityUk },
+    ]
+    const source = sources.find(s => s.text.trim().length > 0)
+    
+    if (!source) {
+      toast.error('Введите название на любом языке для перевода')
       return
     }
     
-    setTranslatingCity(sourceLang)
+    setTranslatingCity(true)
     try {
-      const targetLang = sourceLang === 'ru' ? 'en' : 'ru'
-      const res = await fetch(`https://${sourceLang}.wikipedia.org/w/api.php?action=query&prop=langlinks&titles=${encodeURIComponent(sourceText)}&lllang=${targetLang}&format=json&origin=*`)
+      const targetLangs = sources.filter(s => s.lang !== source.lang).map(s => s.lang).join('|')
+      const res = await fetch(`https://${source.lang}.wikipedia.org/w/api.php?action=query&prop=langlinks&titles=${encodeURIComponent(source.text)}&lllang=${targetLangs}&format=json&origin=*`)
       const data = await res.json()
       
       const pages = data.query?.pages
       if (pages) {
         const pageId = Object.keys(pages)[0]
         if (pageId !== '-1' && pages[pageId].langlinks && pages[pageId].langlinks.length > 0) {
-          const translated = pages[pageId].langlinks[0]['*']
-          if (targetLang === 'ru') setNewCityRu(translated)
-          else setNewCityEn(translated)
-          toast.success('Город успешно переведён!')
+          const links = pages[pageId].langlinks
+          let successCount = 0
+          
+          const getTrans = (l: string) => links.find((x: any) => x.lang === l)?.['*']
+          
+          const csT = getTrans('cs')
+          if (csT && !newCityCs) { setNewCityCs(csT); successCount++ }
+          
+          const ukT = getTrans('uk')
+          if (ukT && !newCityUk) { setNewCityUk(ukT); successCount++ }
+          
+          const ruT = getTrans('ru')
+          if (ruT && !newCityRu) { setNewCityRu(ruT); successCount++ }
+          
+          const enT = getTrans('en')
+          if (enT && !newCityEn) { setNewCityEn(enT); successCount++ }
+
+          if (successCount > 0) {
+            toast.success(`Переведено на ${successCount} яз.!`)
+          } else {
+            toast.success('Все языки уже заполнены или нет переводов.')
+          }
           return
         }
       }
@@ -63,7 +96,7 @@ export function AdminLocations() {
     } catch (err) {
       toast.error('Ошибка при переводе')
     } finally {
-      setTranslatingCity(null)
+      setTranslatingCity(false)
     }
   }
   
@@ -116,7 +149,9 @@ export function AdminLocations() {
         body: JSON.stringify({
           code: newCountryCode,
           name_ru: newCountryRu,
-          name_en: newCountryEn
+          name_en: newCountryEn,
+          name_cs: newCountryCs,
+          name_uk: newCountryUk
         })
       })
       if (!res.ok) throw new Error('Failed to add country')
@@ -124,6 +159,8 @@ export function AdminLocations() {
       setNewCountryCode('')
       setNewCountryRu('')
       setNewCountryEn('')
+      setNewCountryCs('')
+      setNewCountryUk('')
       fetchData()
     } catch (err) {
       toast.error('Error adding country')
@@ -181,13 +218,17 @@ export function AdminLocations() {
         body: JSON.stringify({
           country_id: selectedCountryForCity,
           name_ru: newCityRu,
-          name_en: newCityEn
+          name_en: newCityEn,
+          name_cs: newCityCs,
+          name_uk: newCityUk
         })
       })
       if (!res.ok) throw new Error('Failed to add city')
       toast.success('City added')
       setNewCityRu('')
       setNewCityEn('')
+      setNewCityCs('')
+      setNewCityUk('')
       fetchData()
     } catch (err) {
       toast.error('Error adding city')
@@ -248,14 +289,20 @@ export function AdminLocations() {
           Countries
         </h3>
         
-        <form onSubmit={handleAddCountry} className="flex gap-4 mb-6">
-          <input required type="text" maxLength={2} placeholder="Code (e.g. CZ)" value={newCountryCode} onChange={handleCountryCodeChange} className="px-4 py-2 w-32 rounded-xl border dark:bg-neutral-950 dark:border-neutral-800 uppercase" />
-          <input required type="text" placeholder="Name RU (Auto)" value={newCountryRu} onChange={e => setNewCountryRu(e.target.value)} className="flex-1 px-4 py-2 rounded-xl border dark:bg-neutral-950 dark:border-neutral-800" />
-          <input required type="text" placeholder="Name EN (Auto)" value={newCountryEn} onChange={e => setNewCountryEn(e.target.value)} className="flex-1 px-4 py-2 rounded-xl border dark:bg-neutral-950 dark:border-neutral-800" />
-          <button disabled={actionLoadingId === 'new_country'} className="bg-primary-600 text-white px-6 py-2 rounded-xl font-bold hover:bg-primary-700 disabled:opacity-50 flex items-center gap-2">
-            {actionLoadingId === 'new_country' ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
-            Add
-          </button>
+        <form onSubmit={handleAddCountry} className="flex flex-col gap-4 mb-6">
+          <div className="flex gap-4">
+            <input required type="text" maxLength={2} placeholder="Code (e.g. CZ)" value={newCountryCode} onChange={handleCountryCodeChange} className="px-4 py-2 w-32 rounded-xl border dark:bg-neutral-950 dark:border-neutral-800 uppercase" />
+            <div className="grid grid-cols-2 gap-4 flex-1">
+              <input required type="text" placeholder="Name RU (Auto)" value={newCountryRu} onChange={e => setNewCountryRu(e.target.value)} className="px-4 py-2 rounded-xl border dark:bg-neutral-950 dark:border-neutral-800" />
+              <input required type="text" placeholder="Name EN (Auto)" value={newCountryEn} onChange={e => setNewCountryEn(e.target.value)} className="px-4 py-2 rounded-xl border dark:bg-neutral-950 dark:border-neutral-800" />
+              <input required type="text" placeholder="Name CS (Auto)" value={newCountryCs} onChange={e => setNewCountryCs(e.target.value)} className="px-4 py-2 rounded-xl border dark:bg-neutral-950 dark:border-neutral-800" />
+              <input required type="text" placeholder="Name UK (Auto)" value={newCountryUk} onChange={e => setNewCountryUk(e.target.value)} className="px-4 py-2 rounded-xl border dark:bg-neutral-950 dark:border-neutral-800" />
+            </div>
+            <button disabled={actionLoadingId === 'new_country'} className="bg-primary-600 text-white px-6 py-2 rounded-xl font-bold hover:bg-primary-700 disabled:opacity-50 flex items-center justify-center gap-2 h-[42px] self-start">
+              {actionLoadingId === 'new_country' ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+              Add
+            </button>
+          </div>
         </form>
 
         <div className="space-y-2">
@@ -292,27 +339,30 @@ export function AdminLocations() {
           Cities
         </h3>
         
-        <form onSubmit={handleAddCity} className="flex gap-4 mb-6">
-          <select required value={selectedCountryForCity} onChange={e => setSelectedCountryForCity(e.target.value)} className="px-4 py-2 rounded-xl border dark:bg-neutral-950 dark:border-neutral-800">
-            <option value="" disabled>Select Country</option>
-            {countries.map(c => <option key={c.id} value={c.id}>{c.name_ru}</option>)}
-          </select>
-          <div className="relative flex-1">
-            <input required type="text" placeholder="Name RU" value={newCityRu} onChange={e => setNewCityRu(e.target.value)} className="w-full px-4 py-2 pr-10 rounded-xl border dark:bg-neutral-950 dark:border-neutral-800" />
-            <button type="button" onClick={() => autoTranslateCity('ru')} disabled={translatingCity === 'ru' || !newCityRu} className="absolute right-2 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-primary-500 disabled:opacity-50" title="Авто-перевод на Английский">
-              {translatingCity === 'ru' ? <Loader2 className="w-5 h-5 animate-spin" /> : <Wand2 className="w-5 h-5" />}
-            </button>
+        <form onSubmit={handleAddCity} className="flex flex-col gap-4 mb-6">
+          <div className="flex gap-4">
+            <select required value={selectedCountryForCity} onChange={e => setSelectedCountryForCity(e.target.value)} className="px-4 py-2 w-48 rounded-xl border dark:bg-neutral-950 dark:border-neutral-800">
+              <option value="" disabled>Select Country</option>
+              {countries.map(c => <option key={c.id} value={c.id}>{c.name_ru}</option>)}
+            </select>
+            <div className="grid grid-cols-2 gap-4 flex-1">
+              <input required type="text" placeholder="Name RU" value={newCityRu} onChange={e => setNewCityRu(e.target.value)} className="w-full px-4 py-2 rounded-xl border dark:bg-neutral-950 dark:border-neutral-800" />
+              <input required type="text" placeholder="Name EN" value={newCityEn} onChange={e => setNewCityEn(e.target.value)} className="w-full px-4 py-2 rounded-xl border dark:bg-neutral-950 dark:border-neutral-800" />
+              <input required type="text" placeholder="Name CS" value={newCityCs} onChange={e => setNewCityCs(e.target.value)} className="w-full px-4 py-2 rounded-xl border dark:bg-neutral-950 dark:border-neutral-800" />
+              <input required type="text" placeholder="Name UK" value={newCityUk} onChange={e => setNewCityUk(e.target.value)} className="w-full px-4 py-2 rounded-xl border dark:bg-neutral-950 dark:border-neutral-800" />
+            </div>
+            
+            <div className="flex flex-col gap-2">
+              <button type="button" onClick={autoTranslateCity} disabled={translatingCity || (!newCityRu && !newCityEn && !newCityCs && !newCityUk)} className="bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 px-4 py-2 rounded-xl font-medium hover:bg-neutral-200 dark:hover:bg-neutral-700 disabled:opacity-50 flex items-center justify-center gap-2 h-[42px]" title="Авто-перевод остальных полей">
+                {translatingCity ? <Loader2 className="w-4 h-4 animate-spin" /> : <Wand2 className="w-4 h-4" />}
+                Перевести
+              </button>
+              <button disabled={actionLoadingId === 'new_city'} className="bg-primary-600 text-white px-6 py-2 rounded-xl font-bold hover:bg-primary-700 disabled:opacity-50 flex items-center justify-center gap-2 h-[42px]">
+                {actionLoadingId === 'new_city' ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+                Add
+              </button>
+            </div>
           </div>
-          <div className="relative flex-1">
-            <input required type="text" placeholder="Name EN" value={newCityEn} onChange={e => setNewCityEn(e.target.value)} className="w-full px-4 py-2 pr-10 rounded-xl border dark:bg-neutral-950 dark:border-neutral-800" />
-            <button type="button" onClick={() => autoTranslateCity('en')} disabled={translatingCity === 'en' || !newCityEn} className="absolute right-2 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-primary-500 disabled:opacity-50" title="Авто-перевод на Русский">
-              {translatingCity === 'en' ? <Loader2 className="w-5 h-5 animate-spin" /> : <Wand2 className="w-5 h-5" />}
-            </button>
-          </div>
-          <button disabled={actionLoadingId === 'new_city'} className="bg-primary-600 text-white px-6 py-2 rounded-xl font-bold hover:bg-primary-700 disabled:opacity-50 flex items-center gap-2">
-            {actionLoadingId === 'new_city' ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
-            Add
-          </button>
         </form>
 
         <div className="space-y-2">

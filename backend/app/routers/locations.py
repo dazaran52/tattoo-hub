@@ -14,12 +14,16 @@ class CountryResponse(BaseModel):
     code: str
     name_ru: str
     name_en: str
+    name_cs: str | None = None
+    name_uk: str | None = None
 
 class CityResponse(BaseModel):
     id: str
     country_id: str
     name_ru: str
     name_en: str
+    name_cs: str | None = None
+    name_uk: str | None = None
 
 @router.get("/countries", response_model=List[CountryResponse])
 async def get_countries(supabase: Client = Depends(get_supabase_client)):

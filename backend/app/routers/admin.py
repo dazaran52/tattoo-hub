@@ -644,11 +644,15 @@ class CountryCreate(BaseModel):
     code: str
     name_ru: str
     name_en: str
+    name_cs: str = ""
+    name_uk: str = ""
 
 class CityCreate(BaseModel):
     country_id: str
     name_ru: str
     name_en: str
+    name_cs: str = ""
+    name_uk: str = ""
 
 @router.post("/locations/countries")
 async def create_country(
