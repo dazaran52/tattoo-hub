@@ -39,7 +39,7 @@ const contentSecurityPolicy = [
   "font-src 'self' data:",
   "script-src 'self' 'unsafe-inline'",
   "style-src 'self' 'unsafe-inline'",
-  "connect-src 'self' https://*.supabase.co wss://*.supabase.co",
+  "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.wikipedia.org",
   "media-src 'self' https: blob:",
   "worker-src 'self'",
   "form-action 'self'",
