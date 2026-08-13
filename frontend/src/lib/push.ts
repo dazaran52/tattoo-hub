@@ -1,6 +1,6 @@
 import { supabase } from './supabase'
 
-const PUBLIC_VAPID_KEY = 'BKg0tgYu0cfJapwvW8KLz9d96EurIYveFvmEl67T0-nJnaskd5ptdaFX4k_FJUmYprGhIWIOhUZK38qUD6cFxJc'
+const PUBLIC_VAPID_KEY = process.env.NEXT_PUBLIC_VAPID_KEY || ''
 
 function urlBase64ToUint8Array(base64String: string) {
   const padding = '='.repeat((4 - base64String.length % 4) % 4)

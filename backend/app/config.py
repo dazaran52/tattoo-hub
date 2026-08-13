@@ -58,6 +58,10 @@ class Settings(BaseSettings):
     LEAD_REPLY_PASSWORD: str | None = None
     LEAD_REPLY_FROM_NAME: str = "Tattoo Booking Helper"
     
+    # Push Notifications
+    VAPID_PRIVATE_KEY: str | None = None
+    VAPID_SUBJECT: str = "mailto:admin@tattoo-hub.xyz"
+    
     @property
     def DATABASE_URL(self) -> str:
         """Get database URL, fallback to constructing from Supabase URL."""

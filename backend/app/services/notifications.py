@@ -1,12 +1,7 @@
 import json
 from pywebpush import webpush, WebPushException
 from app.database import get_supabase_client
-
-# We should ideally load these from environment variables
-VAPID_PRIVATE_KEY = "BKIH0N3XYD3gYCG14pkVqESvpq1_lItB8ClTQlQUiDw"
-VAPID_CLAIMS = {
-    "sub": "mailto:dazaran52@gmail.com"
-}
+from app.config import get_settings
 
 def send_push_notification(user_id: str, title: str, body: str, url: str = "/dashboard"):
     """Send a web push notification to all devices of a user."""
@@ -34,11 +29,17 @@ def send_push_notification(user_id: str, title: str, body: str, url: str = "/das
                 }
             }
             
+            settings = get_settings()
+            
+            if not settings.VAPID_PRIVATE_KEY:
+                print("Web push failed: VAPID_PRIVATE_KEY not configured")
+                continue
+                
             webpush(
                 subscription_info=subscription_info,
                 data=payload,
-                vapid_private_key=VAPID_PRIVATE_KEY,
-                vapid_claims=VAPID_CLAIMS
+                vapid_private_key=settings.VAPID_PRIVATE_KEY,
+                vapid_claims={"sub": settings.VAPID_SUBJECT}
             )
         except WebPushException as ex:
             print(f"Web push failed: {ex}")
