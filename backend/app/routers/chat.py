@@ -33,16 +33,44 @@ SOCIAL_REGEX = re.compile(r'(?:@[A-Za-z0-9_]{3,}|t\.me\/[A-Za-z0-9_]+|tg:\/\/|in
 LINK_REGEX = re.compile(r'(?:https?:\/\/|www\.)[^\s]+', re.IGNORECASE)
 EMAIL_REGEX = re.compile(r'[\w\.-]+@[\w\.-]+\.\w+')
 
+# Advanced bypass regexes
+SPACE_PHONE_REGEX = re.compile(r'(?:\+?\s*(?:[0-9oOоО]\s*[-.]?\s*)){8,}')
+SOCIAL_BYPASS_REGEX = re.compile(
+    r'(?:@\s*|i\s*n\s*s\s*t(?:\s*a)?\s*[:=]?\s*|t\s*e\s*l\s*e\s*g\s*r\s*a\s*m\s*[:=]?\s*|t\s*g\s*[:=]?\s*|т\s*г\s*[:=]?\s*|v\s*k\s*[:=]?\s*|в\s*к\s*[:=]?\s*|w\s*h\s*a\s*t\s*s\s*a\s*p\s*p\s*[:=]?\s*|v\s*i\s*b\s*e\s*r\s*[:=]?\s*)(?:[a-zA-Z0-9_а-яА-Я]\s*){4,}', 
+    re.IGNORECASE
+)
+
 def apply_anti_bypass_filter(content: str) -> str:
     """Mask phone numbers, emails, social handles, and external links to prevent platform bypass."""
     text = content
+    
+    # 1. Advanced Phone number bypass (e.g. + 4 2 0 ...)
+    text = SPACE_PHONE_REGEX.sub('[СКРЫТЫЙ НОМЕР]', text)
+    
+    # 2. Advanced Social handle bypass (e.g. t g : master_name)
+    text = SOCIAL_BYPASS_REGEX.sub('[СКРЫТЫЙ КОНТАКТ]', text)
+    
+    # 3. Standard masking
     text = EMAIL_REGEX.sub('[СКРЫТЫЙ EMAIL]', text)
     text = LINK_REGEX.sub('[СКРЫТАЯ ССЫЛКА]', text)
     text = SOCIAL_REGEX.sub('[СКРЫТЫЙ КОНТАКТ]', text)
     
+    # 4. Count digits (fallback standard logic)
     digits = sum(c.isdigit() for c in text)
     if digits >= 8:
         text = PHONE_REGEX.sub('[СКРЫТЫЙ НОМЕР]', text)
+        
+    # 5. Check for spelled out numbers (e.g. один два три)
+    spelled_out = {
+        'ноль', 'один', 'два', 'три', 'четыре', 'пять', 'шесть', 'семь', 'восемь', 'девять',
+        'zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'
+    }
+    words = [w.strip('.,!?()[]{}') for w in text.lower().split()]
+    spelled_digits_count = sum(1 for w in words if w in spelled_out)
+    
+    if spelled_digits_count >= 7:
+         return "[ПОПЫТКА ОБХОДА: НОМЕР СЛОВАМИ]"
+         
     return text
 
 def extract_prices(text: str) -> list[float]:
