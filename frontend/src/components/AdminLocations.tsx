@@ -56,11 +56,34 @@ export function AdminLocations() {
       toast.error('Введите название на любом языке для перевода')
       return
     }
+
+    let searchLang = source.lang
+    let searchTitle = source.text.trim()
+
+    // Handle Wikipedia URL paste
+    if (searchTitle.startsWith('http')) {
+      try {
+        const url = new URL(searchTitle)
+        const match = url.hostname.match(/^([a-z]{2,3})\.wikipedia\.org$/)
+        if (match) {
+          searchLang = match[1]
+          searchTitle = decodeURIComponent(url.pathname.split('/').pop() || '')
+        } else {
+          toast.error('Поддерживаются только ссылки на Википедию')
+          setTranslatingCity(false)
+          return
+        }
+      } catch (e) {
+        toast.error('Некорректная ссылка')
+        setTranslatingCity(false)
+        return
+      }
+    }
     
     setTranslatingCity(true)
     try {
-      const targetLangs = sources.filter(s => s.lang !== source.lang).map(s => s.lang).join('|')
-      const res = await fetch(`https://${source.lang}.wikipedia.org/w/api.php?action=query&prop=langlinks&titles=${encodeURIComponent(source.text)}&lllang=${targetLangs}&format=json&origin=*`)
+      const targetLangs = sources.filter(s => s.lang !== searchLang).map(s => s.lang).join('|')
+      const res = await fetch(`https://${searchLang}.wikipedia.org/w/api.php?action=query&prop=langlinks&titles=${encodeURIComponent(searchTitle)}&redirects=1&lllang=${targetLangs}&format=json&origin=*`)
       const data = await res.json()
       
       const pages = data.query?.pages
@@ -69,20 +92,30 @@ export function AdminLocations() {
         if (pageId !== '-1' && pages[pageId].langlinks && pages[pageId].langlinks.length > 0) {
           const links = pages[pageId].langlinks
           let successCount = 0
-          
           const getTrans = (l: string) => links.find((x: any) => x.lang === l)?.['*']
           
+          const isUrl = searchTitle !== source.text.trim()
+
           const csT = getTrans('cs')
-          if (csT && !newCityCs) { setNewCityCs(csT); successCount++ }
+          if (csT && (!newCityCs || (isUrl && source.lang === 'cs'))) { setNewCityCs(csT); successCount++ }
           
           const ukT = getTrans('uk')
-          if (ukT && !newCityUk) { setNewCityUk(ukT); successCount++ }
+          if (ukT && (!newCityUk || (isUrl && source.lang === 'uk'))) { setNewCityUk(ukT); successCount++ }
           
           const ruT = getTrans('ru')
-          if (ruT && !newCityRu) { setNewCityRu(ruT); successCount++ }
+          if (ruT && (!newCityRu || (isUrl && source.lang === 'ru'))) { setNewCityRu(ruT); successCount++ }
           
           const enT = getTrans('en')
-          if (enT && !newCityEn) { setNewCityEn(enT); successCount++ }
+          if (enT && (!newCityEn || (isUrl && source.lang === 'en'))) { setNewCityEn(enT); successCount++ }
+
+          // If the language of the URL itself was the field they pasted into, we should put the title there
+          if (isUrl && source.lang === searchLang) {
+              if (searchLang === 'ru') setNewCityRu(searchTitle)
+              if (searchLang === 'en') setNewCityEn(searchTitle)
+              if (searchLang === 'cs') setNewCityCs(searchTitle)
+              if (searchLang === 'uk') setNewCityUk(searchTitle)
+              successCount++
+          }
 
           if (successCount > 0) {
             toast.success(`Переведено на ${successCount} яз.!`)
