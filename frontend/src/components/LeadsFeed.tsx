@@ -17,7 +17,7 @@ import imageCompression from 'browser-image-compression'
 import { api } from '@/lib/api'
 import { ConfirmModal } from '@/components/ConfirmModal'
 import { CityMultiSelect } from '@/components/CityMultiSelect'
-import { useLanguage } from '@/i18n/LanguageContext'
+import { useTranslations, useLocale } from 'next-intl'
 import { TATTOO_STYLES, BODY_PLACES } from '@/lib/constants'
 import { Filter } from 'lucide-react'
 import { usePresence } from '@/components/PresenceContext'
@@ -68,7 +68,7 @@ interface LeadsFeedProps {
 }
 
 export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = false, showOnlyUnlocked = false, userCities = [] }: LeadsFeedProps) {
-  const { lang: language } = useLanguage()
+  const language = useLocale()
   const [leads, setLeads] = useState<Lead[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)

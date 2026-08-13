@@ -19,7 +19,7 @@ import { MasterLeadModal } from '@/components/MasterLeadModal'
 import { ImageViewerModal } from '@/components/ImageViewerModal'
 import { SkeletonKanban, SkeletonTable } from '@/components/SkeletonCard'
 import { CreateDisputeModal } from '@/components/CreateDisputeModal'
-import { useLanguage } from '@/i18n/LanguageContext'
+import { useTranslations, useLocale } from 'next-intl'
 
 export interface CRMSession {
   id: string
@@ -99,7 +99,8 @@ const COLOR_STYLES: Record<string, { bg: string, border: string, leftBorder: str
 const DATE_LOCALES: Record<string, string> = { ru: 'ru-RU', en: 'en-US', cs: 'cs-CZ', uk: 'uk-UA' }
 
 export function CRMBoard({ initialViewLeadId, initialViewSessionId }: { initialViewLeadId?: string | null, initialViewSessionId?: string | null }) {
-  const { t, lang } = useLanguage()
+  const t = useTranslations()
+  const lang = useLocale()
   const dateLocale = DATE_LOCALES[lang] || 'en-US'
 
   // Lightweight helper to interpolate simple {token} placeholders into

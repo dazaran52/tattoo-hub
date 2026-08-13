@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 import { Plus, Image as ImageIcon, Video, Trash2, Edit2, Loader2, X } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { PostModal, PortfolioPost } from './PostModal'
-import { useLanguage } from '@/i18n/LanguageContext'
+import { useTranslations, useLocale } from 'next-intl'
 import imageCompression from 'browser-image-compression'
 import { EmptyState } from '@/components/EmptyState'
 
@@ -12,7 +12,8 @@ interface PortfolioTabProps {
 }
 
 export function PortfolioTab({ profile }: PortfolioTabProps) {
-  const { t, lang } = useLanguage()
+  const t = useTranslations()
+  const lang = useLocale()
   const [posts, setPosts] = useState<PortfolioPost[]>([])
   const [isLoading, setIsLoading] = useState(true)
   

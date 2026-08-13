@@ -12,7 +12,7 @@ import { LeadDetailsModal } from '@/components/LeadDetailsModal'
 import { toast } from 'react-hot-toast'
 import { ClientDashboard } from '@/components/ClientDashboard'
 import { PortfolioTab } from '@/components/PortfolioTab'
-import { useLanguage } from '@/i18n/LanguageContext'
+import { useTranslations, useLocale } from 'next-intl'
 import { MessageCircle, LayoutDashboard, Share2, Link as LinkIcon, Image as ImageIcon, ShoppingBag } from 'lucide-react'
 import { BottomNav } from '@/components/BottomNav'
 import { CommandPaletteModal } from '@/components/CommandPaletteModal'
@@ -23,7 +23,8 @@ export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [isClientModalOpen, setIsClientModalOpen] = useState(false)
   const [messagesViewLead, setMessagesViewLead] = useState<any>(null)
-  const { t, lang: language } = useLanguage()
+  const t = useTranslations()
+  const language = useLocale()
   const [currentSession, setCurrentSession] = useState<any>(null)
   const [activeTab, setActiveTab] = useState<'feed' | 'crm' | 'messages' | 'portfolio'>('crm')
   const [unreadMessages, setUnreadMessages] = useState(0)

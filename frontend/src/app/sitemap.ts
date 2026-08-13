@@ -4,11 +4,10 @@ import { locales } from '../i18n/request'
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = 'https://tattoo-hub.xyz'
 
-  // Core pages
+  // Core pages (only public pages to avoid 307 redirects for Googlebot)
   const pages = [
     '',
-    '/dashboard',
-    '/profile',
+    '/login'
   ]
 
   const sitemapEntries: MetadataRoute.Sitemap = []

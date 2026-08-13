@@ -6,7 +6,8 @@ import { useRouter } from 'next/navigation'
 import { Header } from '@/components/Header'
 import { supabase } from '@/lib/supabase'
 import { api, Profile } from '@/lib/api'
-import { useLanguage } from '@/i18n/LanguageContext'
+import { useTranslations, useLocale } from 'next-intl'
+import { LanguageSelector } from '@/i18n/LanguageSelector'
 import { toast } from 'react-hot-toast'
 import imageCompression from 'browser-image-compression'
 import { 
@@ -67,7 +68,8 @@ export default function SettingsPage() {
   const [emailError, setEmailError] = useState<string | null>(null)
   const [emailSuccess, setEmailSuccess] = useState(false)
 
-  const { t, lang: language, setLang } = useLanguage()
+  const t = useTranslations()
+  const language = useLocale()
 
   useEffect(() => {
     fetchProfile()
@@ -279,15 +281,9 @@ export default function SettingsPage() {
                   <p className="text-neutral-500 dark:text-neutral-400 text-sm mt-0.5">{t('languageDescription')}</p>
                 </div>
               </div>
-              <select
-                value={language}
-                onChange={(e) => setLang(e.target.value as 'ru' | 'en' | 'cs')}
-                className="bg-white/60 dark:bg-neutral-800/80 border border-neutral-200 dark:border-neutral-700 rounded-xl px-4 py-2 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 font-bold cursor-pointer transition-all shadow-sm"
-              >
-                <option value="cs">Čeština</option>
-                <option value="ru">Русский</option>
-                <option value="en">English</option>
-              </select>
+              <div className="relative flex items-center justify-end z-10 w-32">
+                <LanguageSelector />
+              </div>
             </div>
           </div>
 

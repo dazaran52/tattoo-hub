@@ -3,13 +3,13 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Cookie } from 'lucide-react'
-import { useLanguage } from '@/i18n/LanguageContext'
+import { useTranslations, useLocale } from 'next-intl'
 
 export function CookieBanner() {
   const [isVisible, setIsVisible] = useState(false)
-  const { lang } = useLanguage()
+  const lang = useLocale()
 
-  const copy = {
+  const copyMap = {
     ru: {
       before: 'Мы используем файлы cookie для улучшения работы сайта. Продолжая пользоваться сайтом, вы соглашаетесь с нашей ',
       policy: 'Политикой конфиденциальности',
@@ -30,7 +30,9 @@ export function CookieBanner() {
       policy: 'Політикою конфіденційності',
       accept: 'Зрозуміло',
     },
-  }[lang]
+  } as Record<string, { before: string; policy: string; accept: string }>
+
+  const copy = copyMap[lang] || copyMap.en
 
   useEffect(() => {
     const consent = localStorage.getItem('cookie_consent')

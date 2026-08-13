@@ -6,10 +6,10 @@ import { MessageCircle, X, Send, Loader2 } from 'lucide-react'
 import { supabase, SupportMessage } from '@/lib/supabase'
 import toast from 'react-hot-toast'
 import { getTranslation, Language } from '@/lib/i18n'
-import { useLanguage } from '@/i18n/LanguageContext'
+import { useTranslations, useLocale } from 'next-intl'
 
 export function ChatWidget() {
-  const { lang: language } = useLanguage()
+  const language = useLocale()
   const [isOpen, setIsOpen] = useState(false)
   const [session, setSession] = useState<any>(null)
   const [messages, setMessages] = useState<SupportMessage[]>([])

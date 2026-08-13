@@ -5,14 +5,15 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useRouter } from 'next/navigation'
 import { Logo } from '@/components/Logo'
 import { Sparkles, UserCircle2, Brush, LogIn, UserPlus, ArrowRight, Award, CheckCircle2 } from 'lucide-react'
-import { useLanguage } from '@/i18n/LanguageContext'
+import { useTranslations, useLocale } from 'next-intl'
 import { LanguageSelector } from '@/i18n/LanguageSelector'
 
 type Role = 'none' | 'master' | 'client'
 
 export function LandingInteractive() {
   const router = useRouter()
-  const { t, lang } = useLanguage()
+  const t = useTranslations()
+  const lang = useLocale()
   
   // step 0: Welcome, step 1: Role Selection, step 2: Guide & Actions
   const [step, setStep] = useState(0)

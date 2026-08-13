@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { Header } from '@/components/Header'
 import { supabase } from '@/lib/supabase'
 import { api, Profile } from '@/lib/api'
-import { useLanguage } from '@/i18n/LanguageContext'
+import { useTranslations, useLocale } from 'next-intl'
 import imageCompression from 'browser-image-compression'
 import { 
   User, Image as ImageIcon, Check, X, Camera, MapPin, 
@@ -25,7 +25,8 @@ import { MasterTierBadge } from '@/components/PublicMasterTrust'
 export default function ProfilePage() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { t, lang: language } = useLanguage()
+  const t = useTranslations()
+  const language = useLocale()
   const [profile, setProfile] = useState<Profile | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)

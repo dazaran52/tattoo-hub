@@ -4,7 +4,7 @@ import { Search, ChevronDown, ChevronUp, Trash2, Edit3, Image as ImageIcon } fro
 import { CRMSession } from './CRMBoard'
 import { supabase } from '@/lib/supabase'
 import { toast } from 'react-hot-toast'
-import { useLanguage } from '@/i18n/LanguageContext'
+import { useTranslations, useLocale } from 'next-intl'
 import { EmptyState } from './EmptyState'
 
 const DATE_LOCALES: Record<string, string> = { ru: 'ru-RU', en: 'en-US', cs: 'cs-CZ', uk: 'uk-UA' }
@@ -23,7 +23,8 @@ type SortField = 'date' | 'client' | 'price'
 type SortOrder = 'asc' | 'desc'
 
 export function SessionsList({ sessions, searchQuery, setSearchQuery, onStatusChange, onSessionClick, onUpdate, cardView = 'normal' }: SessionsListProps) {
-  const { t, lang } = useLanguage()
+  const t = useTranslations()
+  const lang = useLocale()
   const dateLocale = DATE_LOCALES[lang] || 'en-US'
 
   // Lightweight helper to interpolate simple {token} placeholders into

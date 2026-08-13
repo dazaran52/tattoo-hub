@@ -5,11 +5,11 @@ import { useRouter } from 'next/navigation'
 import { LogOut, Gem, Menu, X, LayoutDashboard, Settings, Plus, Moon, Sun, Globe, Ticket, Copy, Bell, BarChart2, HelpCircle, Shield, User, Search } from 'lucide-react'
 import { Profile } from '@/lib/supabase'
 import { subscribeToPush } from '@/lib/push'
-import { useLanguage } from '@/i18n/LanguageContext'
 import { useTranslations, useLocale } from 'next-intl'
 import { TransactionHistoryModal } from '@/components/TransactionHistoryModal'
 import { NotificationsMenu } from '@/components/NotificationsMenu'
 import { MasterTierBadge } from '@/components/PublicMasterTrust'
+import { LanguageSelector } from '@/i18n/LanguageSelector'
 import { toast } from 'react-hot-toast'
 import { OnboardingTour } from '@/components/OnboardingTour'
 import { Logo } from '@/components/Logo'
@@ -102,17 +102,6 @@ export function Header({ profile, onLogout, maxWidthClass = 'max-w-7xl', onOpenC
     }
   }
 
-  const toggleLanguage = () => {
-    const langs = ['cs', 'en', 'ru', 'uk']
-    const currentIndex = langs.indexOf(locale)
-    const newLang = langs[(currentIndex + 1) % langs.length] || 'cs'
-    if (typeof window !== 'undefined') {
-      const pathname = window.location.pathname
-      const newPathname = pathname.replace(/^\/[a-z]{2}(\/|$)/, `/${newLang}/`)
-      router.push(newPathname || `/${newLang}`)
-    }
-  }
-  
   return (
     <header className="bg-white/60 dark:bg-[#050505]/60 backdrop-blur-2xl border-b border-neutral-200/50 dark:border-white/5 sticky top-0 z-50 transition-colors duration-200">
       <div className={`${maxWidthClass} mx-auto px-4 sm:px-6 lg:px-8 transition-all duration-300`}>
@@ -229,10 +218,9 @@ export function Header({ profile, onLogout, maxWidthClass = 'max-w-7xl', onOpenC
                     )}
                     <div className="border-t border-neutral-200 dark:border-neutral-800 my-1"></div>
                     
-                    <button onClick={toggleLanguage} className="flex items-center gap-3 px-4 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 w-full text-left">
-                      <Globe className="w-4 h-4" />
-                      {t('language')}: <span className="uppercase font-semibold">{locale === 'cs' ? 'cz' : locale}</span>
-                    </button>
+                    <div className="px-4 py-2">
+                      <LanguageSelector />
+                    </div>
                     <button onClick={toggleTheme} className="flex items-center gap-3 px-4 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 w-full text-left">
                       {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
                       {t('theme')}

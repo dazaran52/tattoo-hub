@@ -3,10 +3,10 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowRight, CheckCircle2, ShieldCheck, Sparkles, X } from 'lucide-react'
-import { useLanguage } from '@/i18n/LanguageContext'
+import { useTranslations, useLocale } from 'next-intl'
 
 export function OnboardingCarousel({ onComplete, forceShow = false }: { onComplete: () => void, forceShow?: boolean }) {
-  const { t } = useLanguage()
+  const t = useTranslations()
   const [currentSlide, setCurrentSlide] = useState(0)
   const [isVisible, setIsVisible] = useState(false)
 

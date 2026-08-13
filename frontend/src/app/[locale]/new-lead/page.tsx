@@ -3,11 +3,11 @@
 import { motion } from 'framer-motion'
 import { ArrowLeft } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { useLanguage } from '@/i18n/LanguageContext'
+import { useTranslations, useLocale } from 'next-intl'
 import { LeadWizard } from '@/components/LeadWizard'
 
 export default function NewLeadPage() {
-  const { t } = useLanguage()
+  const t = useTranslations()
   const router = useRouter()
 
   const themeClasses = {

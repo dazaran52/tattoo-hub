@@ -5,7 +5,6 @@ import { ThemeProvider } from '@/components/ThemeProvider'
 import { ChatWidget } from '@/components/ChatWidget'
 import { Toaster } from 'react-hot-toast'
 import { InstallPrompt } from '@/components/InstallPrompt'
-import { LanguageProvider } from '@/i18n/LanguageContext'
 import { CustomCursor } from '@/components/CustomCursor'
 import { TouchEffect } from '@/components/TouchEffect'
 import { CookieBanner } from '@/components/CookieBanner'
@@ -121,7 +120,6 @@ export default async function RootLayout({
       <body className={`${inter.variable} font-sans`}>
         <NextIntlClientProvider messages={messages} locale={locale}>
           <PresenceProvider>
-            <LanguageProvider>
               <CustomCursor />
               <TouchEffect />
               <ThemeProvider />
@@ -152,7 +150,6 @@ export default async function RootLayout({
               <CookieBanner />
               <Analytics />
               <SpeedInsights />
-            </LanguageProvider>
           </PresenceProvider>
         </NextIntlClientProvider>
       </body>

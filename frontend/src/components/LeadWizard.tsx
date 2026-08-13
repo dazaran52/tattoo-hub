@@ -15,7 +15,7 @@ import { DayPicker } from 'react-day-picker'
 import 'react-day-picker/dist/style.css'
 import { format } from 'date-fns'
 import { ru, enUS, cs, uk } from 'date-fns/locale'
-import { useLanguage } from '@/i18n/LanguageContext'
+import { useTranslations, useLocale } from 'next-intl'
 import { TATTOO_STYLES, BODY_PLACES, TATTOO_SIZES } from '@/lib/constants'
 import imageCompression from 'browser-image-compression'
 import { toast } from 'react-hot-toast'
@@ -48,7 +48,7 @@ const defaultThemeClasses = {
 };
 
 function ImagePreview({ file, onRemove }: { file: File; onRemove: () => void }) {
-  const { t } = useLanguage()
+  const t = useTranslations()
   const previewUrl = React.useMemo(() => URL.createObjectURL(file), [file])
 
   useEffect(() => () => URL.revokeObjectURL(previewUrl), [previewUrl])
@@ -63,11 +63,11 @@ function ImagePreview({ file, onRemove }: { file: File; onRemove: () => void }) 
       <button
         type="button"
         onClick={onRemove}
-        aria-label={`${t('leadWizard.deleteBtn', 'Удалить')} ${file.name}`}
+        aria-label={`${t('leadWizard.deleteBtn')} ${file.name}`}
         className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-all duration-200 flex flex-col items-center justify-center text-red-400 hover:text-red-300 cursor-pointer gap-1"
       >
         <X className="w-7 h-7" />
-        <span className="text-[11px] font-bold">{t('leadWizard.deleteBtn', 'Удалить')}</span>
+        <span className="text-[11px] font-bold">{t('leadWizard.deleteBtn')}</span>
       </button>
     </div>
   )
@@ -75,7 +75,8 @@ function ImagePreview({ file, onRemove }: { file: File; onRemove: () => void }) 
 
 export function LeadWizard({ master, masterId, source = 'platform', isLoggedIn, themeClasses, onSuccess, initialData }: LeadWizardProps) {
   const router = useRouter()
-  const { t, lang } = useLanguage()
+  const t = useTranslations()
+  const lang = useLocale()
   const dateLocale = lang === 'en' ? enUS : lang === 'cs' ? cs : lang === 'uk' ? uk : ru
   const tClasses = { ...defaultThemeClasses, ...themeClasses }
 
@@ -295,7 +296,7 @@ export function LeadWizard({ master, masterId, source = 'platform', isLoggedIn, 
     
     const newFiles = Array.from(e.target.files)
     if (images.length + newFiles.length > 10) {
-      toast.error(t('leadWizard.errorMaxPhotos', 'Можно загрузить не более 10 фотографий'))
+      toast.error(t('leadWizard.errorMaxPhotos'))
       return
     }
 
@@ -315,7 +316,7 @@ export function LeadWizard({ master, masterId, source = 'platform', isLoggedIn, 
       setImages(prev => [...prev, ...compressedFiles])
     } catch (err) {
       console.error(err)
-      toast.error(t('leadWizard.errorPhotoProcess', 'Ошибка при обработке изображения'))
+      toast.error(t('leadWizard.errorPhotoProcess'))
     } finally {
       setIsUploading(false)
     }
@@ -327,7 +328,7 @@ export function LeadWizard({ master, masterId, source = 'platform', isLoggedIn, 
 
   const validateStep1 = () => {
     if (!description.trim()) {
-      toast.error(t('leadWizard.errorIdeaReq', 'Пожалуйста, опишите вашу идею татуировки'))
+      toast.error(t('leadWizard.errorIdeaReq'))
       return false
     }
     return true
@@ -335,11 +336,11 @@ export function LeadWizard({ master, masterId, source = 'platform', isLoggedIn, 
 
   const validateStep2 = () => {
     if (!selectedCountry || !city) {
-      toast.error(t('leadWizard.errorCityReq', 'Пожалуйста, выберите страну и город'))
+      toast.error(t('leadWizard.errorCityReq'))
       return false
     }
     if (!isNegotiable && (!budgetVal || !budgetVal.trim() || isNaN(parseInt(budgetVal, 10)) || parseInt(budgetVal, 10) <= 0)) {
-      toast.error(t('leadWizard.errorBudgetReq', 'Пожалуйста, укажите ориентировочный бюджет или выберите опцию "Договорная цена"'))
+      toast.error(t('leadWizard.errorBudgetReq'))
       return false
     }
     return true
@@ -347,11 +348,11 @@ export function LeadWizard({ master, masterId, source = 'platform', isLoggedIn, 
 
   const validateStep3 = () => {
     if (!name.trim()) {
-      toast.error(t('leadWizard.errorNameReq', 'Пожалуйста, укажите ваше имя'))
+      toast.error(t('leadWizard.errorNameReq'))
       return false
     }
     if (!email.trim() || !email.includes('@')) {
-      toast.error(t('leadWizard.errorEmailReq', 'Пожалуйста, укажите корректный email для создания личного кабинета'))
+      toast.error(t('leadWizard.errorEmailReq'))
       return false
     }
     return true
@@ -404,13 +405,13 @@ export function LeadWizard({ master, masterId, source = 'platform', isLoggedIn, 
   const executeSubmit = async () => {
     setShowWarningModal(false)
     setIsSubmitting(true)
-    const toastId = toast.loading(t('leadWizard.submittingLead', 'Отправляем заявку и создаем личный кабинет...'))
+    const toastId = toast.loading(t('leadWizard.submittingLead'))
 
     try {
       const finalImageUrls = await uploadPhotosToSupabase()
 
       const parsedVal = budgetVal && !isNaN(parseInt(budgetVal, 10)) ? parseInt(budgetVal, 10) : null
-      const budgetStr = isNegotiable ? t('leadWizard.negotiablePriceText', 'Договорная цена') : (budgetVal ? `${budgetVal} CZK` : null)
+      const budgetStr = isNegotiable ? t('leadWizard.negotiablePriceText') : (budgetVal ? `${budgetVal} CZK` : null)
 
       const payload = {
         description: description.trim(),
@@ -425,7 +426,7 @@ export function LeadWizard({ master, masterId, source = 'platform', isLoggedIn, 
         client_priority: clientPriority,
         city: city || null,
         country_id: selectedCountry || null,
-        name: name.trim() || t('leadWizard.noNameDefault', 'Без имени'),
+        name: name.trim() || t('leadWizard.noNameDefault'),
         contact: [phone, telegram ? `Telegram: ${telegram}` : null].filter(Boolean).join(' | ') || email.trim() || null,
         instagram: instagram.trim() || null,
         is_negotiable_budget: isNegotiable,
@@ -443,14 +444,14 @@ export function LeadWizard({ master, masterId, source = 'platform', isLoggedIn, 
         : '/api/leads/client'
       const { data: { session } } = await supabase.auth.getSession()
       if (isDirectEndpoint && !session) {
-        throw new Error(t('leadWizard.errorLoginRequired', 'Войдите в аккаунт, чтобы записаться к выбранному мастеру'))
+        throw new Error(t('leadWizard.errorLoginRequired'))
       }
       if (!session) {
         localStorage.setItem('pending_lead', JSON.stringify({
           ...payload,
           created_at: Date.now()
         }))
-        toast.success(t('leadWizard.leadSentSuccess', 'Заявка сохранена. Войдите, чтобы безопасно опубликовать её.'), { id: toastId })
+        toast.success(t('leadWizard.leadSentSuccess'), { id: toastId })
         window.location.href = '/login?next=/dashboard'
         return
       }
@@ -464,7 +465,7 @@ export function LeadWizard({ master, masterId, source = 'platform', isLoggedIn, 
 
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}))
-        throw new Error(errData.detail || t('leadWizard.errorSubmitFailed', 'Не удалось отправить заявку'))
+        throw new Error(errData.detail || t('leadWizard.errorSubmitFailed'))
       }
 
       const resData = await res.json()
@@ -473,12 +474,12 @@ export function LeadWizard({ master, masterId, source = 'platform', isLoggedIn, 
       }
 
       localStorage.removeItem('pending_lead')
-      toast.success(t('leadWizard.leadSentSuccess', 'Заявка успешно отправлена! 🎉'), { id: toastId })
+      toast.success(t('leadWizard.leadSentSuccess'), { id: toastId })
       setIsSuccess(true)
       if (onSuccess) onSuccess()
     } catch (err: any) {
       console.error(err)
-      toast.error(err.message || t('leadWizard.errorSubmitGeneral', 'Произошла ошибка при отправке'), { id: toastId })
+      toast.error(err.message || t('leadWizard.errorSubmitGeneral'), { id: toastId })
     } finally {
       setIsSubmitting(false)
     }
@@ -487,11 +488,11 @@ export function LeadWizard({ master, masterId, source = 'platform', isLoggedIn, 
   const submitToMarketplace = async () => {
     if (isPublishedToMarketplace || isPublishingMarketplace) return
     setIsPublishingMarketplace(true)
-    const toastId = toast.loading(t('leadWizard.submittingLead', 'Публикуем заявку на маркетплейсе...'))
+    const toastId = toast.loading(t('leadWizard.submittingLead'))
 
     try {
       const parsedVal = budgetVal && !isNaN(parseInt(budgetVal, 10)) ? parseInt(budgetVal, 10) : null
-      const budgetStr = isNegotiable ? t('leadWizard.negotiablePriceText', 'Договорная цена') : (budgetVal ? `${budgetVal} CZK` : null)
+      const budgetStr = isNegotiable ? t('leadWizard.negotiablePriceText') : (budgetVal ? `${budgetVal} CZK` : null)
 
       const payload = {
         description: description.trim(),
@@ -506,7 +507,7 @@ export function LeadWizard({ master, masterId, source = 'platform', isLoggedIn, 
         client_priority: clientPriority,
         city: city || null,
         country_id: selectedCountry || null,
-        name: name.trim() || t('leadWizard.noNameDefault', 'Без имени'),
+        name: name.trim() || t('leadWizard.noNameDefault'),
         contact: [phone, telegram ? `Telegram: ${telegram}` : null].filter(Boolean).join(' | ') || email.trim() || null,
         instagram: instagram.trim() || null,
         is_negotiable_budget: isNegotiable,
@@ -523,13 +524,13 @@ export function LeadWizard({ master, masterId, source = 'platform', isLoggedIn, 
         body: JSON.stringify(payload)
       })
 
-      if (!res.ok) throw new Error(t('leadWizard.errorMarketplacePublish', 'Ошибка публикации на маркетплейсе'))
+      if (!res.ok) throw new Error(t('leadWizard.errorMarketplacePublish'))
 
-      toast.success(t('leadWizard.alsoPublishedSuccess', 'Заявка опубликована на маркетплейсе! Другие мастера смогут откликнуться.'), { id: toastId })
+      toast.success(t('leadWizard.alsoPublishedSuccess'), { id: toastId })
       setIsPublishedToMarketplace(true)
     } catch (err: any) {
       console.error(err)
-      toast.error(err.message || t('leadWizard.errorPublishGeneral', 'Ошибка при публикации'), { id: toastId })
+      toast.error(err.message || t('leadWizard.errorPublishGeneral'), { id: toastId })
     } finally {
       setIsPublishingMarketplace(false)
     }
@@ -560,12 +561,12 @@ export function LeadWizard({ master, masterId, source = 'platform', isLoggedIn, 
           <CheckCircle className="w-12 h-12 animate-bounce" />
         </div>
 
-        <h3 className="text-3xl sm:text-4xl font-extrabold mb-3 tracking-tight">{t('leadWizard.leadSentSuccess', 'Заявка принята! 🎉')}</h3>
+        <h3 className="text-3xl sm:text-4xl font-extrabold mb-3 tracking-tight">{t('leadWizard.leadSentSuccess')}</h3>
         <p className="text-neutral-300 text-base mb-8 max-w-md mx-auto leading-relaxed">
           {resolvedMaster && source === 'personal' ? (
-            <>{t('leadWizard.ideaSentToMasterDesc', 'Ваша идея направлена мастеру')} <strong className="text-white font-bold">{resolvedMaster.full_name || resolvedMaster.username || 'Мастеру'}</strong>. {t('leadWizard.ideaSentToMasterSub', 'Мы уже создали для вас личный кабинет для общения и отслеживания статуса сеанса.')}</>
+            <>{t('leadWizard.ideaSentToMasterDesc')} <strong className="text-white font-bold">{resolvedMaster.full_name || resolvedMaster.username || 'Мастеру'}</strong>. {t('leadWizard.ideaSentToMasterSub')}</>
           ) : (
-            <>{t('leadWizard.ideaPublishedToMarketplace', 'Ваша идея успешно опубликована на маркетплейсе! Проверенные мастера со всей платформы изучат её и предложат вам свои условия в личном кабинете.')}</>
+            <>{t('leadWizard.ideaPublishedToMarketplace')}</>
           )}
         </p>
 
@@ -577,11 +578,11 @@ export function LeadWizard({ master, masterId, source = 'platform', isLoggedIn, 
               </div>
               <div className="flex-1">
                 <h4 className="font-bold text-white text-base sm:text-lg mb-1 flex items-center flex-wrap gap-2">
-                  {t('leadWizard.sendAlsoToMarketplace', 'Отправить также на маркетплейс')}
-                  <span className="text-[10px] bg-primary-500/30 text-primary-300 border border-primary-500/40 px-2.5 py-0.5 rounded-full font-extrabold uppercase tracking-wider">{t('leadWizard.freeBadge', 'Бесплатно')}</span>
+                  {t('leadWizard.sendAlsoToMarketplace')}
+                  <span className="text-[10px] bg-primary-500/30 text-primary-300 border border-primary-500/40 px-2.5 py-0.5 rounded-full font-extrabold uppercase tracking-wider">{t('leadWizard.freeBadge')}</span>
                 </h4>
                 <p className="text-xs sm:text-sm text-neutral-300 leading-relaxed mb-5">
-                  {t('leadWizard.sendAlsoDesc', 'Хотите получить предложения от других топовых мастеров площадки? Мы продублируем вашу идею в общую ленту маркетплейса в 1 клик.')}
+                  {t('leadWizard.sendAlsoDesc')}
                 </p>
                 <button
                   type="button"
@@ -591,7 +592,7 @@ export function LeadWizard({ master, masterId, source = 'platform', isLoggedIn, 
                 >
                   {isPublishingMarketplace && <Loader2 className="w-4 h-4 animate-spin" />}
                   <Share2 className="w-4 h-4" />
-                  {t('leadWizard.publishOnMarketplaceBtn', 'Опубликовать на маркетплейсе')}
+                  {t('leadWizard.publishOnMarketplaceBtn')}
                 </button>
               </div>
             </div>
@@ -601,7 +602,7 @@ export function LeadWizard({ master, masterId, source = 'platform', isLoggedIn, 
         {isPublishedToMarketplace && (
           <div className="bg-green-500/10 border border-green-500/30 text-green-300 rounded-2xl p-4 mb-8 flex items-center justify-center gap-2 text-sm sm:text-base font-semibold shadow-inner">
             <Check className="w-5 h-5 text-green-400 shrink-0" />
-            {t('leadWizard.alsoPublishedSuccess', 'Заявка также успешно опубликована на маркетплейсе!')}
+            {t('leadWizard.alsoPublishedSuccess')}
           </div>
         )}
 
@@ -612,16 +613,16 @@ export function LeadWizard({ master, masterId, source = 'platform', isLoggedIn, 
             className="w-full py-5 px-8 bg-gradient-to-r from-accent-500 via-blue-600 to-primary-600 hover:from-accent-400 hover:to-primary-500 text-white font-extrabold text-base sm:text-lg rounded-2xl shadow-2xl shadow-accent-500/30 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3 cursor-pointer"
           >
             <ShieldCheck className="w-6 h-6" />
-            {t('leadWizard.goToLeadAndChat', 'Перейти к заявке и чату с мастером ➔')}
+            {t('leadWizard.goToLeadAndChat')}
           </button>
           {!isUserLoggedIn ? (
             <p className="text-xs sm:text-sm text-neutral-400">
-              {t('leadWizard.safeLoginFor', 'Вход выполнится мгновенно и безопасно по защищенной ссылке для')} <span className="text-accent-400 font-semibold underline">{email}</span>
+              {t('leadWizard.safeLoginFor')} <span className="text-accent-400 font-semibold underline">{email}</span>
             </p>
           ) : (
             <p className="text-xs sm:text-sm text-neutral-400 flex items-center justify-center gap-1.5">
               <ShieldCheck className="w-4 h-4 text-emerald-400 inline" />
-              <span>{t('leadWizard.savedToYourAccount', 'Заявка сохранена в вашем личном кабинете для')}</span> <span className="text-accent-400 font-semibold">{email}</span>
+              <span>{t('leadWizard.savedToYourAccount')}</span> <span className="text-accent-400 font-semibold">{email}</span>
             </p>
           )}
         </div>
@@ -644,9 +645,9 @@ export function LeadWizard({ master, masterId, source = 'platform', isLoggedIn, 
               <div className="w-16 h-16 bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 rounded-2xl flex items-center justify-center mb-5 mx-auto shadow-lg">
                 <AlertTriangle className="w-9 h-9" />
               </div>
-              <h3 className="text-2xl font-bold text-center mb-2 tracking-tight">{t('leadWizard.warningModalTitle', 'Заполнены не все детали')}</h3>
+              <h3 className="text-2xl font-bold text-center mb-2 tracking-tight">{t('leadWizard.warningModalTitle')}</h3>
               <p className="text-sm sm:text-base text-neutral-300 text-center mb-8 leading-relaxed">
-                {t('leadWizard.warningModalDesc', 'Вы не указали некоторые рекомендуемые параметры (стиль, место, размер или дату сеанса). С ними мастеру будет гораздо проще оценить время и стоимость работы.')}
+                {t('leadWizard.warningModalDesc')}
               </p>
               <div className="flex flex-col sm:flex-row gap-3">
                 <button
@@ -654,14 +655,14 @@ export function LeadWizard({ master, masterId, source = 'platform', isLoggedIn, 
                   onClick={() => setShowWarningModal(false)}
                   className="flex-1 py-4 px-5 bg-white/10 hover:bg-white/20 text-white text-sm font-bold rounded-2xl transition-all text-center cursor-pointer"
                 >
-                  {t('leadWizard.warningModalBack', 'Вернуться и дополнить')}
+                  {t('leadWizard.warningModalBack')}
                 </button>
                 <button
                   type="button"
                   onClick={executeSubmit}
                   className="flex-1 py-4 px-5 bg-gradient-to-r from-yellow-500 to-amber-600 hover:from-yellow-400 hover:to-amber-500 text-black font-extrabold text-sm rounded-2xl shadow-lg shadow-yellow-500/20 transition-all text-center cursor-pointer"
                 >
-                  {t('leadWizard.warningModalSubmit', 'Отправить как есть')}
+                  {t('leadWizard.warningModalSubmit')}
                 </button>
               </div>
             </motion.div>
@@ -674,9 +675,9 @@ export function LeadWizard({ master, masterId, source = 'platform', isLoggedIn, 
         <div className="mb-8 sm:mb-10">
           <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-4">
             {[
-              { num: 1, title: t('leadWizard.step1Title', 'Идея'), subtitle: t('leadWizard.step1Sub', 'Эскиз и стиль') },
-              { num: 2, title: t('leadWizard.step2Title', 'Условия'), subtitle: t('leadWizard.step2Sub', 'Бюджет и дата') },
-              { num: 3, title: t('leadWizard.step3Title', 'Контакты'), subtitle: t('leadWizard.step3Sub', 'Личный кабинет') }
+              { num: 1, title: t('leadWizard.step1Title'), subtitle: t('leadWizard.step1Sub') },
+              { num: 2, title: t('leadWizard.step2Title'), subtitle: t('leadWizard.step2Sub') },
+              { num: 3, title: t('leadWizard.step3Title'), subtitle: t('leadWizard.step3Sub') }
             ].map((st) => {
               const isActive = step === st.num
               const isDone = step > st.num
@@ -728,10 +729,10 @@ export function LeadWizard({ master, masterId, source = 'platform', isLoggedIn, 
             >
               <div>
                 <label className="block text-base sm:text-lg font-bold text-white mb-2">
-                  {t('leadWizard.ideaLabel', 'Опишите вашу идею татуировки')} <span className="text-red-500">*</span>
+                  {t('leadWizard.ideaLabel')} <span className="text-red-500">*</span>
                 </label>
                 <p className="text-xs sm:text-sm text-neutral-400 mb-4 leading-relaxed">
-                  {t('leadWizard.ideaDesc', 'Что именно вы хотите набить? Есть ли пожелания по элементам, атмосфере или деталям?')}
+                  {t('leadWizard.ideaDesc')}
                 </p>
                 <div className="relative">
                   <FileText className="absolute right-4 top-4 w-5 h-5 text-neutral-500 pointer-events-none" />
@@ -739,7 +740,7 @@ export function LeadWizard({ master, masterId, source = 'platform', isLoggedIn, 
                     required
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    placeholder={t('leadWizard.ideaPlaceholder', 'Например: Хочу реалистичного волка на плече с элементами хвойного леса на заднем плане. Желательно сделать акцент на взгляд...')}
+                    placeholder={t('leadWizard.ideaPlaceholder')}
                     rows={5}
                     className={`${baseInputClass} pr-12 min-h-[140px] resize-none leading-relaxed text-base`}
                   />
@@ -749,16 +750,16 @@ export function LeadWizard({ master, masterId, source = 'platform', isLoggedIn, 
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <label className="block text-base sm:text-lg font-bold text-white">
-                    {t('leadWizard.referencesLabel', 'Фото-референсы или эскизы')} <span className="text-neutral-400 font-normal text-sm">{t('leadWizard.referencesMax', '(до 10 шт)')}</span>
+                    {t('leadWizard.referencesLabel')} <span className="text-neutral-400 font-normal text-sm">{t('leadWizard.referencesMax')}</span>
                   </label>
                   {images.length > 0 && (
                     <span className="text-xs font-semibold text-accent-400 bg-accent-500/10 px-2.5 py-1 rounded-full border border-accent-500/20">
-                      {t('leadWizard.uploadedCount', 'Загружено:')} {images.length} / 10
+                      {t('leadWizard.uploadedCount')} {images.length} / 10
                     </span>
                   )}
                 </div>
                 <p className="text-xs sm:text-sm text-neutral-400 mb-4 leading-relaxed">
-                  {t('leadWizard.referencesDesc', 'Прикрепите примеры работ, стиль или то, что вас вдохновляет. Мастеру будет проще понять вашу задумку.')}
+                  {t('leadWizard.referencesDesc')}
                 </p>
 
                 {images.length === 0 ? (
@@ -771,10 +772,10 @@ export function LeadWizard({ master, masterId, source = 'platform', isLoggedIn, 
                       )}
                     </div>
                     <span className="text-base sm:text-lg font-extrabold text-white group-hover:text-accent-300 transition-colors mb-1.5">
-                      {t('leadWizard.dragDropText', 'Нажмите для выбора или перетащите фото сюда')}
+                      {t('leadWizard.dragDropText')}
                     </span>
                     <span className="text-xs sm:text-sm text-neutral-400 max-w-sm leading-relaxed">
-                      {t('leadWizard.supportedFormats', 'Поддерживаются JPG, PNG, WEBP. Мы автоматически оптимизируем размер для быстрой отправки.')}
+                      {t('leadWizard.supportedFormats')}
                     </span>
                     <input
                       type="file"
@@ -801,7 +802,7 @@ export function LeadWizard({ master, masterId, source = 'platform', isLoggedIn, 
                         ) : (
                           <>
                             <Upload className="w-7 h-7 mb-1.5 group-hover:scale-110 transition-transform" />
-                            <span className="text-xs font-bold">{t('leadWizard.addMoreBtn', 'Добавить ещё')}</span>
+                            <span className="text-xs font-bold">{t('leadWizard.addMoreBtn')}</span>
                           </>
                         )}
                         <input
@@ -834,18 +835,18 @@ export function LeadWizard({ master, masterId, source = 'platform', isLoggedIn, 
                     </div>
                     <div>
                       <div className="text-base font-bold text-white group-hover:text-accent-300 transition-colors flex items-center flex-wrap gap-2 mb-1">
-                        {t('leadWizard.step1AccordionTitle', 'Уточнить стиль, место на теле и размер')}
+                        {t('leadWizard.step1AccordionTitle')}
                         <span className="bg-accent-500/20 text-accent-300 border border-accent-500/30 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase tracking-wider">
-                          {t('leadWizard.recommendedBadge', 'Рекомендуется')}
+                          {t('leadWizard.recommendedBadge')}
                         </span>
                       </div>
                       <div className="text-xs sm:text-sm text-neutral-400 leading-normal">
                         {styles.length > 0 || bodyPlace || size ? (
                           <span className="text-accent-400 font-semibold flex items-center gap-1.5">
-                            <Check className="w-4 h-4 inline" /> {t('leadWizard.detailsFilled', 'Заполнены детали')} ({[styles.length > 0 ? t('leadWizard.detailStyle', 'Стиль') : '', bodyPlace ? t('leadWizard.detailPlace', 'Место') : '', size ? t('leadWizard.detailSize', 'Размер') : ''].filter(Boolean).join(', ')})
+                            <Check className="w-4 h-4 inline" /> {t('leadWizard.detailsFilled')} ({[styles.length > 0 ? t('leadWizard.detailStyle') : '', bodyPlace ? t('leadWizard.detailPlace') : '', size ? t('leadWizard.detailSize') : ''].filter(Boolean).join(', ')})
                           </span>
                         ) : (
-                          t('leadWizard.step1AccordionDesc', 'Поможет мастеру сразу назвать точную цену и время сеанса')
+                          t('leadWizard.step1AccordionDesc')
                         )}
                       </div>
                     </div>
@@ -866,7 +867,7 @@ export function LeadWizard({ master, masterId, source = 'platform', isLoggedIn, 
                     >
                       <div>
                         <label className="block text-xs font-extrabold uppercase tracking-widest text-neutral-300 mb-3">
-                          {t('leadWizard.tattooStyleLabel', 'Стиль татуировки')}
+                          {t('leadWizard.tattooStyleLabel')}
                         </label>
                         <div className="flex flex-wrap gap-2 mb-3.5">
                           {TATTOO_STYLES.map(s => {
@@ -893,14 +894,14 @@ export function LeadWizard({ master, masterId, source = 'platform', isLoggedIn, 
                           type="text"
                           value={styles.join(', ')}
                           onChange={(e) => setStyles(e.target.value.split(',').map(s => s.trim()).filter(Boolean))}
-                          placeholder={t('leadWizard.stylePlaceholder', 'Или введите свой вариант через запятую...')}
+                          placeholder={t('leadWizard.stylePlaceholder')}
                           className={baseInputClass}
                         />
                       </div>
 
                       <div>
                         <label className="block text-xs font-extrabold uppercase tracking-widest text-neutral-300 mb-3">
-                          {t('leadWizard.bodyPlaceLabel', 'Место на теле')}
+                          {t('leadWizard.bodyPlaceLabel')}
                         </label>
                         <div className="flex flex-wrap gap-2 mb-3.5">
                           {BODY_PLACES.map(place => {
@@ -927,7 +928,7 @@ export function LeadWizard({ master, masterId, source = 'platform', isLoggedIn, 
                             type="text"
                             value={bodyPlace}
                             onChange={(e) => setBodyPlace(e.target.value)}
-                            placeholder={t('leadWizard.placePlaceholder', 'Уточнение (например: Внутренняя сторона предплечья ближе к запястью)')}
+                            placeholder={t('leadWizard.placePlaceholder')}
                             className={`${baseInputClass} pl-12`}
                           />
                         </div>
@@ -935,7 +936,7 @@ export function LeadWizard({ master, masterId, source = 'platform', isLoggedIn, 
 
                       <div>
                         <label className="block text-xs font-extrabold uppercase tracking-widest text-neutral-300 mb-3">
-                          {t('leadWizard.approxSizeLabel', 'Примерный размер')}
+                          {t('leadWizard.approxSizeLabel')}
                         </label>
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3.5">
                           {TATTOO_SIZES.map(sz => {
@@ -961,7 +962,7 @@ export function LeadWizard({ master, masterId, source = 'platform', isLoggedIn, 
                           type="text"
                           value={size}
                           onChange={(e) => setSize(e.target.value)}
-                          placeholder={t('leadWizard.sizePlaceholder', 'Или укажите точные размеры в сантиметрах (например: 15x10 см)')}
+                          placeholder={t('leadWizard.sizePlaceholder')}
                           className={baseInputClass}
                         />
                       </div>
@@ -976,7 +977,7 @@ export function LeadWizard({ master, masterId, source = 'platform', isLoggedIn, 
                   onClick={handleNext}
                   className={baseButtonClass}
                 >
-                  <span>{t('leadWizard.continueToStep2', 'Продолжить ко 2 шагу')}</span>
+                  <span>{t('leadWizard.continueToStep2')}</span>
                   <ChevronRight className="w-5 h-5" />
                 </button>
               </div>
@@ -994,16 +995,16 @@ export function LeadWizard({ master, masterId, source = 'platform', isLoggedIn, 
             >
               <div>
                 <label className="block text-base sm:text-lg font-bold text-white mb-2">
-                  {t('leadWizard.priorityQuestion', 'Что для вас важнее всего?')}
+                  {t('leadWizard.priorityQuestion')}
                 </label>
                 <p className="text-xs sm:text-sm text-neutral-400 mb-4">
-                  {t('leadWizard.priorityDesc', 'Выберите ключевой приоритет для мастера при планировании сеанса')}
+                  {t('leadWizard.priorityDesc')}
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   {[
-                    { id: 'fast', icon: '⚡', label: t('leadWizard.fastestTime', 'В кратчайшие сроки'), desc: t('leadWizard.findNearestSlot', 'Найти ближайшее окно') },
-                    { id: 'quality', icon: '💎', label: t('leadWizard.maxQuality', 'Максимальное качество'), desc: t('leadWizard.detailedWork', 'Детальная проработка') },
-                    { id: 'cheap', icon: '💸', label: t('leadWizard.fitBudget', 'Уложиться в бюджет'), desc: t('leadWizard.optimizePrice', 'Оптимизировать цену') }
+                    { id: 'fast', icon: '⚡', label: t('leadWizard.fastestTime'), desc: t('leadWizard.findNearestSlot') },
+                    { id: 'quality', icon: '💎', label: t('leadWizard.maxQuality'), desc: t('leadWizard.detailedWork') },
+                    { id: 'cheap', icon: '💸', label: t('leadWizard.fitBudget'), desc: t('leadWizard.optimizePrice') }
                   ].map(p => {
                     const isSel = clientPriority === p.id
                     return (
@@ -1029,14 +1030,14 @@ export function LeadWizard({ master, masterId, source = 'platform', isLoggedIn, 
               {/* Choice of Country and City */}
               <div>
                 <label className="block text-base sm:text-lg font-bold text-white mb-3">
-                  {t('leadWizard.locationLabel', 'Локация (Страна и город)')} <span className="text-red-500">*</span>
+                  {t('leadWizard.locationLabel')} <span className="text-red-500">*</span>
                 </label>
                 {locationPrefilled && !showLocationSelect ? (
                   <div className="flex items-center justify-between p-4 bg-black/40 border border-white/10 rounded-2xl">
                     <div className="flex items-center gap-3 text-neutral-300">
                       <MapPin className="w-5 h-5 text-accent-400" />
                       <div>
-                        <p className="font-semibold text-sm">{t('leadWizard.cityFromProfile', 'Ваш город из профиля')}</p>
+                        <p className="font-semibold text-sm">{t('leadWizard.cityFromProfile')}</p>
                         <p className="text-xs text-neutral-400">{city}</p>
                       </div>
                     </div>
@@ -1045,7 +1046,7 @@ export function LeadWizard({ master, masterId, source = 'platform', isLoggedIn, 
                       onClick={() => setShowLocationSelect(true)}
                       className="text-sm font-bold text-accent-400 hover:text-accent-300 transition-colors cursor-pointer"
                     >
-                      {t('leadWizard.changeLocation', 'Изменить')}
+                      {t('leadWizard.changeLocation')}
                     </button>
                   </div>
                 ) : (
@@ -1056,7 +1057,7 @@ export function LeadWizard({ master, masterId, source = 'platform', isLoggedIn, 
                         onChange={e => setSelectedCountry(e.target.value)}
                         className={baseInputClass}
                       >
-                        <option value="" disabled>{t('leadWizard.selectCountry', 'Выберите страну')}</option>
+                        <option value="" disabled>{t('leadWizard.selectCountry')}</option>
                         {countries.map(c => (
                           <option key={c.id} value={c.id} className="bg-neutral-900 text-white">{lang === 'ru' ? c.name_ru : c.name}</option>
                         ))}
@@ -1069,7 +1070,7 @@ export function LeadWizard({ master, masterId, source = 'platform', isLoggedIn, 
                         className={baseInputClass}
                         disabled={!selectedCountry}
                       >
-                        <option value="" disabled>{countries.length === 0 ? t('leadWizard.loading', 'Загрузка...') : t('leadWizard.selectCity', 'Выберите город')}</option>
+                        <option value="" disabled>{countries.length === 0 ? t('leadWizard.loading') : t('leadWizard.selectCity')}</option>
                         {cities.map(c => (
                           <option key={c.id} value={lang === 'ru' ? c.name_ru : c.name} className="bg-neutral-900 text-white">{lang === 'ru' ? c.name_ru : c.name}</option>
                         ))}
@@ -1081,7 +1082,7 @@ export function LeadWizard({ master, masterId, source = 'platform', isLoggedIn, 
 
               <div>
                 <label className="block text-base sm:text-lg font-bold text-white mb-3">
-                  {t('leadWizard.budgetLabel', 'Ориентировочный бюджет')}
+                  {t('leadWizard.budgetLabel')}
                 </label>
                 
                 <div 
@@ -1103,7 +1104,7 @@ export function LeadWizard({ master, masterId, source = 'platform', isLoggedIn, 
                     {isNegotiable && <Check className="w-4 h-4 stroke-[3]" />}
                   </div>
                   <span className="text-sm sm:text-base font-bold select-none">
-                    {t('leadWizard.negotiableOption', 'Договорная цена / Обсудить лично с мастером')}
+                    {t('leadWizard.negotiableOption')}
                   </span>
                 </div>
 
@@ -1114,7 +1115,7 @@ export function LeadWizard({ master, masterId, source = 'platform', isLoggedIn, 
                       type="number"
                       value={budgetVal}
                       onChange={(e) => setBudgetVal(e.target.value)}
-                      placeholder={t('leadWizard.budgetPlaceholder', 'Например: 5000')}
+                      placeholder={t('leadWizard.budgetPlaceholder')}
                       className={`${baseInputClass} pl-12 pr-20 text-lg font-bold [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
                     />
                     <div className="absolute right-4 top-1/2 -translate-y-1/2 font-bold text-neutral-400 text-sm bg-neutral-800/80 px-2.5 py-1 rounded-lg">
@@ -1140,18 +1141,18 @@ export function LeadWizard({ master, masterId, source = 'platform', isLoggedIn, 
                     </div>
                     <div>
                       <div className="text-base font-bold text-white group-hover:text-accent-300 transition-colors flex items-center flex-wrap gap-2 mb-1">
-                        {t('leadWizard.step2AccordionTitle', 'Выбрать желаемую дату и время сеанса')}
+                        {t('leadWizard.step2AccordionTitle')}
                         <span className="bg-neutral-800 text-neutral-400 border border-neutral-700 text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wide">
-                          {t('leadWizard.optionalBadge', 'Необязательно')}
+                          {t('leadWizard.optionalBadge')}
                         </span>
                       </div>
                       <div className="text-xs sm:text-sm text-neutral-400 leading-normal">
                         {sessionDate ? (
                           <span className="text-accent-400 font-semibold flex items-center gap-1.5">
-                            <Check className="w-4 h-4 inline" /> {t('leadWizard.selectedDatePrefix', 'Выбрано:')} {format(sessionDate, 'dd MMMM yyyy', { locale: dateLocale })} {sessionTime ? `${t('leadWizard.atTime', 'в')} ${sessionTime}` : ''}
+                            <Check className="w-4 h-4 inline" /> {t('leadWizard.selectedDatePrefix')} {format(sessionDate, 'dd MMMM yyyy', { locale: dateLocale })} {sessionTime ? `${t('leadWizard.atTime')} ${sessionTime}` : ''}
                           </span>
                         ) : (
-                          t('leadWizard.step2AccordionDesc', 'Если у вас есть конкретные пожелания по датам или расписанию')
+                          t('leadWizard.step2AccordionDesc')
                         )}
                       </div>
                     </div>
@@ -1172,7 +1173,7 @@ export function LeadWizard({ master, masterId, source = 'platform', isLoggedIn, 
                     >
                       <div>
                         <label className="block text-xs font-extrabold uppercase tracking-widest text-neutral-300 mb-3">
-                          {t('leadWizard.calendarLabel', 'Календарь свободных дней')}
+                          {t('leadWizard.calendarLabel')}
                         </label>
                         <div className="bg-black/50 p-6 rounded-3xl border border-white/10 flex justify-center overflow-x-auto shadow-inner">
                           <style>{`
@@ -1205,7 +1206,7 @@ export function LeadWizard({ master, masterId, source = 'platform', isLoggedIn, 
                       {sessionDate && (
                         <div>
                           <label className="block text-xs font-extrabold uppercase tracking-widest text-neutral-300 mb-3">
-                            {t('leadWizard.timeLabel', 'Желаемое время начала сеанса')} <span className="text-neutral-500 font-normal">{t('leadWizard.optionalBadgeText', '(Необязательно)')}</span>
+                            {t('leadWizard.timeLabel')} <span className="text-neutral-500 font-normal">{t('leadWizard.optionalBadgeText')}</span>
                           </label>
                           <div className="relative max-w-xs">
                             <Clock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500" />
@@ -1230,14 +1231,14 @@ export function LeadWizard({ master, masterId, source = 'platform', isLoggedIn, 
                   className="w-full sm:w-auto px-6 py-4 bg-white/5 hover:bg-white/10 text-neutral-300 font-bold rounded-2xl transition-all text-base flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <ArrowLeft className="w-5 h-5" />
-                  {t('leadWizard.backToStep1', 'Назад к 1 шагу')}
+                  {t('leadWizard.backToStep1')}
                 </button>
                 <button
                   type="button"
                   onClick={handleNext}
                   className={baseButtonClass}
                 >
-                  <span>{t('leadWizard.continueToStep3', 'Продолжить к 3 шагу')}</span>
+                  <span>{t('leadWizard.continueToStep3')}</span>
                   <ChevronRight className="w-5 h-5" />
                 </button>
               </div>
@@ -1259,8 +1260,8 @@ export function LeadWizard({ master, masterId, source = 'platform', isLoggedIn, 
                     <ShieldCheck className="w-6 h-6" />
                   </div>
                   <div>
-                    <strong className="text-white text-base font-extrabold block mb-0.5">{t('leadWizard.loggedInNoticeTitle', 'Аккаунт подтвержден')}</strong>
-                    <span className="text-neutral-300 text-xs sm:text-sm leading-relaxed">{t('leadWizard.loggedInNoticeDesc', 'Вы вошли в систему. Эта заявка будет автоматически привязана к вашему личному кабинету.')}</span>
+                    <strong className="text-white text-base font-extrabold block mb-0.5">{t('leadWizard.loggedInNoticeTitle')}</strong>
+                    <span className="text-neutral-300 text-xs sm:text-sm leading-relaxed">{t('leadWizard.loggedInNoticeDesc')}</span>
                   </div>
                 </div>
               ) : (
@@ -1269,8 +1270,8 @@ export function LeadWizard({ master, masterId, source = 'platform', isLoggedIn, 
                     <Sparkles className="w-6 h-6" />
                   </div>
                   <div className="text-xs sm:text-sm text-neutral-300 leading-relaxed">
-                    <strong className="text-white text-base font-extrabold block mb-1">{t('leadWizard.instantAccessTitle', 'Мгновенный доступ без паролей')}</strong>
-                    {t('leadWizard.instantAccessDesc', 'Мы создадим для вас безопасный личный кабинет по вашему Email. Входить в него можно будет в один клик по ссылке из письма или прямо с экрана завершения заявки!')}
+                    <strong className="text-white text-base font-extrabold block mb-1">{t('leadWizard.instantAccessTitle')}</strong>
+                    {t('leadWizard.instantAccessDesc')}
                   </div>
                 </div>
               )}
@@ -1279,12 +1280,12 @@ export function LeadWizard({ master, masterId, source = 'platform', isLoggedIn, 
                 <div>
                   <div className="flex items-center justify-between mb-2">
                     <label className="block text-base font-bold text-white">
-                      {t('leadWizard.yourNameLabel', 'Ваше имя')} <span className="text-red-500">*</span>
+                      {t('leadWizard.yourNameLabel')} <span className="text-red-500">*</span>
                     </label>
                     {isUserLoggedIn && (
                       <span className="text-[11px] font-semibold text-neutral-400 bg-white/5 border border-white/10 px-2 py-0.5 rounded-md flex items-center gap-1">
                         <ShieldCheck className="w-3 h-3 text-emerald-400 inline" />
-                        {t('leadWizard.fromAccountBadge', 'Из аккаунта')}
+                        {t('leadWizard.fromAccountBadge')}
                       </span>
                     )}
                   </div>
@@ -1297,7 +1298,7 @@ export function LeadWizard({ master, masterId, source = 'platform', isLoggedIn, 
                       onChange={(e) => !isUserLoggedIn && setName(e.target.value)}
                       readOnly={isUserLoggedIn}
                       disabled={isUserLoggedIn}
-                      placeholder={t('leadWizard.namePlaceholder', 'Иван')}
+                      placeholder={t('leadWizard.namePlaceholder')}
                       className={`${baseInputClass} pl-12 text-base font-medium ${
                         isUserLoggedIn ? 'opacity-70 cursor-not-allowed bg-neutral-800/80 border-neutral-700/50 text-neutral-300' : ''
                       }`}
@@ -1308,12 +1309,12 @@ export function LeadWizard({ master, masterId, source = 'platform', isLoggedIn, 
                 <div>
                   <div className="flex items-center justify-between mb-2">
                     <label className="block text-base font-bold text-white">
-                      {isUserLoggedIn ? (t('leadWizard.emailSimpleLabel', 'Email') || 'Email') : (t('leadWizard.emailLabel', 'Email для входа в кабинет') || 'Email для входа в кабинет')} <span className="text-red-500">*</span>
+                      {isUserLoggedIn ? (t('leadWizard.emailSimpleLabel') || 'Email') : (t('leadWizard.emailLabel') || 'Email для входа в кабинет')} <span className="text-red-500">*</span>
                     </label>
                     {isUserLoggedIn && (
                       <span className="text-[11px] font-semibold text-neutral-400 bg-white/5 border border-white/10 px-2 py-0.5 rounded-md flex items-center gap-1">
                         <ShieldCheck className="w-3 h-3 text-emerald-400 inline" />
-                        {t('leadWizard.fromAccountBadge', 'Из аккаунта')}
+                        {t('leadWizard.fromAccountBadge')}
                       </span>
                     )}
                   </div>
@@ -1351,18 +1352,18 @@ export function LeadWizard({ master, masterId, source = 'platform', isLoggedIn, 
                     </div>
                     <div>
                       <div className="text-base font-bold text-white group-hover:text-accent-300 transition-colors flex items-center flex-wrap gap-2 mb-1">
-                        {t('leadWizard.step3AccordionTitle', 'Добавить Telegram, Instagram или телефон')}
+                        {t('leadWizard.step3AccordionTitle')}
                         <span className="bg-neutral-800 text-neutral-400 border border-neutral-700 text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wide">
-                          {t('leadWizard.optionalBadge', 'Необязательно')}
+                          {t('leadWizard.optionalBadge')}
                         </span>
                       </div>
                       <div className="text-xs sm:text-sm text-neutral-400 leading-normal">
                         {phone || telegram || instagram ? (
                           <span className="text-accent-400 font-semibold flex items-center gap-1.5">
-                            <Check className="w-4 h-4 inline" /> {t('leadWizard.addedContacts', 'Указаны доп. контакты')} ({[phone ? t('leadWizard.phoneLabel', 'Телефон') : '', telegram ? 'Telegram' : '', instagram ? 'Instagram' : ''].filter(Boolean).join(', ')})
+                            <Check className="w-4 h-4 inline" /> {t('leadWizard.addedContacts')} ({[phone ? t('leadWizard.phoneLabel') : '', telegram ? 'Telegram' : '', instagram ? 'Instagram' : ''].filter(Boolean).join(', ')})
                           </span>
                         ) : (
-                          t('leadWizard.step3AccordionDesc', 'Если вам удобнее обсуждать детали эскиза в мессенджерах')
+                          t('leadWizard.step3AccordionDesc')
                         )}
                       </div>
                     </div>
@@ -1384,7 +1385,7 @@ export function LeadWizard({ master, masterId, source = 'platform', isLoggedIn, 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                         <div>
                           <label className="block text-xs font-extrabold uppercase tracking-widest text-neutral-300 mb-2.5">
-                            {t('leadWizard.phoneLabel', 'Телефон')}
+                            {t('leadWizard.phoneLabel')}
                           </label>
                           <div className="dark">
                             <PhoneInput
@@ -1413,7 +1414,7 @@ export function LeadWizard({ master, masterId, source = 'platform', isLoggedIn, 
 
                         <div>
                           <label className="block text-xs font-extrabold uppercase tracking-widest text-neutral-300 mb-2.5">
-                            {t('leadWizard.instagramLabel', 'Instagram профиль')}
+                            {t('leadWizard.instagramLabel')}
                           </label>
                           <div className="relative">
                             <AtSign className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500" />
@@ -1439,7 +1440,7 @@ export function LeadWizard({ master, masterId, source = 'platform', isLoggedIn, 
                   className="w-full sm:w-auto px-6 py-4 bg-white/5 hover:bg-white/10 text-neutral-300 font-bold rounded-2xl transition-all text-base flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <ArrowLeft className="w-5 h-5" />
-                  {t('leadWizard.backToStep2', 'Назад ко 2 шагу')}
+                  {t('leadWizard.backToStep2')}
                 </button>
                 <button
                   type="submit"
@@ -1449,12 +1450,12 @@ export function LeadWizard({ master, masterId, source = 'platform', isLoggedIn, 
                   {isSubmitting ? (
                     <>
                       <Loader2 className="w-6 h-6 animate-spin" />
-                      <span>{t('leadWizard.submittingBtn', 'Отправка заявки...')}</span>
+                      <span>{t('leadWizard.submittingBtn')}</span>
                     </>
                   ) : (
                     <>
                       <Send className="w-5 h-5" />
-                      <span>{masterId ? t('leadWizard.submitBtnDirect', 'Отправить заявку мастеру 🚀') : t('leadWizard.submitBtnMarketplace', 'Отправить заявку мастерам 🚀')}</span>
+                      <span>{masterId ? t('leadWizard.submitBtnDirect') : t('leadWizard.submitBtnMarketplace')}</span>
                     </>
                   )}
                 </button>

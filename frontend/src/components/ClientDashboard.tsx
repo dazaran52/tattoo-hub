@@ -10,7 +10,7 @@ import { ChatModal } from '@/components/ChatModal'
 import { MessagesList } from '@/components/MessagesList'
 import { MasterProfileModal } from '@/components/MasterProfileModal'
 import { ClientLeadDetailsModal } from '@/components/ClientLeadDetailsModal'
-import { useLanguage } from '@/i18n/LanguageContext'
+import { useTranslations, useLocale } from 'next-intl'
 import { TATTOO_STYLES } from '@/lib/constants'
 import { motion, AnimatePresence } from 'framer-motion'
 import { OnlineIndicator } from '@/components/OnlineIndicator'
@@ -26,7 +26,7 @@ export function ClientDashboard({
   activeTab?: string
   setActiveTab?: (tab: any) => void
 }) {
-  const { t } = useLanguage()
+  const t = useTranslations()
   const [internalActiveTab, setInternalActiveTab] = useState<'leads' | 'top_masters' | 'messages'>('leads')
   
   const activeTab = (externalActiveTab === 'leads' || externalActiveTab === 'top_masters' || externalActiveTab === 'messages') 
@@ -457,11 +457,11 @@ export function ClientDashboard({
                         ['accepted', 'booked'].includes(lead.status) ? 'bg-emerald-100 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/20 text-emerald-700 dark:text-emerald-400' :
                           'bg-neutral-100 dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-400'
                       }`}>
-                      {['new', 'open', 'active'].includes(lead.status) ? (lead.is_personal ? t('statusPending', 'Ожидает ответа') : t('statusSearching', 'В поиске')) :
-                        ['accepted', 'booked'].includes(lead.status) ? t('statusAccepted', 'В работе') :
-                          lead.status === 'completed' ? t('statusCompleted', 'Завершено') :
-                            lead.status === 'paused' ? t('statusPaused', 'Приостановлена') :
-                              lead.status === 'closed' ? t('statusArchived', 'Закрыта') : lead.status}
+                      {['new', 'open', 'active'].includes(lead.status) ? (lead.is_personal ? t('statusPending') : t('statusSearching')) :
+                        ['accepted', 'booked'].includes(lead.status) ? t('statusAccepted') :
+                          lead.status === 'completed' ? t('statusCompleted') :
+                            lead.status === 'paused' ? t('statusPaused') :
+                              lead.status === 'closed' ? t('statusArchived') : lead.status}
                     </span>
                   </div>
                   <div className="flex items-center gap-3">
@@ -486,7 +486,7 @@ export function ClientDashboard({
                                   onClick={() => { setOpenMenuId(null); setEditingLead(lead) }}
                                   className="w-full text-left px-4 py-2.5 text-sm font-semibold text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors flex items-center gap-2"
                                 >
-                                  <Edit2 className="w-4 h-4" /> {t('editLead', 'Редактировать заявку')}
+                                  <Edit2 className="w-4 h-4" /> {t('editLead')}
                                 </button>
                               )}
                               {['new', 'open', 'active', 'paused'].includes(lead.status) && <>
@@ -494,7 +494,7 @@ export function ClientDashboard({
                                   onClick={() => { setOpenMenuId(null); handlePauseResume(lead.id, lead.status) }}
                                   className="w-full text-left px-4 py-2.5 text-sm font-medium flex items-center gap-2 hover:bg-neutral-50 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300 transition-colors"
                                 >
-                                  {lead.status === 'paused' ? <><Play className="w-4 h-4" /> {t('resume', 'Возобновить')}</> : <><Pause className="w-4 h-4" /> {t('pause', 'Приостановить')}</>}
+                                  {lead.status === 'paused' ? <><Play className="w-4 h-4" /> {t('resume')}</> : <><Pause className="w-4 h-4" /> {t('pause')}</>}
                                 </button>
                                 <div className="h-px w-full bg-neutral-100 dark:bg-neutral-800 my-1" />
                               </>}
@@ -503,7 +503,7 @@ export function ClientDashboard({
                                   onClick={() => { setOpenMenuId(null); handleDelete(lead.id) }}
                                   className="w-full text-left px-4 py-2.5 text-sm font-medium flex items-center gap-2 hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400 transition-colors"
                                 >
-                                  <Trash2 className="w-4 h-4 text-red-500" /> <span className="text-red-500">{t('deleteLead', 'Удалить заявку')}</span>
+                                  <Trash2 className="w-4 h-4 text-red-500" /> <span className="text-red-500">{t('deleteLead')}</span>
                                 </button>
                               )}
                             </div>
@@ -608,7 +608,7 @@ export function ClientDashboard({
                             <OnlineIndicator userId={lead.master.id || lead.assigned_master_id} lastSeen={lead.master.last_seen} />
                           </div>
                           <div>
-                            <p className="text-xs font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-primary-500 to-primary-500 uppercase tracking-wider mb-1">{t('assignedMaster', 'Назначенный мастер')}</p>
+                            <p className="text-xs font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-primary-500 to-primary-500 uppercase tracking-wider mb-1">{t('assignedMaster')}</p>
                             <div className="flex items-center gap-2">
                               <h5 className="font-bold text-base text-neutral-900 dark:text-white leading-tight">{lead.master.name}</h5>
                               <MasterTierBadge badgeTier={lead.master.badge_tier} />
@@ -704,7 +704,7 @@ export function ClientDashboard({
                       <DollarSign className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                     </div>
                     <div>
-                      <p className="text-[10px] font-extrabold text-neutral-500 uppercase tracking-wider">{t('budgetLabel', 'Бюджет')}</p>
+                      <p className="text-[10px] font-extrabold text-neutral-500 uppercase tracking-wider">{t('budgetLabel')}</p>
                       <p className="font-bold text-neutral-900 dark:text-white text-sm">
                         {lead.display_budget || lead.client_budget ? `${lead.client_budget} ${lead.client_currency || 'CZK'}` : t('negotiableBudget')}
                       </p>
@@ -728,9 +728,9 @@ export function ClientDashboard({
                       </span>
                       <span className="text-xs font-medium text-neutral-500">
                         {
-                          (lead.unlock_count || 0) === 1 ? t('response_one', 'отклик мастера') :
-                            (lead.unlock_count || 0) >= 2 && (lead.unlock_count || 0) <= 4 ? t('response_few', 'отклика мастеров') :
-                              t('response_many', 'откликов мастеров')
+                          (lead.unlock_count || 0) === 1 ? t('response_one') :
+                            (lead.unlock_count || 0) >= 2 && (lead.unlock_count || 0) <= 4 ? t('response_few') :
+                              t('response_many')
                         }
                       </span>
                     </div>

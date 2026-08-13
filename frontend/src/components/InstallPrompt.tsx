@@ -3,20 +3,21 @@
 import { useState, useEffect } from 'react'
 import { usePathname } from 'next/navigation'
 import { X, Download } from 'lucide-react'
-import { useLanguage } from '@/i18n/LanguageContext'
+import { useTranslations, useLocale } from 'next-intl'
 
 export function InstallPrompt() {
   const pathname = usePathname()
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null)
   const [showPrompt, setShowPrompt] = useState(false)
-  const { lang } = useLanguage()
+  const lang = useLocale()
 
-  const copy = {
+  const copyMap: Record<string, { title: string; description: string; action: string }> = {
     ru: { title: 'Установить приложение', description: 'Для быстрого доступа и уведомлений', action: 'Установить' },
     cs: { title: 'Nainstalovat aplikaci', description: 'Pro rychlý přístup a upozornění', action: 'Instalovat' },
     en: { title: 'Install app', description: 'For quick access and notifications', action: 'Install' },
     uk: { title: 'Встановити застосунок', description: 'Для швидкого доступу та сповіщень', action: 'Встановити' },
-  }[lang]
+  }
+  const copy = copyMap[lang] || copyMap.en
 
   useEffect(() => {
     const handler = (e: Event) => {

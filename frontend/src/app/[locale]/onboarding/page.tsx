@@ -5,12 +5,12 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { motion, AnimatePresence } from 'framer-motion'
 import { MapPin, User, Loader2, ArrowRight, ArrowLeft, Link as LinkIcon, CheckCircle2, Globe } from 'lucide-react'
-import { useLanguage } from '@/i18n/LanguageContext'
+import { useTranslations, useLocale } from 'next-intl'
 import toast from 'react-hot-toast'
 
 export default function OnboardingPage() {
   const router = useRouter()
-  const { t } = useLanguage()
+  const t = useTranslations()
   const [isLoading, setIsLoading] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
   const [profile, setProfile] = useState<any>(null)

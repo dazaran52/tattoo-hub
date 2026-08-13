@@ -5,7 +5,7 @@ import { X, Loader2, ArrowDownToLine, Gem, Calendar } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { getTranslation, Language } from '@/lib/i18n'
 import { createPortal } from 'react-dom'
-import { useLanguage } from '@/i18n/LanguageContext'
+import { useTranslations, useLocale } from 'next-intl'
 
 interface Transaction {
   id: string
@@ -25,7 +25,7 @@ interface Props {
 }
 
 export function TransactionHistoryModal({ isOpen, onClose }: Props) {
-  const { lang: language } = useLanguage()
+  const language = useLocale()
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [isLoading, setIsLoading] = useState(true)
 

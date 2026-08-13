@@ -7,14 +7,15 @@ import { Mail, Lock, Loader2, ArrowRight, Link as LinkIcon, Tag, MapPin, Globe, 
 import { supabase } from '@/lib/supabase'
 import { getTranslation, Language } from '@/lib/i18n'
 import { Logo } from '@/components/Logo'
-import { useLanguage } from '@/i18n/LanguageContext'
+import { useTranslations, useLocale } from 'next-intl'
+import { LanguageSelector } from '@/i18n/LanguageSelector'
 
 type AuthMode = 'login' | 'signup' | 'verify_email' | 'forgot_password' | 'reset_password'
 
 function LoginContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { lang: language, setLang } = useLanguage()
+  const language = useLocale()
   const [isLoading, setIsLoading] = useState(false)
   const [authMode, setAuthMode] = useState<AuthMode>('login')
   const [email, setEmail] = useState('')
@@ -96,13 +97,6 @@ function LoginContent() {
     setTheme(savedTheme as 'dark' | 'light')
   }, [])
 
-  const toggleLanguage = () => {
-    const langs: Language[] = ['cs', 'en', 'ru', 'uk']
-    const currentIndex = langs.indexOf(language)
-    const newLang = langs[(currentIndex + 1) % langs.length] || 'cs'
-    setLang(newLang)
-  }
-
   const toggleTheme = () => {
     const newTheme = theme === 'dark' ? 'light' : 'dark'
     setTheme(newTheme)
@@ -115,9 +109,9 @@ function LoginContent() {
     }
   }
 
-  const t = (key: Parameters<typeof getTranslation>[1]) => getTranslation(language, key)
+  const t = (key: Parameters<typeof getTranslation>[1]) => getTranslation(language as Language, key)
 
-  const roleLabels: Record<Language, { master: string; client: string; theme: string }> = {
+  const roleLabels: Record<string, { master: string; client: string; theme: string }> = {
     ru: { master: 'Мастер', client: 'Клиент', theme: 'Переключить тему' },
     cs: { master: 'Tatér', client: 'Klient', theme: 'Přepnout motiv' },
     en: { master: 'Artist', client: 'Client', theme: 'Toggle theme' },
@@ -312,17 +306,11 @@ function LoginContent() {
           <button
             onClick={toggleTheme}
             className="flex items-center justify-center p-2.5 bg-neutral-900/5 dark:bg-neutral-900/50 backdrop-blur-md border border-neutral-200/50 dark:border-neutral-800 rounded-full text-neutral-600 dark:text-neutral-400 hover:text-neutral-950 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-all shadow-sm"
-            title={roleLabels[language].theme}
+            title={roleLabels[language]?.theme}
           >
             {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
           </button>
-          <button
-            onClick={toggleLanguage}
-            className="flex items-center gap-2 px-3.5 py-2.5 bg-neutral-900/5 dark:bg-neutral-900/50 backdrop-blur-md border border-neutral-200/50 dark:border-neutral-800 rounded-full text-neutral-600 dark:text-neutral-400 hover:text-neutral-950 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-all shadow-sm"
-          >
-            <Globe className="w-4 h-4" />
-            <span className="uppercase text-sm font-semibold tracking-wider">{language === 'cs' ? 'cz' : language}</span>
-          </button>
+          <LanguageSelector />
         </div>
 
         <div className="w-full max-w-md space-y-8 animate-fade-in-up mt-12 md:mt-0">

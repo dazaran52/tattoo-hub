@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { Check, ChevronDown, X, MapPin } from 'lucide-react'
-import { useLanguage } from '@/i18n/LanguageContext'
+import { useTranslations, useLocale } from 'next-intl'
 
 interface City {
   id: string
@@ -18,7 +18,8 @@ interface CityMultiSelectProps {
 }
 
 export function CityMultiSelect({ cities, selectedCityIds, onChange, placeholder, className = '' }: CityMultiSelectProps) {
-  const { t, lang } = useLanguage()
+  const t = useTranslations()
+  const lang = useLocale()
   const [isOpen, setIsOpen] = useState(false)
   const [search, setSearch] = useState('')
   const wrapperRef = useRef<HTMLDivElement>(null)

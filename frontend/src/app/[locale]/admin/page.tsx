@@ -13,7 +13,7 @@ import { supabase, Profile } from '@/lib/supabase'
 import { CheckCircle, XCircle, Clock, Loader2, Plus, Edit2, Trash2, Link as LinkIcon, Search, Coins, Ban, Eye, MessageSquare, Shield, Lock, Unlock, UserCheck, FileText, X, Check } from 'lucide-react'
 import { getTranslation, Language } from '@/lib/i18n'
 import toast from 'react-hot-toast'
-import { useLanguage } from '@/i18n/LanguageContext'
+import { useTranslations, useLocale } from 'next-intl'
 import { CertificateReviewModal, CertificateReviewUser } from '@/components/CertificateReviewModal'
 import { SkeletonTable } from '@/components/SkeletonCard'
 import { EmptyState } from '@/components/EmptyState'
@@ -46,7 +46,7 @@ interface AdminUserResponse {
 
 export default function AdminPage() {
   const router = useRouter()
-  const { lang: language } = useLanguage()
+  const language = useLocale()
   
   const [profile, setProfile] = useState<Profile | null>(null)
   const [users, setUsers] = useState<AdminUserResponse[]>([])
