@@ -9,6 +9,7 @@ import { AdminLocations } from '@/components/AdminLocations'
 import { AdminDisputes } from '@/components/AdminDisputes'
 import { AdminCurrencies } from '@/components/AdminCurrencies'
 import { AdminLeads } from '@/components/AdminLeads'
+import { AdminAppeals } from '@/components/AdminAppeals'
 import { supabase, Profile } from '@/lib/supabase'
 import { CheckCircle, XCircle, Clock, Loader2, Plus, Edit2, Trash2, Link as LinkIcon, Search, Coins, Ban, Eye, MessageSquare, Shield, Lock, Unlock, UserCheck, FileText, X, Check } from 'lucide-react'
 import { getTranslation, Language } from '@/lib/i18n'
@@ -54,12 +55,16 @@ export default function AdminPage() {
   const [userPage, setUserPage] = useState(1)
   const [userTotalPages, setUserTotalPages] = useState(1)
   const [userTotalCount, setUserTotalCount] = useState(0)
-  const [activeTab, setActiveTab] = useState<'users' | 'leads' | 'chats' | 'ai-chats' | 'locations' | 'disputes' | 'currencies' | 'security'>('users')
+  const [activeTab, setActiveTab] = useState<'users' | 'leads' | 'chats' | 'ai-chats' | 'locations' | 'disputes' | 'currencies' | 'appeals' | 'security'>('users')
   const [searchQuery, setSearchQuery] = useState('')
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest' | 'balance_desc' | 'balance_asc'>('newest')
   const [balanceModalUser, setBalanceModalUser] = useState<{ id: string, email: string, balance: number } | null>(null)
   const [newBalanceValue, setNewBalanceValue] = useState<string>('')
   const [certificateReviewUser, setCertificateReviewUser] = useState<CertificateReviewUser | null>(null)
+  
+  // Ban Modal State
+  const [banModalUser, setBanModalUser] = useState<AdminUserResponse | null>(null)
+  const [banReason, setBanReason] = useState('')
 
   // Global Metrics & Security Feed State
   const [adminStats, setAdminStats] = useState<{ total_masters: number, total_clients: number, active_paid_masters: number, open_leads: number, total_users: number } | null>(null)
@@ -488,7 +493,7 @@ export default function AdminPage() {
     window.location.href = '/login'
   }
 
-  const updateUserStatus = async (userId: string, newStatus: string) => {
+  const updateUserStatus = async (userId: string, newStatus: string, banReason?: string) => {
     try {
       setActionLoadingId(userId)
       const { data: { session } } = await supabase.auth.getSession()
@@ -502,7 +507,7 @@ export default function AdminPage() {
             'Authorization': `Bearer ${session.access_token}`,
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ status: newStatus })
+          body: JSON.stringify({ status: newStatus, ban_reason: banReason })
         }
       )
 
@@ -759,6 +764,14 @@ export default function AdminPage() {
             Жалобы
           </button>
           <button
+            onClick={() => setActiveTab('appeals')}
+            className={`px-5 py-2.5 rounded-xl font-bold text-sm transition-all ${
+              activeTab === 'appeals' ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-950 shadow-md scale-[1.02]' : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
+            }`}
+          >
+            Апелляции
+          </button>
+          <button
             onClick={() => setActiveTab('locations')}
             className={`px-5 py-2.5 rounded-xl font-bold text-sm transition-all ${
               activeTab === 'locations' ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-950 shadow-md scale-[1.02]' : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
@@ -781,6 +794,7 @@ export default function AdminPage() {
         {activeTab === 'chats' && <AdminChat />}
         {activeTab === 'ai-chats' && <AdminAiChats />}
         {activeTab === 'disputes' && <AdminDisputes />}
+        {activeTab === 'appeals' && <AdminAppeals />}
         {activeTab === 'currencies' && <AdminCurrencies />}
         
         {activeTab === 'security' && (
@@ -896,9 +910,8 @@ export default function AdminPage() {
                 <thead className="bg-neutral-50/50 dark:bg-neutral-900/30 border-b border-neutral-200/50 dark:border-white/5 text-neutral-600 dark:text-neutral-400">
                   <tr>
                     <th className="px-6 py-4 font-bold uppercase tracking-wider text-xs">{t('user')}</th>
+                    <th className="px-6 py-4 font-bold uppercase tracking-wider text-xs">Контакты</th>
                     <th className="px-6 py-4 font-bold uppercase tracking-wider text-xs">Баланс</th>
-                    <th className="px-6 py-4 font-bold uppercase tracking-wider text-xs">Валюта</th>
-                    <th className="px-6 py-4 font-bold uppercase tracking-wider text-xs">{t('created')}</th>
                     <th className="px-6 py-4 font-bold uppercase tracking-wider text-xs">Status</th>
                     <th className="px-6 py-4 font-bold uppercase tracking-wider text-xs text-right">{t('actions')}</th>
                   </tr>
@@ -914,18 +927,20 @@ export default function AdminPage() {
                           </div>
                         )}
                         <div className="text-neutral-500 dark:text-neutral-400 text-xs mt-1">
-                          {user.display_name ? `${user.display_name}` : <span className="text-red-500 font-medium text-[10px] uppercase">Не завершил онбординг</span>} 
-                          {user.phone && ` • ${user.phone}`}
-                          {user.portfolio_url && (
-                            <a href={user.portfolio_url} target="_blank" rel="noopener noreferrer" className="ml-2 inline-flex items-center text-primary-600 dark:text-primary-400 hover:underline font-semibold">
-                              <LinkIcon className="w-3 h-3 mr-1" /> Портфолио
-                            </a>
-                          )}
+                          {user.display_name ? `${user.display_name}` : <span className="text-red-500 font-medium text-[10px] uppercase">Не завершил онбординг</span>}
                         </div>
                         {user.referred_by && (
                           <div className="text-xs text-neutral-400 mt-1">
                             Приглашен(а): <span className="font-mono">{user.referred_by}</span>
                           </div>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 text-xs text-neutral-500 dark:text-neutral-400">
+                        {user.phone && <div className="mb-1">{user.phone}</div>}
+                        {user.portfolio_url && (
+                          <a href={user.portfolio_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center text-primary-600 dark:text-primary-400 hover:underline font-semibold">
+                            <LinkIcon className="w-3 h-3 mr-1" /> Портфолио
+                          </a>
                         )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-500 dark:text-neutral-400">
@@ -936,14 +951,6 @@ export default function AdminPage() {
                         ) : (
                           <div className="text-xs text-neutral-400 dark:text-neutral-500 font-medium">-</div>
                         )}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-xs">
-                        <span className="px-2.5 py-1 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 font-bold rounded-lg uppercase">
-                          {user.currency || 'CZK'}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-neutral-500 dark:text-neutral-400">
-                        {new Date(user.created_at).toLocaleDateString()}
                       </td>
                       <td className="px-6 py-4">
                         {user.status === 'pending' && (
@@ -958,7 +965,7 @@ export default function AdminPage() {
                         )}
                         {user.status === 'rejected' && (
                           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-red-100/50 dark:bg-red-900/20 text-red-700 dark:text-red-400 border border-red-200/50 dark:border-red-500/20">
-                            <XCircle className="w-3.5 h-3.5" /> Rejected
+                            <XCircle className="w-3.5 h-3.5" /> Banned
                           </span>
                         )}
                         {user.role === 'master' && (
@@ -981,83 +988,44 @@ export default function AdminPage() {
                             <button
                               onClick={() => openUserDetailModal(user)}
                               className="px-3.5 py-2 bg-accent-500/10 hover:bg-accent-500/20 text-accent-600 dark:text-accent-400 border border-accent-500/20 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm"
-                              title="Открыть карточку пользователя и инспектор диалогов"
+                              title="Инспектор пользователя"
                             >
                               <Eye className="w-3.5 h-3.5" />
                               Инспектор
                             </button>
-                            {user.role === 'master' && user.certificate_url && (
+                            
+                            {user.role === 'master' && user.certificate_status === 'pending' && user.certificate_url && (
                               <button
                                 onClick={() => setCertificateReviewUser(user)}
                                 className="px-3.5 py-2 bg-primary-500/10 text-primary-600 dark:text-primary-400 border border-primary-500/20 rounded-xl text-xs font-bold hover:bg-primary-500/20 transition-all"
                               >
-                                {user.certificate_status === 'pending' ? 'Проверить сертификат' : 'Сертификат'}
+                                Сертификат
                               </button>
                             )}
-                            {(user.role === 'master' || user.is_verified_master) && (
+
+                            {user.role === 'master' && user.status === 'approved' && (
                               <button
-                                onClick={() => handleOpenBadgeModal(user)}
-                                className={`px-3.5 py-2 border rounded-xl text-xs font-bold transition-all shadow-sm flex items-center gap-1 ${
-                                  user.badge_tier === 'vip'
-                                    ? 'bg-amber-500/20 text-amber-600 dark:text-amber-300 border-amber-500/40 hover:bg-amber-500/30'
-                                    : user.badge_tier === 'pro'
-                                      ? 'bg-purple-500/20 text-purple-600 dark:text-purple-300 border-purple-500/40 hover:bg-purple-500/30'
-                                      : 'bg-neutral-200/50 hover:bg-neutral-300 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300'
-                                }`}
-                                title="Изменить PRO / VIP статус"
+                                onClick={() => updateUserPermissions(user.id, { is_verified_master: false, can_create_leads: false })}
+                                className="px-3.5 py-2 bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 rounded-xl text-xs font-bold hover:bg-amber-500/20 transition-all"
+                                title="Отозвать доступ к маркетплейсу, но оставить аккаунт активным"
                               >
-                                {user.badge_tier === 'vip' ? '👑 VIP' : user.badge_tier === 'pro' ? '⭐ PRO' : '+ Статус'}
+                                <Lock className="w-3.5 h-3.5 inline-block mr-1" /> Маркетплейс
                               </button>
                             )}
-                            {(user.role === 'master' || user.is_admin || user.is_verified_master) && (
-                              <button
-                                onClick={() => handleUpdateCredits(user.id, user.balance, user.email)}
-                                className="px-3.5 py-2 bg-neutral-200/50 hover:bg-neutral-300 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 rounded-xl text-xs font-bold transition-all shadow-sm"
-                                title="Изменить баланс"
-                              >
-                                Баланс
-                              </button>
-                            )}
-                            {user.status === 'pending' && user.role === 'master' && (
-                              <button
-                                onClick={() => updateUserStatus(user.id, 'approved')}
-                                disabled={user.role === 'master' && !user.portfolio_url}
-                                title={user.role === 'master' && !user.portfolio_url ? 'Нет ссылки на портфолио' : ''}
-                                className="px-3.5 py-2 bg-green-500/10 dark:bg-green-900/20 text-green-600 dark:text-green-400 border border-green-500/20 rounded-xl text-xs font-bold hover:bg-green-500/20 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
-                              >
-                                Одобрить
-                              </button>
-                            )}
-                            {user.status === 'approved' && user.role === 'master' && (
-                              <button
-                                onClick={() => updateUserStatus(user.id, 'pending')}
-                                className="px-3.5 py-2 bg-amber-500/10 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 border border-amber-500/20 rounded-xl text-xs font-bold hover:bg-amber-500/20 transition-all"
-                              >
-                                Отозвать
-                              </button>
-                            )}
-                            {user.status === 'rejected' && (
+                            
+                            {user.status === 'rejected' ? (
                               <button
                                 onClick={() => updateUserStatus(user.id, 'pending')}
                                 className="px-3.5 py-2 bg-neutral-500/10 dark:bg-neutral-900/20 text-neutral-600 dark:text-neutral-400 border border-neutral-500/20 rounded-xl text-xs font-bold hover:bg-neutral-500/20 transition-all"
                               >
-                                Вернуть
+                                Разбанить
                               </button>
-                            )}
-                            {user.status !== 'rejected' && (
+                            ) : (
                               <button
-                                onClick={() => updateUserStatus(user.id, 'rejected')}
+                                onClick={() => { setBanModalUser(user); setBanReason(''); }}
                                 className="px-3.5 py-2 bg-red-500/10 dark:bg-red-900/20 text-red-600 dark:text-red-400 border border-red-500/20 rounded-xl text-xs font-bold hover:bg-red-500/20 transition-all flex items-center gap-1"
                               >
                                 Забанить
-                              </button>
-                            )}
-                            {(!user.role || user.role === 'client' || (!user.is_admin && user.role !== 'master')) && (
-                              <button
-                                onClick={() => deleteUser(user.id)}
-                                className="px-3.5 py-2 bg-rose-500/10 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 border border-rose-500/20 rounded-xl text-xs font-bold hover:bg-rose-500/20 transition-all flex items-center gap-1"
-                              >
-                                Удалить
                               </button>
                             )}
                           </div>
@@ -1406,7 +1374,8 @@ export default function AdminPage() {
                 </div>
 
                 {/* Direct Wallet Balance Adjustment Section */}
-                <div className="bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-white/5 rounded-2xl p-5">
+                {(detailModalUser.role === 'master' || detailModalUser.is_admin || detailModalUser.is_verified_master) && (
+                <div className="bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-white/5 rounded-2xl p-5 mt-6">
                   <h4 className="text-xs font-extrabold uppercase tracking-wider text-neutral-500 mb-4 flex items-center gap-2">
                     <Coins className="w-4 h-4 text-amber-400" />
                     💳 Прямая Корректировка Баланса Кошелька
@@ -1469,6 +1438,7 @@ export default function AdminPage() {
                     </button>
                   </div>
                 </div>
+                )}
 
                 {/* Additional Metadata */}
                 <div className="bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-white/5 rounded-2xl p-5 text-xs space-y-2">
@@ -1679,6 +1649,56 @@ export default function AdminPage() {
                 className="px-6 py-2.5 bg-gradient-to-r from-accent-500 to-primary-600 hover:opacity-90 text-white font-extrabold text-xs rounded-xl shadow-lg shadow-accent-500/20 transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
               >
                 {isSendingBroadcast ? <Loader2 className="w-4 h-4 animate-spin" /> : '🚀 Отправить рассылку всем'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Ban Modal */}
+      {banModalUser && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-white/10 rounded-3xl p-6 sm:p-8 w-full max-w-md shadow-2xl animate-fade-in-up">
+            <h3 className="text-xl font-extrabold text-neutral-900 dark:text-white mb-2 flex items-center gap-2">
+              <Ban className="w-5 h-5 text-red-500" />
+              Блокировка пользователя
+            </h3>
+            <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-6">
+              Укажите причину блокировки для <span className="font-bold text-neutral-900 dark:text-white">{banModalUser.email}</span>. Причина может быть показана пользователю в окне апелляции.
+            </p>
+
+            <div className="mb-6">
+              <label className="block text-xs font-bold text-neutral-400 mb-2 uppercase tracking-wider">Причина блокировки</label>
+              <textarea
+                rows={3}
+                value={banReason}
+                onChange={(e) => setBanReason(e.target.value)}
+                placeholder="Например: Фрод, нарушение правил платформы..."
+                className="w-full px-4 py-2.5 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm font-medium text-neutral-900 dark:text-white"
+              />
+            </div>
+
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => { setBanModalUser(null); setBanReason(''); }}
+                className="px-5 py-2.5 bg-neutral-200/50 dark:bg-neutral-800 text-neutral-900 dark:text-white rounded-xl font-bold text-xs cursor-pointer hover:bg-neutral-300 dark:hover:bg-neutral-700 transition-colors"
+              >
+                Отмена
+              </button>
+              <button
+                onClick={async () => {
+                  if (!banReason.trim()) {
+                    toast.error('Укажите причину блокировки');
+                    return;
+                  }
+                  await updateUserStatus(banModalUser.id, 'rejected', banReason);
+                  setBanModalUser(null);
+                  setBanReason('');
+                  toast.success('Пользователь заблокирован');
+                }}
+                className="px-6 py-2.5 bg-red-600 hover:bg-red-700 text-white font-extrabold text-xs rounded-xl shadow-lg shadow-red-500/20 transition-all flex items-center gap-2 cursor-pointer"
+              >
+                Забанить навсегда
               </button>
             </div>
           </div>

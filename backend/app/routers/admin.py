@@ -19,6 +19,7 @@ router = APIRouter(prefix="/api/admin", tags=["admin"])
 
 class UserStatusUpdate(BaseModel):
     status: str
+    ban_reason: str | None = None
 
 class UserBadgeUpdate(BaseModel):
     badge_tier: str  # "none", "pro", "vip"
@@ -211,8 +212,14 @@ async def update_user_status(
         update_payload: dict[str, object] = {"status": update_data.status}
         if update_data.status == "approved":
             update_payload["is_verified_master"] = True
-        elif update_data.status in {"pending", "rejected"}:
+            update_payload["ban_reason"] = None
+        elif update_data.status == "pending":
             update_payload["is_verified_master"] = False
+            update_payload["ban_reason"] = None
+        elif update_data.status == "rejected":
+            update_payload["is_verified_master"] = False
+            if update_data.ban_reason is not None:
+                update_payload["ban_reason"] = update_data.ban_reason
             
         response = supabase.table("users") \
             .update(update_payload) \
@@ -1100,5 +1107,58 @@ async def broadcast_notification(
                 )
 
         return {"success": True, "recipients_count": len(users_list)}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+class AppealStatusUpdate(BaseModel):
+    status: str # 'approved' or 'rejected'
+    admin_response: str | None = None
+
+@router.get("/appeals")
+async def get_ban_appeals(
+    admin_user: AuthUser = Depends(get_admin_user),
+    supabase: Client = Depends(get_supabase_client)
+):
+    try:
+        response = supabase.table("ban_appeals") \
+            .select("*, users!ban_appeals_user_id_fkey(email, display_name, role, status)") \
+            .order("created_at", desc=True) \
+            .execute()
+        return response.data
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.put("/appeals/{appeal_id}")
+async def update_appeal_status(
+    appeal_id: str,
+    payload: AppealStatusUpdate,
+    admin_user: AuthUser = Depends(get_admin_user),
+    supabase: Client = Depends(get_supabase_client)
+):
+    try:
+        # Get the appeal
+        appeal_res = supabase.table("ban_appeals").select("*").eq("id", appeal_id).single().execute()
+        if not appeal_res.data:
+            raise HTTPException(status_code=404, detail="Appeal not found")
+            
+        appeal = appeal_res.data
+        user_id = appeal["user_id"]
+        
+        # Update appeal status
+        supabase.table("ban_appeals").update({
+            "status": payload.status,
+            "admin_response": payload.admin_response
+        }).eq("id", appeal_id).execute()
+        
+        # If approved, unban the user
+        if payload.status == "approved":
+            supabase.table("users").update({
+                "status": "pending",
+                "ban_reason": None
+            }).eq("id", user_id).execute()
+            
+        return {"success": True, "status": payload.status}
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

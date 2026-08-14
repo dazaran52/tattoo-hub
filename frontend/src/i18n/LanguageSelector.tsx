@@ -37,7 +37,7 @@ export function LanguageSelector() {
     <div className="relative z-50">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 text-white/70 hover:text-white text-sm font-medium transition-colors"
+        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-neutral-100/80 dark:bg-neutral-800/80 border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white text-sm font-bold transition-colors"
       >
         <span>{currentLang.label}</span>
         <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
@@ -52,14 +52,14 @@ export function LanguageSelector() {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -10, scale: 0.95 }}
               transition={{ duration: 0.2 }}
-              className="absolute top-full right-0 mt-2 w-36 py-1 bg-neutral-900/90 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl overflow-hidden z-50"
+              className="absolute top-full right-0 mt-2 w-36 py-1 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl shadow-xl overflow-hidden z-50"
             >
               {languages.map((l) => (
                 <button
                   key={l.code}
                   onClick={() => handleLanguageSelect(l.code)}
                   className={`w-full text-left px-4 py-2 text-sm transition-colors ${
-                    lang === l.code ? 'text-white bg-white/10 font-medium' : 'text-white/60 hover:text-white hover:bg-white/5'
+                    lang === l.code ? 'text-accent-600 dark:text-white bg-accent-50 dark:bg-neutral-800 font-bold' : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-50 dark:hover:bg-neutral-800/50'
                   }`}
                 >
                   {l.name}

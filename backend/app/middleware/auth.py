@@ -43,12 +43,24 @@ def get_current_user(
             )
             
         user = res.user
+        
+        # Check if user is banned
+        profile_res = supabase.table('users').select('status').eq('id', user.id).single().execute()
+        if profile_res and hasattr(profile_res, 'data') and profile_res.data:
+            if profile_res.data.get('status') == 'rejected':
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="BANNED"
+                )
+
         return AuthUser(
             user_id=user.id, 
             email=user.email, 
             user_metadata=user.user_metadata or {}
         )
         
+    except HTTPException:
+        raise
     except Exception as e:
         print(f"DEBUG: Token validation error: {type(e).__name__}: {e}")
         raise HTTPException(
@@ -74,6 +86,13 @@ def get_optional_user(
             return None
             
         user = res.user
+
+        # Check if user is banned
+        profile_res = supabase.table('users').select('status').eq('id', user.id).single().execute()
+        if profile_res and hasattr(profile_res, 'data') and profile_res.data:
+            if profile_res.data.get('status') == 'rejected':
+                return None
+
         return AuthUser(
             user_id=user.id, 
             email=user.email, 

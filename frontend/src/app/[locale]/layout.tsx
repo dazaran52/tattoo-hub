@@ -10,6 +10,7 @@ import { TouchEffect } from '@/components/TouchEffect'
 import { CookieBanner } from '@/components/CookieBanner'
 import { OnlinePresenceTracker } from '@/components/OnlinePresenceTracker'
 import { OfflineIndicator } from '@/components/OfflineIndicator'
+import { BannedGuard } from '@/components/BannedGuard'
 
 import { PresenceProvider } from '@/components/PresenceContext'
 
@@ -144,7 +145,9 @@ export default async function RootLayout({
                 }}
               />
               <OfflineIndicator />
-              {children}
+              <BannedGuard>
+                {children}
+              </BannedGuard>
               <ChatWidget />
               <InstallPrompt />
               <CookieBanner />
