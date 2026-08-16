@@ -23,6 +23,7 @@ export type Profile = {
   own_referral_code?: string | null
   referred_by?: string | null
   country_ids?: string[]
+  can_create_leads?: boolean
   city_ids?: string[]
   discount_tokens: number
   unlocked_leads_count?: number

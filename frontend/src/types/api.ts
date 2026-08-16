@@ -12,6 +12,7 @@ export interface Profile {
   created_at: string
   badge_tier?: string
   badge_expires_at?: string
+  can_create_leads?: boolean
 }
 
 export interface Lead {
