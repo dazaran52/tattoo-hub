@@ -992,12 +992,16 @@ async def get_admin_stats(
         leads_data = leads_res.data or []
         open_leads = sum(1 for l in leads_data if l.get("status") in {"open", "new", "active"})
         
+        disputes_res = supabase.table("disputes").select("id").eq("status", "pending").execute()
+        pending_disputes = len(disputes_res.data or [])
+        
         return {
             "total_masters": total_masters,
             "total_clients": total_clients,
             "active_paid_masters": active_paid_masters,
             "open_leads": open_leads,
-            "total_users": len(users_data)
+            "total_users": len(users_data),
+            "pending_disputes": pending_disputes
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

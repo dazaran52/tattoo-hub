@@ -719,7 +719,7 @@ export default function AdminPage() {
         <div className="flex flex-wrap gap-2 mb-4">
           {[
             { id: 'management', label: 'Управление', icon: <Users className="w-4 h-4" /> },
-            { id: 'moderation', label: 'Модерация', icon: <ShieldAlert className="w-4 h-4" /> },
+            { id: 'moderation', label: 'Модерация', icon: <ShieldAlert className="w-4 h-4" />, hasUnread: securityAlerts.length > 0 || (adminStats?.pending_disputes > 0) },
             { id: 'support', label: 'Поддержка', icon: <Headphones className="w-4 h-4" /> },
             { id: 'directories', label: 'Справочники', icon: <Database className="w-4 h-4" /> },
           ].map(group => (
@@ -732,7 +732,7 @@ export default function AdminPage() {
                 if (group.id === 'support') setActiveTab('chats');
                 if (group.id === 'directories') setActiveTab('locations');
               }}
-              className={`px-5 py-2.5 rounded-2xl font-black text-sm transition-all flex items-center gap-2 border shadow-sm ${
+              className={`relative px-5 py-2.5 rounded-2xl font-black text-sm transition-all flex items-center gap-2 border shadow-sm ${
                 activeGroup === group.id
                   ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-950 border-neutral-900 dark:border-white scale-[1.02]'
                   : 'bg-white/80 dark:bg-neutral-900/80 text-neutral-500 hover:text-neutral-900 dark:hover:text-white border-neutral-200 dark:border-white/10'
@@ -740,6 +740,9 @@ export default function AdminPage() {
             >
               {group.icon}
               {group.label}
+              {group.hasUnread && (
+                <div className="absolute top-0 right-0 -mt-1 -mr-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white dark:border-neutral-950 animate-pulse" />
+              )}
             </button>
           ))}
         </div>
@@ -771,20 +774,26 @@ export default function AdminPage() {
             <>
               <button
                 onClick={() => { setActiveTab('security'); fetchSecurityAlerts(); }}
-                className={`px-5 py-2.5 rounded-xl font-bold text-sm transition-all flex items-center gap-2 ${
+                className={`relative px-5 py-2.5 rounded-xl font-bold text-sm transition-all flex items-center gap-2 ${
                   activeTab === 'security' ? 'bg-red-600 text-white shadow-md shadow-red-500/20 scale-[1.02]' : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
                 }`}
               >
                 <Shield className="w-4 h-4 text-red-400" />
                 🚨 Анти-фрод ({securityAlerts.length})
+                {securityAlerts.length > 0 && (
+                  <div className="absolute top-0 right-0 -mt-1 -mr-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white dark:border-neutral-900 animate-pulse" />
+                )}
               </button>
               <button
                 onClick={() => setActiveTab('disputes')}
-                className={`px-5 py-2.5 rounded-xl font-bold text-sm transition-all ${
+                className={`relative px-5 py-2.5 rounded-xl font-bold text-sm transition-all ${
                   activeTab === 'disputes' ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-950 shadow-md scale-[1.02]' : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
                 }`}
               >
                 Жалобы
+                {(adminStats?.pending_disputes > 0) && (
+                  <div className="absolute top-0 right-0 -mt-1 -mr-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white dark:border-neutral-900 animate-pulse" />
+                )}
               </button>
               <button
                 onClick={() => setActiveTab('appeals')}
