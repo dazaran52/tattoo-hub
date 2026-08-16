@@ -69,7 +69,7 @@ export default function AdminPage() {
   const [banReason, setBanReason] = useState('')
 
   // Global Metrics & Security Feed State
-  const [adminStats, setAdminStats] = useState<{ total_masters: number, total_clients: number, active_paid_masters: number, open_leads: number, total_users: number } | null>(null)
+  const [adminStats, setAdminStats] = useState<{ total_masters: number, total_clients: number, active_paid_masters: number, open_leads: number, total_users: number, pending_disputes: number } | null>(null)
   const [securityAlerts, setSecurityAlerts] = useState<any[]>([])
   const [isLoadingSecurityAlerts, setIsLoadingSecurityAlerts] = useState<boolean>(false)
 
@@ -296,7 +296,8 @@ export default function AdminPage() {
           total_clients: users.filter(u => u.role === 'client').length,
           active_paid_masters: users.filter(u => u.badge_tier && u.badge_tier !== 'none').length,
           open_leads: 0,
-          total_users: users.length || userTotalCount
+          total_users: users.length || userTotalCount,
+          pending_disputes: 0
         })
       }
     } catch (e) {
@@ -720,7 +721,7 @@ export default function AdminPage() {
         <div className="flex flex-wrap gap-2 mb-4">
           {[
             { id: 'management', label: t('Auto.text_6fdd7d'), icon: <Users className="w-4 h-4" /> },
-            { id: 'moderation', label: t('Auto.text_424b69'), icon: <ShieldAlert className="w-4 h-4" />, hasUnread: securityAlerts.length > 0 || (adminStats?.pending_disputes > 0) },
+            { id: 'moderation', label: t('Auto.text_424b69'), icon: <ShieldAlert className="w-4 h-4" />, hasUnread: securityAlerts.length > 0 || ((adminStats?.pending_disputes || 0) > 0) },
             { id: 'support', label: t('Auto.text_662448'), icon: <Headphones className="w-4 h-4" /> },
             { id: 'directories', label: t('Auto.text_1e6f7d'), icon: <Database className="w-4 h-4" /> },
           ].map(group => (
@@ -792,7 +793,7 @@ export default function AdminPage() {
                 }`}
               >
                 {t('Auto.text_0a6011')}
-                                              {(adminStats?.pending_disputes > 0) && (
+                                              {((adminStats?.pending_disputes || 0) > 0) && (
                   <div className="absolute top-0 right-0 -mt-1 -mr-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white dark:border-neutral-900 animate-pulse" />
                 )}
               </button>
