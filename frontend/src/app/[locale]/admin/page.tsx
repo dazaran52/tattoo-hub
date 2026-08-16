@@ -11,7 +11,7 @@ import { AdminCurrencies } from '@/components/AdminCurrencies'
 import { AdminLeads } from '@/components/AdminLeads'
 import { AdminAppeals } from '@/components/AdminAppeals'
 import { supabase, Profile } from '@/lib/supabase'
-import { CheckCircle, XCircle, Clock, Loader2, Plus, Edit2, Trash2, Link as LinkIcon, Search, Coins, Ban, Eye, MessageSquare, Shield, Lock, Unlock, UserCheck, FileText, X, Check } from 'lucide-react'
+import { CheckCircle, XCircle, Clock, Loader2, Plus, Edit2, Trash2, Link as LinkIcon, Search, Coins, Ban, Eye, MessageSquare, Shield, Lock, Unlock, UserCheck, FileText, X, Check, Users, ShieldAlert, Headphones, Database } from 'lucide-react'
 import { getTranslation, Language } from '@/lib/i18n'
 import toast from 'react-hot-toast'
 import { useTranslations, useLocale } from 'next-intl'
@@ -55,6 +55,7 @@ export default function AdminPage() {
   const [userPage, setUserPage] = useState(1)
   const [userTotalPages, setUserTotalPages] = useState(1)
   const [userTotalCount, setUserTotalCount] = useState(0)
+  const [activeGroup, setActiveGroup] = useState<'management' | 'moderation' | 'support' | 'directories'>('management')
   const [activeTab, setActiveTab] = useState<'users' | 'leads' | 'chats' | 'ai-chats' | 'locations' | 'disputes' | 'currencies' | 'appeals' | 'security'>('users')
   const [searchQuery, setSearchQuery] = useState('')
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest' | 'balance_desc' | 'balance_asc'>('newest')
@@ -168,7 +169,7 @@ export default function AdminPage() {
     }
   }
 
-  const updateUserPermissions = async (userId: string, permissions: { role?: string, is_verified_master?: boolean, can_chat?: boolean, can_create_leads?: boolean }) => {
+  const updateUserPermissions = async (userId: string, permissions: { role?: string, is_verified_master?: boolean, can_chat?: boolean, can_create_leads?: boolean, badge_tier?: string }) => {
     try {
       setIsUpdatingPermissions(true)
       const { data: { session } } = await supabase.auth.getSession()
@@ -713,80 +714,129 @@ export default function AdminPage() {
           </div>
         )}
 
+        {/* Parent Tabs (Groups) */}
+        <div className="flex flex-wrap gap-2 mb-4">
+          {[
+            { id: 'management', label: 'Управление', icon: <Users className="w-4 h-4" /> },
+            { id: 'moderation', label: 'Модерация', icon: <ShieldAlert className="w-4 h-4" /> },
+            { id: 'support', label: 'Поддержка', icon: <Headphones className="w-4 h-4" /> },
+            { id: 'directories', label: 'Справочники', icon: <Database className="w-4 h-4" /> },
+          ].map(group => (
+            <button
+              key={group.id}
+              onClick={() => {
+                setActiveGroup(group.id as any);
+                if (group.id === 'management') setActiveTab('users');
+                if (group.id === 'moderation') setActiveTab('security');
+                if (group.id === 'support') setActiveTab('chats');
+                if (group.id === 'directories') setActiveTab('locations');
+              }}
+              className={`px-5 py-2.5 rounded-2xl font-black text-sm transition-all flex items-center gap-2 border shadow-sm ${
+                activeGroup === group.id
+                  ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-950 border-neutral-900 dark:border-white scale-[1.02]'
+                  : 'bg-white/80 dark:bg-neutral-900/80 text-neutral-500 hover:text-neutral-900 dark:hover:text-white border-neutral-200 dark:border-white/10'
+              }`}
+            >
+              {group.icon}
+              {group.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Sub Tabs */}
         <div className="flex flex-wrap bg-white/40 dark:bg-neutral-900/40 backdrop-blur-md border border-neutral-200/50 dark:border-white/5 p-1.5 rounded-2xl w-fit mb-6 shadow-sm gap-1">
-          <button
-            onClick={() => setActiveTab('users')}
-            className={`px-5 py-2.5 rounded-xl font-bold text-sm transition-all ${
-              activeTab === 'users' ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-950 shadow-md scale-[1.02]' : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
-            }`}
-          >
-            {t('usersManagement')}
-          </button>
-          <button
-            onClick={() => setActiveTab('leads')}
-            className={`px-5 py-2.5 rounded-xl font-bold text-sm transition-all ${
-              activeTab === 'leads' ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-950 shadow-md scale-[1.02]' : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
-            }`}
-          >
-            Заявки (TTL)
-          </button>
-          <button
-            onClick={() => { setActiveTab('security'); fetchSecurityAlerts(); }}
-            className={`px-5 py-2.5 rounded-xl font-bold text-sm transition-all flex items-center gap-2 ${
-              activeTab === 'security' ? 'bg-red-600 text-white shadow-md shadow-red-500/20 scale-[1.02]' : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
-            }`}
-          >
-            <Shield className="w-4 h-4 text-red-400" />
-            🚨 Анти-фрод ({securityAlerts.length})
-          </button>
-          <button
-            onClick={() => setActiveTab('chats')}
-            className={`px-5 py-2.5 rounded-xl font-bold text-sm transition-all ${
-              activeTab === 'chats' ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-950 shadow-md scale-[1.02]' : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
-            }`}
-          >
-            Поддержка
-          </button>
-          <button
-            onClick={() => setActiveTab('ai-chats')}
-            className={`px-5 py-2.5 rounded-xl font-bold text-sm transition-all ${
-              activeTab === 'ai-chats' ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-950 shadow-md scale-[1.02]' : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
-            }`}
-          >
-            ИИ Диалоги
-          </button>
-          <button
-            onClick={() => setActiveTab('disputes')}
-            className={`px-5 py-2.5 rounded-xl font-bold text-sm transition-all ${
-              activeTab === 'disputes' ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-950 shadow-md scale-[1.02]' : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
-            }`}
-          >
-            Жалобы
-          </button>
-          <button
-            onClick={() => setActiveTab('appeals')}
-            className={`px-5 py-2.5 rounded-xl font-bold text-sm transition-all ${
-              activeTab === 'appeals' ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-950 shadow-md scale-[1.02]' : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
-            }`}
-          >
-            Апелляции
-          </button>
-          <button
-            onClick={() => setActiveTab('locations')}
-            className={`px-5 py-2.5 rounded-xl font-bold text-sm transition-all ${
-              activeTab === 'locations' ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-950 shadow-md scale-[1.02]' : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
-            }`}
-          >
-            Локации
-          </button>
-          <button
-            onClick={() => setActiveTab('currencies')}
-            className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all ${
-              activeTab === 'currencies' ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-950 shadow-md scale-[1.02]' : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
-            }`}
-          >
-            Курсы валют
-          </button>
+          {activeGroup === 'management' && (
+            <>
+              <button
+                onClick={() => setActiveTab('users')}
+                className={`px-5 py-2.5 rounded-xl font-bold text-sm transition-all ${
+                  activeTab === 'users' ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-950 shadow-md scale-[1.02]' : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
+                }`}
+              >
+                {t('usersManagement')}
+              </button>
+              <button
+                onClick={() => setActiveTab('leads')}
+                className={`px-5 py-2.5 rounded-xl font-bold text-sm transition-all ${
+                  activeTab === 'leads' ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-950 shadow-md scale-[1.02]' : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
+                }`}
+              >
+                Заявки (TTL)
+              </button>
+            </>
+          )}
+
+          {activeGroup === 'moderation' && (
+            <>
+              <button
+                onClick={() => { setActiveTab('security'); fetchSecurityAlerts(); }}
+                className={`px-5 py-2.5 rounded-xl font-bold text-sm transition-all flex items-center gap-2 ${
+                  activeTab === 'security' ? 'bg-red-600 text-white shadow-md shadow-red-500/20 scale-[1.02]' : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
+                }`}
+              >
+                <Shield className="w-4 h-4 text-red-400" />
+                🚨 Анти-фрод ({securityAlerts.length})
+              </button>
+              <button
+                onClick={() => setActiveTab('disputes')}
+                className={`px-5 py-2.5 rounded-xl font-bold text-sm transition-all ${
+                  activeTab === 'disputes' ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-950 shadow-md scale-[1.02]' : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
+                }`}
+              >
+                Жалобы
+              </button>
+              <button
+                onClick={() => setActiveTab('appeals')}
+                className={`px-5 py-2.5 rounded-xl font-bold text-sm transition-all ${
+                  activeTab === 'appeals' ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-950 shadow-md scale-[1.02]' : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
+                }`}
+              >
+                Апелляции
+              </button>
+            </>
+          )}
+
+          {activeGroup === 'support' && (
+            <>
+              <button
+                onClick={() => setActiveTab('chats')}
+                className={`px-5 py-2.5 rounded-xl font-bold text-sm transition-all ${
+                  activeTab === 'chats' ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-950 shadow-md scale-[1.02]' : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
+                }`}
+              >
+                Поддержка
+              </button>
+              <button
+                onClick={() => setActiveTab('ai-chats')}
+                className={`px-5 py-2.5 rounded-xl font-bold text-sm transition-all ${
+                  activeTab === 'ai-chats' ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-950 shadow-md scale-[1.02]' : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
+                }`}
+              >
+                ИИ Диалоги
+              </button>
+            </>
+          )}
+
+          {activeGroup === 'directories' && (
+            <>
+              <button
+                onClick={() => setActiveTab('locations')}
+                className={`px-5 py-2.5 rounded-xl font-bold text-sm transition-all ${
+                  activeTab === 'locations' ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-950 shadow-md scale-[1.02]' : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
+                }`}
+              >
+                Локации
+              </button>
+              <button
+                onClick={() => setActiveTab('currencies')}
+                className={`px-5 py-2.5 rounded-xl font-bold text-sm transition-all ${
+                  activeTab === 'currencies' ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-950 shadow-md scale-[1.02]' : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
+                }`}
+              >
+                Курсы валют
+              </button>
+            </>
+          )}
         </div>
 
         {activeTab === 'leads' && <AdminLeads />}
