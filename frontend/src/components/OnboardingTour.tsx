@@ -12,6 +12,7 @@ interface OnboardingTourProps {
 }
 
 export function OnboardingTour({ startTour, onTourEnd }: OnboardingTourProps) {
+  const t = useTranslations();
   const initTour = useCallback(() => {
     const driverObj = driver({
       showProgress: true,
