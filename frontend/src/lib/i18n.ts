@@ -1079,7 +1079,8 @@ const translations: Translations = {
   },
 };
 
-export function getTranslation(lang: Language, key: keyof Translations['cs']): string {
+export function getTranslation(lang: Language, key: string): string {
+  // @ts-ignore
   return translations[lang][key] || translations['en'][key] || key;
 }
 
