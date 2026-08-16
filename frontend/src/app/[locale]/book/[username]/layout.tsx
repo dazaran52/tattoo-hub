@@ -1,8 +1,9 @@
-import { useTranslations } from "next-intl";
+import { getTranslations } from "next-intl/server";
 import { Metadata } from 'next'
 
-export async function generateMetadata({ params }: { params: Promise<{ username: string }> }): Promise<Metadata> {
-  const { username } = await params
+export async function generateMetadata({ params }: { params: Promise<{ username: string, locale: string }> }): Promise<Metadata> {
+  const { username, locale } = await params
+  const t = await getTranslations({ locale })
   try {
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/public/master/${username}`, {
       next: { revalidate: 60 }
