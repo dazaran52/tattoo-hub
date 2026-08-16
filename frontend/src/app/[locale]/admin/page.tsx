@@ -1178,8 +1178,8 @@ export default function AdminPage() {
       )}
 
       {badgeModalUser && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-200">
-          <div className="bg-white/90 dark:bg-neutral-900/90 backdrop-blur-2xl w-full max-w-md rounded-3xl shadow-2xl overflow-hidden p-6 border border-neutral-200/50 dark:border-white/10">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-200" onClick={() => setBadgeModalUser(null)}>
+          <div className="bg-white/90 dark:bg-neutral-900/90 backdrop-blur-2xl w-full max-w-md rounded-3xl shadow-2xl overflow-hidden p-6 border border-neutral-200/50 dark:border-white/10" onClick={(e) => e.stopPropagation()}>
             <h3 className="text-xl font-extrabold text-neutral-900 dark:text-white mb-1">Выдать статус PRO / VIP</h3>
             <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-6 font-semibold">{badgeModalUser.email}</p>
 
@@ -1264,8 +1264,8 @@ export default function AdminPage() {
 
       {/* User Detail & Inspector Modal */}
       {detailModalUser && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-white/10 rounded-3xl p-6 sm:p-8 w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl animate-fade-in-up">
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-md flex items-center justify-center p-4" onClick={() => setDetailModalUser(null)}>
+          <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-white/10 rounded-3xl p-6 sm:p-8 w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl animate-fade-in-up" onClick={(e) => e.stopPropagation()}>
             
             {/* Header */}
             <div className="flex items-center justify-between border-b border-neutral-200 dark:border-white/10 pb-4 mb-6">
