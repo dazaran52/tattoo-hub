@@ -145,23 +145,23 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
 
   const togglePushNotifications = async () => {
     if (!('Notification' in window)) {
-      toast.error('Браузер не поддерживает уведомления')
+      toast.error(t('Auto.text_189651'))
       return
     }
     if (Notification.permission === 'denied') {
-      toast.error('Уведомления заблокированы в настройках браузера')
+      toast.error(t('Auto.text_0cccbd'))
       return
     }
     if (pushEnabled) {
       setPushEnabled(false)
-      toast.success('Уведомления отключены')
+      toast.success(t('Auto.text_5d4a82'))
     } else {
       const permission = await Notification.requestPermission()
       if (permission === 'granted') {
         setPushEnabled(true)
-        toast.success('Уведомления о новых лидах включены! 🔔')
+        toast.success(t('Auto.text_b0941d'))
       } else {
-        toast.error('Доступ к уведомлениям отклонен')
+        toast.error(t('Auto.text_b8435c'))
       }
     }
   }
@@ -179,7 +179,7 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
         icon: '💬'
       })
       actions.push({
-        name: 'Позвонить',
+        name: t('Auto.text_ccfa07'),
         href: `tel:${cleanPhone}`,
         color: 'bg-blue-500 hover:bg-blue-600 text-white',
         icon: '📞'
@@ -215,7 +215,7 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
     const channel = supabase.channel('realtime_leads')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'leads' }, (payload) => {
         // Refresh leads when changes happen (debounced slightly to avoid spam)
-        toast('Обновление базы лидов...', { icon: '🔄', duration: 2000 })
+        toast(t('Auto.text_32af3b'), { icon: '🔄', duration: 2000 })
         fetchLeads(true)
       })
       .subscribe()
@@ -272,7 +272,7 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
       }
     } catch (err) {
       console.error(err)
-      setError('Не удалось загрузить лиды. Проверьте соединение.')
+      setError(t('Auto.text_434bd6'))
     } finally {
       if (!background && pageNum === 1) setIsLoading(false)
       if (pageNum > 1) setIsLoadingMore(false)
@@ -403,12 +403,12 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
         throw new Error(err.detail || 'Failed to accept proposal')
       }
       
-      toast.success('Лид успешно передан мастеру! 🎉')
+      toast.success(t('Auto.text_4a5262'))
       playSuccessSound()
       triggerHaptic('success')
       fetchLeads()
     } catch (err: any) {
-      toast.error(err.message || 'Ошибка принятия предложения')
+      toast.error(err.message || t('Auto.text_2cd062'))
       playErrorSound()
     } finally {
       setActionLoadingId(null)
@@ -417,14 +417,14 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
 
   const handleDeleteLead = async (leadId: string) => {
     const lead = leads.find(l => l.id === leadId)
-    const leadTitle = lead ? lead.title : 'этот лид'
+    const leadTitle = lead ? lead.title : t('Auto.text_7cbcf7')
 
     setConfirmModal({
       isOpen: true,
-      title: 'Удалить лид',
+      title: t('deleteLead'),
       message: `${t('confirmDeleteLead')} "${leadTitle}"?`,
-      confirmText: 'Удалить',
-      cancelText: 'Отмена',
+      confirmText: t('delete'),
+      cancelText: t('cancel'),
       type: 'danger',
       onConfirm: async () => {
         setConfirmModal(null)
@@ -627,7 +627,7 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
                 className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-accent-600 hover:bg-accent-700 text-white rounded-2xl text-xs font-bold shadow-md hover:shadow-lg transition-all whitespace-nowrap"
               >
                 <Plus className="w-4 h-4" />
-                <span>Разместить клиента</span>
+                <span>{t('Auto.text_4d6463')}</span>
               </button>
             )}
 
@@ -635,7 +635,7 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
               onClick={() => fetchLeads()}
               disabled={isLoading}
               className="p-2 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl text-neutral-400 hover:text-white transition-colors"
-              title="Обновить"
+              title={t('refresh')}
             >
               <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
             </button>
@@ -650,14 +650,14 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
                 onClick={() => setViewMode('all')}
                 className={`flex-1 sm:flex-none px-4 py-1.5 text-xs font-bold rounded-xl transition-all ${viewMode === 'all' ? 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white shadow-sm' : 'text-neutral-400 hover:text-white'}`}
               >
-                Все заявки
-              </button>
+                {t('Auto.text_c1ec65')}
+                                            </button>
               <button
                 onClick={() => setViewMode('my-shared')}
                 className={`flex-1 sm:flex-none px-4 py-1.5 text-xs font-bold rounded-xl transition-all ${viewMode === 'my-shared' ? 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white shadow-sm' : 'text-neutral-400 hover:text-white'}`}
               >
-                Мои выставленные
-              </button>
+                {t('Auto.text_530db3')}
+                                            </button>
             </div>
           )}
 
@@ -683,12 +683,12 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
               {pushEnabled ? (
                 <>
                   <Bell className="w-3.5 h-3.5 text-emerald-500 animate-pulse" />
-                  <span>Уведомления: Вкл</span>
+                  <span>{t('Auto.text_de3829')}</span>
                 </>
               ) : (
                 <>
                   <BellOff className="w-3.5 h-3.5 text-neutral-400" />
-                  <span>Уведомления: Выкл</span>
+                  <span>{t('Auto.text_e9873c')}</span>
                 </>
               )}
             </button>
@@ -702,7 +702,7 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
               }`}
             >
               <Filter className="w-3.5 h-3.5" />
-              <span>Фильтры</span>
+              <span>{t('Auto.text_f7ac6f')}</span>
             </button>
           </div>
         </div>
@@ -719,20 +719,20 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
             <div className="p-4 bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               
               <div>
-                <label className="block text-xs font-bold text-neutral-500 mb-2 uppercase">Сортировка</label>
+                <label className="block text-xs font-bold text-neutral-500 mb-2 uppercase">{t('Auto.text_d2fc7c')}</label>
                 <select 
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value as any)}
                   className="w-full bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg px-3 py-2 text-sm text-neutral-900 dark:text-white"
                 >
-                  <option value="newest">Сначала новые</option>
-                  <option value="budget_desc">Сначала дорогие</option>
-                  <option value="budget_asc">Сначала недорогие</option>
+                  <option value="newest">{t('Auto.text_ea5256')}</option>
+                  <option value="budget_desc">{t('Auto.text_7bd7e4')}</option>
+                  <option value="budget_asc">{t('Auto.text_11e9c3')}</option>
                 </select>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-neutral-500 mb-2 uppercase">Стили ({selectedStyles.length})</label>
+                <label className="block text-xs font-bold text-neutral-500 mb-2 uppercase">{t('Auto.text_349436')}{selectedStyles.length})</label>
                 <select
                   className="w-full bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg px-3 py-2 text-sm text-neutral-900 dark:text-white"
                   onChange={(e) => {
@@ -742,7 +742,7 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
                     e.target.value = ''
                   }}
                 >
-                  <option value="">Добавить стиль...</option>
+                  <option value="">{t('Auto.text_6ed950')}</option>
                   {TATTOO_STYLES.map(s => (
                     <option key={s} value={s}>{s}</option>
                   ))}
@@ -759,7 +759,7 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-neutral-500 mb-2 uppercase">Размер</label>
+                <label className="block text-xs font-bold text-neutral-500 mb-2 uppercase">{t('crmBoard.sizeLabel')}</label>
                 <select
                   className="w-full bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg px-3 py-2 text-sm text-neutral-900 dark:text-white"
                   onChange={(e) => {
@@ -769,11 +769,11 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
                     e.target.value = ''
                   }}
                 >
-                  <option value="">Добавить размер...</option>
-                  <option value="Маленькая (до 5 см)">Маленькая (до 5 см)</option>
-                  <option value="Средняя (до 15 см)">Средняя (до 15 см)</option>
-                  <option value="Большая (от 15 см)">Большая (от 15 см)</option>
-                  <option value="Рукав / Спина целиком">Рукав / Спина целиком</option>
+                  <option value="">{t('Auto.text_72bc4b')}</option>
+                  <option value={t('Auto.text_d6a4be')}>{t('Auto.text_d6a4be')}</option>
+                  <option value={t('Auto.text_758762')}>{t('Auto.text_758762')}</option>
+                  <option value={t('Auto.text_157546')}>{t('Auto.text_157546')}</option>
+                  <option value={t('Auto.text_64205c')}>{t('Auto.text_64205c')}</option>
                 </select>
                 {selectedSizes.length > 0 && (
                   <div className="flex flex-wrap gap-1 mt-2">
@@ -789,7 +789,7 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
               <div>
                 <div className="flex gap-4">
                   <div className="flex-1">
-                    <label className="block text-xs font-bold text-neutral-500 mb-2 uppercase">Min Бюджет</label>
+                    <label className="block text-xs font-bold text-neutral-500 mb-2 uppercase">{t('Auto.text_42b20c')}</label>
                     <input 
                       type="number" 
                       placeholder="0"
@@ -803,8 +803,8 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
 
               <div className="lg:col-span-4 md:col-span-2 flex items-center justify-between p-3 bg-neutral-50 dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700">
                 <div className="flex flex-col">
-                  <span className="text-sm font-bold text-neutral-900 dark:text-white">Только от клиентов онлайн</span>
-                  <span className="text-xs text-neutral-500 dark:text-neutral-400">Показывать заявки только от тех клиентов, которые в данный момент на сайте</span>
+                  <span className="text-sm font-bold text-neutral-900 dark:text-white">{t('Auto.text_7b5837')}</span>
+                  <span className="text-xs text-neutral-500 dark:text-neutral-400">{t('Auto.text_89d551')}</span>
                 </div>
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input 
@@ -837,9 +837,9 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
           <div className="w-16 h-16 bg-neutral-100 dark:bg-neutral-800 rounded-full mx-auto mb-4 flex items-center justify-center">
             <Search className="w-8 h-8 text-neutral-500 dark:text-neutral-400" />
           </div>
-          <p className="text-neutral-700 dark:text-neutral-300 text-lg mb-2">Ничего не найдено</p>
+          <p className="text-neutral-700 dark:text-neutral-300 text-lg mb-2">{t('crmBoard.list.nothingFound')}</p>
           <p className="text-neutral-500 dark:text-neutral-400 text-sm">
-            {showOnlyUnlocked ? 'Вы еще не купили ни одного лида.' : 'По вашему запросу нет лидов.'}
+            {showOnlyUnlocked ? t('Auto.text_e4a5c0') : t('Auto.text_db495b')}
           </p>
         </div>
       )}
@@ -925,18 +925,18 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
                   <div className="absolute top-3 left-3 flex flex-col gap-2">
                     {lead.client_priority === 'fast' && (
                       <span className="px-2 py-1 bg-amber-500/90 backdrop-blur-md text-white text-[10px] font-bold uppercase rounded-md shadow-sm flex items-center gap-1">
-                        <span>⚡</span> В кратчайшие сроки
-                      </span>
+                        <span>⚡</span> {t('fastPriority')}
+                                                              </span>
                     )}
                     {lead.client_priority === 'cheap' && (
                       <span className="px-2 py-1 bg-emerald-500/90 backdrop-blur-md text-white text-[10px] font-bold uppercase rounded-md shadow-sm flex items-center gap-1">
-                        <span>💸</span> Важна цена
-                      </span>
+                        <span>💸</span> {t('Auto.text_d511ac')}
+                                                              </span>
                     )}
                     {lead.client_priority === 'quality' && (
                       <span className="px-2 py-1 bg-purple-500/90 backdrop-blur-md text-white text-[10px] font-bold uppercase rounded-md shadow-sm flex items-center gap-1">
-                        <span>💎</span> Макс. качество
-                      </span>
+                        <span>💎</span> {t('Auto.text_03b5fe')}
+                                                              </span>
                     )}
                   </div>
                   
@@ -965,13 +965,13 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
                     <div className="flex gap-2 mb-2">
                       {lead.client_priority === 'fast' && (
                         <span className="px-2 py-1 bg-rose-500/10 text-rose-600 dark:text-rose-400 text-[10px] font-bold uppercase rounded-md">
-                          ⚡ Как можно быстрее
-                        </span>
+                          {t('Auto.text_df1230')}
+                                                                    </span>
                       )}
                       {lead.client_priority === 'cheap' && (
                         <span className="px-2 py-1 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold uppercase rounded-md">
-                          💸 Важна цена
-                        </span>
+                          {t('Auto.text_9aeb51')}
+                                                                    </span>
                       )}
                     </div>
                   )}
@@ -986,8 +986,8 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
                     <div className="flex items-center gap-2 text-xs font-bold text-neutral-500 bg-neutral-100 dark:bg-neutral-800 px-2 py-1.5 rounded-lg w-fit max-w-full">
                       <Calendar className="w-4 h-4 shrink-0 mt-0.5 self-start sm:self-auto sm:my-auto" />
                       <span className="whitespace-normal break-words leading-none">
-                        Дата не указана
-                      </span>
+                        {t('Auto.text_d5ece4')}
+                                                                  </span>
                     </div>
                   )}
                   {(lead.country_id || lead.city_id) && (
@@ -1000,19 +1000,19 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
                   )}
                   {lead.created_at && (
                     <span className="text-[10px] text-neutral-400 font-medium ml-1">
-                      Создано: {new Date(lead.created_at).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute:'2-digit' })}
+                      {t('Auto.text_d4a1ff')} {new Date(lead.created_at).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute:'2-digit' })}
                     </span>
                   )}
                 </div>
 
                 <div className="flex flex-wrap gap-1.5 mt-1 border-t border-dashed border-neutral-200 dark:border-white/10 pt-3 mb-4">
-                  {lead.style && lead.style !== 'Не определился' && (
+                  {lead.style && lead.style !== t('Auto.text_0464ef') && (
                     <span className="px-2.5 py-1 bg-neutral-100 dark:bg-neutral-800/50 text-neutral-700 dark:text-neutral-300 text-[11px] font-semibold rounded-lg flex items-center gap-1.5 border border-neutral-200/50 dark:border-white/5">
                       <Palette className="w-3 h-3" />
                       {lead.style}
                     </span>
                   )}
-                  {lead.body_place && lead.body_place !== 'Не определился' && (
+                  {lead.body_place && lead.body_place !== t('Auto.text_0464ef') && (
                     <span className="px-2.5 py-1 bg-neutral-100 dark:bg-neutral-800/50 text-neutral-700 dark:text-neutral-300 text-[11px] font-semibold rounded-lg flex items-center gap-1.5 border border-neutral-200/50 dark:border-white/5">
                       <PersonStanding className="w-3 h-3" />
                       {lead.body_place}
@@ -1040,7 +1040,7 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
                 </div>
 
                 <p className="text-neutral-600 dark:text-neutral-400 text-sm mb-6 leading-relaxed flex-1 line-clamp-4">
-                  {lead.description?.replace(/\s*(Бюджет|Город):.*?(?=(\n|$))/gi, '') || 'Нет описания'}
+                  {lead.description?.replace(/\s*(Бюджет|Город):.*?(?=(\n|$))/gi, '') || t('Auto.text_f29ff9')}
                 </p>
                 
                 {/* Contacts Block */}
@@ -1076,7 +1076,7 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
               <div className="p-5 border-t border-neutral-100 dark:border-neutral-800/80 bg-neutral-50/50 dark:bg-neutral-900/50 backdrop-blur-sm">
                 {viewMode === 'my-shared' ? (
                   <div className="space-y-4">
-                    <h4 className="font-bold text-neutral-900 dark:text-white mb-2">Отклики мастеров ({lead.proposals?.length || 0})</h4>
+                    <h4 className="font-bold text-neutral-900 dark:text-white mb-2">{t('Auto.text_63dcb2')}{lead.proposals?.length || 0})</h4>
                     {lead.proposals && lead.proposals.length > 0 ? (
                       <div className="space-y-3">
                         {lead.proposals.map(prop => (
@@ -1091,13 +1091,13 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
                                   </div>
                                 )}
                                 <div>
-                                  <p className="font-bold text-sm dark:text-white">{prop.users?.full_name || 'Мастер'}</p>
-                                  <p className="text-xs text-neutral-500">Предлагает за сеанс: <span className="font-bold text-accent-600">{prop.price_offer} CZK</span></p>
+                                  <p className="font-bold text-sm dark:text-white">{prop.users?.full_name || t('Auto.text_2bb1fb')}</p>
+                                  <p className="text-xs text-neutral-500">{t('Auto.text_43e69f')} <span className="font-bold text-accent-600">{prop.price_offer} CZK</span></p>
                                 </div>
                               </div>
                             </div>
                             {prop.status === 'accepted' ? (
-                              <div className="w-full py-2 px-3 bg-green-50 text-green-700 text-sm font-bold text-center rounded-lg">Вы выбрали этого мастера</div>
+                              <div className="w-full py-2 px-3 bg-green-50 text-green-700 text-sm font-bold text-center rounded-lg">{t('Auto.text_f40534')}</div>
                             ) : prop.status === 'pending' ? (
                               <div className="flex gap-2">
                                 <button
@@ -1105,24 +1105,24 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
                                   disabled={actionLoadingId === `${lead.id}-${prop.user_id}`}
                                   className="flex-1 py-2 bg-accent-600 hover:bg-accent-700 text-white font-bold rounded-lg text-sm transition-colors"
                                 >
-                                  {actionLoadingId === `${lead.id}-${prop.user_id}` ? 'Принятие...' : `Отдать (ваш заработок: ${prop.price_offer * 0.08} CZK)`}
+                                  {actionLoadingId === `${lead.id}-${prop.user_id}` ? t('Auto.text_3e7821') : `Отдать (ваш заработок: ${prop.price_offer * 0.08} CZK)`}
                                 </button>
                               </div>
                             ) : (
-                              <div className="w-full py-2 px-3 bg-red-50 text-red-700 text-sm font-bold text-center rounded-lg">Отклонено</div>
+                              <div className="w-full py-2 px-3 bg-red-50 text-red-700 text-sm font-bold text-center rounded-lg">{t('Auto.text_22c9a6')}</div>
                             )}
                           </div>
                         ))}
                       </div>
                     ) : (
-                      <p className="text-sm text-neutral-500 text-center py-4">Пока нет предложений от других мастеров.</p>
+                      <p className="text-sm text-neutral-500 text-center py-4">{t('Auto.text_1dc1ef')}</p>
                     )}
                   </div>
                 ) : lead.proposal_status && ['accepted', 'booked', 'completed'].includes(lead.proposal_status) ? (
                   <div className="space-y-3">
                     <div className="w-full py-3 px-4 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-900/50 rounded-xl text-sm font-bold shadow-inner flex items-center justify-center gap-2">
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-                      {isAdmin ? "ADMIN VIEW" : "Выигран! Клиент выбрал вас"}
+                      {isAdmin ? "ADMIN VIEW" : t('Auto.text_0fb289')}
                     </div>
                     {lead.chat_id && (
                       <button
@@ -1130,35 +1130,35 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
                         className="w-full py-3 px-4 bg-primary-100 hover:bg-primary-200 dark:bg-primary-900/30 dark:hover:bg-primary-900/50 text-primary-700 dark:text-primary-300 font-bold rounded-xl transition-colors flex items-center justify-center gap-2 text-sm"
                       >
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
-                        Открыть чат
-                      </button>
+                        {t('Auto.text_720f65')}
+                                                                  </button>
                     )}
                   </div>
                 ) : lead.proposal_status === 'pending' ? (
                   <div className="space-y-3">
                     <div className="w-full py-3 px-4 bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-900/50 rounded-xl text-sm font-bold shadow-inner flex items-center justify-center gap-2">
-                      ⏳ Ожидает решения клиента
-                    </div>
+                      {t('Auto.text_93aa13')}
+                                                                </div>
                     <button
                       onClick={() => setSelectedProposalLead(lead)}
                       className="w-full py-2.5 px-4 border border-neutral-300 dark:border-neutral-700 rounded-xl text-sm font-bold hover:bg-neutral-100 dark:hover:bg-neutral-800"
                     >
-                      Редактировать предложение
-                    </button>
+                      {t('Auto.text_368f78')}
+                                                                </button>
                     {lead.chat_id && (
                       <button
                         onClick={() => setSelectedChatLead(lead)}
                         className="w-full py-3 px-4 bg-primary-100 hover:bg-primary-200 dark:bg-primary-900/30 dark:hover:bg-primary-900/50 text-primary-700 dark:text-primary-300 font-bold rounded-xl transition-colors flex items-center justify-center gap-2 text-sm"
                       >
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
-                        Открыть чат
-                      </button>
+                        {t('Auto.text_720f65')}
+                                                                      </button>
                     )}
                   </div>
                 ) : lead.proposal_status === 'rejected' ? (
                   <div className="w-full py-3 px-4 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-900/50 rounded-xl text-sm font-bold shadow-inner flex items-center justify-center gap-2">
-                    ❌ Клиент выбрал другого мастера
-                  </div>
+                    {t('Auto.text_790615')}
+                                                              </div>
                 ) : lead.is_unlocked || isAdmin ? (
                   <div className="w-full py-3 px-4 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-900/50 rounded-xl text-sm font-bold shadow-inner flex items-center justify-center gap-2">
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
@@ -1171,11 +1171,11 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
                     className="w-full py-3 px-4 bg-neutral-900 dark:bg-white text-white dark:text-neutral-950 hover:bg-neutral-800 dark:hover:bg-neutral-200 rounded-xl text-sm font-bold transition-all shadow-md hover:shadow-lg disabled:opacity-50 flex items-center justify-center gap-2 group-hover:scale-[1.02]"
                   >
                     {(lead.proposal_count ?? lead.unlock_count ?? 0) >= (lead.max_proposals ?? lead.max_unlocks ?? 5) ? (
-                      <span>🔒 Уже 5 предложений</span>
+                      <span>{t('Auto.text_b38c2b')}</span>
                     ) : (
                       <>
-                        Сделать предложение — бесплатно
-                      </>
+                        {t('Auto.text_9d53be')}
+                                                                                      </>
                     )}
                   </button>
                 )}
@@ -1196,10 +1196,10 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
             {isLoadingMore ? (
               <>
                 <Loader2 className="w-5 h-5 animate-spin" />
-                Загрузка...
-              </>
+                {t('loading')}
+                                            </>
             ) : (
-              'Загрузить ещё'
+              t('Auto.text_adf423')
             )}
           </button>
         </div>

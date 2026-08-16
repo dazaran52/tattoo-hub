@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import { useState, useEffect, useMemo, useRef } from 'react'
 import { Plus, Trash2, Loader2, Globe, MapPin, Search } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
@@ -9,6 +10,7 @@ import { EmptyState } from '@/components/EmptyState'
 const ALL_COUNTRY_CODES = ["AD","AE","AF","AG","AI","AL","AM","AO","AQ","AR","AS","AT","AU","AW","AX","AZ","BA","BB","BD","BE","BF","BG","BH","BI","BJ","BL","BM","BN","BO","BQ","BR","BS","BT","BV","BW","BY","BZ","CA","CC","CD","CF","CG","CH","CI","CK","CL","CM","CN","CO","CR","CU","CV","CW","CX","CY","CZ","DE","DJ","DK","DM","DO","DZ","EC","EE","EG","EH","ER","ES","ET","FI","FJ","FK","FM","FO","FR","GA","GB","GD","GE","GF","GG","GH","GI","GL","GM","GN","GP","GQ","GR","GS","GT","GU","GW","GY","HK","HM","HN","HR","HT","HU","ID","IE","IL","IM","IN","IO","IQ","IR","IS","IT","JE","JM","JO","JP","KE","KG","KH","KI","KM","KN","KP","KR","KW","KY","KZ","LA","LB","LC","LI","LK","LR","LS","LT","LU","LV","LY","MA","MC","MD","ME","MF","MG","MH","MK","ML","MM","MN","MO","MP","MQ","MR","MS","MT","MU","MV","MW","MX","MY","MZ","NA","NC","NE","NF","NG","NI","NL","NO","NP","NR","NU","NZ","OM","PA","PE","PF","PG","PH","PK","PL","PM","PN","PR","PS","PT","PW","PY","QA","RE","RO","RS","RU","RW","SA","SB","SC","SD","SE","SG","SH","SI","SJ","SK","SL","SM","SN","SO","SR","SS","ST","SV","SX","SY","SZ","TC","TD","TF","TG","TH","TJ","TK","TL","TM","TN","TO","TR","TT","TV","TW","TZ","UA","UG","UM","US","UY","UZ","VA","VC","VE","VG","VI","VN","VU","WF","WS","YE","YT","ZA","ZM","ZW"]
 
 export function AdminLocations() {
+    const t = useTranslations();
   const [countries, setCountries] = useState<any[]>([])
   const [cities, setCities] = useState<any[]>([])
   
@@ -68,7 +70,7 @@ export function AdminLocations() {
   const autoTranslateCity = async () => {
     const query = newCityRu || newCityEn || newCityCs || newCityUk
     if (!query.trim()) {
-      toast.error('Введите название города в любое поле')
+      toast.error(t('Auto.text_f7b18c'))
       return
     }
 
@@ -97,12 +99,12 @@ export function AdminLocations() {
         setNewCityCs(details['name:cs'] || details['name'] || defaultName)
         setNewCityUk(details['name:uk'] || details['name:ru'] || defaultName)
         
-        toast.success('Переводы загружены из базы OpenStreetMap!')
+        toast.success(t('Auto.text_876f4e'))
       } else {
-        toast.error('Город не найден в международной базе геоданных')
+        toast.error(t('Auto.text_1d483d'))
       }
     } catch (err) {
-      toast.error('Ошибка при обращении к сервису карт')
+      toast.error(t('Auto.text_9400e1'))
     } finally {
       setTranslatingCity(false)
     }
@@ -163,7 +165,7 @@ export function AdminLocations() {
         })
       })
       if (!res.ok) throw new Error('Failed to add country')
-      toast.success('Страна успешно добавлена')
+      toast.success(t('Auto.text_b28019'))
       setNewCountryCode('')
       setCountrySearch('')
       setNewCountryRu('')
@@ -172,7 +174,7 @@ export function AdminLocations() {
       setNewCountryUk('')
       fetchData()
     } catch (err) {
-      toast.error('Ошибка добавления страны')
+      toast.error(t('Auto.text_42b02d'))
     } finally {
       setActionLoadingId(null)
     }
@@ -180,14 +182,14 @@ export function AdminLocations() {
 
   const handleDeleteCountry = (id: string) => {
     const country = countries.find(c => c.id === id)
-    const countryName = country ? country.name_ru : 'эту страну'
+    const countryName = country ? country.name_ru : t('Auto.text_6a06b9')
 
     setConfirmModal({
       isOpen: true,
-      title: 'Удалить страну',
+      title: t('Auto.text_2908a3'),
       message: `Вы уверены, что хотите удалить страну ${countryName}? Это также может удалить связанные города.`,
-      confirmText: 'Удалить',
-      cancelText: 'Отмена',
+      confirmText: t('delete'),
+      cancelText: t('cancel'),
       type: 'danger',
       onConfirm: async () => {
         setConfirmModal(null)
@@ -201,10 +203,10 @@ export function AdminLocations() {
             }
           })
           if (!res.ok) throw new Error('Failed to delete country')
-          toast.success('Страна удалена')
+          toast.success(t('Auto.text_bc09bf'))
           fetchData()
         } catch (err) {
-          toast.error('Ошибка удаления страны')
+          toast.error(t('Auto.text_2ed68b'))
         } finally {
           setActionLoadingId(null)
         }
@@ -233,14 +235,14 @@ export function AdminLocations() {
         })
       })
       if (!res.ok) throw new Error('Failed to add city')
-      toast.success('Город успешно добавлен')
+      toast.success(t('Auto.text_3b974b'))
       setNewCityRu('')
       setNewCityEn('')
       setNewCityCs('')
       setNewCityUk('')
       fetchData()
     } catch (err) {
-      toast.error('Ошибка добавления города')
+      toast.error(t('Auto.text_4178d9'))
     } finally {
       setActionLoadingId(null)
     }
@@ -248,14 +250,14 @@ export function AdminLocations() {
 
   const handleDeleteCity = (id: string) => {
     const city = cities.find(c => c.id === id)
-    const cityName = city ? city.name_ru : 'этот город'
+    const cityName = city ? city.name_ru : t('Auto.text_7fa2ea')
 
     setConfirmModal({
       isOpen: true,
-      title: 'Удалить город',
+      title: t('Auto.text_dd6357'),
       message: `Вы уверены, что хотите удалить город ${cityName}?`,
-      confirmText: 'Удалить',
-      cancelText: 'Отмена',
+      confirmText: t('delete'),
+      cancelText: t('cancel'),
       type: 'danger',
       onConfirm: async () => {
         setConfirmModal(null)
@@ -269,10 +271,10 @@ export function AdminLocations() {
             }
           })
           if (!res.ok) throw new Error('Failed to delete city')
-          toast.success('Город удален')
+          toast.success(t('Auto.text_830781'))
           fetchData()
         } catch (err) {
-          toast.error('Ошибка удаления города')
+          toast.error(t('Auto.text_b87688'))
         } finally {
           setActionLoadingId(null)
         }
@@ -295,8 +297,8 @@ export function AdminLocations() {
       <div className="bg-white dark:bg-neutral-900 rounded-3xl border border-neutral-200 dark:border-white/5 p-6 md:p-8 shadow-sm">
         <h3 className="text-xl font-extrabold text-neutral-900 dark:text-white mb-6 flex items-center gap-2">
           <Globe className="w-6 h-6 text-primary-500" />
-          Страны
-        </h3>
+          {t('Auto.text_f49228')}
+                          </h3>
         
         <form onSubmit={handleAddCountry} className="flex flex-col gap-4 mb-6">
           <div className="flex flex-col md:flex-row gap-4 items-start">
@@ -306,7 +308,7 @@ export function AdminLocations() {
               <input 
                 required 
                 type="text" 
-                placeholder="Поиск страны..." 
+                placeholder={t('Auto.text_9c0925')} 
                 value={countrySearch} 
                 onChange={(e) => {
                   setCountrySearch(e.target.value)
@@ -332,7 +334,7 @@ export function AdminLocations() {
                       </button>
                     ))}
                     {filteredCountries.length === 0 && (
-                      <div className="px-4 py-3 text-sm text-neutral-500 text-center">Ничего не найдено</div>
+                      <div className="px-4 py-3 text-sm text-neutral-500 text-center">{t('crmBoard.list.nothingFound')}</div>
                     )}
                   </div>
                 </>
@@ -347,8 +349,8 @@ export function AdminLocations() {
             </div>
             <button disabled={actionLoadingId === 'new_country' || !newCountryCode} className="w-full md:w-auto bg-primary-600 hover:bg-primary-700 text-white px-6 py-2.5 rounded-xl font-bold shadow-lg shadow-primary-500/20 disabled:opacity-50 flex items-center justify-center gap-2 transition-all">
               {actionLoadingId === 'new_country' ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
-              Добавить
-            </button>
+              {t('Auto.text_5eba28')}
+                                      </button>
           </div>
         </form>
 
@@ -357,8 +359,8 @@ export function AdminLocations() {
             <EmptyState
               variant="compact"
               icon={<Globe className="w-7 h-7" />}
-              title="Нет добавленных стран"
-              description="Добавьте первую страну через форму выше."
+              title={t('Auto.text_1be137')}
+              description={t('Auto.text_9766a5')}
             />
           ) : countries.map(c => (
             <div key={c.id} className="flex justify-between items-center p-4 bg-neutral-50/50 dark:bg-neutral-800/30 rounded-2xl border border-neutral-200/50 dark:border-white/5 hover:bg-neutral-100 dark:hover:bg-neutral-800/50 transition-colors">
@@ -383,8 +385,8 @@ export function AdminLocations() {
       <div className="bg-white dark:bg-neutral-900 rounded-3xl border border-neutral-200 dark:border-white/5 p-6 md:p-8 shadow-sm">
         <h3 className="text-xl font-extrabold text-neutral-900 dark:text-white mb-6 flex items-center gap-2">
           <MapPin className="w-6 h-6 text-primary-500" />
-          Города
-        </h3>
+          {t('Auto.text_e4775a')}
+                          </h3>
         
         <form onSubmit={handleAddCity} className="flex flex-col gap-4 mb-6">
           <div className="flex flex-col md:flex-row gap-4 items-start">
@@ -394,15 +396,15 @@ export function AdminLocations() {
               onChange={e => setSelectedCountryForCity(e.target.value)} 
               className="w-full md:w-64 px-4 py-2.5 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm font-medium text-neutral-900 dark:text-white focus:ring-2 focus:ring-primary-500"
             >
-              <option value="" disabled>Выберите страну</option>
+              <option value="" disabled>{t('leadWizard.selectCountry')}</option>
               {countries.map(c => <option key={c.id} value={c.id}>{c.name_ru}</option>)}
             </select>
             
             <div className="grid grid-cols-2 gap-4 flex-1 w-full">
-              <input required type="text" placeholder="Название (RU)" value={newCityRu} onChange={e => setNewCityRu(e.target.value)} className="w-full px-4 py-2.5 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm font-medium text-neutral-900 dark:text-white focus:ring-2 focus:ring-primary-500" />
-              <input required type="text" placeholder="Название (EN)" value={newCityEn} onChange={e => setNewCityEn(e.target.value)} className="w-full px-4 py-2.5 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm font-medium text-neutral-900 dark:text-white focus:ring-2 focus:ring-primary-500" />
-              <input required type="text" placeholder="Название (CS)" value={newCityCs} onChange={e => setNewCityCs(e.target.value)} className="w-full px-4 py-2.5 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm font-medium text-neutral-900 dark:text-white focus:ring-2 focus:ring-primary-500" />
-              <input required type="text" placeholder="Название (UK)" value={newCityUk} onChange={e => setNewCityUk(e.target.value)} className="w-full px-4 py-2.5 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm font-medium text-neutral-900 dark:text-white focus:ring-2 focus:ring-primary-500" />
+              <input required type="text" placeholder={t('Auto.text_925ecf')} value={newCityRu} onChange={e => setNewCityRu(e.target.value)} className="w-full px-4 py-2.5 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm font-medium text-neutral-900 dark:text-white focus:ring-2 focus:ring-primary-500" />
+              <input required type="text" placeholder={t('Auto.text_2aef1e')} value={newCityEn} onChange={e => setNewCityEn(e.target.value)} className="w-full px-4 py-2.5 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm font-medium text-neutral-900 dark:text-white focus:ring-2 focus:ring-primary-500" />
+              <input required type="text" placeholder={t('Auto.text_3a5a58')} value={newCityCs} onChange={e => setNewCityCs(e.target.value)} className="w-full px-4 py-2.5 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm font-medium text-neutral-900 dark:text-white focus:ring-2 focus:ring-primary-500" />
+              <input required type="text" placeholder={t('Auto.text_1e26f3')} value={newCityUk} onChange={e => setNewCityUk(e.target.value)} className="w-full px-4 py-2.5 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm font-medium text-neutral-900 dark:text-white focus:ring-2 focus:ring-primary-500" />
             </div>
             
             <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
@@ -411,18 +413,18 @@ export function AdminLocations() {
                 onClick={autoTranslateCity} 
                 disabled={translatingCity || (!newCityRu && !newCityEn && !newCityCs && !newCityUk)} 
                 className="w-full sm:w-auto bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-900 dark:text-white px-4 py-2.5 rounded-xl font-bold transition-all disabled:opacity-50 flex items-center justify-center gap-2" 
-                title="Найти переводы города через OpenStreetMap"
+                title={t('Auto.text_b349cd')}
               >
                 {translatingCity ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4 text-primary-500" />}
-                <span className="hidden lg:inline">Найти переводы</span>
+                <span className="hidden lg:inline">{t('Auto.text_49d29b')}</span>
               </button>
               <button 
                 disabled={actionLoadingId === 'new_city'} 
                 className="w-full sm:w-auto bg-primary-600 hover:bg-primary-700 text-white px-6 py-2.5 rounded-xl font-bold shadow-lg shadow-primary-500/20 disabled:opacity-50 flex items-center justify-center gap-2 transition-all"
               >
                 {actionLoadingId === 'new_city' ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
-                Добавить
-              </button>
+                {t('Auto.text_5eba28')}
+                                            </button>
             </div>
           </div>
         </form>
@@ -432,8 +434,8 @@ export function AdminLocations() {
             <EmptyState
               variant="compact"
               icon={<MapPin className="w-7 h-7" />}
-              title="Нет городов"
-              description="Добавьте первый город через форму выше."
+              title={t('Auto.text_34144e')}
+              description={t('Auto.text_8bf621')}
             />
           ) : cities.map(c => {
             const country = countries.find(co => co.id === c.country_id)

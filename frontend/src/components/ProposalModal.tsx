@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import { useState, useEffect } from 'react'
 import { X, Send, AlertCircle, Loader2 } from 'lucide-react'
 import { toast } from 'react-hot-toast'
@@ -18,6 +19,7 @@ interface ProposalModalProps {
 }
 
 export function ProposalModal({ isOpen, onClose, lead, onSuccess }: ProposalModalProps) {
+    const t = useTranslations();
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({ price_offer: '', proposed_dates: '' })
   const [selectedDates, setSelectedDates] = useState<Date[] | undefined>([])
@@ -88,7 +90,7 @@ export function ProposalModal({ isOpen, onClose, lead, onSuccess }: ProposalModa
     
     const hasDates = selectedDates && selectedDates.length > 0
     if (price <= 0 || (!hasDates && !formData.proposed_dates.trim())) {
-      toast.error('Укажите цену и свободные даты')
+      toast.error(t('Auto.text_25f93a'))
       return
     }
 
@@ -100,7 +102,7 @@ export function ProposalModal({ isOpen, onClose, lead, onSuccess }: ProposalModa
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
       const { data: { session } } = await supabase.auth.getSession()
-      if (!session) throw new Error('Нет активной сессии')
+      if (!session) throw new Error(t('Auto.text_01ed67'))
 
       const response = await fetch(`${apiUrl}/api/leads/${lead.id}/proposals`, {
         method: 'POST',
@@ -117,23 +119,23 @@ export function ProposalModal({ isOpen, onClose, lead, onSuccess }: ProposalModa
       const responseData = await response.json().catch(() => ({}))
       if (!response.ok) {
         if (responseData.detail === 'MAX_PROPOSALS_REACHED') {
-          throw new Error('Лимит: клиент уже получил 5 предложений')
+          throw new Error(t('Auto.text_b62e94'))
         }
         if (responseData.detail === 'INSUFFICIENT_BALANCE_FOR_COMMISSION') {
-          throw new Error('Недостаточно средств на балансе для оплаты комиссии')
+          throw new Error(t('Auto.text_636242'))
         }
-        throw new Error(responseData.detail || 'Не удалось отправить предложение')
+        throw new Error(responseData.detail || t('Auto.text_3f2424'))
       }
 
       if (responseData.chat_id) {
-        toast.success('Заявка принята, вы можете начать общение!')
+        toast.success(t('Auto.text_3da49a'))
         window.location.href = `/dashboard?tab=messages&chat_id=${responseData.chat_id}`
       } else {
-        toast.success('Предложение отправлено бесплатно')
+        toast.success(t('Auto.text_b4af11'))
         onSuccess()
       }
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Ошибка отправки')
+      toast.error(error instanceof Error ? error.message : t('Auto.text_1a7b0b'))
     } finally {
       setLoading(false)
     }
@@ -149,8 +151,8 @@ export function ProposalModal({ isOpen, onClose, lead, onSuccess }: ProposalModa
           className="w-full max-w-md max-h-[90vh] flex flex-col overflow-hidden rounded-3xl border border-neutral-200 bg-white shadow-2xl dark:border-white/10 dark:bg-neutral-900"
         >
           <div className="flex shrink-0 items-center justify-between border-b border-neutral-100 p-4 dark:border-white/5 lg:p-6">
-            <h2 className="text-xl font-bold text-neutral-900 dark:text-white">Сделать предложение</h2>
-            <button type="button" onClick={onClose} aria-label="Закрыть" className="rounded-full bg-neutral-100 p-2 text-neutral-500 dark:bg-neutral-800">
+            <h2 className="text-xl font-bold text-neutral-900 dark:text-white">{t('Auto.text_b066d5')}</h2>
+            <button type="button" onClick={onClose} aria-label={t('Auto.text_dd9463')} className="rounded-full bg-neutral-100 p-2 text-neutral-500 dark:bg-neutral-800">
               <X className="h-5 w-5" />
             </button>
           </div>
@@ -159,24 +161,24 @@ export function ProposalModal({ isOpen, onClose, lead, onSuccess }: ProposalModa
             <div className="flex-1 overflow-y-auto custom-scrollbar p-4 lg:p-6 space-y-5">
             <div className="flex items-start gap-3 rounded-2xl bg-primary-500/10 p-4 text-sm text-primary-600 dark:text-primary-400">
               <AlertCircle className="mt-0.5 h-5 w-5 shrink-0" />
-              <p>Отправка бесплатна. Комиссия спишется только если клиент выберет вас. Чат и контакты откроются после выбора.</p>
+              <p>{t('Auto.text_4e45d4')}</p>
             </div>
 
             {lead.display_budget && (
               <div className="rounded-2xl bg-emerald-500/10 p-3 text-sm font-bold text-emerald-700 dark:text-emerald-300">
-                Бюджет клиента: {lead.display_budget}
+                {t('Auto.text_ea4449')} {lead.display_budget}
               </div>
             )}
 
             <div>
-              <label className="mb-2 block text-sm font-bold text-neutral-700 dark:text-neutral-300">Ваша примерная цена ({currency})</label>
+              <label className="mb-2 block text-sm font-bold text-neutral-700 dark:text-neutral-300">{t('Auto.text_964855')}{currency})</label>
               <input
                 type="text"
                 inputMode="numeric"
                 pattern="\d*"
                 required
                 className="w-full rounded-2xl border border-transparent bg-neutral-100 px-5 py-3 text-neutral-900 outline-none focus:border-primary-500 dark:bg-neutral-800 dark:text-white"
-                placeholder="Например: 3500"
+                placeholder={t('Auto.text_45d1ab')}
                 value={formData.price_offer}
                 onChange={(event) => {
                   const val = event.target.value.replace(/\D/g, '')
@@ -187,16 +189,16 @@ export function ProposalModal({ isOpen, onClose, lead, onSuccess }: ProposalModa
 
             {price > 0 && (
               <div className="rounded-2xl border border-neutral-200 p-4 text-sm dark:border-neutral-700">
-                <div className="flex justify-between"><span>Комиссия Tattoo HUB</span><strong>{feeRate * 100}%</strong></div>
-                <div className="mt-2 flex justify-between text-base"><span>Спишется при выборе</span><strong>{feeAmount} {currency}</strong></div>
+                <div className="flex justify-between"><span>{t('Auto.text_03256a')}</span><strong>{feeRate * 100}%</strong></div>
+                <div className="mt-2 flex justify-between text-base"><span>{t('Auto.text_b694bb')}</span><strong>{feeAmount} {currency}</strong></div>
                 <div className="mt-2 flex justify-between text-xs text-neutral-500">
-                  <span>Ваш баланс:</span>
+                  <span>{t('Auto.text_e4d101')}</span>
                   <span className={isBalanceInsufficient ? 'text-red-500 font-bold' : ''}>{balance} {currency}</span>
                 </div>
                 {isBalanceInsufficient && (
                   <div className="mt-3 text-xs font-bold text-red-500 bg-red-500/10 p-2 rounded-xl text-center">
-                    Пополните баланс, чтобы предложить эту цену
-                  </div>
+                    {t('Auto.text_a5c67e')}
+                                                            </div>
                 )}
 
               </div>
@@ -204,11 +206,11 @@ export function ProposalModal({ isOpen, onClose, lead, onSuccess }: ProposalModa
 
             <div>
               <div className="mb-2 flex items-center justify-between">
-                <label className="block text-sm font-bold text-neutral-700 dark:text-neutral-300">Свободные даты</label>
+                <label className="block text-sm font-bold text-neutral-700 dark:text-neutral-300">{t('Auto.text_956171')}</label>
                 <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-neutral-500">
-                  <div className="flex items-center gap-1"><div className="h-1.5 w-1.5 rounded-full bg-cyan-500"></div>Сеансы</div>
-                  <div className="flex items-center gap-1"><div className="h-1.5 w-1.5 rounded-full bg-red-500"></div>Выходные</div>
-                  {lead.session_date && <div className="flex items-center gap-1 text-purple-600 dark:text-purple-400"><div className="h-1.5 w-1.5 rounded-full bg-purple-500"></div>Выбор клиента</div>}
+                  <div className="flex items-center gap-1"><div className="h-1.5 w-1.5 rounded-full bg-cyan-500"></div>{t('crmBoard.tabSessions')}</div>
+                  <div className="flex items-center gap-1"><div className="h-1.5 w-1.5 rounded-full bg-red-500"></div>{t('Auto.text_f38afb')}</div>
+                  {lead.session_date && <div className="flex items-center gap-1 text-purple-600 dark:text-purple-400"><div className="h-1.5 w-1.5 rounded-full bg-purple-500"></div>{t('Auto.text_986204')}</div>}
                 </div>
               </div>
               
@@ -244,10 +246,10 @@ export function ProposalModal({ isOpen, onClose, lead, onSuccess }: ProposalModa
                 )}
               </div>
 
-              <label className="mb-2 block text-sm font-bold text-neutral-700 dark:text-neutral-300">Комментарий к заявке (необязательно)</label>
+              <label className="mb-2 block text-sm font-bold text-neutral-700 dark:text-neutral-300">{t('Auto.text_d93d78')}</label>
               <textarea
                 className="w-full resize-none rounded-2xl border border-transparent bg-neutral-100 px-5 py-3 text-neutral-900 outline-none focus:border-primary-500 dark:bg-neutral-800 dark:text-white"
-                placeholder="Напишите клиенту детали предложения или условия..."
+                placeholder={t('Auto.text_602645')}
                 rows={2}
                 value={formData.proposed_dates}
                 onChange={(event) => setFormData({ ...formData, proposed_dates: event.target.value })}
@@ -257,7 +259,7 @@ export function ProposalModal({ isOpen, onClose, lead, onSuccess }: ProposalModa
 
             <div className="shrink-0 border-t border-neutral-100 p-4 dark:border-white/5 lg:p-6 bg-white dark:bg-neutral-900">
               <button type="submit" disabled={loading || isBalanceInsufficient} className="flex w-full items-center justify-center gap-2 rounded-2xl bg-primary-500 py-4 font-bold text-white shadow-lg shadow-primary-500/25 hover:bg-primary-600 disabled:opacity-50">
-                {loading ? <div className="h-6 w-6 animate-spin rounded-full border-2 border-white/20 border-t-white" /> : <><span>{isBalanceInsufficient ? 'Недостаточно средств' : 'Отправить бесплатно'}</span><Send className="h-5 w-5" /></>}
+                {loading ? <div className="h-6 w-6 animate-spin rounded-full border-2 border-white/20 border-t-white" /> : <><span>{isBalanceInsufficient ? t('Auto.text_55a626') : t('Auto.text_834dbe')}</span><Send className="h-5 w-5" /></>}
               </button>
             </div>
           </form>

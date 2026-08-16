@@ -1,4 +1,6 @@
 'use client'
+import { useTranslations } from "next-intl";
+
 
 import { useEffect, useCallback } from 'react'
 import { driver } from 'driver.js'
@@ -14,9 +16,9 @@ export function OnboardingTour({ startTour, onTourEnd }: OnboardingTourProps) {
     const driverObj = driver({
       showProgress: true,
       animate: true,
-      doneBtnText: 'Понятно',
-      nextBtnText: 'Далее',
-      prevBtnText: 'Назад',
+      doneBtnText: t('guide.understand'),
+      nextBtnText: t('guide.next'),
+      prevBtnText: t('back'),
       onPopoverRender: (popover, { config, state }) => {
         // Apply custom styling
         popover.wrapper.classList.add('dark:bg-neutral-900', 'dark:text-white', 'dark:border-neutral-800')
@@ -30,8 +32,8 @@ export function OnboardingTour({ startTour, onTourEnd }: OnboardingTourProps) {
         {
           element: '#tour-balance',
           popover: {
-            title: 'Ваш баланс',
-            description: 'Здесь отображается ваш текущий баланс средств. Они используются для отклика на заявки клиентов.',
+            title: t('yourBalance'),
+            description: t('Auto.text_0f49ba'),
             side: 'bottom',
             align: 'start'
           }
@@ -39,8 +41,8 @@ export function OnboardingTour({ startTour, onTourEnd }: OnboardingTourProps) {
         {
           element: '#tour-crm',
           popover: {
-            title: 'Моя CRM-доска',
-            description: 'Управляйте всеми вашими клиентами, сеансами и этапами работы на удобной канбан-доске.',
+            title: t('Auto.text_5eca2a'),
+            description: t('Auto.text_650666'),
             side: 'bottom',
             align: 'start'
           }
@@ -48,8 +50,8 @@ export function OnboardingTour({ startTour, onTourEnd }: OnboardingTourProps) {
         {
           element: '#tour-feed',
           popover: {
-            title: 'Маркетплейс лидов',
-            description: 'Здесь появляются свежие заявки и заказы от клиентов. Откликайтесь первыми и предлагайте свои условия!',
+            title: t('Auto.text_6fca6d'),
+            description: t('Auto.text_b429a6'),
             side: 'bottom',
             align: 'start'
           }
@@ -57,8 +59,8 @@ export function OnboardingTour({ startTour, onTourEnd }: OnboardingTourProps) {
         {
           element: '#tour-portfolio',
           popover: {
-            title: 'Ваше портфолио',
-            description: 'Загружайте фотографии лучших работ. Качественное портфолио привлекает больше внимания клиентов.',
+            title: t('Auto.text_8119f7'),
+            description: t('Auto.text_1dea20'),
             side: 'bottom',
             align: 'start'
           }
@@ -66,8 +68,8 @@ export function OnboardingTour({ startTour, onTourEnd }: OnboardingTourProps) {
         {
           element: '#tour-messages',
           popover: {
-            title: 'Сообщения и чаты',
-            description: 'Здесь вы можете общаться с клиентами напрямую, обсуждать эскизы и назначать даты сеансов.',
+            title: t('Auto.text_fd480b'),
+            description: t('Auto.text_c84c18'),
             side: 'bottom',
             align: 'start'
           }
@@ -75,8 +77,8 @@ export function OnboardingTour({ startTour, onTourEnd }: OnboardingTourProps) {
         {
           element: '#tour-profile',
           popover: {
-            title: 'Профиль и настройки',
-            description: 'Заполните свой профиль, настройте уведомления и переключайте режимы работы в любое время.',
+            title: t('profileAndSettings'),
+            description: t('Auto.text_1abdcf'),
             side: 'left',
             align: 'start'
           }

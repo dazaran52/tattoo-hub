@@ -1,4 +1,6 @@
 'use client'
+import { useTranslations } from "next-intl";
+
 
 import React, { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
@@ -6,6 +8,7 @@ import { ShieldAlert, LogOut, Send } from 'lucide-react'
 import toast from 'react-hot-toast'
 
 export function BannedGuard({ children }: { children: React.ReactNode }) {
+    const t = useTranslations();
   const [isBanned, setIsBanned] = useState(false)
   const [banReason, setBanReason] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -95,11 +98,11 @@ export function BannedGuard({ children }: { children: React.ReactNode }) {
 
       if (error) throw error
 
-      toast.success('Апелляция отправлена')
+      toast.success(t('Auto.text_3768b4'))
       setAppealStatus('pending')
     } catch (err) {
       console.error(err)
-      toast.error('Ошибка при отправке')
+      toast.error(t('Auto.text_e369e0'))
     } finally {
       setIsSubmitting(false)
     }
@@ -125,14 +128,14 @@ export function BannedGuard({ children }: { children: React.ReactNode }) {
             </div>
             
             <h1 className="text-2xl font-bold text-white mb-2">
-              Аккаунт заблокирован
-            </h1>
+              {t('Auto.text_f0ebc9')}
+                                    </h1>
             
             <p className="text-neutral-400 mb-6 leading-relaxed">
-              Ваш доступ к платформе ограничен за нарушение правил использования сервиса.
-              {banReason && (
+              {t('Auto.text_09dc1c')}
+                                      {banReason && (
                 <span className="block mt-4 p-4 bg-red-500/5 border border-red-500/10 rounded-xl text-red-200 text-left">
-                  <strong className="text-red-400 block mb-1 uppercase tracking-wider text-xs font-bold">Причина:</strong>
+                  <strong className="text-red-400 block mb-1 uppercase tracking-wider text-xs font-bold">{t('Auto.text_ce28b8')}</strong>
                   {banReason}
                 </span>
               )}
@@ -141,12 +144,12 @@ export function BannedGuard({ children }: { children: React.ReactNode }) {
             {appealStatus === 'none' ? (
               <form onSubmit={submitAppeal} className="w-full text-left bg-black/40 p-4 rounded-2xl border border-white/5 mb-6">
                 <label className="block text-sm font-medium text-neutral-300 mb-2">
-                  Подать апелляцию
-                </label>
+                  {t('Auto.text_378a9e')}
+                                                </label>
                 <textarea
                   value={appealText}
                   onChange={e => setAppealText(e.target.value)}
-                  placeholder="Объясните ситуацию, если вы считаете блокировку ошибочной..."
+                  placeholder={t('Auto.text_cb7bf6')}
                   className="w-full bg-neutral-900 border border-neutral-800 rounded-xl p-3 text-sm text-white placeholder-neutral-600 focus:outline-none focus:border-red-500/50 focus:ring-1 focus:ring-red-500/50 resize-none h-24 mb-3 transition-all"
                   required
                 />
@@ -160,23 +163,23 @@ export function BannedGuard({ children }: { children: React.ReactNode }) {
                   ) : (
                     <>
                       <Send className="w-4 h-4" />
-                      Отправить на рассмотрение
-                    </>
+                      {t('Auto.text_734505')}
+                                                                </>
                   )}
                 </button>
               </form>
             ) : appealStatus === 'pending' ? (
               <div className="w-full bg-blue-500/10 border border-blue-500/20 rounded-2xl p-5 mb-6">
-                <h3 className="text-blue-400 font-bold mb-2">Апелляция рассматривается</h3>
-                <p className="text-sm text-blue-200/70">Мы получили ваш запрос и ответим на него в ближайшее время. Ожидайте решения администрации.</p>
+                <h3 className="text-blue-400 font-bold mb-2">{t('Auto.text_2d2f07')}</h3>
+                <p className="text-sm text-blue-200/70">{t('Auto.text_d9de2e')}</p>
               </div>
             ) : (
               <div className="w-full bg-neutral-800/50 border border-neutral-700 rounded-2xl p-5 mb-6">
-                <h3 className="text-neutral-300 font-bold mb-2">Апелляция рассмотрена</h3>
-                <p className="text-sm text-neutral-400 mb-3">Статус: <span className="text-white capitalize">{appealStatus}</span></p>
+                <h3 className="text-neutral-300 font-bold mb-2">{t('Auto.text_2f0b0a')}</h3>
+                <p className="text-sm text-neutral-400 mb-3">{t('Auto.text_9fa7ff')} <span className="text-white capitalize">{appealStatus}</span></p>
                 {appealAdminResponse && (
                   <div className="bg-black/40 p-3 rounded-lg border border-white/5 text-left">
-                    <p className="text-xs text-neutral-500 font-bold uppercase tracking-wider mb-1">Ответ:</p>
+                    <p className="text-xs text-neutral-500 font-bold uppercase tracking-wider mb-1">{t('Auto.text_dfadd4')}</p>
                     <p className="text-sm text-neutral-300">{appealAdminResponse}</p>
                   </div>
                 )}
@@ -188,8 +191,8 @@ export function BannedGuard({ children }: { children: React.ReactNode }) {
               className="px-6 py-3 bg-neutral-800/50 hover:bg-neutral-800 text-neutral-400 hover:text-white rounded-xl text-sm font-medium flex items-center gap-2 transition-all"
             >
               <LogOut className="w-4 h-4" />
-              Выйти из аккаунта
-            </button>
+              {t('Auto.text_6d4183')}
+                                    </button>
           </div>
         </div>
       </div>

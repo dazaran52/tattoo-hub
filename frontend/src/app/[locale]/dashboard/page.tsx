@@ -178,12 +178,12 @@ export default function DashboardPage() {
 
   const copyPublicLink = () => {
     if (!profile?.username) {
-      toast.error(language === 'ru' ? 'Сначала установите username в профиле' : 'Set username in profile first')
+      toast.error(language === 'ru' ? t('Auto.text_bae139') : 'Set username in profile first')
       return
     }
     const url = `${window.location.origin}/book/${profile.username}`
     navigator.clipboard.writeText(url)
-    toast.success(language === 'ru' ? 'Ссылка на визитку скопирована!' : 'Booking link copied!')
+    toast.success(language === 'ru' ? t('Auto.text_f4c946') : 'Booking link copied!')
   }
 
   if (isLoading) {
@@ -264,7 +264,7 @@ export default function DashboardPage() {
                     className="inline-flex items-center gap-1.5 text-xs font-bold bg-primary-100 dark:bg-primary-500/20 text-primary-700 dark:text-primary-300 px-3 py-1.5 rounded-full hover:bg-primary-200 dark:hover:bg-primary-500/30 transition-colors"
                   >
                     <Share2 className="w-3.5 h-3.5" />
-                    {language === 'ru' ? 'Поделиться визиткой' : 'Share Booking Link'}
+                    {language === 'ru' ? t('Auto.text_7bde34') : 'Share Booking Link'}
                   </button>
                 </div>
               </div>
@@ -293,8 +293,8 @@ export default function DashboardPage() {
                     }`}
                   >
                     <ShoppingBag className="w-4 h-4" />
-                    Маркетплейс
-                  </button>
+                    {t('marketplace')}
+                                                        </button>
                   <button
                     id="tour-portfolio"
                     onClick={() => setActiveTab('portfolio')}
@@ -305,7 +305,7 @@ export default function DashboardPage() {
                     }`}
                   >
                     <ImageIcon className="w-4 h-4" />
-                    {language === 'ru' ? 'Портфолио' : 'Portfolio'}
+                    {language === 'ru' ? t('portfolio') : 'Portfolio'}
                   </button>
                   <button
                     id="tour-messages"
@@ -335,10 +335,10 @@ export default function DashboardPage() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                     </svg>
                   </div>
-                  <h3 className="text-xl font-extrabold text-red-900 dark:text-red-300 mb-2">Доступ к Маркетплейсу ограничен</h3>
+                  <h3 className="text-xl font-extrabold text-red-900 dark:text-red-300 mb-2">{t('Auto.text_bcd143')}</h3>
                   <p className="text-sm font-medium text-red-700/80 dark:text-red-400/80 max-w-md">
-                    Ваш доступ к маркетплейсу был отозван администратором. Если вы считаете, что произошла ошибка, пожалуйста, обратитесь в поддержку.
-                  </p>
+                    {t('Auto.text_811f9d')}
+                                                            </p>
                 </div>
               ) : (
                 <LeadsFeed onUnlockSuccess={handleUnlockSuccess} isAdmin={profile.is_admin} userCities={profile.city_ids || []} />
@@ -364,7 +364,7 @@ export default function DashboardPage() {
                     master_clients: {
                       id: chat?.id,
                       lead_id: lead?.id,
-                      name: chat?.other_user_name || lead?.client_name || 'Неизвестный клиент',
+                      name: chat?.other_user_name || lead?.client_name || t('crmBoard.unknownClient'),
                       email: chat?.other_user_email || lead?.email,
                       phone: chat?.other_user_phone || lead?.contact,
                       telegram: chat?.other_user_telegram,
@@ -396,7 +396,7 @@ export default function DashboardPage() {
                         },
                         body: JSON.stringify({ status: 'in_progress' })
                       })
-                      toast.success('Заявка принята в работу!')
+                      toast.success(t('Auto.text_d3671f'))
                     }
                   } catch (e) {
                     console.error(e)
@@ -417,7 +417,7 @@ export default function DashboardPage() {
                         },
                         body: JSON.stringify({ status: 'cancelled', reject_reason: reason })
                       })
-                      toast.success('Заявка отклонена')
+                      toast.success(t('Auto.text_fe1f20'))
                     }
                   } catch (e) {
                     console.error(e)

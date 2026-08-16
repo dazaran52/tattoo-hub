@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, CheckCircle, Loader2, FileText } from 'lucide-react'
@@ -13,13 +14,14 @@ interface LiabilityWaiverModalProps {
 }
 
 export function LiabilityWaiverModal({ isOpen, onClose, sessionId, clientName, onSuccess }: LiabilityWaiverModalProps) {
+    const t = useTranslations();
   const [loading, setLoading] = useState(false)
   const [agreed, setAgreed] = useState(false)
   const [signature, setSignature] = useState('')
 
   const handleSign = async () => {
     if (!agreed || !signature) {
-      toast.error('Пожалуйста, поставьте галочку и введите имя для подписи')
+      toast.error(t('Auto.text_0f2729'))
       return
     }
 
@@ -37,12 +39,12 @@ export function LiabilityWaiverModal({ isOpen, onClose, sessionId, clientName, o
 
       if (!res.ok) throw new Error('Failed to sign waiver')
 
-      toast.success('Согласие подписано! Сеанс начат.')
+      toast.success(t('Auto.text_99e653'))
       onSuccess()
       onClose()
     } catch (e) {
       console.error(e)
-      toast.error('Ошибка при подписании согласия')
+      toast.error(t('Auto.text_a71d89'))
     } finally {
       setLoading(false)
     }
@@ -70,7 +72,7 @@ export function LiabilityWaiverModal({ isOpen, onClose, sessionId, clientName, o
               <div className="bg-primary-100 dark:bg-primary-900/30 p-2 rounded-xl text-primary-600 dark:text-primary-400">
                 <FileText className="w-5 h-5" />
               </div>
-              <h2 className="text-xl font-bold">Информационное согласие</h2>
+              <h2 className="text-xl font-bold">{t('Auto.text_6fbb51')}</h2>
             </div>
             <button onClick={onClose} className="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-full">
               <X className="w-5 h-5" />
@@ -79,17 +81,17 @@ export function LiabilityWaiverModal({ isOpen, onClose, sessionId, clientName, o
 
           <div className="p-6 overflow-y-auto bg-neutral-50 dark:bg-neutral-900/50">
             <div className="prose dark:prose-invert prose-sm max-w-none text-neutral-600 dark:text-neutral-400">
-              <p>Я, <strong>{clientName}</strong>, настоящим подтверждаю следующее:</p>
+              <p>{t('Auto.text_541658')} <strong>{clientName}</strong>{t('Auto.text_56789f')}</p>
               <ul className="list-disc pl-5 space-y-2 mt-4">
-                <li>Мне исполнилось 18 лет, и я имею право самостоятельно принимать решения о проведении процедуры нанесения татуировки.</li>
-                <li>Я не нахожусь под воздействием алкоголя, наркотических или иных средств, снижающих концентрацию внимания.</li>
-                <li>Я не страдаю заболеваниями (гепатит, ВИЧ, диабет, эпилепсия, гемофилия и др.), которые могут вызвать осложнения в процессе или после процедуры.</li>
-                <li>Я подтверждаю, что ознакомлен(а) с правилами ухода за татуировкой и обязуюсь их соблюдать.</li>
-                <li>Я понимаю, что результат заживления во многом зависит от правильного ухода и индивидуальных особенностей организма, и освобождаю мастера от ответственности за возможные аллергические реакции или процесс заживления.</li>
+                <li>{t('Auto.text_5e5bde')}</li>
+                <li>{t('Auto.text_94ba1d')}</li>
+                <li>{t('Auto.text_307fe7')}</li>
+                <li>{t('Auto.text_717bb1')}</li>
+                <li>{t('Auto.text_964c19')}</li>
               </ul>
               <p className="mt-4 text-xs">
-                * Подписывая данное соглашение электронно, клиент берет на себя полную ответственность за предоставленную информацию.
-              </p>
+                {t('Auto.text_3ad74e')}
+                                            </p>
             </div>
           </div>
 
@@ -103,19 +105,19 @@ export function LiabilityWaiverModal({ isOpen, onClose, sessionId, clientName, o
                   className="w-5 h-5 mt-0.5 rounded border-neutral-300 text-primary-600 focus:ring-primary-500"
                 />
                 <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                  Я внимательно прочитал(а) текст согласия и подтверждаю все вышеперечисленное.
-                </span>
+                  {t('Auto.text_98eaef')}
+                                                  </span>
               </label>
 
               <div>
                 <label className="block text-sm font-bold text-neutral-700 dark:text-neutral-300 mb-2">
-                  Введите ваше полное имя (цифровая подпись)
-                </label>
+                  {t('Auto.text_e3a73f')}
+                                                  </label>
                 <input
                   type="text"
                   value={signature}
                   onChange={e => setSignature(e.target.value)}
-                  placeholder="Иванов Иван Иванович"
+                  placeholder={t('Auto.text_6d7a4f')}
                   className="w-full bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-primary-500 outline-none transition-shadow"
                 />
               </div>
@@ -126,8 +128,8 @@ export function LiabilityWaiverModal({ isOpen, onClose, sessionId, clientName, o
                 className="w-full py-3 bg-primary-600 hover:bg-primary-700 disabled:bg-neutral-300 dark:disabled:bg-neutral-800 text-white rounded-xl font-bold flex items-center justify-center gap-2 transition-colors"
               >
                 {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <CheckCircle className="w-5 h-5" />}
-                Подписать и Начать Сеанс
-              </button>
+                {t('Auto.text_4307aa')}
+                                            </button>
             </div>
           </div>
         </motion.div>

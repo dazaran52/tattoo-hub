@@ -138,10 +138,10 @@ export default function ProfilePage() {
       
       setProfile(updated)
       setIsEditing(false)
-      toast.success(language === 'ru' ? 'Профиль сохранен' : 'Profile saved')
+      toast.success(language === 'ru' ? t('Auto.text_707972') : 'Profile saved')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to save profile')
-      toast.error(language === 'ru' ? 'Ошибка сохранения' : 'Save failed')
+      toast.error(language === 'ru' ? t('Auto.text_03870f') : 'Save failed')
     } finally {
       setIsSaving(false)
     }
@@ -171,9 +171,9 @@ export default function ProfilePage() {
       
       const updated = await api.updateProfile({ avatar_url: data.publicUrl })
       setProfile(updated)
-      toast.success(language === 'ru' ? 'Аватар обновлен' : 'Avatar updated')
+      toast.success(language === 'ru' ? t('Auto.text_3bf0a3') : 'Avatar updated')
     } catch (error: any) {
-      toast.error(language === 'ru' ? 'Ошибка загрузки аватара' : 'Upload error')
+      toast.error(language === 'ru' ? t('Auto.text_bacef8') : 'Upload error')
       console.error(error)
     } finally {
       setIsUploading(false)
@@ -190,7 +190,7 @@ export default function ProfilePage() {
 
   const copyPublicLink = async () => {
     if (!profile?.username) {
-      toast.error(language === 'ru' ? 'Сначала установите username' : 'Set username first')
+      toast.error(language === 'ru' ? t('Auto.text_2fcf8a') : 'Set username first')
       return
     }
     const url = `${window.location.origin}/book/${profile.username}`
@@ -199,7 +199,7 @@ export default function ProfilePage() {
       try {
         await navigator.share({
           title: profile.display_name || 'Tattoo Master',
-          text: language === 'ru' ? 'Запишись ко мне на сеанс!' : 'Book a session with me!',
+          text: language === 'ru' ? t('Auto.text_3c6e98') : 'Book a session with me!',
           url: url
         })
         return
@@ -210,7 +210,7 @@ export default function ProfilePage() {
     }
 
     navigator.clipboard.writeText(url)
-    toast.success(language === 'ru' ? 'Ссылка скопирована' : 'Link copied')
+    toast.success(language === 'ru' ? t('Auto.text_fbd40e') : 'Link copied')
   }
 
   if (isLoading) {
@@ -253,7 +253,7 @@ export default function ProfilePage() {
               <ArrowLeft className="w-5 h-5" />
               {t('back')}
             </button>
-            <h1 className="text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-white">Моя страница</h1>
+            <h1 className="text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-white">{t('Auto.text_2bb0a6')}</h1>
           </div>
           <button
             onClick={() => isEditing ? handleSave() : setIsEditing(true)}
@@ -264,7 +264,7 @@ export default function ProfilePage() {
                 : 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white border border-neutral-200 dark:border-neutral-700 hover:border-primary-500/50 hover:shadow-primary-500/10'
             }`}
           >
-            {isSaving ? '...' : isEditing ? (language === 'ru' ? 'Сохранить' : 'Save') : (language === 'ru' ? 'Редактировать' : 'Edit')}
+            {isSaving ? '...' : isEditing ? (language === 'ru' ? t('save') : 'Save') : (language === 'ru' ? t('edit') : 'Edit')}
           </button>
         </div>
 
@@ -322,7 +322,7 @@ export default function ProfilePage() {
               </div>
 
               <h2 className="text-2xl font-black text-neutral-900 dark:text-white mb-1 flex items-center justify-center gap-2">
-                <span>{profile.display_name || 'Твое имя'}</span>
+                <span>{profile.display_name || t('yourName')}</span>
                 <MasterTierBadge badgeTier={profile.badge_tier || 'none'} />
               </h2>
               <p className="text-primary-600 dark:text-primary-400 font-bold mb-4">
@@ -335,7 +335,7 @@ export default function ProfilePage() {
                   <span>
                     {cities.find(c => c.id === profile.city_ids?.[0])?.name_ru || 
                      countries.find(c => c.id === profile.country_ids?.[0])?.name_ru || 
-                     (language === 'ru' ? 'Ваш город' : 'Location')}
+                     (language === 'ru' ? t('city') : 'Location')}
                   </span>
                 </div>
               )}
@@ -345,11 +345,11 @@ export default function ProfilePage() {
               <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2" />
               <h3 className="font-bold text-lg mb-2 flex items-center gap-2">
                 <Globe className="w-5 h-5" />
-                Публичная ссылка
-              </h3>
+                {t('Auto.text_18f9b5')}
+                                            </h3>
               <p className="text-primary-100 text-sm mb-4">
-                Это твоя страница-визитка для клиентов. Отправь им ссылку для записи.
-              </p>
+                {t('Auto.text_68ebab')}
+                                            </p>
               
               <div className="bg-black/20 rounded-xl p-3 flex items-center justify-between backdrop-blur-sm border border-white/10 mt-4">
                 <span className="text-sm truncate font-medium opacity-90">
@@ -359,20 +359,20 @@ export default function ProfilePage() {
                   <button 
                     onClick={() => {
                       if (!profile.username) {
-                        toast.error(language === 'ru' ? 'Сначала установите username' : 'Set username first')
+                        toast.error(language === 'ru' ? t('Auto.text_2fcf8a') : 'Set username first')
                         return
                       }
                       setIsQRModalOpen(true)
                     }}
                     className="p-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors tooltip"
-                    title={language === 'ru' ? 'Показать QR-код' : 'Show QR Code'}
+                    title={language === 'ru' ? t('Auto.text_0277e9') : 'Show QR Code'}
                   >
                     <QrCode className="w-4 h-4" />
                   </button>
                   <button 
                     onClick={copyPublicLink}
                     className="p-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors tooltip"
-                    title={language === 'ru' ? 'Поделиться' : 'Share'}
+                    title={language === 'ru' ? t('Auto.text_87bc9c') : 'Share'}
                   >
                     <Share2 className="w-4 h-4" />
                   </button>
@@ -393,18 +393,18 @@ export default function ProfilePage() {
                         <div className="flex items-center gap-2">
                           <Crown className="w-6 h-6 text-amber-400 animate-bounce" />
                           <span className="font-extrabold text-lg text-neutral-900 dark:text-white">
-                            {profile.badge_tier === 'vip' ? 'VIP статус активен!' : 'PRO статус активен!'}
+                            {profile.badge_tier === 'vip' ? t('Auto.text_5cdda5') : t('Auto.text_5a5522')}
                           </span>
                         </div>
                         <MasterTierBadge badgeTier={profile.badge_tier} />
                       </div>
                       <p className="text-xs text-neutral-600 dark:text-neutral-300 font-medium mb-4 leading-relaxed">
                         {profile.badge_tier === 'vip' 
-                          ? 'Вы получаете мгновенный доступ к заявкам (0 мин задержки) и выделены золотой короной!' 
-                          : 'Доступ к заявкам с ускорением (10 мин) и выделенный PRO-значок!'}
+                          ? t('Auto.text_da10e3') 
+                          : t('Auto.text_7e299a')}
                         {profile.badge_expires_at && (
                           <span className="block mt-1.5 font-bold text-amber-500 dark:text-amber-400">
-                            Действует до: {new Date(profile.badge_expires_at).toLocaleDateString('ru-RU')}
+                            {t('Auto.text_611ed2')} {new Date(profile.badge_expires_at).toLocaleDateString('ru-RU')}
                           </span>
                         )}
                       </p>
@@ -413,7 +413,7 @@ export default function ProfilePage() {
                         className="w-full py-3 px-4 rounded-2xl bg-gradient-to-r from-amber-500 to-rose-600 hover:opacity-95 text-white font-black text-sm transition-all shadow-lg shadow-amber-500/25 flex items-center justify-center gap-2 group/btn active:scale-95 cursor-pointer"
                       >
                         <Sparkles className="w-4 h-4 text-amber-200" />
-                        <span>{profile.badge_tier === 'vip' ? 'Продлить VIP за 300 CZK' : 'Повысить до VIP за 300 CZK'}</span>
+                        <span>{profile.badge_tier === 'vip' ? t('Auto.text_302ec6') : t('Auto.text_143063')}</span>
                         <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
                       </button>
                     </>
@@ -422,21 +422,21 @@ export default function ProfilePage() {
                       <div className="flex items-center gap-2 mb-2">
                         <Crown className="w-6 h-6 text-amber-400 animate-pulse" />
                         <span className="font-black text-lg text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-rose-400 to-purple-400">
-                          Хочешь VIP статус?
-                        </span>
+                          {t('Auto.text_05b29a')}
+                                                                              </span>
                       </div>
                       <h4 className="text-sm font-extrabold text-neutral-900 dark:text-white mb-2 leading-snug">
-                        Забирай заявки первее всех и получи 👑 VIP-значок доверия от клиентов!
-                      </h4>
+                        {t('Auto.text_76787b')}
+                                                                        </h4>
                       <p className="text-xs text-neutral-600 dark:text-neutral-300 font-medium mb-4 leading-relaxed">
-                        ⚡ Мгновенный доступ к новым заказам + х3 больше доверия клиентов. Всего <strong className="text-amber-500 dark:text-amber-400 font-black">300 CZK</strong> в месяц!
-                      </p>
+                        {t('Auto.text_a3096d')} <strong className="text-amber-500 dark:text-amber-400 font-black">300 CZK</strong> {t('Auto.text_0cb4af')}
+                                                                        </p>
                       <button
                         onClick={() => router.push('/top-up?plan=vip')}
                         className="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-amber-500 via-rose-500 to-purple-600 hover:opacity-95 text-white font-black text-sm transition-all shadow-xl shadow-amber-500/25 flex items-center justify-center gap-2 group/btn hover:scale-[1.02] active:scale-98 cursor-pointer"
                       >
                         <Sparkles className="w-4 h-4 text-amber-200" />
-                        <span>Активировать VIP за 300 CZK</span>
+                        <span>{t('Auto.text_dbd7a9')}</span>
                         <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
                       </button>
                     </>
@@ -459,8 +459,8 @@ export default function ProfilePage() {
             <div className="bg-white/60 dark:bg-neutral-900/60 backdrop-blur-xl border border-white/40 dark:border-white/5 rounded-3xl p-6 md:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.2)]">
               <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
                 <User className="w-5 h-5 text-primary-500" />
-                Основная информация
-              </h3>
+                {t('Auto.text_6feccb')}
+                                            </h3>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
@@ -493,7 +493,7 @@ export default function ProfilePage() {
                     onChange={e => setBio(e.target.value)}
                     disabled={!isEditing}
                     rows={3}
-                    placeholder="Пара слов о вас и вашем стиле работы..."
+                    placeholder={t('Auto.text_48b3da')}
                     className="w-full bg-white dark:bg-black/50 border border-neutral-200 dark:border-neutral-800 rounded-xl px-4 py-3 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all disabled:opacity-70 font-medium resize-none"
                   />
                 </div>
@@ -511,7 +511,7 @@ export default function ProfilePage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-bold text-neutral-700 dark:text-neutral-300 mb-2">Номер телефона</label>
+                  <label className="block text-sm font-bold text-neutral-700 dark:text-neutral-300 mb-2">{t('Auto.text_9fdc3f')}</label>
                   <input
                     type="text"
                     value={phone}
@@ -525,8 +525,8 @@ export default function ProfilePage() {
                 {/* Styles */}
                 <div className="md:col-span-2 mt-4 pt-4 border-t border-neutral-100 dark:border-neutral-800">
                   <label className="block text-sm font-bold text-neutral-700 dark:text-neutral-300 mb-4">
-                    Мои стили работы
-                  </label>
+                    {t('Auto.text_e9c05a')}
+                                                        </label>
                   <div className="flex flex-wrap gap-2">
                     {TATTOO_STYLES.map(style => {
                       const isSelected = selectedStyles.includes(style)
@@ -591,13 +591,13 @@ export default function ProfilePage() {
                 {/* Theme Selector */}
                 <div className="md:col-span-2 mt-4 pt-4 border-t border-neutral-100 dark:border-neutral-800">
                   <label className="block text-sm font-bold text-neutral-700 dark:text-neutral-300 mb-4">
-                    Тема публичной страницы
-                  </label>
+                    {t('Auto.text_e781d4')}
+                                                        </label>
                   <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
                     {[
-                      { id: 'system', name: 'Системная', classes: 'bg-gradient-to-r from-neutral-200 to-neutral-800 text-black dark:text-white border-neutral-300 dark:border-neutral-700' },
-                      { id: 'light', name: 'Светлая', classes: 'bg-white text-black border-neutral-200 shadow-sm' },
-                      { id: 'dark', name: 'Темная', classes: 'bg-neutral-900 text-white border-neutral-700' },
+                      { id: 'system', name: t('Auto.text_edb3f9'), classes: 'bg-gradient-to-r from-neutral-200 to-neutral-800 text-black dark:text-white border-neutral-300 dark:border-neutral-700' },
+                      { id: 'light', name: t('light'), classes: 'bg-white text-black border-neutral-200 shadow-sm' },
+                      { id: 'dark', name: t('dark'), classes: 'bg-neutral-900 text-white border-neutral-700' },
                       { id: 'violet', name: 'Violet', classes: 'bg-gradient-to-br from-primary-600 to-primary-900 text-white border-primary-500' },
                       { id: 'cyberpunk', name: 'Cyberpunk', classes: 'bg-gradient-to-br from-yellow-400 via-pink-500 to-accent-500 text-white border-pink-500' },
                     ].map(t => (

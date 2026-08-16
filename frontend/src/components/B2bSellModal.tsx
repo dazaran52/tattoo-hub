@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import React, { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, Share2, DollarSign, ShieldCheck, ArrowRight } from 'lucide-react'
@@ -14,6 +15,7 @@ interface B2bSellModalProps {
 }
 
 export function B2bSellModal({ isOpen, onClose, leadId, sessionTitle, clientName, onSuccess }: B2bSellModalProps) {
+    const t = useTranslations();
   const [loading, setLoading] = useState(false)
 
   if (!isOpen) return null
@@ -24,7 +26,7 @@ export function B2bSellModal({ isOpen, onClose, leadId, sessionTitle, clientName
       const { data: { session } } = await supabase.auth.getSession()
       const token = session?.access_token
       if (!token) {
-        toast.error('Ошибка авторизации')
+        toast.error(t('Auto.text_9f5cb5'))
         return
       }
 
@@ -39,15 +41,15 @@ export function B2bSellModal({ isOpen, onClose, leadId, sessionTitle, clientName
 
       if (!res.ok) {
         const err = await res.json().catch(() => ({}))
-        throw new Error(err.detail || 'Не удалось передать заявку на маркетплейс')
+        throw new Error(err.detail || t('Auto.text_5ce3b3'))
       }
 
-      toast.success('Заявка успешно выставлена на маркетплейс!')
+      toast.success(t('Auto.text_547174'))
       onSuccess()
       onClose()
     } catch (err: any) {
       console.error(err)
-      toast.error(err.message || 'Ошибка передачи на маркетплейс')
+      toast.error(err.message || t('Auto.text_c9205d'))
     } finally {
       setLoading(false)
     }
@@ -77,8 +79,8 @@ export function B2bSellModal({ isOpen, onClose, leadId, sessionTitle, clientName
               <Share2 className="w-6 h-6" />
             </div>
             <div>
-              <h3 className="text-xl font-bold text-neutral-900 dark:text-white">Сдать лид на маркетплейс</h3>
-              <p className="text-xs text-neutral-500">{clientName ? `Клиент: ${clientName}` : sessionTitle || 'B2B Передача'}</p>
+              <h3 className="text-xl font-bold text-neutral-900 dark:text-white">{t('Auto.text_e1d2aa')}</h3>
+              <p className="text-xs text-neutral-500">{clientName ? `Клиент: ${clientName}` : sessionTitle || t('Auto.text_915112')}</p>
             </div>
           </div>
 
@@ -86,14 +88,14 @@ export function B2bSellModal({ isOpen, onClose, leadId, sessionTitle, clientName
             <div className="flex items-start gap-3">
               <ShieldCheck className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
               <p className="text-neutral-700 dark:text-neutral-300">
-                Заявка появится в общедоступной ленте маркетплейса для других мастеров.
-              </p>
+                {t('Auto.text_2cc69f')}
+                                            </p>
             </div>
             <div className="flex items-start gap-3">
               <DollarSign className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
               <p className="text-neutral-700 dark:text-neutral-300">
-                Когда другой мастер заберет эту заявку и оплатит комиссию платформы, <strong className="text-primary-600 dark:text-primary-400">вы получите 80% от комиссии</strong> на свой баланс!
-              </p>
+                {t('Auto.text_d19b85')} <strong className="text-primary-600 dark:text-primary-400">{t('Auto.text_8e8dcf')}</strong> {t('Auto.text_27fa78')}
+                                            </p>
             </div>
           </div>
 
@@ -103,8 +105,8 @@ export function B2bSellModal({ isOpen, onClose, leadId, sessionTitle, clientName
               disabled={loading}
               className="flex-1 py-3 px-4 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 font-bold rounded-xl transition-colors"
             >
-              Отмена
-            </button>
+              {t('cancel')}
+                                      </button>
             <button
               onClick={handleConfirmSell}
               disabled={loading}
@@ -114,7 +116,7 @@ export function B2bSellModal({ isOpen, onClose, leadId, sessionTitle, clientName
                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
               ) : (
                 <>
-                  <span>Выставить</span>
+                  <span>{t('Auto.text_f4e3f8')}</span>
                   <ArrowRight className="w-4 h-4" />
                 </>
               )}

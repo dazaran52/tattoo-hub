@@ -1,4 +1,6 @@
 'use client'
+import { useTranslations } from "next-intl";
+
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -7,6 +9,7 @@ import { Lock, Loader2, ArrowRight, Eye, EyeOff } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
 export default function UpdatePasswordPage() {
+    const t = useTranslations();
   const router = useRouter()
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -22,7 +25,7 @@ export default function UpdatePasswordPage() {
     setError('')
     
     if (password !== confirmPassword) {
-      setError('Пароли не совпадают / Passwords do not match')
+      setError(t('Auto.text_aff02e'))
       setIsLoading(false)
       return
     }
@@ -31,7 +34,7 @@ export default function UpdatePasswordPage() {
       const { error: updateError } = await supabase.auth.updateUser({ password })
       if (updateError) throw updateError
       
-      setSuccess('Пароль успешно обновлен! Перенаправляем... / Redirecting...')
+      setSuccess(t('Auto.text_d9ba6e'))
       setTimeout(() => {
         router.push('/dashboard')
       }, 2000)
@@ -46,8 +49,8 @@ export default function UpdatePasswordPage() {
     <div className="min-h-screen flex items-center justify-center p-4 bg-neutral-50 dark:bg-[#050505] transition-colors duration-300">
       <div className="w-full max-w-md bg-white/40 dark:bg-neutral-900/40 backdrop-blur-2xl border border-neutral-200/50 dark:border-white/5 shadow-2xl rounded-3xl overflow-hidden p-6 sm:p-8">
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">Новый пароль / New Password</h1>
-          <p className="text-neutral-500 text-sm mt-2">Введите ваш новый пароль ниже.</p>
+          <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">{t('Auto.text_343b88')}</h1>
+          <p className="text-neutral-500 text-sm mt-2">{t('Auto.text_0dd826')}</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -85,7 +88,7 @@ export default function UpdatePasswordPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="block w-full pl-12 pr-12 py-4 bg-white/40 dark:bg-neutral-950/40 border border-neutral-200 dark:border-white/10 rounded-2xl text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 transition-all"
-                placeholder="Новый пароль / New Password"
+                placeholder={t('Auto.text_343b88')}
               />
               <button
                 type="button"
@@ -104,7 +107,7 @@ export default function UpdatePasswordPage() {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 className="block w-full pl-12 pr-12 py-4 bg-white/40 dark:bg-neutral-950/40 border border-neutral-200 dark:border-white/10 rounded-2xl text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 transition-all"
-                placeholder="Подтвердите пароль / Confirm Password"
+                placeholder={t('Auto.text_edbfe1')}
               />
               <button
                 type="button"
@@ -123,7 +126,7 @@ export default function UpdatePasswordPage() {
             disabled={isLoading || !!success}
             className="w-full flex items-center justify-center gap-3 py-4 px-6 text-white text-lg font-bold rounded-2xl bg-gradient-to-r from-primary-600 to-primary-500 hover:from-primary-500 hover:to-primary-400 shadow-[0_10px_30px_rgba(99,102,241,0.3)] hover:shadow-[0_10px_40px_rgba(99,102,241,0.5)] border border-primary-500/50 transition-all duration-300 disabled:opacity-50"
           >
-            {isLoading ? <Loader2 className="w-6 h-6 animate-spin" /> : 'Сохранить / Save'}
+            {isLoading ? <Loader2 className="w-6 h-6 animate-spin" /> : t('Auto.text_88a467')}
             <ArrowRight className="w-5 h-5" />
           </motion.button>
         </form>

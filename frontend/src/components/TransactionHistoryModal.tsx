@@ -97,9 +97,9 @@ export function TransactionHistoryModal({ isOpen, onClose }: Props) {
           </div>
           <div>
             <h3 className="text-xl font-bold text-neutral-900 dark:text-white">
-              История баланса
-            </h3>
-            <p className="text-sm text-neutral-500">Последние операции единого баланса</p>
+              {t('Auto.text_356865')}
+                                      </h3>
+            <p className="text-sm text-neutral-500">{t('Auto.text_c6fe58')}</p>
           </div>
         </div>
 
@@ -123,7 +123,7 @@ export function TransactionHistoryModal({ isOpen, onClose }: Props) {
           ) : transactions.length === 0 ? (
             <div className="text-center py-12 text-neutral-500 dark:text-neutral-400 bg-neutral-50 dark:bg-neutral-800/30 rounded-2xl border border-neutral-100 dark:border-neutral-800">
               <Gem className="w-12 h-12 mx-auto mb-3 opacity-20" />
-              <p>У вас еще не было зачислений кредитов.</p>
+              <p>{t('Auto.text_5b7f64')}</p>
             </div>
           ) : (
             transactions.map((tx) => (
@@ -139,10 +139,10 @@ export function TransactionHistoryModal({ isOpen, onClose }: Props) {
                     <div className="font-semibold text-neutral-900 dark:text-white flex items-center gap-2">
                       {tx.provider === 'stripe' ? `+${tx.amount} ${tx.currency}` : `+${tx.credits_added} ${t('credit_plural')}`}
                       <div className="flex items-center gap-1.5 px-2 py-0.5 rounded text-xs font-medium bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400">
-                        {tx.provider === 'stripe' ? 'Stripe' : tx.provider === 'donatello' ? 'Donatello' : tx.provider === 'cryptobot' ? 'Crypto' : tx.provider === 'revolut' ? 'Revolut' : 'Админ'}
+                        {tx.provider === 'stripe' ? 'Stripe' : tx.provider === 'donatello' ? 'Donatello' : tx.provider === 'cryptobot' ? 'Crypto' : tx.provider === 'revolut' ? 'Revolut' : t('Auto.text_86535f')}
                       </div>
                       <span className={`text-xs font-normal px-2 py-0.5 rounded-md ${tx.type === 'request' ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400' : 'hidden'}`}>
-                        {tx.type === 'request' ? ' (Заявка)' : ''}
+                        {tx.type === 'request' ? t('Auto.text_58d6ec') : ''}
                       </span>
                     </div>
                     <div className="text-xs text-neutral-500 flex items-center gap-1 mt-1">
@@ -159,10 +159,10 @@ export function TransactionHistoryModal({ isOpen, onClose }: Props) {
                     tx.status === 'completed' || tx.status === 'approved' ? 'text-green-600 dark:text-green-400' : 
                     (tx.status === 'pending' || tx.status === 'screenshot_uploaded') ? 'text-amber-600 dark:text-amber-400' : 'text-red-600 dark:text-red-400'
                   }`}>
-                    {tx.status === 'completed' || tx.status === 'approved' ? 'Зачислено' : 
-                     tx.status === 'screenshot_uploaded' ? 'На проверке' : 
-                     tx.status === 'pending' ? 'Ожидает оплаты' : 
-                     tx.status === 'cancelled' ? 'Отменено' : 'Отклонено'}
+                    {tx.status === 'completed' || tx.status === 'approved' ? t('Auto.text_43602b') : 
+                     tx.status === 'screenshot_uploaded' ? t('Auto.text_13068c') : 
+                     tx.status === 'pending' ? t('Auto.text_914a99') : 
+                     tx.status === 'cancelled' ? t('crmBoard.columns.cancelled') : t('Auto.text_22c9a6')}
                   </div>
                   {tx.admin_message && (
                     <div className="text-[10px] text-red-500 mt-0.5">{tx.admin_message}</div>

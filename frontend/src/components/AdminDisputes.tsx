@@ -1,4 +1,6 @@
 'use client'
+import { useTranslations } from "next-intl";
+
 
 import Image from 'next/image'
 import { useState, useEffect } from 'react'
@@ -7,6 +9,7 @@ import toast from 'react-hot-toast'
 import { AlertTriangle, CheckCircle, XCircle, ExternalLink } from 'lucide-react'
 
 export function AdminDisputes() {
+    const t = useTranslations();
   const [disputes, setDisputes] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [processingId, setProcessingId] = useState<string | null>(null)
@@ -40,7 +43,7 @@ export function AdminDisputes() {
   const handleResolve = async (action: 'refund' | 'reject') => {
     if (!selectedDispute) return
     if (!adminComment.trim()) {
-      toast.error('Добавьте комментарий для пользователя')
+      toast.error(t('Auto.text_6d458b'))
       return
     }
 
@@ -62,7 +65,7 @@ export function AdminDisputes() {
         throw new Error(errorData.detail || 'Failed to resolve dispute')
       }
 
-      toast.success(action === 'refund' ? 'Средства возвращены' : 'Спор отклонен')
+      toast.success(action === 'refund' ? t('Auto.text_61a2d2') : t('Auto.text_ae34df'))
       setSelectedDispute(null)
       setAdminComment('')
       fetchDisputes()
@@ -74,7 +77,7 @@ export function AdminDisputes() {
   }
 
   if (isLoading) {
-    return <div className="p-8 text-center text-neutral-500">Загрузка споров...</div>
+    return <div className="p-8 text-center text-neutral-500">{t('Auto.text_c9d451')}</div>
   }
 
   if (disputes.length === 0) {
@@ -83,10 +86,10 @@ export function AdminDisputes() {
         <div className="w-16 h-16 bg-neutral-100 dark:bg-neutral-800 rounded-full flex items-center justify-center mb-4">
           <AlertTriangle className="w-8 h-8 text-neutral-400" />
         </div>
-        <h3 className="text-xl font-bold text-neutral-900 dark:text-white mb-2">Нет открытых жалоб</h3>
+        <h3 className="text-xl font-bold text-neutral-900 dark:text-white mb-2">{t('Auto.text_08a9be')}</h3>
         <p className="text-neutral-500 dark:text-neutral-400 max-w-md">
-          Все жалобы обработаны.
-        </p>
+          {t('Auto.text_2a52b3')}
+                        </p>
       </div>
     )
   }
@@ -99,8 +102,8 @@ export function AdminDisputes() {
             <div className="p-5 border-b border-neutral-100 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900/50">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs font-medium px-2.5 py-1 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-400 rounded-full">
-                  Ожидает
-                </span>
+                  {t('Auto.text_4278b3')}
+                                            </span>
                 <span className="text-xs text-neutral-500">
                   {new Date(dispute.created_at).toLocaleDateString()}
                 </span>
@@ -109,13 +112,13 @@ export function AdminDisputes() {
                 {dispute.users?.email}
               </h3>
               <p className="text-sm text-neutral-500 truncate">
-                Лид: {dispute.leads?.title} ({dispute.leads?.base_unlock_price_eur} EUR)
+                {t('Auto.text_bdb9a5')} {dispute.leads?.title} ({dispute.leads?.base_unlock_price_eur} EUR)
               </p>
             </div>
             
             <div className="p-5 flex-1 flex flex-col">
               <div className="mb-4 flex-1">
-                <p className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-1">Причина:</p>
+                <p className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-1">{t('Auto.text_ce28b8')}</p>
                 <p className="text-sm text-neutral-600 dark:text-neutral-400 line-clamp-3">
                   {dispute.reason}
                 </p>
@@ -123,7 +126,7 @@ export function AdminDisputes() {
 
               {dispute.screenshots && dispute.screenshots.length > 0 && (
                 <div className="mb-4">
-                  <p className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-2">Скриншоты ({dispute.screenshots.length}):</p>
+                  <p className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-2">{t('Auto.text_b82a9a')}{dispute.screenshots.length}):</p>
                   <div className="flex gap-2 overflow-x-auto pb-2">
                     {dispute.screenshots.map((url: string, i: number) => (
                       <a key={i} href={url} target="_blank" rel="noopener noreferrer" className="shrink-0 relative group block w-16 h-16 rounded-lg overflow-hidden bg-neutral-100 dark:bg-neutral-800">
@@ -141,8 +144,8 @@ export function AdminDisputes() {
                 onClick={() => setSelectedDispute(dispute)}
                 className="w-full mt-auto py-2 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-900 dark:text-white rounded-lg text-sm font-medium transition-colors"
               >
-                Обработать жалобу
-              </button>
+                {t('Auto.text_6858e5')}
+                                      </button>
             </div>
           </div>
         ))}
@@ -152,9 +155,9 @@ export function AdminDisputes() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={(e) => { if (e.target === e.currentTarget) setSelectedDispute(null) }}>
           <div className="bg-white dark:bg-neutral-900 rounded-2xl shadow-xl w-full max-w-lg overflow-hidden">
             <div className="p-6 border-b border-neutral-100 dark:border-neutral-800">
-              <h2 className="text-xl font-bold text-neutral-900 dark:text-white">Решение по жалобе</h2>
+              <h2 className="text-xl font-bold text-neutral-900 dark:text-white">{t('Auto.text_0fbd6c')}</h2>
               <p className="text-sm text-neutral-500 mt-1">
-                Пользователь: <span className="font-medium text-neutral-700 dark:text-neutral-300">{selectedDispute.users?.email}</span>
+                {t('Auto.text_c38cc3')} <span className="font-medium text-neutral-700 dark:text-neutral-300">{selectedDispute.users?.email}</span>
               </p>
             </div>
             
@@ -167,12 +170,12 @@ export function AdminDisputes() {
 
               <div>
                 <label className="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-2">
-                  Комментарий модератора (увидит пользователь)
-                </label>
+                  {t('Auto.text_2942c2')}
+                                                  </label>
                 <textarea 
                   value={adminComment}
                   onChange={e => setAdminComment(e.target.value)}
-                  placeholder="Ваша жалоба была рассмотрена..."
+                  placeholder={t('Auto.text_2b286b')}
                   className="w-full bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-xl p-3 text-sm min-h-[100px] outline-none focus:ring-2 focus:ring-accent-500"
                 />
               </div>
@@ -184,23 +187,23 @@ export function AdminDisputes() {
                 className="flex-1 px-4 py-2.5 rounded-xl font-medium bg-neutral-200 hover:bg-neutral-300 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-800 dark:text-neutral-200 transition-colors"
                 disabled={!!processingId}
               >
-                Отмена
-              </button>
+                {t('cancel')}
+                                            </button>
               <button
                 onClick={() => handleResolve('reject')}
                 disabled={!!processingId}
                 className="flex-1 px-4 py-2.5 rounded-xl font-medium bg-red-100 hover:bg-red-200 dark:bg-red-900/30 dark:hover:bg-red-900/50 text-red-700 dark:text-red-400 flex items-center justify-center gap-2 transition-colors disabled:opacity-50"
               >
                 {processingId === selectedDispute.id ? <div className="w-4 h-4 border-2 border-red-500 border-t-transparent rounded-full animate-spin" /> : <XCircle className="w-4 h-4" />}
-                Отклонить
-              </button>
+                {t('Auto.text_8b0d89')}
+                                            </button>
               <button
                 onClick={() => handleResolve('refund')}
                 disabled={!!processingId}
                 className="flex-1 px-4 py-2.5 rounded-xl font-medium bg-green-500 hover:bg-green-600 text-white flex items-center justify-center gap-2 transition-colors disabled:opacity-50"
               >
                 {processingId === selectedDispute.id ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> : <CheckCircle className="w-4 h-4" />}
-                Вернуть {selectedDispute.leads?.base_unlock_price_eur} EUR
+                {t('Auto.text_54aa60')} {selectedDispute.leads?.base_unlock_price_eur} EUR
               </button>
             </div>
           </div>

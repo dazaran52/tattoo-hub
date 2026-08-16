@@ -75,12 +75,12 @@ export interface KanbanColumn {
 // letting the board render localized labels for anyone who hasn't customized
 // their columns.
 const DEFAULT_COLUMNS: KanbanColumn[] = [
-  { id: 'new', title: 'Новые', iconName: 'UserPlus', color: 'emerald' },
-  { id: 'discussing', title: 'В диалоге', iconName: 'MessageCircle', color: 'violet' },
-  { id: 'booked', title: 'Записан', iconName: 'Calendar', color: 'blue' },
-  { id: 'in_progress', title: 'В процессе', iconName: 'PlayCircle', color: 'yellow' },
-  { id: 'completed', title: 'Завершено', iconName: 'CheckCircle', color: 'green' },
-  { id: 'cancelled', title: 'Отмена', iconName: 'Flag', color: 'red' },
+  { id: 'new', title: t('crmBoard.columns.new'), iconName: 'UserPlus', color: 'emerald' },
+  { id: 'discussing', title: t('Auto.text_0425ad'), iconName: 'MessageCircle', color: 'violet' },
+  { id: 'booked', title: t('Auto.text_277bbc'), iconName: 'Calendar', color: 'blue' },
+  { id: 'in_progress', title: t('crmBoard.columns.in_progress'), iconName: 'PlayCircle', color: 'yellow' },
+  { id: 'completed', title: t('crmBoard.columns.completed'), iconName: 'CheckCircle', color: 'green' },
+  { id: 'cancelled', title: t('cancel'), iconName: 'Flag', color: 'red' },
 ]
 
 const COLOR_STYLES: Record<string, { bg: string, border: string, leftBorder: string, ring: string, checkboxBg: string, checkboxHover: string, cardBg: string }> = {
@@ -513,7 +513,7 @@ export function CRMBoard({ initialViewLeadId, initialViewSessionId }: { initialV
               className="flex items-center justify-center gap-2 px-3.5 py-2 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl text-xs font-bold text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white transition-colors disabled:opacity-50"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
-              <span className="hidden sm:inline">{t('refresh') || 'Обновить'}</span>
+              <span className="hidden sm:inline">{t('refresh') || t('refresh')}</span>
             </button>
             <button
               onClick={() => setIsSessionModalOpen(true)}
@@ -1082,7 +1082,7 @@ export function CRMBoard({ initialViewLeadId, initialViewSessionId }: { initialV
           if (sessionDetails?.lead_id || sessionDetails?.master_clients?.lead_id) {
             setDisputeLeadId(sessionDetails.lead_id || sessionDetails.master_clients?.lead_id || null)
           } else {
-            toast.error('Невозможно открыть диспут для этого сеанса')
+            toast.error(t('Auto.text_600d65'))
           }
         }}
       />
@@ -1093,13 +1093,13 @@ export function CRMBoard({ initialViewLeadId, initialViewSessionId }: { initialV
           onClose={() => setSellLeadSession(null)}
           onSuccess={() => {
             setSellLeadSession(null)
-            toast.success("Лид выставлен на продажу!")
+            toast.success(t('Auto.text_dad593'))
           }}
           language={lang}
           cities={cities}
           countries={countries}
           initialData={{
-            title: sellLeadSession.master_clients?.name || 'Клиент',
+            title: sellLeadSession.master_clients?.name || t('landing.client_title'),
             description: [
               sellLeadSession.style ? `Стиль: ${sellLeadSession.style}` : '',
               sellLeadSession.body_place ? `Место: ${sellLeadSession.body_place}` : '',

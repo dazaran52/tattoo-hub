@@ -1,10 +1,13 @@
 'use client'
+import { useTranslations } from "next-intl";
+
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { WifiOff, Wifi } from 'lucide-react'
 
 export function OfflineIndicator() {
+    const t = useTranslations();
   const [isOnline, setIsOnline] = useState(true)
   const [showRestored, setShowRestored] = useState(false)
 
@@ -44,7 +47,7 @@ export function OfflineIndicator() {
           className="fixed top-4 left-1/2 -translate-x-1/2 z-[200] glass-dock px-4 py-2 rounded-full flex items-center gap-2 border border-red-500/30 text-red-400 text-xs font-bold shadow-[0_8px_30px_rgba(239,68,68,0.3)]"
         >
           <WifiOff className="w-4 h-4 animate-pulse" />
-          <span>Автономный режим (нет сети)</span>
+          <span>{t('Auto.text_8913e4')}</span>
         </motion.div>
       )}
 
@@ -56,7 +59,7 @@ export function OfflineIndicator() {
           className="fixed top-4 left-1/2 -translate-x-1/2 z-[200] glass-dock px-4 py-2 rounded-full flex items-center gap-2 border border-emerald-500/30 text-emerald-400 text-xs font-bold shadow-[0_8px_30px_rgba(16,185,129,0.3)]"
         >
           <Wifi className="w-4 h-4" />
-          <span>Соединение восстановлено!</span>
+          <span>{t('Auto.text_69e53e')}</span>
         </motion.div>
       )}
     </AnimatePresence>

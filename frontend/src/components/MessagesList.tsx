@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import Image from 'next/image'
 import { useState, useEffect, useRef } from 'react'
 import { MessageCircle, Clock, Send, AlertCircle, Search, ChevronLeft, Image as ImageIcon, Calendar, Paperclip, Check, CheckCheck, User } from 'lucide-react'
@@ -66,6 +67,7 @@ interface MessagesListProps {
 }
 
 export function MessagesList({ userRole = 'master', onViewLead, onViewSession }: MessagesListProps) {
+    const t = useTranslations();
   const { isOnline } = usePresence()
   const [chats, setChats] = useState<ChatPreview[]>([])
   const [loading, setLoading] = useState(true)
@@ -94,14 +96,14 @@ export function MessagesList({ userRole = 'master', onViewLead, onViewSession }:
   const getStatusLabel = (chat: ChatPreview) => {
     if (chat.kanban_status) {
       switch (chat.kanban_status) {
-        case 'new': return 'Новая заявка'
-        case 'discussing': return 'В работе'
-        case 'booked': return 'Запись'
-        case 'completed': return 'Завершено'
-        case 'cancelled': return 'Отменено'
+        case 'new': return t('newLeadBtn')
+        case 'discussing': return t('statusAccepted')
+        case 'booked': return t('Auto.text_c80538')
+        case 'completed': return t('crmBoard.columns.completed')
+        case 'cancelled': return t('crmBoard.columns.cancelled')
       }
     }
-    return chat.proposal_status === 'accepted' ? 'В работе' : chat.proposal_status === 'booked' ? 'Запись' : 'Завершено'
+    return chat.proposal_status === 'accepted' ? t('statusAccepted') : chat.proposal_status === 'booked' ? t('Auto.text_c80538') : t('crmBoard.columns.completed')
   }
 
   // Responsive state
@@ -299,7 +301,7 @@ export function MessagesList({ userRole = 'master', onViewLead, onViewSession }:
     const tempMessage: Message = {
       id: tempId,
       sender_type: userRole,
-      content: '📷 Загрузка фото...',
+      content: t('Auto.text_a2ed26'),
       created_at: new Date().toISOString(),
       is_sending: true
     }
@@ -341,12 +343,12 @@ export function MessagesList({ userRole = 'master', onViewLead, onViewSession }:
       setMessages(prev => prev.map(m => m.id === tempId ? msg : m))
 
       setChats(prev => prev.map(c =>
-        c.id === selectedChat.id ? { ...c, last_message: { content: '📷 Фото', created_at: msg.created_at, sender_type: msg.sender_type } } : c
+        c.id === selectedChat.id ? { ...c, last_message: { content: t('Auto.text_4d07df'), created_at: msg.created_at, sender_type: msg.sender_type } } : c
       ))
 
       scrollToBottom()
     } catch (error: any) {
-      toast.error('Ошибка загрузки фото: ' + error.message)
+      toast.error(t('Auto.text_5069c8') + error.message)
       setMessages(prev => prev.map(m => m.id === tempId ? { ...m, is_sending: false, is_error: true } : m))
     } finally {
       // setSending(false)
@@ -359,7 +361,7 @@ export function MessagesList({ userRole = 'master', onViewLead, onViewSession }:
 
   const filteredChats = chats.filter(chat => {
     const rawTitle = chat.leads?.title
-    const fallbackTitle = (!rawTitle || rawTitle.startsWith('Татуировка') || rawTitle === 'Новая заявка на татуировку') ? 'Клиент' : rawTitle
+    const fallbackTitle = (!rawTitle || rawTitle.startsWith(t('Auto.text_09f329')) || rawTitle === t('Auto.text_ea68ee')) ? t('landing.client_title') : rawTitle
     const clientName = chat.client_info?.name || fallbackTitle
     return clientName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       chat.client_info?.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -379,11 +381,11 @@ export function MessagesList({ userRole = 'master', onViewLead, onViewSession }:
       <EmptyState
         className="h-[calc(100vh-140px)] min-h-[600px] rounded-3xl border-0"
         icon={<MessageCircle className="w-10 h-10 text-primary-500" />}
-        title={userRole === 'client' ? 'У вас пока нет диалогов' : 'Нет активных чатов'}
+        title={userRole === 'client' ? t('Auto.text_3155c7') : t('Auto.text_e399ae')}
         description={userRole === 'client'
-          ? 'Здесь будут отображаться ваши переписки с мастерами. Чтобы начать общение, выберите мастера или оставьте новую заявку на маркетплейсе.'
-          : 'Откликайтесь на заявки или принимайте персональные заказы, чтобы начать общение с клиентами.'}
-        actionLabel={userRole === 'client' ? 'Найти мастера' : undefined}
+          ? t('Auto.text_77e57b')
+          : t('Auto.text_2f89dc')}
+        actionLabel={userRole === 'client' ? t('Auto.text_cd3cd9') : undefined}
         onAction={userRole === 'client' ? () => window.location.href = '/dashboard' : undefined}
       />
     )
@@ -397,8 +399,8 @@ export function MessagesList({ userRole = 'master', onViewLead, onViewSession }:
         <div className="p-4 sm:p-6 border-b border-neutral-200 dark:border-white/5 shrink-0 bg-neutral-50/50 dark:bg-neutral-900/50">
           <h2 className="text-xl font-bold text-neutral-900 dark:text-white flex items-center gap-2 mb-4">
             <MessageCircle className="w-5 h-5 text-primary-500" />
-            Сообщения
-            {chats.reduce((sum, c: any) => sum + (c.unread_count || 0), 0) > 0 && (
+            {t('messages')}
+                                  {chats.reduce((sum, c: any) => sum + (c.unread_count || 0), 0) > 0 && (
               <span className="w-2 h-2 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.6)] animate-pulse ml-1" />
             )}
           </h2>
@@ -406,7 +408,7 @@ export function MessagesList({ userRole = 'master', onViewLead, onViewSession }:
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
             <input
               type="text"
-              placeholder="Поиск по имени или стилю..."
+              placeholder={t('Auto.text_cf99fd')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white pl-9 pr-4 py-2 rounded-xl text-sm border border-neutral-200 dark:border-white/10 focus:border-primary-500 outline-none transition-colors"
@@ -418,7 +420,7 @@ export function MessagesList({ userRole = 'master', onViewLead, onViewSession }:
           {filteredChats.map(chat => {
             const isSelected = selectedChat?.id === chat.id
             const rawTitleItem = chat.leads?.title
-            const fallbackTitleItem = (!rawTitleItem || rawTitleItem.startsWith('Татуировка') || rawTitleItem === 'Новая заявка на татуировку') ? 'Неизвестный клиент' : rawTitleItem
+            const fallbackTitleItem = (!rawTitleItem || rawTitleItem.startsWith(t('Auto.text_09f329')) || rawTitleItem === t('Auto.text_ea68ee')) ? t('crmBoard.unknownClient') : rawTitleItem
             const clientName = chat.client_info?.name || fallbackTitleItem
 
             return (
@@ -468,22 +470,22 @@ export function MessagesList({ userRole = 'master', onViewLead, onViewSession }:
                           if (content.startsWith('[SYSTEM_CARD]:')) {
                             try {
                               const cardData = JSON.parse(content.replace('[SYSTEM_CARD]:', '').trim())
-                              if (cardData.type === 'session_created') return '🗓️ Сеанс назначен'
-                              if (cardData.type === 'new_lead') return '🌟 Новая заявка'
-                              if (cardData.type === 'master_rejected') return '❌ Отказ по заявке'
-                              if (cardData.type === 'master_accepted') return '✅ Сеанс принят в работу'
-                              return '🔔 Системное уведомление'
+                              if (cardData.type === 'session_created') return t('Auto.text_819d88')
+                              if (cardData.type === 'new_lead') return t('Auto.text_f62444')
+                              if (cardData.type === 'master_rejected') return t('Auto.text_b7bdbf')
+                              if (cardData.type === 'master_accepted') return t('Auto.text_e51ca4')
+                              return t('Auto.text_ef6da9')
                             } catch (e) {
-                              return '🔔 Системное уведомление'
+                              return t('Auto.text_ef6da9')
                             }
                           }
                           return content.startsWith('http') && content.includes('supabase')
-                            ? '📷 Фото'
+                            ? t('Auto.text_4d07df')
                             : content
                         })()}
                       </p>
                     ) : (
-                      <p className="text-xs text-neutral-400 italic">Нет сообщений</p>
+                      <p className="text-xs text-neutral-400 italic">{t('Auto.text_29d4bc')}</p>
                     )}
                   </div>
 
@@ -526,7 +528,7 @@ export function MessagesList({ userRole = 'master', onViewLead, onViewSession }:
                   const isPersonal = selectedChat.leads?.is_personal;
                   client = {
                     id: 'temp-' + selectedChat.id,
-                    name: selectedChat.client_info?.name || 'Новый клиент',
+                    name: selectedChat.client_info?.name || t('Auto.text_5f9aab'),
                     lead_id: selectedChat.lead_id,
                     leads: selectedChat.leads,
                     source: isPersonal ? 'direct' : 'marketplace',
@@ -535,15 +537,15 @@ export function MessagesList({ userRole = 'master', onViewLead, onViewSession }:
                     instagram: '',
                     email: selectedChat.client_info?.email || '',
                     notes: isPersonal
-                      ? 'Персональная заявка с вашей личной страницы. Карточка будет автоматически создана при принятии заявки или сеанса.'
-                      : 'ВНИМАНИЕ: Заявка еще не принята в работу. Примите её или назначьте сеанс, чтобы карточка стала активной.',
+                      ? t('Auto.text_fce07e')
+                      : t('Auto.text_f0bd4f'),
                     master_sessions: []
                   };
                 }
                 if (client) {
                   setClientToView(client);
                 } else {
-                  toast.error('Карточка клиента не найдена. Возможно, это новая заявка из маркетплейса, которая ещё не перешла в CRM.');
+                  toast.error(t('Auto.text_8261b2'));
                 }
               }}
             >
@@ -582,7 +584,7 @@ export function MessagesList({ userRole = 'master', onViewLead, onViewSession }:
                       const online = isOnline(recId, recLastSeen)
                       const text = formatLastSeenText(recLastSeen, online)
                       return online ? (
-                        <span className="text-emerald-500 font-semibold">В сети</span>
+                        <span className="text-emerald-500 font-semibold">{t('Auto.text_49baa6')}</span>
                       ) : (
                         <span className="text-neutral-500 dark:text-neutral-400">{text}</span>
                       )
@@ -599,7 +601,7 @@ export function MessagesList({ userRole = 'master', onViewLead, onViewSession }:
                 }}
               >
                 <span className="text-xs font-semibold px-3 py-1.5 bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 rounded-lg whitespace-nowrap hover:bg-primary-200 dark:hover:bg-primary-900/50 transition-colors">
-                  Сеансы ({selectedChat.sessions_count || 1})
+                  {t('Auto.text_360b26')}{selectedChat.sessions_count || 1})
                 </span>
               </div>
             </div>
@@ -607,15 +609,15 @@ export function MessagesList({ userRole = 'master', onViewLead, onViewSession }:
             <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
               <div className="bg-amber-500/10 text-amber-600 dark:text-amber-400 p-3 rounded-2xl text-xs flex gap-2 mx-auto max-w-lg mb-6">
                 <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-                <p>Все важные детали (цена, дата) обсуждайте здесь. История переписки сохраняется.</p>
+                <p>{t('Auto.text_8ce5ed')}</p>
               </div>
 
               {messages.length === 0 ? (
                 <EmptyState
                   variant="compact"
                   icon={<MessageCircle className="w-8 h-8" />}
-                  title="Здесь пока нет сообщений"
-                  description="Напишите клиенту первым!"
+                  title={t('Auto.text_fd29f4')}
+                  description={t('Auto.text_d39d0c')}
                 />
               ) : (
                 messages.map(msg => {
@@ -633,39 +635,39 @@ export function MessagesList({ userRole = 'master', onViewLead, onViewSession }:
                           <div className="bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-white/10 p-5 rounded-2xl shadow-sm text-center max-w-sm w-full">
                             <Calendar className="w-8 h-8 text-primary-500 mx-auto mb-3" />
                             <h4 className="font-bold text-neutral-900 dark:text-white mb-2">
-                              {cardData.type === 'session_created' ? 'Сеанс назначен' : cardData.type === 'new_lead' ? 'Новая заявка' : cardData.type === 'master_rejected' ? 'Отказ' : cardData.type === 'master_accepted' ? 'Сеанс принят в работу' : 'Системное уведомление'}
+                              {cardData.type === 'session_created' ? t('Auto.text_b4f583') : cardData.type === 'new_lead' ? t('newLeadBtn') : cardData.type === 'master_rejected' ? t('Auto.text_e5eda3') : cardData.type === 'master_accepted' ? t('Auto.text_a1a3f0') : t('Auto.text_41206b')}
                             </h4>
                             {cardData.type === 'session_created' && (
                               <>
                                 <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-4">
-                                  {userRole === 'client' ? 'Вам назначен сеанс!' : 'Вы назначили сеанс.'} <br />
-                                  {new Date(cardData.date).toLocaleDateString('ru-RU')} в {cardData.time}
+                                  {userRole === 'client' ? t('Auto.text_de6b00') : t('Auto.text_fe06e0')} <br />
+                                  {new Date(cardData.date).toLocaleDateString('ru-RU')} {t('leadWizard.atTime')} {cardData.time}
                                 </p>
                                 <div className="bg-neutral-50 dark:bg-neutral-900/50 rounded-xl py-2 px-4 text-sm font-medium text-neutral-900 dark:text-white border border-neutral-100 dark:border-white/5 mb-4">
-                                  Стоимость: {cardData.price} CZK
+                                  {t('Auto.text_d0f448')} {cardData.price} CZK
                                 </div>
                                 {onViewSession && selectedChat?.client_session_id && (
                                   <button
                                     onClick={() => onViewSession(selectedChat.client_session_id!)}
                                     className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-bold rounded-xl transition-colors w-full"
                                   >
-                                    Посмотреть
-                                  </button>
+                                    {t('Auto.text_0b3d3b')}
+                                                                                      </button>
                                 )}
                               </>
                             )}
                             {cardData.type === 'master_rejected' && (
                               <>
                                 <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-4 whitespace-pre-wrap">
-                                  {userRole === 'client' ? 'Мастер отклонил заявку.' : 'Вы отклонили заявку.'}<br /><br />
-                                  <strong>Причина:</strong> {cardData.reason}
+                                  {userRole === 'client' ? t('Auto.text_d52b32') : t('Auto.text_0b8fd6')}<br /><br />
+                                  <strong>{t('Auto.text_ce28b8')}</strong> {cardData.reason}
                                 </p>
                               </>
                             )}
                             {cardData.type === 'master_accepted' && (
                               <>
                                 <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-4 whitespace-pre-wrap">
-                                  {userRole === 'client' ? 'Мастер взял вашу заявку в работу! Скоро он напишет вам для уточнения деталей.' : 'Вы приняли заявку в работу. Напишите клиенту, чтобы обсудить детали!'}
+                                  {userRole === 'client' ? t('Auto.text_e6e1c8') : t('Auto.text_0c699f')}
                                 </p>
                               </>
                             )}
@@ -673,23 +675,23 @@ export function MessagesList({ userRole = 'master', onViewLead, onViewSession }:
                               <>
                                 <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-4 whitespace-pre-wrap">
 
-                                  {userRole === 'client' ? 'Вы отправили новую заявку. Ожидайте ответа.' : 'Клиент создал новую заявку на татуировку. Обсудите детали и предложите сеанс.'}
+                                  {userRole === 'client' ? t('Auto.text_0b0257') : t('Auto.text_307a7e')}
                                 </p>
                                 {onViewLead && selectedChat?.leads && (
                                   <button
                                     onClick={() => onViewLead(selectedChat.leads, selectedChat)}
                                     className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-bold rounded-xl transition-colors w-full"
                                   >
-                                    Посмотреть
-                                  </button>
+                                    {t('Auto.text_0b3d3b')}
+                                                                                      </button>
                                 )}
                               </>
                             )}
                           </div>
                         ) : (
                           <div className="bg-neutral-100 dark:bg-neutral-800 text-neutral-500 text-xs py-1 px-3 rounded-full">
-                            Системное уведомление
-                          </div>
+                            {t('Auto.text_41206b')}
+                                                                  </div>
                         )}
                       </div>
                     )
@@ -750,7 +752,7 @@ export function MessagesList({ userRole = 'master', onViewLead, onViewSession }:
                 />
                 <input
                   type="text"
-                  placeholder="Написать сообщение..."
+                  placeholder={t('typeMessage')}
                   value={newMessage}
                   onChange={e => setNewMessage(e.target.value)}
                   className="flex-1 bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white border border-transparent focus:border-primary-500 focus:bg-white dark:focus:bg-neutral-900 rounded-xl px-4 py-3 outline-none text-sm transition-all"
@@ -770,8 +772,8 @@ export function MessagesList({ userRole = 'master', onViewLead, onViewSession }:
             <EmptyState
               variant="compact"
               icon={<MessageCircle className="w-10 h-10" />}
-              title="Выберите чат слева"
-              description="Чтобы просмотреть историю сообщений"
+              title={t('Auto.text_f45b18')}
+              description={t('Auto.text_b40406')}
             />
           </div>
         )}

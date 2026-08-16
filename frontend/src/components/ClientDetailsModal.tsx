@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import Image from 'next/image'
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -26,6 +27,7 @@ interface ClientDetailsModalProps {
 }
 
 export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId: initialChatId, onSessionClick }: ClientDetailsModalProps) {
+    const t = useTranslations();
   const [activeTab, setActiveTab] = useState<'info'|'sessions'|'chat'>('info')
   const [isChatOpen, setIsChatOpen] = useState(false)
   const [isSessionModalOpen, setIsSessionModalOpen] = useState(false)
@@ -82,7 +84,7 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId: 
   if (!isOpen) return null
 
   const handleDeleteClient = async () => {
-    if (!confirm('Вы уверены, что хотите удалить этого клиента?')) return
+    if (!confirm(t('Auto.text_a32e88'))) return
     try {
       const { data: { session } } = await supabase.auth.getSession()
       const token = session?.access_token
@@ -91,16 +93,16 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId: 
         headers: { 'Authorization': `Bearer ${token}` }
       })
       if (!res.ok) throw new Error()
-      toast.success('Клиент удален')
+      toast.success(t('Auto.text_b9e5e8'))
       onUpdate()
       onClose()
     } catch {
-      toast.error('Ошибка удаления')
+      toast.error(t('crmBoard.deleteError'))
     }
   }
 
   const handleDeleteSession = async (sessionId: string) => {
-    if (!confirm('Вы уверены, что хотите удалить этот сеанс?')) return
+    if (!confirm(t('Auto.text_608df4'))) return
     try {
       const { data: { session } } = await supabase.auth.getSession()
       const token = session?.access_token
@@ -109,10 +111,10 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId: 
         headers: { 'Authorization': `Bearer ${token}` }
       })
       if (!res.ok) throw new Error()
-      toast.success('Сеанс удален')
+      toast.success(t('Auto.text_dd99a3'))
       onUpdate()
     } catch {
-      toast.error('Ошибка удаления сеанса')
+      toast.error(t('Auto.text_ddc15f'))
     }
   }
 
@@ -121,9 +123,9 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId: 
   const parsedBudgetMatch = rawDescription.match(/Бюджет:\s*([\s\S]*?)(?=(?:Желаемое время|Бюджет|Город):|$)/i)
   const parsedCityMatch = rawDescription.match(/Город:\s*([\s\S]*?)(?=(?:Желаемое время|Бюджет|Город):|$)/i)
 
-  const budgetText = lead.display_budget || (lead.client_budget ? `${lead.client_budget} ${lead.client_currency || ''}` : (lead.is_negotiable_budget ? 'Договорная цена' : (parsedBudgetMatch ? parsedBudgetMatch[1] : null)))
+  const budgetText = lead.display_budget || (lead.client_budget ? `${lead.client_budget} ${lead.client_currency || ''}` : (lead.is_negotiable_budget ? t('negotiableBudget') : (parsedBudgetMatch ? parsedBudgetMatch[1] : null)))
   const cityText = lead.city_name || lead.cities?.name_ru || (parsedCityMatch ? parsedCityMatch[1] : null)
-  const styleText = lead.style || (lead.title && lead.title !== 'Новая заявка на татуировку' ? lead.title : null)
+  const styleText = lead.style || (lead.title && lead.title !== t('Auto.text_ea68ee') ? lead.title : null)
 
   return (
     <>
@@ -148,20 +150,20 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId: 
                 <div className="flex items-center gap-2">
                   {isPersonal ? (
                     <span className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
-                      Личная заявка
-                    </span>
+                      {t('Auto.text_70b7f8')}
+                                                                  </span>
                   ) : isUnlocked ? (
                     <span className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-                      С маркетплейса (Контакты открыты)
-                    </span>
+                      {t('Auto.text_92e563')}
+                                                                      </span>
                   ) : isMarketplaceSold ? (
                     <span className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
-                      Выставлен на маркетплейс
-                    </span>
+                      {t('Auto.text_e7a5b7')}
+                                                                          </span>
                   ) : (
                     <span className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20 flex items-center gap-1">
-                      <Lock className="w-3 h-3" /> С маркетплейса (Закрыт)
-                    </span>
+                      <Lock className="w-3 h-3" /> {t('Auto.text_d029d4')}
+                                                                              </span>
                   )}
                 </div>
               </div>
@@ -179,21 +181,21 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId: 
               className={`flex-1 py-3.5 text-sm font-bold border-b-2 transition-all flex items-center justify-center gap-2 ${activeTab === 'info' ? 'border-primary-500 text-primary-600 dark:text-primary-400' : 'border-transparent text-neutral-500 hover:text-neutral-900 dark:hover:text-white'}`}
             >
               <FileText className="w-4 h-4" />
-              <span>Информация</span>
+              <span>{t('Auto.text_a7fd9b')}</span>
             </button>
             <button 
               onClick={() => setActiveTab('sessions')}
               className={`flex-1 py-3.5 text-sm font-bold border-b-2 transition-all flex items-center justify-center gap-2 ${activeTab === 'sessions' ? 'border-primary-500 text-primary-600 dark:text-primary-400' : 'border-transparent text-neutral-500 hover:text-neutral-900 dark:hover:text-white'}`}
             >
               <Calendar className="w-4 h-4" />
-              <span>Сеансы ({client.master_sessions?.length || 0})</span>
+              <span>{t('Auto.text_360b26')}{client.master_sessions?.length || 0})</span>
             </button>
             <button 
               onClick={() => setActiveTab('chat')}
               className={`flex-1 py-3.5 text-sm font-bold border-b-2 transition-all flex items-center justify-center gap-2 ${activeTab === 'chat' ? 'border-primary-500 text-primary-600 dark:text-primary-400' : 'border-transparent text-neutral-500 hover:text-neutral-900 dark:hover:text-white'}`}
             >
               <MessageCircle className="w-4 h-4" />
-              <span>Чат</span>
+              <span>{t('Auto.text_c52b4c')}</span>
               {!isUnlocked && <Lock className="w-3 h-3 text-purple-500" />}
             </button>
           </div>
@@ -205,7 +207,7 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId: 
                 {/* Client Name Header */}
                 <div className="flex justify-between items-start">
                   <div className="flex-1 mr-4">
-                    <label className="text-xs font-bold text-neutral-400 uppercase tracking-wider">Имя клиента</label>
+                    <label className="text-xs font-bold text-neutral-400 uppercase tracking-wider">{t('Auto.text_835a78')}</label>
                     <input 
                       defaultValue={client.name}
                       readOnly={client.id.startsWith('temp-') || !isUnlocked}
@@ -214,7 +216,7 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId: 
                          if (e.target.value.trim() && e.target.value !== client.name) {
                            await supabase.from('master_clients').update({name: e.target.value.trim()}).eq('id', client.id)
                            onUpdate()
-                           toast.success('Имя сохранено')
+                           toast.success(t('Auto.text_92e9b6'))
                          }
                       }}
                       className="mt-1 block text-xl font-extrabold text-neutral-900 dark:text-white bg-transparent border-b-2 border-transparent hover:border-neutral-200 dark:hover:border-neutral-700 focus:border-primary-500 outline-none w-full transition-colors pb-1 read-only:opacity-80"
@@ -225,8 +227,8 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId: 
                       onClick={handleDeleteClient}
                       className="flex items-center gap-1.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 px-3 py-1.5 rounded-xl text-xs font-bold transition-colors"
                     >
-                      <Trash2 className="w-4 h-4" /> Удалить
-                    </button>
+                      <Trash2 className="w-4 h-4" /> {t('delete')}
+                                                                  </button>
                   )}
                 </div>
 
@@ -235,7 +237,7 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId: 
                   <div className="flex items-center justify-between">
                     <label className="text-xs font-extrabold text-neutral-400 uppercase tracking-wider flex items-center gap-1.5">
                       <Phone className="w-3.5 h-3.5 text-primary-500"/> 
-                      <span>Контактные данные</span>
+                      <span>{t('Auto.text_b36933')}</span>
                     </label>
                     {isUnlocked && (client.telegram || client.phone) && (
                       <div className="flex gap-2">
@@ -254,8 +256,8 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId: 
                             href={`tel:${client.phone}`}
                             className="px-2.5 py-1 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-lg text-xs font-bold flex items-center gap-1 hover:bg-emerald-500/20 transition-colors"
                           >
-                            <Phone className="w-3 h-3" /> Позвонить
-                          </a>
+                            <Phone className="w-3 h-3" /> {t('Auto.text_ccfa07')}
+                                                                                    </a>
                         )}
                       </div>
                     )}
@@ -267,10 +269,10 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId: 
                         <Lock className="w-5 h-5" />
                       </div>
                       <div>
-                        <h4 className="text-sm font-bold text-neutral-900 dark:text-white">Контакты скрыты</h4>
+                        <h4 className="text-sm font-bold text-neutral-900 dark:text-white">{t('Auto.text_783bfd')}</h4>
                         <p className="text-xs text-neutral-500 dark:text-neutral-400 max-w-sm mx-auto mt-1">
-                          Контактный телефон и email доступны только после того, как вы примете эту заявку с маркетплейса.
-                        </p>
+                          {t('Auto.text_1f7e06')}
+                                                                              </p>
                       </div>
                       <div className="filter blur-sm select-none opacity-40 grid grid-cols-2 gap-3 text-left">
                         <div className="bg-white dark:bg-neutral-800 p-2.5 rounded-lg text-xs font-mono">+420 77* *** ***</div>
@@ -280,7 +282,7 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId: 
                   ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
-                        <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider ml-1">Телефон</span>
+                        <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider ml-1">{t('phone')}</span>
                         <div className="mt-1">
                           <PhoneInput 
                             value={phone}
@@ -346,17 +348,17 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId: 
                 {cityText && (
                   <div className="flex items-center gap-1.5 text-xs font-bold text-orange-600 dark:text-orange-400 bg-orange-500/10 px-3 py-1.5 rounded-xl border border-orange-500/20 w-fit">
                     <MapPin className="w-3.5 h-3.5" />
-                    <span>Город: {cityText}</span>
+                    <span>{t('Auto.text_066fa8')} {cityText}</span>
                   </div>
                 )}
 
                 {/* Master Notes */}
                 <div>
-                  <label className="text-xs font-bold text-neutral-400 uppercase tracking-wider flex items-center gap-1"><FileText className="w-3.5 h-3.5"/> Заметки мастера</label>
+                  <label className="text-xs font-bold text-neutral-400 uppercase tracking-wider flex items-center gap-1"><FileText className="w-3.5 h-3.5"/> {t('Auto.text_f6184d')}</label>
                   <textarea 
                     defaultValue={client.notes || ''}
                     readOnly={client.id.startsWith('temp-')}
-                    placeholder="Добавьте заметку об этом клиенте..."
+                    placeholder={t('Auto.text_fb7f1c')}
                     className="mt-2 w-full p-4 bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-200 dark:border-white/5 rounded-2xl focus:ring-2 focus:ring-primary-500 outline-none text-neutral-900 dark:text-white text-sm"
                     rows={4}
                     onBlur={async (e) => {
@@ -373,14 +375,14 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId: 
             {activeTab === 'sessions' && (
               <div className="space-y-4">
                 <div className="flex justify-between items-center mb-2">
-                  <h3 className="font-bold text-neutral-900 dark:text-white text-sm">История сеансов</h3>
+                  <h3 className="font-bold text-neutral-900 dark:text-white text-sm">{t('Auto.text_32453e')}</h3>
                   {!client.id.startsWith('temp-') && (
                     <button 
                       onClick={() => setIsSessionModalOpen(true)}
                       className="flex items-center gap-1.5 text-xs font-bold text-primary-600 dark:text-primary-400 bg-primary-500/10 px-3 py-1.5 rounded-xl hover:bg-primary-500/20 transition-colors"
                     >
-                      <Plus className="w-4 h-4"/> Добавить сеанс
-                    </button>
+                      <Plus className="w-4 h-4"/> {t('Auto.text_d650b9')}
+                                                                  </button>
                   )}
                 </div>
                 
@@ -399,16 +401,16 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId: 
                                 {new Date(s.session_date).toLocaleDateString('ru-RU')}
                               </div>
                               <div className="text-xs text-neutral-500">
-                                {s.start_time || 'Время не указано'} {s.end_time ? `- ${s.end_time}` : ''}
+                                {s.start_time || t('Auto.text_e1c80f')} {s.end_time ? `- ${s.end_time}` : ''}
                               </div>
                               <div className="mt-1">
                                 {isSoldB2b ? (
                                   <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
-                                    На маркетплейсе (80% кэшбэк при продаже)
-                                  </span>
+                                    {t('Auto.text_a120cf')}
+                                                                                      </span>
                                 ) : (
                                   <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400">
-                                    {s.status === 'in_progress' ? 'В процессе' : s.status === 'completed' ? 'Завершен' : s.status === 'booked' ? 'Записан' : s.status}
+                                    {s.status === 'in_progress' ? t('crmBoard.columns.in_progress') : s.status === 'completed' ? t('Auto.text_00219e') : s.status === 'booked' ? t('Auto.text_277bbc') : s.status}
                                   </span>
                                 )}
                               </div>
@@ -425,16 +427,16 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId: 
                                   onClick={(e) => { e.stopPropagation(); setSessionToStart(s.id); }}
                                   className="px-2.5 py-1 bg-primary-500/10 text-primary-600 dark:text-primary-400 font-bold text-xs rounded-lg flex items-center gap-1 hover:bg-primary-500/20 transition-colors"
                                 >
-                                  <PlayCircle className="w-3.5 h-3.5" /> Начать
-                                </button>
+                                  <PlayCircle className="w-3.5 h-3.5" /> {t('onboarding.onb_start')}
+                                                                                </button>
                               )}
                               {s.status === 'in_progress' && (
                                 <button 
                                   onClick={(e) => { e.stopPropagation(); setSessionToComplete(s.id); }}
                                   className="px-2.5 py-1 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold text-xs rounded-lg flex items-center gap-1 hover:bg-emerald-500/20 transition-colors"
                                 >
-                                  <CheckCircle className="w-3.5 h-3.5" /> Завершить
-                                </button>
+                                  <CheckCircle className="w-3.5 h-3.5" /> {t('Auto.text_b0e3a5')}
+                                                                                </button>
                               )}
 
                               {/* B2B Share Button */}
@@ -449,7 +451,7 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId: 
                                     });
                                   }} 
                                   className="p-2 text-neutral-400 hover:text-amber-500 hover:bg-amber-500/10 rounded-lg transition-colors" 
-                                  title="Слить на маркетплейс (B2B)"
+                                  title={t('Auto.text_693006')}
                                 >
                                   <Share2 className="w-4 h-4" />
                                 </button>
@@ -462,7 +464,7 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId: 
                                     onSessionClick({ ...s, master_clients: { id: client.id, name: client.name } });
                                   }} 
                                   className="p-2 text-neutral-400 hover:text-sky-500 hover:bg-sky-500/10 rounded-lg transition-colors" 
-                                  title="Детали заявки"
+                                  title={t('leadDetails')}
                                 >
                                   <Eye className="w-4 h-4" />
                                 </button>
@@ -474,14 +476,14 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId: 
                                   setSessionToEdit({ ...s, master_clients: { id: client.id, name: client.name } });
                                 }} 
                                 className="p-2 text-neutral-400 hover:text-primary-500 hover:bg-primary-500/10 rounded-lg transition-colors" 
-                                title="Редактировать сеанс"
+                                title={t('Auto.text_7a3b90')}
                               >
                                 <Edit3 className="w-4 h-4" />
                               </button>
                               <button 
                                 onClick={(e) => { e.stopPropagation(); handleDeleteSession(s.id); }} 
                                 className="p-2 text-neutral-400 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors" 
-                                title="Удалить"
+                                title={t('delete')}
                               >
                                 <Trash2 className="w-4 h-4" />
                               </button>
@@ -527,7 +529,7 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId: 
                           <div className="mt-1 bg-emerald-500/10 p-3 rounded-xl border border-emerald-500/20">
                             <div className="flex items-center gap-2 mb-2">
                               <CheckCircle className="w-4 h-4 text-emerald-500" />
-                              <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">Результат сеанса</span>
+                              <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">{t('Auto.text_e35ee4')}</span>
                             </div>
                             <div className="w-full flex gap-2 overflow-x-auto custom-scrollbar pb-1">
                               {s.result_image_urls.map((url: string, idx: number) => (
@@ -542,7 +544,7 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId: 
                 ) : (
                   <div className="text-center py-12 text-neutral-400 border-2 border-dashed border-neutral-200 dark:border-white/10 rounded-3xl">
                     <Calendar className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                    <p className="text-sm font-semibold">У этого клиента еще нет сеансов</p>
+                    <p className="text-sm font-semibold">{t('Auto.text_0ea2ee')}</p>
                   </div>
                 )}
               </div>
@@ -557,9 +559,9 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId: 
                       <MessageCircle className="w-8 h-8" />
                     </div>
                     <div>
-                      <h3 className="font-extrabold text-neutral-900 dark:text-white text-lg">Чат с клиентом</h3>
+                      <h3 className="font-extrabold text-neutral-900 dark:text-white text-lg">{t('Auto.text_c71d55')}</h3>
                       <p className="text-sm text-neutral-500 max-w-sm mx-auto mt-1">
-                        {client.lead_id ? 'Откройте чат, чтобы обсудить детали и согласовать время сеанса.' : 'Для клиентов, добавленных вручную, чат недоступен.'}
+                        {client.lead_id ? t('Auto.text_7083f7') : t('Auto.text_565a13')}
                       </p>
                     </div>
                     {client.lead_id && (
@@ -567,8 +569,8 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId: 
                         onClick={() => setIsChatOpen(true)}
                         className="px-6 py-3 bg-primary-600 text-white font-bold rounded-2xl shadow-lg shadow-primary-500/25 hover:bg-primary-700 transition-all hover:scale-[1.02]"
                       >
-                        Открыть диалог
-                      </button>
+                        {t('Auto.text_c91d1e')}
+                                                                        </button>
                     )}
                   </>
                 ) : (
@@ -577,10 +579,10 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId: 
                       <Lock className="w-7 h-7" />
                     </div>
                     <div>
-                      <h3 className="font-extrabold text-neutral-900 dark:text-white text-lg">Чат заблокирован</h3>
+                      <h3 className="font-extrabold text-neutral-900 dark:text-white text-lg">{t('Auto.text_ff7201')}</h3>
                       <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-2 leading-relaxed">
-                        Общение с клиентом откроется сразу после того, как вы примете эту заявку с маркетплейса и оплатите комиссию платформы.
-                      </p>
+                        {t('Auto.text_ebd7dd')}
+                                                                            </p>
                     </div>
                   </div>
                 )}

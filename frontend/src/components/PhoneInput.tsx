@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import React, { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ChevronDown } from 'lucide-react'
@@ -23,7 +24,8 @@ interface PhoneInputProps {
   className?: string
 }
 
-export function PhoneInput({ value, onChange, placeholder = "Номер телефона", disabled = false, className = "" }: PhoneInputProps) {
+export function PhoneInput({ value, onChange, placeholder = t('Auto.text_9fdc3f'), disabled = false, className = "" }: PhoneInputProps) {
+    const t = useTranslations();
   const [isOpen, setIsOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
@@ -185,7 +187,7 @@ export function PhoneInput({ value, onChange, placeholder = "Номер теле
               >
                 <span className="text-xl">{country.flag}</span>
                 <span className="font-medium text-sm text-neutral-900 dark:text-white flex-1 text-left">
-                  {country.code === 'Other' ? 'Другая страна' : country.code}
+                  {country.code === 'Other' ? t('Auto.text_f752e9') : country.code}
                 </span>
                 <span className="text-xs text-neutral-500 font-mono">
                   {country.dialCode ? `+${country.dialCode}` : ''}

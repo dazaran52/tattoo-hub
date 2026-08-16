@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import { useState, useEffect, useRef } from 'react'
 import { Bell, Check, Info, DollarSign, Settings, Archive, X, BellRing, ArrowLeft } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
@@ -15,6 +16,7 @@ interface Notification {
 }
 
 export function NotificationsMenu() {
+    const t = useTranslations();
   const [session, setSession] = useState<any>(null)
   const [isOpen, setIsOpen] = useState(false)
   const [activeTab, setActiveTab] = useState<'active' | 'archived'>('active')
@@ -157,7 +159,7 @@ export function NotificationsMenu() {
     }
     try {
       if (!('Notification' in window)) {
-        toast.error('Ваш браузер не поддерживает уведомления')
+        toast.error(t('Auto.text_613abb'))
         setHideBanner(true)
         return
       }
@@ -168,16 +170,16 @@ export function NotificationsMenu() {
         // Attempt subscription
         const { subscribeToPush } = await import('@/lib/push')
         await subscribeToPush()
-        toast.success('Уведомления включены!')
+        toast.success(t('Auto.text_5b9fd7'))
       } else if (permission === 'denied') {
         setPushDenied(true)
-        toast.error('Вы запретили уведомления в браузере')
+        toast.error(t('Auto.text_9a0c71'))
       } else {
         setHideBanner(true)
       }
     } catch (err: any) {
       console.error('Failed to request push permissions:', err)
-      toast.error('Ошибка: ' + (err.message || 'Не удалось включить уведомления'))
+      toast.error(t('Auto.text_33d239') + (err.message || t('pushFailed')))
       setHideBanner(true)
     }
   }
@@ -194,7 +196,7 @@ export function NotificationsMenu() {
     <div className="relative" ref={menuRef}>
       <button 
         onClick={() => setIsOpen(!isOpen)}
-        aria-label="Уведомления"
+        aria-label={t('notifications')}
         className="p-2 relative rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
       >
         <Bell className="w-5 h-5" />
@@ -207,17 +209,17 @@ export function NotificationsMenu() {
         <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white dark:bg-neutral-900 rounded-2xl shadow-xl border border-neutral-200 dark:border-neutral-800 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2">
           <div className="p-4 border-b border-neutral-100 dark:border-neutral-800 flex items-center justify-between">
             {activeTab === 'active' ? (
-              <h3 className="font-bold text-neutral-900 dark:text-white">Уведомления</h3>
+              <h3 className="font-bold text-neutral-900 dark:text-white">{t('notifications')}</h3>
             ) : (
               <div className="flex items-center gap-2">
                 <button 
                   onClick={() => setActiveTab('active')}
-                  aria-label="Назад к активным уведомлениям"
+                  aria-label={t('Auto.text_dee94b')}
                   className="p-1 -ml-1 text-neutral-500 hover:text-neutral-900 dark:hover:text-white transition-colors"
                 >
                   <ArrowLeft className="w-4 h-4" />
                 </button>
-                <h3 className="font-bold text-neutral-900 dark:text-white">Архив</h3>
+                <h3 className="font-bold text-neutral-900 dark:text-white">{t('statusArchived')}</h3>
               </div>
             )}
             
@@ -227,23 +229,23 @@ export function NotificationsMenu() {
                   onClick={markAllAsRead}
                   className="text-xs font-medium text-accent-600 dark:text-accent-400 hover:text-accent-700 transition-colors flex items-center gap-1"
                 >
-                  <Check className="w-3 h-3" /> Прочитать все
-                </button>
+                  <Check className="w-3 h-3" /> {t('Auto.text_ed0248')}
+                                                  </button>
               )}
               {activeTab === 'active' && unreadCount === 0 && notifications.length > 0 && (
                 <button 
                   onClick={archiveAllRead}
                   className="text-xs font-medium text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300 transition-colors flex items-center gap-1"
                 >
-                  <Archive className="w-3 h-3" /> Очистить все
-                </button>
+                  <Archive className="w-3 h-3" /> {t('Auto.text_60e711')}
+                                                  </button>
               )}
               {activeTab === 'active' && (
                 <button 
                   onClick={() => setActiveTab('archived')}
-                  aria-label="Перейти в архив"
+                  aria-label={t('Auto.text_28ca4c')}
                   className="p-1 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
-                  title="Перейти в архив"
+                  title={t('Auto.text_28ca4c')}
                 >
                   <Archive className="w-4 h-4" />
                 </button>
@@ -257,12 +259,12 @@ export function NotificationsMenu() {
                 {activeTab === 'active' ? (
                   <>
                     <Bell className="w-8 h-8 text-neutral-300 dark:text-neutral-700 mb-3" />
-                    <p>Нет новых уведомлений</p>
+                    <p>{t('Auto.text_087a66')}</p>
                   </>
                 ) : (
                   <>
                     <Archive className="w-8 h-8 text-neutral-300 dark:text-neutral-700 mb-3" />
-                    <p>Архив пуст</p>
+                    <p>{t('Auto.text_3e2219')}</p>
                   </>
                 )}
               </div>
@@ -293,9 +295,9 @@ export function NotificationsMenu() {
                   {activeTab === 'active' && n.is_read && (
                     <button 
                       onClick={(e) => archiveNotification(e, n.id)}
-                      aria-label="В архив"
+                      aria-label={t('Auto.text_ce2250')}
                       className="absolute top-4 right-4 p-1.5 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
-                      title="В архив"
+                      title={t('Auto.text_ce2250')}
                     >
                       <X className="w-4 h-4" />
                     </button>
@@ -309,14 +311,14 @@ export function NotificationsMenu() {
             <div className="p-3 bg-primary-50 dark:bg-primary-900/20 border-t border-primary-100 dark:border-primary-900/30 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <BellRing className="w-4 h-4 text-primary-600 dark:text-primary-400" />
-                <span className="text-xs font-medium text-primary-700 dark:text-primary-300">Включить пуш-уведомления?</span>
+                <span className="text-xs font-medium text-primary-700 dark:text-primary-300">{t('Auto.text_03d8e7')}</span>
               </div>
               <button 
                 onClick={requestPushPermission}
                 className="text-xs font-bold px-3 py-1.5 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors shadow-sm cursor-pointer relative z-50 pointer-events-auto"
               >
-                Включить
-              </button>
+                {t('Auto.text_417b33')}
+                                            </button>
             </div>
           )}
         </div>

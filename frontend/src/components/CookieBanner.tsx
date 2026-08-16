@@ -6,14 +6,15 @@ import { Cookie } from 'lucide-react'
 import { useTranslations, useLocale } from 'next-intl'
 
 export function CookieBanner() {
+    const t = useTranslations();
   const [isVisible, setIsVisible] = useState(false)
   const lang = useLocale()
 
   const copyMap = {
     ru: {
-      before: 'Мы используем файлы cookie для улучшения работы сайта. Продолжая пользоваться сайтом, вы соглашаетесь с нашей ',
-      policy: 'Политикой конфиденциальности',
-      accept: 'Понятно',
+      before: t('Auto.text_8333b4'),
+      policy: t('Auto.text_b34c5f'),
+      accept: t('guide.understand'),
     },
     cs: {
       before: 'Používáme soubory cookie ke zlepšení funkčnosti webu. Pokračováním v používání webu souhlasíte s našimi ',
@@ -26,9 +27,9 @@ export function CookieBanner() {
       accept: 'Got it',
     },
     uk: {
-      before: 'Ми використовуємо файли cookie, щоб покращити роботу сайту. Продовжуючи користуватися сайтом, ви погоджуєтеся з нашою ',
-      policy: 'Політикою конфіденційності',
-      accept: 'Зрозуміло',
+      before: t('Auto.text_0ec3d9'),
+      policy: t('Auto.text_9db40e'),
+      accept: t('Auto.text_fc737a'),
     },
   } as Record<string, { before: string; policy: string; accept: string }>
 

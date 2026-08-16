@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import Image from 'next/image'
 import { useState, useEffect, useRef } from 'react'
 import { X, Send, AlertCircle, MessageCircle, Paperclip } from 'lucide-react'
@@ -29,6 +30,7 @@ interface ChatModalProps {
 }
 
 export function ChatModal({ isOpen, onClose, chatId, leadTitle, currentUserRole = 'master', recipientName, recipientAvatar, recipientLastSeen, recipientId }: ChatModalProps) {
+    const t = useTranslations();
   const { isOnline } = usePresence()
   const online = isOnline(recipientId, recipientLastSeen)
   const lastSeenText = formatLastSeenText(recipientLastSeen, online)
@@ -155,7 +157,7 @@ export function ChatModal({ isOpen, onClose, chatId, leadTitle, currentUserRole 
       setMessages(prev => [...prev, msg])
       scrollToBottom()
     } catch (error: any) {
-      toast.error('Ошибка загрузки фото: ' + error.message)
+      toast.error(t('Auto.text_5069c8') + error.message)
     } finally {
       setSending(false)
     }
@@ -226,7 +228,7 @@ export function ChatModal({ isOpen, onClose, chatId, leadTitle, currentUserRole 
                 </h2>
                 <p className="text-xs mt-0.5 font-medium">
                   {online ? (
-                    <span className="text-emerald-500 font-semibold">В сети</span>
+                    <span className="text-emerald-500 font-semibold">{t('Auto.text_49baa6')}</span>
                   ) : (
                     <span className="text-neutral-500 dark:text-neutral-400">{lastSeenText}</span>
                   )}
@@ -241,10 +243,10 @@ export function ChatModal({ isOpen, onClose, chatId, leadTitle, currentUserRole 
           {!chatId ? (
             <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
               <AlertCircle className="w-12 h-12 text-neutral-300 dark:text-neutral-700 mb-4" />
-              <h3 className="text-lg font-bold text-neutral-900 dark:text-white mb-2">Чат недоступен</h3>
+              <h3 className="text-lg font-bold text-neutral-900 dark:text-white mb-2">{t('Auto.text_3d91a7')}</h3>
               <p className="text-sm text-neutral-500">
-                Чат еще не создан или у вас нет к нему доступа. Чат создается автоматически при отправке или принятии отклика.
-              </p>
+                {t('Auto.text_c5ea3d')}
+                                                </p>
             </div>
           ) : (
             <>
@@ -256,19 +258,19 @@ export function ChatModal({ isOpen, onClose, chatId, leadTitle, currentUserRole 
                       disabled={isLoadingMore}
                       className="px-4 py-2 text-xs font-medium text-primary-600 bg-white dark:bg-neutral-800 border border-primary-100 dark:border-primary-500/20 hover:bg-primary-50 dark:hover:bg-neutral-700 disabled:opacity-50 rounded-xl shadow-sm transition-all"
                     >
-                      {isLoadingMore ? 'Загрузка...' : 'Загрузить предыдущие сообщения'}
+                      {isLoadingMore ? t('loading') : t('Auto.text_fb9450')}
                     </button>
                   </div>
                 )}
                 <div className="bg-amber-500/10 text-amber-600 dark:text-amber-400 p-3 rounded-2xl text-xs flex gap-2">
                   <AlertCircle className="w-4 h-4 shrink-0" />
-                  Ссылки и номера телефонов автоматически скрываются до тех пор, пока клиент не примет ваш оффер.
-                </div>
+                  {t('Auto.text_e37de7')}
+                                                          </div>
 
             {messages.length === 0 ? (
               <div className="text-center text-neutral-400 py-8 text-sm">
-                Напишите первое сообщение клиенту...
-              </div>
+                {t('Auto.text_096fab')}
+                                                            </div>
             ) : (
               messages.map(msg => {
                 const isSystemCard = msg.content.startsWith('[SYSTEM_CARD]:')
@@ -285,46 +287,46 @@ export function ChatModal({ isOpen, onClose, chatId, leadTitle, currentUserRole 
                         <div className="bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-white/10 p-5 rounded-2xl shadow-sm text-center max-w-sm w-full">
                            <MessageCircle className="w-8 h-8 text-primary-500 mx-auto mb-3" />
                            <h4 className="font-bold text-neutral-900 dark:text-white mb-2">
-                             {cardData.type === 'session_created' ? 'Сеанс назначен' : cardData.type === 'master_rejected' ? 'Отказ' : cardData.type === 'master_accepted' ? 'Сеанс принят в работу' : cardData.type === 'new_lead' ? 'Новая заявка' : 'Системное уведомление'}
+                             {cardData.type === 'session_created' ? t('Auto.text_b4f583') : cardData.type === 'master_rejected' ? t('Auto.text_e5eda3') : cardData.type === 'master_accepted' ? t('Auto.text_a1a3f0') : cardData.type === 'new_lead' ? t('newLeadBtn') : t('Auto.text_41206b')}
                            </h4>
                            {cardData.type === 'session_created' && (
                              <>
                                <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-4">
-                                 {currentUserRole === 'client' ? 'Вам назначен сеанс!' : 'Вы назначили сеанс.'} <br/>
-                                 {new Date(cardData.date).toLocaleDateString('ru-RU')} в {cardData.time}
+                                 {currentUserRole === 'client' ? t('Auto.text_de6b00') : t('Auto.text_fe06e0')} <br/>
+                                 {new Date(cardData.date).toLocaleDateString('ru-RU')} {t('leadWizard.atTime')} {cardData.time}
                                </p>
                                <div className="bg-neutral-50 dark:bg-neutral-900/50 rounded-xl py-2 px-4 text-sm font-medium text-neutral-900 dark:text-white border border-neutral-100 dark:border-white/5">
-                                 Стоимость: {cardData.price} CZK
+                                 {t('Auto.text_d0f448')} {cardData.price} CZK
                                </div>
                              </>
                            )}
                            {cardData.type === 'new_lead' && (
                              <>
                                <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-4 whitespace-pre-wrap">
-                                 {currentUserRole === 'client' ? 'Вы отправили новую заявку. Ожидайте ответа.' : 'Клиент создал новую заявку на татуировку. Обсудите детали и предложите сеанс.'}
+                                 {currentUserRole === 'client' ? t('Auto.text_0b0257') : t('Auto.text_307a7e')}
                                </p>
                              </>
                            )}
                            {cardData.type === 'master_rejected' && (
                              <>
                                <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-4 whitespace-pre-wrap">
-                                 {currentUserRole === 'client' ? 'Мастер отклонил заявку.' : 'Вы отклонили заявку.'}<br/><br/>
-                                 <strong>Причина:</strong> {cardData.reason}
+                                 {currentUserRole === 'client' ? t('Auto.text_d52b32') : t('Auto.text_0b8fd6')}<br/><br/>
+                                 <strong>{t('Auto.text_ce28b8')}</strong> {cardData.reason}
                                </p>
                              </>
                            )}
                            {cardData.type === 'master_accepted' && (
                              <>
                                <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-4 whitespace-pre-wrap">
-                                 {currentUserRole === 'client' ? 'Мастер взял вашу заявку в работу! Скоро он напишет вам для уточнения деталей.' : 'Вы приняли заявку в работу. Напишите клиенту, чтобы обсудить детали!'}
+                                 {currentUserRole === 'client' ? t('Auto.text_e6e1c8') : t('Auto.text_0c699f')}
                                </p>
                              </>
                            )}
                         </div>
                       ) : (
                         <div className="bg-neutral-100 dark:bg-neutral-800 text-neutral-500 text-xs py-1 px-3 rounded-full">
-                          Системное уведомление
-                        </div>
+                          {t('Auto.text_41206b')}
+                                                              </div>
                       )}
                     </div>
                   )
@@ -374,7 +376,7 @@ export function ChatModal({ isOpen, onClose, chatId, leadTitle, currentUserRole 
               />
               <input 
                 type="text"
-                placeholder="Написать сообщение..."
+                placeholder={t('typeMessage')}
                 value={newMessage}
                 onChange={e => setNewMessage(e.target.value)}
                 className="flex-1 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white border border-transparent focus:border-primary-500 rounded-xl px-4 py-3 outline-none text-sm transition-all"

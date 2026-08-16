@@ -13,14 +13,14 @@ export function BottomNav({ activeTab, setActiveTab, unreadMessagesCount = 0, us
   const t = useTranslations()
 
   const tabs = userRole === 'client' ? [
-    { id: 'leads', label: t('my_leads') || 'Мои заявки', icon: FileText },
-    { id: 'top_masters', label: t('masters') || 'Мастера', icon: Users },
-    { id: 'messages', label: t('messages') || 'Сообщения', icon: MessageCircle, badge: unreadMessagesCount },
+    { id: 'leads', label: t('my_leads') || t('myLeads'), icon: FileText },
+    { id: 'top_masters', label: t('masters') || t('masters'), icon: Users },
+    { id: 'messages', label: t('messages') || t('messages'), icon: MessageCircle, badge: unreadMessagesCount },
   ] : [
     { id: 'crm', label: t('crm') || 'CRM', icon: LayoutDashboard },
-    { id: 'feed', label: t('marketplace') || 'Маркетплейс', icon: ShoppingBag },
-    { id: 'portfolio', label: t('portfolio') || 'Портфолио', icon: ImageIcon },
-    { id: 'messages', label: t('messages') || 'Сообщения', icon: MessageCircle, badge: unreadMessagesCount },
+    { id: 'feed', label: t('marketplace') || t('marketplace'), icon: ShoppingBag },
+    { id: 'portfolio', label: t('portfolio') || t('portfolio'), icon: ImageIcon },
+    { id: 'messages', label: t('messages') || t('messages'), icon: MessageCircle, badge: unreadMessagesCount },
   ]
 
   const handleTabClick = (tabId: string) => {

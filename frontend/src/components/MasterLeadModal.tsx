@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import { useEffect, useState } from 'react'
 import { X } from 'lucide-react'
 import { toast } from 'react-hot-toast'
@@ -64,11 +65,11 @@ export function MasterLeadModal({ isOpen, onClose, onSuccess, language, cities, 
         throw new Error('Failed to create lead')
       }
       
-      toast.success('Лид успешно создан и добавлен в Мои Лиды!')
+      toast.success(t('Auto.text_859abe'))
       onSuccess()
       onClose()
     } catch (err: any) {
-      toast.error(err.message || 'Ошибка создания лида')
+      toast.error(err.message || t('Auto.text_81405b'))
     } finally {
       setLoading(false)
     }
@@ -78,7 +79,7 @@ export function MasterLeadModal({ isOpen, onClose, onSuccess, language, cities, 
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200" onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
       <div className="bg-white dark:bg-neutral-900 w-full max-w-md rounded-2xl shadow-xl overflow-hidden animate-in zoom-in-95 duration-200">
         <div className="flex justify-between items-center p-4 border-b border-neutral-200 dark:border-neutral-800">
-          <h2 className="text-xl font-bold text-neutral-900 dark:text-white">Разместить свой лид</h2>
+          <h2 className="text-xl font-bold text-neutral-900 dark:text-white">{t('Auto.text_367436')}</h2>
           <button onClick={onClose} className="p-2 text-neutral-500 hover:text-neutral-900 dark:hover:text-white rounded-full transition-colors">
             <X className="w-5 h-5" />
           </button>
@@ -86,12 +87,12 @@ export function MasterLeadModal({ isOpen, onClose, onSuccess, language, cities, 
         
         <form onSubmit={handleSubmit} className="p-4 space-y-4">
           <div>
-            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Имя/Заголовок</label>
+            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">{t('Auto.text_85978e')}</label>
             <input
               type="text"
               required
               className="w-full bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white border border-neutral-200 dark:border-neutral-700 rounded-lg px-4 py-2 focus:ring-2 focus:ring-accent-500 outline-none"
-              placeholder="Например: Аня (Хочет рукав)"
+              placeholder={t('Auto.text_c6219b')}
               value={formData.title}
               onChange={(e) => setFormData({...formData, title: e.target.value})}
             />
@@ -102,7 +103,7 @@ export function MasterLeadModal({ isOpen, onClose, onSuccess, language, cities, 
             <textarea
               required
               className="w-full bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white border border-neutral-200 dark:border-neutral-700 rounded-lg px-4 py-2 focus:ring-2 focus:ring-accent-500 outline-none"
-              placeholder="Детали: стиль, размер, бюджет..."
+              placeholder={t('Auto.text_29f0e4')}
               rows={3}
               value={formData.description}
               onChange={(e) => setFormData({...formData, description: e.target.value})}
@@ -110,12 +111,12 @@ export function MasterLeadModal({ isOpen, onClose, onSuccess, language, cities, 
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">{t('contacts')} (Скрыты до продажи)</label>
+            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">{t('contacts')} {t('Auto.text_199c2f')}</label>
             <input
               type="text"
               required
               className="w-full bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white border border-neutral-200 dark:border-neutral-700 rounded-lg px-4 py-2 focus:ring-2 focus:ring-accent-500 outline-none"
-              placeholder="@telegram_username или телефон"
+              placeholder={t('Auto.text_dfdf12')}
               value={formData.contacts}
               onChange={(e) => setFormData({...formData, contacts: e.target.value})}
             />
@@ -123,26 +124,26 @@ export function MasterLeadModal({ isOpen, onClose, onSuccess, language, cities, 
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Страна</label>
+              <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">{t('leadWizard.countryLabel')}</label>
               <select
                 required
                 className="w-full bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white border border-neutral-200 dark:border-neutral-700 rounded-lg px-4 py-2 focus:ring-2 focus:ring-accent-500 outline-none"
                 value={formData.country_id}
                 onChange={(e) => setFormData({...formData, country_id: e.target.value, city_id: ''})}
               >
-                <option value="">Выберите...</option>
+                <option value="">{t('Auto.text_cd50ce')}</option>
                 {countries.map(c => <option key={c.id} value={c.id}>{c.name_ru}</option>)}
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Город</label>
+              <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">{t('leadWizard.cityLabel')}</label>
               <select
                 required
                 className="w-full bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white border border-neutral-200 dark:border-neutral-700 rounded-lg px-4 py-2 focus:ring-2 focus:ring-accent-500 outline-none"
                 value={formData.city_id}
                 onChange={(e) => setFormData({...formData, city_id: e.target.value})}
               >
-                <option value="">Выберите...</option>
+                <option value="">{t('Auto.text_cd50ce')}</option>
                 {cities.filter(c => c.country_id === formData.country_id).map(c => (
                   <option key={c.id} value={c.id}>{c.name_ru}</option>
                 ))}
@@ -155,7 +156,7 @@ export function MasterLeadModal({ isOpen, onClose, onSuccess, language, cities, 
             disabled={loading}
             className="w-full mt-4 bg-accent-600 hover:bg-accent-700 text-white font-bold py-3 px-4 rounded-xl shadow-lg transition-colors flex items-center justify-center gap-2"
           >
-            {loading ? 'Создание...' : 'Добавить Лида'}
+            {loading ? t('Auto.text_32f23b') : t('Auto.text_44f955')}
           </button>
         </form>
       </div>

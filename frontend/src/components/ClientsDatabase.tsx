@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import { useState, useEffect } from 'react'
 import { Search, Loader2, Edit3, Trash2, UserPlus } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
@@ -43,6 +44,7 @@ export interface CRMClient {
 }
 
 export function ClientsDatabase() {
+    const t = useTranslations();
   const [clients, setClients] = useState<CRMClient[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
@@ -115,7 +117,7 @@ export function ClientsDatabase() {
 
   const handleDelete = async (e: React.MouseEvent, id: string) => {
     e.stopPropagation()
-    if (!confirm('Вы уверены, что хотите удалить этого клиента?')) return
+    if (!confirm(t('Auto.text_a32e88'))) return
 
     try {
       const { data: session } = await supabase.auth.getSession()
@@ -136,11 +138,11 @@ export function ClientsDatabase() {
         .update({ is_deleted: true })
         .eq('client_id', id)
 
-      toast.success('Клиент удален')
+      toast.success(t('Auto.text_b9e5e8'))
       fetchClients()
     } catch (error) {
       console.error(error)
-      toast.error('Ошибка удаления клиента')
+      toast.error(t('Auto.text_3e7011'))
     }
   }
 
@@ -165,7 +167,7 @@ export function ClientsDatabase() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
           <input 
             type="text" 
-            placeholder="Поиск по имени или номеру..." 
+            placeholder={t('Auto.text_e132e1')} 
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl pl-10 pr-4 py-3 focus:ring-2 focus:ring-primary-500/20 outline-none"
@@ -176,8 +178,8 @@ export function ClientsDatabase() {
           className="flex items-center gap-2 px-5 py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-bold shadow-md hover:shadow-lg transition-all hover:-translate-y-0.5 whitespace-nowrap"
         >
           <UserPlus className="w-5 h-5" />
-          Добавить клиента
-        </button>
+          {t('Auto.text_c6bfc9')}
+                          </button>
       </div>
 
       <div className="bg-white dark:bg-neutral-900 rounded-2xl shadow-xl border border-neutral-200 dark:border-neutral-800 overflow-hidden">
@@ -185,10 +187,10 @@ export function ClientsDatabase() {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-neutral-50 dark:bg-neutral-800/50 text-xs uppercase tracking-wider text-neutral-500 dark:text-neutral-400 border-b border-neutral-200 dark:border-neutral-800">
-                <th className="p-4 font-bold">Клиент</th>
-                <th className="p-4 font-bold">Сеансы</th>
-                <th className="p-4 font-bold">Последний сеанс</th>
-                <th className="p-4 font-bold text-right">Действия</th>
+                <th className="p-4 font-bold">{t('landing.client_title')}</th>
+                <th className="p-4 font-bold">{t('crmBoard.tabSessions')}</th>
+                <th className="p-4 font-bold">{t('Auto.text_699396')}</th>
+                <th className="p-4 font-bold text-right">{t('actions')}</th>
               </tr>
             </thead>
             <tbody>
@@ -215,13 +217,13 @@ export function ClientsDatabase() {
                           <div className="font-bold text-neutral-900 dark:text-white flex items-center gap-2">
                             {client.name}
                             {(client.source === 'direct' || client.leads?.is_personal) ? (
-                              <span className="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-[10px] px-2 py-0.5 rounded font-bold">Личная</span>
+                              <span className="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-[10px] px-2 py-0.5 rounded font-bold">{t('Auto.text_08f3aa')}</span>
                             ) : (client.source === 'marketplace' || (client.lead_id && !client.leads?.is_personal)) ? (
-                              <span className="bg-accent-100 dark:bg-accent-500/20 text-accent-600 dark:text-accent-400 text-[10px] px-2 py-0.5 rounded font-bold">Маркетплейс</span>
+                              <span className="bg-accent-100 dark:bg-accent-500/20 text-accent-600 dark:text-accent-400 text-[10px] px-2 py-0.5 rounded font-bold">{t('marketplace')}</span>
                             ) : null}
                           </div>
                           <div className="text-sm text-neutral-500">
-                            {client.phone || client.telegram || client.instagram || client.contact_info || 'Нет контактов'}
+                            {client.phone || client.telegram || client.instagram || client.contact_info || t('crmBoard.noContacts')}
                           </div>
                         </div>
                       </div>
@@ -236,16 +238,16 @@ export function ClientsDatabase() {
                         <div className="text-sm">
                           <div className="font-semibold">{new Date(latestSession.session_date).toLocaleDateString('ru-RU')}</div>
                           <div className="text-xs text-neutral-500">
-                            {latestSession.status === 'completed' ? 'Завершен' : 
-                             (latestSession.status === 'booked' || latestSession.status === 'scheduled') ? 'Запланирован' :
-                             latestSession.status === 'in_progress' ? 'В процессе' : 
-                             latestSession.status === 'new' ? 'Новый' :
-                             latestSession.status === 'discussing' ? 'В диалоге' :
-                             latestSession.status === 'cancelled' ? 'Отменен' : 'Запланирован'}
+                            {latestSession.status === 'completed' ? t('Auto.text_00219e') : 
+                             (latestSession.status === 'booked' || latestSession.status === 'scheduled') ? t('Auto.text_a3fe9f') :
+                             latestSession.status === 'in_progress' ? t('crmBoard.columns.in_progress') : 
+                             latestSession.status === 'new' ? t('Auto.text_97ae6e') :
+                             latestSession.status === 'discussing' ? t('Auto.text_0425ad') :
+                             latestSession.status === 'cancelled' ? t('Auto.text_3062e6') : t('Auto.text_a3fe9f')}
                           </div>
                         </div>
                       ) : (
-                        <span className="text-sm text-neutral-400">Нет сеансов</span>
+                        <span className="text-sm text-neutral-400">{t('Auto.text_3b6b69')}</span>
                       )}
                     </td>
                     <td className="p-4 text-right">
@@ -275,9 +277,9 @@ export function ClientsDatabase() {
                   variant="table"
                   colSpan={4}
                   icon={<UserPlus className="w-8 h-8" />}
-                  title="Клиенты не найдены"
-                  description={searchQuery ? "По вашему поисковому запросу нет клиентов." : "В вашей базе пока нет ни одного клиента."}
-                  actionLabel={!searchQuery ? "Добавить клиента" : undefined}
+                  title={t('Auto.text_5d5eab')}
+                  description={searchQuery ? t('Auto.text_f5b616') : t('Auto.text_0cb5aa')}
+                  actionLabel={!searchQuery ? t('Auto.text_c6bfc9') : undefined}
                   onAction={!searchQuery ? () => setIsAddModalOpen(true) : undefined}
                 />
               )}

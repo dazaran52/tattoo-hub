@@ -1,4 +1,6 @@
 'use client'
+import { useTranslations } from "next-intl";
+
 
 import { useState, useEffect, useRef } from 'react'
 import { supabase, SupportMessage } from '@/lib/supabase'
@@ -9,6 +11,7 @@ import { SkeletonList } from '@/components/SkeletonCard'
 import { EmptyState } from '@/components/EmptyState'
 
 export function AdminChat() {
+    const t = useTranslations();
   const [session, setSession] = useState<any>(null)
   const [usersMap, setUsersMap] = useState<Record<string, any>>({})
   const [chatList, setChatList] = useState<{ id: string, email: string, last_msg: string, unread: number }[]>([])
@@ -188,7 +191,7 @@ export function AdminChat() {
     const userId = balanceModalUser.id
     const num = parseInt(newBalanceValue)
     if (isNaN(num) || num < 0) {
-      toast.error('Неверная сумма')
+      toast.error(t('Auto.text_c4c25f'))
       return
     }
 
@@ -204,7 +207,7 @@ export function AdminChat() {
         })
       })
       if (!res.ok) throw new Error('Failed to update balance')
-      toast.success('Баланс обновлен')
+      toast.success(t('Auto.text_2461eb'))
       setUsersMap(prev => ({ ...prev, [userId]: { ...prev[userId], balance: num } }))
       setBalanceModalUser(null)
     } catch (err: any) {
@@ -220,10 +223,10 @@ export function AdminChat() {
 
     setConfirmModal({
       isOpen: true,
-      title: isBanned ? 'Разблокировать пользователя' : 'Заблокировать пользователя',
-      message: `Вы уверены, что хотите ${isBanned ? 'разблокировать' : 'заблокировать'} пользователя ${user.email}?`,
-      confirmText: isBanned ? 'Разблокировать' : 'Заблокировать',
-      cancelText: 'Отмена',
+      title: isBanned ? t('Auto.text_ea8259') : t('Auto.text_30a06e'),
+      message: `Вы уверены, что хотите ${isBanned ? t('Auto.text_c1a096') : t('Auto.text_e3d581')} пользователя ${user.email}?`,
+      confirmText: isBanned ? t('unlock') : t('Auto.text_35903d'),
+      cancelText: t('cancel'),
       type: isBanned ? 'info' : 'danger',
       onConfirm: async () => {
         setConfirmModal(null)
@@ -237,7 +240,7 @@ export function AdminChat() {
             body: JSON.stringify({ status: newStatus })
           })
           if (!res.ok) throw new Error('Failed to update status')
-          toast.success(isBanned ? 'Пользователь разблокирован' : 'Пользователь заблокирован')
+          toast.success(isBanned ? t('Auto.text_985991') : t('Auto.text_3662d0'))
           setUsersMap(prev => ({ ...prev, [userId]: { ...prev[userId], status: newStatus } }))
         } catch (err: any) {
           toast.error(err.message)
@@ -248,14 +251,14 @@ export function AdminChat() {
 
   const handleClearChat = (userId: string) => {
     const user = usersMap[userId]
-    const userEmail = user?.email || 'этого пользователя'
+    const userEmail = user?.email || t('Auto.text_b69603')
 
     setConfirmModal({
       isOpen: true,
-      title: 'Очистить историю чата',
+      title: t('Auto.text_179d24'),
       message: `Вы уверены, что хотите полностью очистить историю этого чата с ${userEmail}? Действие необратимо.`,
-      confirmText: 'Очистить',
-      cancelText: 'Отмена',
+      confirmText: t('Auto.text_707436'),
+      cancelText: t('cancel'),
       type: 'danger',
       onConfirm: async () => {
         setConfirmModal(null)
@@ -267,7 +270,7 @@ export function AdminChat() {
             }
           })
           if (!res.ok) throw new Error('Failed to clear chat')
-          toast.success('Чат очищен')
+          toast.success(t('Auto.text_12c18f'))
           setMessages([])
           setChatList(prev => prev.filter(c => c.id !== userId))
           setSelectedUserId(null)
@@ -284,8 +287,8 @@ export function AdminChat() {
       <div className="w-1/3 border-r border-neutral-200 dark:border-neutral-800 flex flex-col bg-neutral-50 dark:bg-neutral-900/50">
         <div className="p-4 border-b border-neutral-200 dark:border-neutral-800 flex items-center gap-2 font-bold text-neutral-900 dark:text-white">
           <MessageCircle className="w-5 h-5 text-accent-500" />
-          Активные чаты
-        </div>
+          {t('Auto.text_4c6209')}
+                          </div>
         <div className="flex-1 overflow-y-auto">
           {isLoadingChats ? (
             <SkeletonList count={4} />
@@ -293,8 +296,8 @@ export function AdminChat() {
             <EmptyState
               variant="compact"
               icon={<MessageCircle className="w-8 h-8" />}
-              title="Нет активных чатов"
-              description="Здесь появятся обращения пользователей."
+              title={t('Auto.text_e399ae')}
+              description={t('Auto.text_255b98')}
             />
           ) : (
             chatList.map(c => (
@@ -325,7 +328,7 @@ export function AdminChat() {
         {!selectedUserId ? (
           <div className="flex-1 flex flex-col items-center justify-center text-neutral-400">
             <MessageCircle className="w-16 h-16 mb-4 opacity-20" />
-            <p>Выберите чат слева</p>
+            <p>{t('Auto.text_f45b18')}</p>
           </div>
         ) : (
           <>
@@ -336,7 +339,7 @@ export function AdminChat() {
                 </div>
                 <div>
                   <div className="font-bold text-neutral-900 dark:text-white leading-tight">
-                    {usersMap[selectedUserId]?.email || 'Загрузка...'}
+                    {usersMap[selectedUserId]?.email || t('loading')}
                   </div>
                   <div className="text-xs text-neutral-500 flex items-center gap-2 mt-0.5">
                     <span className="text-accent-600 dark:text-accent-400 font-medium">{usersMap[selectedUserId]?.balance || 0} {usersMap[selectedUserId]?.currency || 'CZK'}</span>
@@ -351,7 +354,7 @@ export function AdminChat() {
                 <button
                   onClick={() => handleUpdateBalance(selectedUserId)}
                   className="p-2 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-600 dark:text-neutral-300 rounded-lg transition-colors"
-                  title="Изменить баланс"
+                  title={t('Auto.text_b1d275')}
                 >
                   <Coins className="w-4 h-4" />
                 </button>
@@ -362,14 +365,14 @@ export function AdminChat() {
                       ? 'bg-green-100 text-green-600 hover:bg-green-200 dark:bg-green-900/30 dark:hover:bg-green-900/50' 
                       : 'bg-amber-100 text-amber-600 hover:bg-amber-200 dark:bg-amber-900/30 dark:hover:bg-amber-900/50'
                   }`}
-                  title={usersMap[selectedUserId]?.status === 'rejected' ? 'Разблокировать' : 'Заблокировать'}
+                  title={usersMap[selectedUserId]?.status === 'rejected' ? t('unlock') : t('Auto.text_35903d')}
                 >
                   {usersMap[selectedUserId]?.status === 'rejected' ? <CheckCircle2 className="w-4 h-4" /> : <Ban className="w-4 h-4" />}
                 </button>
                 <button
                   onClick={() => handleClearChat(selectedUserId)}
                   className="p-2 bg-red-100 hover:bg-red-200 dark:bg-red-900/30 dark:hover:bg-red-900/50 text-red-600 rounded-lg transition-colors"
-                  title="Очистить чат"
+                  title={t('Auto.text_6b30d3')}
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>
@@ -417,7 +420,7 @@ export function AdminChat() {
                 type="text"
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
-                placeholder="Введите сообщение пользователю..."
+                placeholder={t('Auto.text_a97f7e')}
                 className="flex-1 bg-white dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-700 focus:border-accent-500 focus:ring-1 focus:ring-accent-500 rounded-xl px-4 py-2 text-sm text-neutral-900 dark:text-white outline-none transition-all"
               />
               <button
@@ -436,7 +439,7 @@ export function AdminChat() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200" onClick={(e) => { if (e.target === e.currentTarget) setBalanceModalUser(null) }}>
           <div className="bg-white dark:bg-neutral-900 w-full max-w-md rounded-2xl shadow-xl overflow-hidden animate-in zoom-in-95 duration-200 p-6 border border-neutral-200 dark:border-neutral-800">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-bold text-neutral-900 dark:text-white">Изменить баланс пользователя</h3>
+              <h3 className="text-lg font-bold text-neutral-900 dark:text-white">{t('Auto.text_f5116f')}</h3>
               <button 
                 onClick={() => setBalanceModalUser(null)}
                 className="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200"
@@ -447,7 +450,7 @@ export function AdminChat() {
             <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-4">{balanceModalUser.email}</p>
             
             <div className="mb-6">
-              <label className="block text-sm font-medium text-neutral-600 dark:text-neutral-400 mb-2">Новый баланс кошелька</label>
+              <label className="block text-sm font-medium text-neutral-600 dark:text-neutral-400 mb-2">{t('Auto.text_27f502')}</label>
               <input
                 type="number"
                 min="0"
@@ -462,14 +465,14 @@ export function AdminChat() {
                 onClick={() => setBalanceModalUser(null)}
                 className="px-4 py-2 bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
               >
-                Отмена
-              </button>
+                {t('cancel')}
+                                            </button>
               <button
                 onClick={submitUpdateBalance}
                 className="px-4 py-2 bg-accent-600 hover:bg-accent-700 text-white font-bold rounded-lg transition-colors"
               >
-                Сохранить
-              </button>
+                {t('save')}
+                                            </button>
             </div>
           </div>
         </div>

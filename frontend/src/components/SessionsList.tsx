@@ -57,7 +57,7 @@ export function SessionsList({ sessions, searchQuery, setSearchQuery, onStatusCh
     let result = sessions.filter(s => {
       const q = searchQuery.toLowerCase()
       const name = (s.master_clients?.name || '').toLowerCase()
-      const contactInfo = s.master_clients?.phone || s.master_clients?.telegram || s.master_clients?.email || s.master_clients?.contact_info || 'Нет контактов'
+      const contactInfo = s.master_clients?.phone || s.master_clients?.telegram || s.master_clients?.email || s.master_clients?.contact_info || t('crmBoard.noContacts')
       const contact = contactInfo.toLowerCase()
       const matchesSearch = name.includes(q) || contact.includes(q)
       const matchesStatus = statusFilter === 'all' || s.status === statusFilter
@@ -120,7 +120,7 @@ export function SessionsList({ sessions, searchQuery, setSearchQuery, onStatusCh
       setSelectedIds(new Set())
       onUpdate()
     } catch (err) {
-      toast.error('Ошибка при удалении')
+      toast.error(t('Auto.text_70f4ad'))
     }
   }
 
@@ -133,7 +133,7 @@ export function SessionsList({ sessions, searchQuery, setSearchQuery, onStatusCh
       toast.success(`Статус обновлен для ${selectedIds.size} сеансов`)
       setSelectedIds(new Set())
     } catch (err) {
-      toast.error('Ошибка при обновлении статусов')
+      toast.error(t('Auto.text_fa1f89'))
     }
   }
 
@@ -152,40 +152,40 @@ export function SessionsList({ sessions, searchQuery, setSearchQuery, onStatusCh
             onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
             className="bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl px-4 py-2 text-sm outline-none font-medium"
           >
-            <option value="all">Все статусы</option>
-            <option value="new">Новые</option>
-            <option value="discussing">В диалоге</option>
-            <option value="booked">Записан</option>
-            <option value="in_progress">В процессе</option>
-            <option value="completed">Завершено</option>
-            <option value="cancelled">Отмена</option>
+            <option value="all">{t('crmBoard.list.allStatuses')}</option>
+            <option value="new">{t('crmBoard.columns.new')}</option>
+            <option value="discussing">{t('Auto.text_0425ad')}</option>
+            <option value="booked">{t('Auto.text_277bbc')}</option>
+            <option value="in_progress">{t('crmBoard.columns.in_progress')}</option>
+            <option value="completed">{t('crmBoard.columns.completed')}</option>
+            <option value="cancelled">{t('cancel')}</option>
           </select>
           <div className="text-sm text-neutral-500 font-medium">
-            Найдено: {filteredAndSorted.length}
+            {t('Auto.text_38d5dd')} {filteredAndSorted.length}
           </div>
         </div>
 
         {selectedIds.size > 0 && (
           <div className="flex items-center gap-3 animate-in fade-in zoom-in duration-200">
-            <span className="text-sm font-bold text-primary-600 dark:text-primary-400">Выбрано: {selectedIds.size}</span>
+            <span className="text-sm font-bold text-primary-600 dark:text-primary-400">{t('leadWizard.selectedDate')} {selectedIds.size}</span>
             <select 
               onChange={(e) => { if(e.target.value) handleBulkStatusChange(e.target.value); e.target.value=''; }}
               className="bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-400 border border-primary-200 dark:border-primary-800 rounded-xl px-3 py-1.5 text-sm outline-none font-bold"
             >
-              <option value="">Сменить статус...</option>
-              <option value="new">Новые</option>
-              <option value="discussing">В диалоге</option>
-              <option value="booked">Записан</option>
-              <option value="in_progress">В процессе</option>
-              <option value="completed">Завершено</option>
-              <option value="cancelled">Отмена</option>
+              <option value="">{t('Auto.text_98c05b')}</option>
+              <option value="new">{t('crmBoard.columns.new')}</option>
+              <option value="discussing">{t('Auto.text_0425ad')}</option>
+              <option value="booked">{t('Auto.text_277bbc')}</option>
+              <option value="in_progress">{t('crmBoard.columns.in_progress')}</option>
+              <option value="completed">{t('crmBoard.columns.completed')}</option>
+              <option value="cancelled">{t('cancel')}</option>
             </select>
             <button 
               onClick={handleBulkDelete}
               className="flex items-center gap-1.5 px-3 py-1.5 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-xl font-bold hover:bg-red-200 transition-colors text-sm"
             >
-              <Trash2 className="w-4 h-4" /> Удалить
-            </button>
+              <Trash2 className="w-4 h-4" /> {t('delete')}
+                                      </button>
           </div>
         )}
       </div>
@@ -211,16 +211,16 @@ export function SessionsList({ sessions, searchQuery, setSearchQuery, onStatusCh
                   </div>
                 </th>
                 <th className="p-4 font-bold cursor-pointer hover:text-neutral-700 dark:hover:text-neutral-200 transition-colors" onClick={() => handleSort('client')}>
-                  <div className="flex items-center gap-1">Клиент <SortIcon field="client" /></div>
+                  <div className="flex items-center gap-1">{t('landing.client_title')} <SortIcon field="client" /></div>
                 </th>
                 <th className="p-4 font-bold cursor-pointer hover:text-neutral-700 dark:hover:text-neutral-200 transition-colors" onClick={() => handleSort('date')}>
-                  <div className="flex items-center gap-1">Дата и время <SortIcon field="date" /></div>
+                  <div className="flex items-center gap-1">{t('crmBoard.list.dateTimeColumn')} <SortIcon field="date" /></div>
                 </th>
                 <th className="p-4 font-bold cursor-pointer hover:text-neutral-700 dark:hover:text-neutral-200 transition-colors" onClick={() => handleSort('price')}>
-                  <div className="flex items-center gap-1">Стиль / Цена <SortIcon field="price" /></div>
+                  <div className="flex items-center gap-1">{t('crmBoard.list.stylePriceColumn')} <SortIcon field="price" /></div>
                 </th>
-                <th className="p-4 font-bold">Фото</th>
-                <th className="p-4 font-bold text-right">Статус</th>
+                <th className="p-4 font-bold">{t('crmBoard.list.photoColumn')}</th>
+                <th className="p-4 font-bold text-right">{t('crmBoard.list.statusColumn')}</th>
               </tr>
             </thead>
             <tbody>
@@ -254,12 +254,12 @@ export function SessionsList({ sessions, searchQuery, setSearchQuery, onStatusCh
                     <div className="font-bold text-neutral-900 dark:text-white flex items-center gap-2">
                       {session.master_clients?.name}
                       {(session.source === 'direct' || (!session.source && (session.master_clients?.source === 'direct' || session.master_clients?.leads?.is_personal))) ? (
-                        <span className="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-[10px] px-2 py-0.5 rounded font-bold">Личная</span>
+                        <span className="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-[10px] px-2 py-0.5 rounded font-bold">{t('Auto.text_08f3aa')}</span>
                       ) : (session.source === 'marketplace' || (!session.source && (session.master_clients?.source === 'marketplace' || (session.master_clients?.lead_id && !session.master_clients?.leads?.is_personal)))) ? (
-                        <span className="bg-accent-100 dark:bg-accent-500/20 text-accent-600 dark:text-accent-400 text-[10px] px-2 py-0.5 rounded font-bold">Маркетплейс</span>
+                        <span className="bg-accent-100 dark:bg-accent-500/20 text-accent-600 dark:text-accent-400 text-[10px] px-2 py-0.5 rounded font-bold">{t('marketplace')}</span>
                       ) : null}
                     </div>
-                    <div className="text-sm text-neutral-500">{session.master_clients?.phone || session.master_clients?.telegram || session.master_clients?.email || session.master_clients?.contact_info || 'Нет контактов'}</div>
+                    <div className="text-sm text-neutral-500">{session.master_clients?.phone || session.master_clients?.telegram || session.master_clients?.email || session.master_clients?.contact_info || t('crmBoard.noContacts')}</div>
                   </td>
                   <td className="p-4">
                     <div className="font-medium text-neutral-900 dark:text-white">
@@ -272,7 +272,7 @@ export function SessionsList({ sessions, searchQuery, setSearchQuery, onStatusCh
                     )}
                     {cardView === 'expanded' && (
                       <div className="text-[10px] text-neutral-400 mt-1">
-                        Создано: {new Date(session.created_at).toLocaleDateString('ru-RU')}
+                        {t('Auto.text_d4a1ff')} {new Date(session.created_at).toLocaleDateString('ru-RU')}
                       </div>
                     )}
                   </td>
@@ -303,12 +303,12 @@ export function SessionsList({ sessions, searchQuery, setSearchQuery, onStatusCh
                       onClick={(e) => e.stopPropagation()}
                       className="bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg px-3 py-1.5 text-sm outline-none font-medium cursor-pointer"
                     >
-                      <option value="new">Новые</option>
-                      <option value="discussing">В диалоге</option>
-                      <option value="booked">Записан</option>
-                      <option value="in_progress">В процессе</option>
-                      <option value="completed">Завершено</option>
-                      <option value="cancelled">Отмена</option>
+                      <option value="new">{t('crmBoard.columns.new')}</option>
+                      <option value="discussing">{t('Auto.text_0425ad')}</option>
+                      <option value="booked">{t('Auto.text_277bbc')}</option>
+                      <option value="in_progress">{t('crmBoard.columns.in_progress')}</option>
+                      <option value="completed">{t('crmBoard.columns.completed')}</option>
+                      <option value="cancelled">{t('cancel')}</option>
                     </select>
                   </td>
                 </tr>
@@ -318,8 +318,8 @@ export function SessionsList({ sessions, searchQuery, setSearchQuery, onStatusCh
                   variant="table"
                   colSpan={6}
                   icon={<Search className="w-8 h-8" />}
-                  title="Сеансы не найдены"
-                  description={searchQuery ? "По вашему поисковому запросу нет сеансов." : "У вас пока нет ни одного запланированного сеанса."}
+                  title={t('Auto.text_9aaa16')}
+                  description={searchQuery ? t('Auto.text_307cbd') : t('Auto.text_800a7f')}
                 />
               )}
             </tbody>
@@ -330,8 +330,8 @@ export function SessionsList({ sessions, searchQuery, setSearchQuery, onStatusCh
         {totalPages > 1 && (
           <div className="flex items-center justify-between p-4 border-t border-neutral-100 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-900/30">
             <div className="flex items-center gap-2 text-sm text-neutral-500">
-              Показывать по:
-              <select 
+              {t('crmBoard.list.showPerPage')}
+                                        <select 
                 value={pageSize} 
                 onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }}
                 className="bg-transparent border-none outline-none font-bold text-neutral-900 dark:text-white cursor-pointer"
@@ -347,18 +347,18 @@ export function SessionsList({ sessions, searchQuery, setSearchQuery, onStatusCh
                 disabled={page === 1}
                 className="px-3 py-1.5 rounded-lg border border-neutral-200 dark:border-neutral-700 text-sm font-medium hover:bg-neutral-100 dark:hover:bg-neutral-800 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Назад
-              </button>
+                {t('back')}
+                                            </button>
               <span className="text-sm font-medium px-2">
-                {page} из {totalPages}
+                {page} {t('Auto.text_b98ccb')} {totalPages}
               </span>
               <button 
                 onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                 disabled={page === totalPages}
                 className="px-3 py-1.5 rounded-lg border border-neutral-200 dark:border-neutral-700 text-sm font-medium hover:bg-neutral-100 dark:hover:bg-neutral-800 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Вперед
-              </button>
+                {t('crmBoard.list.nextPage')}
+                                            </button>
             </div>
           </div>
         )}

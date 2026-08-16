@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import { AlertTriangle, Info, X } from 'lucide-react'
 
 interface ConfirmModalProps {
@@ -15,12 +16,13 @@ export function ConfirmModal({
   isOpen,
   title,
   message,
-  confirmText = 'Да',
-  cancelText = 'Отмена',
+  confirmText = t('Auto.text_e04af9'),
+  cancelText = t('cancel'),
   onConfirm,
   onCancel,
   type = 'info'
 }: ConfirmModalProps) {
+    const t = useTranslations();
   if (!isOpen) return null
 
   const getThemeClasses = () => {

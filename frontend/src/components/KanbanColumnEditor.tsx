@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import React, { useState } from 'react'
 import { Plus, Trash2, Check, ChevronUp, ChevronDown } from 'lucide-react'
 import { KanbanColumn } from './CRMBoard'
@@ -10,38 +11,39 @@ interface Props {
 }
 
 const AVAILABLE_COLORS = [
-  { value: 'emerald', hex: '#10b981', label: 'Изумрудный' },
-  { value: 'violet', hex: '#8b5cf6', label: 'Фиолетовый' },
-  { value: 'blue', hex: '#3b82f6', label: 'Синий' },
-  { value: 'yellow', hex: '#eab308', label: 'Желтый' },
-  { value: 'green', hex: '#22c55e', label: 'Зеленый' },
-  { value: 'red', hex: '#ef4444', label: 'Красный' },
-  { value: 'pink', hex: '#ec4899', label: 'Розовый' },
-  { value: 'orange', hex: '#f97316', label: 'Оранжевый' },
-  { value: 'cyan', hex: '#06b6d4', label: 'Бирюзовый' },
-  { value: 'slate', hex: '#64748b', label: 'Серый' }
+  { value: 'emerald', hex: '#10b981', label: t('Auto.text_c5be1a') },
+  { value: 'violet', hex: '#8b5cf6', label: t('Auto.text_04a710') },
+  { value: 'blue', hex: '#3b82f6', label: t('Auto.text_5447b1') },
+  { value: 'yellow', hex: '#eab308', label: t('Auto.text_eaf449') },
+  { value: 'green', hex: '#22c55e', label: t('Auto.text_e7be71') },
+  { value: 'red', hex: '#ef4444', label: t('Auto.text_4dfe3d') },
+  { value: 'pink', hex: '#ec4899', label: t('Auto.text_a4b822') },
+  { value: 'orange', hex: '#f97316', label: t('Auto.text_ec4858') },
+  { value: 'cyan', hex: '#06b6d4', label: t('Auto.text_81f2ef') },
+  { value: 'slate', hex: '#64748b', label: t('Auto.text_becc1d') }
 ]
 
 const AVAILABLE_ICONS = [
-  { value: 'UserPlus', label: 'Добавление' },
-  { value: 'MessageCircle', label: 'Диалог' },
-  { value: 'Calendar', label: 'Календарь' },
-  { value: 'PlayCircle', label: 'В процессе' },
-  { value: 'CheckCircle', label: 'Готово' },
-  { value: 'Flag', label: 'Флаг' },
-  { value: 'Clock', label: 'Ожидание' },
-  { value: 'Star', label: 'Звезда' },
-  { value: 'Heart', label: 'Сердце' },
-  { value: 'Zap', label: 'Молния' }
+  { value: 'UserPlus', label: t('Auto.text_b2f435') },
+  { value: 'MessageCircle', label: t('Auto.text_837986') },
+  { value: 'Calendar', label: t('crmBoard.viewCalendar') },
+  { value: 'PlayCircle', label: t('crmBoard.columns.in_progress') },
+  { value: 'CheckCircle', label: t('Auto.text_34e141') },
+  { value: 'Flag', label: t('Auto.text_a5e9c2') },
+  { value: 'Clock', label: t('Auto.text_587434') },
+  { value: 'Star', label: t('Auto.text_56e273') },
+  { value: 'Heart', label: t('Auto.text_421913') },
+  { value: 'Zap', label: t('Auto.text_0cf0ee') }
 ]
 
 export function KanbanColumnEditor({ columns, onSave, onCancel }: Props) {
+    const t = useTranslations();
   const [cols, setCols] = useState<KanbanColumn[]>(columns)
 
   const handleAdd = () => {
     setCols([...cols, {
       id: `custom_${Date.now()}`,
-      title: 'Новая колонка',
+      title: t('Auto.text_6b37ff'),
       iconName: 'Star',
       color: 'slate'
     }])
@@ -49,7 +51,7 @@ export function KanbanColumnEditor({ columns, onSave, onCancel }: Props) {
 
   const handleRemove = (id: string) => {
     if (id === 'new' || id === 'cancelled') {
-      alert("Эти системные колонки нельзя удалить.")
+      alert(t('Auto.text_b3b20e'))
       return
     }
     setCols(cols.filter(c => c.id !== id))
@@ -80,15 +82,15 @@ export function KanbanColumnEditor({ columns, onSave, onCancel }: Props) {
   return (
     <div className="bg-white dark:bg-[#0a0a0a] border border-neutral-200 dark:border-white/10 rounded-3xl p-4 sm:p-8 shadow-xl max-w-4xl mx-auto">
       <div className="flex justify-between items-center mb-8 pb-6 border-b border-neutral-100 dark:border-white/5">
-        <h3 className="text-2xl font-black text-neutral-900 dark:text-white tracking-tight">Настройка колонок</h3>
+        <h3 className="text-2xl font-black text-neutral-900 dark:text-white tracking-tight">{t('Auto.text_5eb02b')}</h3>
         <div className="flex gap-3">
           <button onClick={onCancel} className="px-5 py-2.5 text-sm font-bold text-neutral-500 hover:text-neutral-700 bg-neutral-100 dark:bg-white/5 hover:bg-neutral-200 dark:hover:bg-white/10 rounded-xl transition-colors">
-            Отмена
-          </button>
+            {t('cancel')}
+                                </button>
           <button onClick={() => onSave(cols)} className="px-5 py-2.5 text-sm font-bold text-white bg-primary-600 hover:bg-primary-700 rounded-xl transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5 flex items-center gap-2">
             <Check className="w-4 h-4" />
-            Сохранить
-          </button>
+            {t('save')}
+                                </button>
         </div>
       </div>
 
@@ -118,12 +120,12 @@ export function KanbanColumnEditor({ columns, onSave, onCancel }: Props) {
                     value={c.title}
                     onChange={(e) => updateCol(c.id, { title: e.target.value })}
                     className="flex-1 bg-white dark:bg-[#111] border border-neutral-200 dark:border-white/10 rounded-xl px-4 py-3 text-base font-bold outline-none focus:ring-2 focus:ring-primary-500 transition-all placeholder:font-normal"
-                    placeholder="Название колонки"
+                    placeholder={t('Auto.text_e5b405')}
                   />
                   {!isSystem && (
                     <button
                       onClick={() => handleRemove(c.id)}
-                      title="Удалить колонку"
+                      title={t('Auto.text_03f327')}
                       className="p-3 text-neutral-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-xl transition-colors ml-2"
                     >
                       <Trash2 className="w-5 h-5" />
@@ -133,7 +135,7 @@ export function KanbanColumnEditor({ columns, onSave, onCancel }: Props) {
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                   <div>
-                    <span className="text-xs font-bold uppercase tracking-wider text-neutral-500 mb-3 block">Иконка</span>
+                    <span className="text-xs font-bold uppercase tracking-wider text-neutral-500 mb-3 block">{t('Auto.text_c4ebe2')}</span>
                     <div className="flex flex-wrap gap-2">
                       {AVAILABLE_ICONS.map(i => {
                         const IconComponent = (Icons as any)[i.value]
@@ -153,7 +155,7 @@ export function KanbanColumnEditor({ columns, onSave, onCancel }: Props) {
                   </div>
 
                   <div>
-                    <span className="text-xs font-bold uppercase tracking-wider text-neutral-500 mb-3 block">Цвет</span>
+                    <span className="text-xs font-bold uppercase tracking-wider text-neutral-500 mb-3 block">{t('Auto.text_371885')}</span>
                     <div className="flex flex-wrap gap-2">
                       {AVAILABLE_COLORS.map(color => {
                         const isSelected = c.color === color.value
@@ -185,8 +187,8 @@ export function KanbanColumnEditor({ columns, onSave, onCancel }: Props) {
         className="w-full py-4 border-2 border-dashed border-neutral-300 dark:border-white/10 hover:border-primary-500 hover:bg-primary-50 dark:hover:bg-primary-500/10 text-neutral-500 dark:text-neutral-400 dark:hover:text-primary-300 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all hover:shadow-sm"
       >
         <Plus className="w-5 h-5" />
-        Добавить колонку
-      </button>
+        {t('Auto.text_9d1bec')}
+                    </button>
     </div>
   )
 }

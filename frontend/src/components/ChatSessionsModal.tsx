@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import Image from 'next/image'
 import { useState, useEffect } from 'react'
 import { X, DollarSign } from 'lucide-react'
@@ -13,6 +14,7 @@ interface ChatSessionsModalProps {
 }
 
 export function ChatSessionsModal({ chatId, clientInfo, userRole, onClose, onUpdate }: ChatSessionsModalProps) {
+    const t = useTranslations();
   const [sessions, setSessions] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<'all' | 'new'>(userRole === 'client' ? 'all' : 'new')
@@ -58,8 +60,8 @@ export function ChatSessionsModal({ chatId, clientInfo, userRole, onClose, onUpd
       <div className="bg-white dark:bg-neutral-900 w-full max-w-2xl rounded-3xl shadow-xl flex flex-col max-h-[90vh]">
         <div className="flex items-center justify-between p-6 border-b border-neutral-100 dark:border-white/10">
           <div>
-            <h2 className="text-xl font-bold dark:text-white">Сеансы</h2>
-            <p className="text-sm text-neutral-500">{clientInfo?.name || 'Клиент'}</p>
+            <h2 className="text-xl font-bold dark:text-white">{t('crmBoard.tabSessions')}</h2>
+            <p className="text-sm text-neutral-500">{clientInfo?.name || t('landing.client_title')}</p>
           </div>
           <button onClick={onClose} className="p-2 hover:bg-neutral-100 dark:hover:bg-white/5 rounded-full transition-colors">
             <X className="w-5 h-5 dark:text-neutral-400" />
@@ -69,19 +71,19 @@ export function ChatSessionsModal({ chatId, clientInfo, userRole, onClose, onUpd
         {userRole === 'master' && (
           <div className="flex gap-4 p-4 border-b border-neutral-100 dark:border-white/10 overflow-x-auto no-scrollbar">
             <button onClick={() => setActiveTab('new')} className={`px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-colors ${activeTab === 'new' ? 'bg-primary-600 text-white' : 'bg-neutral-100 dark:bg-white/5 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-white/10'}`}>
-              Новые заявки
-            </button>
+              {t('newLeadAlerts')}
+                                      </button>
             <button onClick={() => setActiveTab('all')} className={`px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-colors ${activeTab === 'all' ? 'bg-primary-600 text-white' : 'bg-neutral-100 dark:bg-white/5 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-white/10'}`}>
-              Все сеансы
-            </button>
+              {t('Auto.text_aecf7f')}
+                                      </button>
           </div>
         )}
 
         <div className="flex-1 overflow-y-auto p-6 space-y-4">
           {loading ? (
-            <div className="text-center text-neutral-500">Загрузка...</div>
+            <div className="text-center text-neutral-500">{t('loading')}</div>
           ) : filteredSessions.length === 0 ? (
-            <div className="text-center text-neutral-500 py-10">Нет сеансов</div>
+            <div className="text-center text-neutral-500 py-10">{t('Auto.text_3b6b69')}</div>
           ) : (
             filteredSessions.map(session => (
               <div key={session.id} className="bg-neutral-50 dark:bg-white/5 border border-neutral-100 dark:border-white/10 p-4 rounded-2xl flex flex-col sm:flex-row gap-4">
@@ -91,8 +93,8 @@ export function ChatSessionsModal({ chatId, clientInfo, userRole, onClose, onUpd
                 <div className="flex-1 min-w-0">
                   <div className="flex justify-between items-start mb-2">
                     <h3 className="font-bold dark:text-white truncate pr-2">
-                      {(!session.master_clients?.leads?.title || session.master_clients.leads.title.startsWith('Татуировка') || session.master_clients.leads.title === 'Новая заявка на татуировку') 
-                        ? 'Новая заявка' 
+                      {(!session.master_clients?.leads?.title || session.master_clients.leads.title.startsWith(t('Auto.text_09f329')) || session.master_clients.leads.title === t('Auto.text_ea68ee')) 
+                        ? t('newLeadBtn') 
                         : session.master_clients.leads.title}
                     </h3>
                     <span className="text-xs px-2 py-1 bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300 rounded-lg shrink-0">
@@ -123,8 +125,8 @@ export function ChatSessionsModal({ chatId, clientInfo, userRole, onClose, onUpd
                         onClick={() => setSelectedSessionForAccept(session)}
                         className="flex-1 py-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-medium rounded-xl transition-colors"
                       >
-                        Посмотреть
-                      </button>
+                        {t('Auto.text_0b3d3b')}
+                                                          </button>
                     </div>
                   )}
                 </div>

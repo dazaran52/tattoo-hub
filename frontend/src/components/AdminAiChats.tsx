@@ -1,4 +1,6 @@
 'use client'
+import { useTranslations } from "next-intl";
+
 
 import { useState, useEffect, useRef, useMemo } from 'react'
 import { supabase } from '@/lib/supabase'
@@ -30,6 +32,7 @@ interface AiConversation {
 }
 
 export function AdminAiChats() {
+    const t = useTranslations();
   const [session, setSession] = useState<any>(null)
   const [conversations, setConversations] = useState<AiConversation[]>([])
   const [selectedConv, setSelectedConv] = useState<AiConversation | null>(null)
@@ -92,7 +95,7 @@ export function AdminAiChats() {
       const updatedConv = { ...selectedConv, is_paused: newPauseState }
       setSelectedConv(updatedConv)
       setConversations(prev => prev.map(c => c.id === selectedConv.id ? updatedConv : c))
-      toast.success(newPauseState ? 'Диалог перехвачен (ИИ на паузе)' : 'ИИ снова включен')
+      toast.success(newPauseState ? t('Auto.text_6ef87d') : t('Auto.text_0b97ad'))
     } catch (err: any) {
       toast.error(err.message)
     } finally {
@@ -118,8 +121,8 @@ export function AdminAiChats() {
           <div className="flex items-center justify-between font-bold text-neutral-900 dark:text-white">
             <div className="flex items-center gap-2">
               <Bot className="w-5 h-5 text-primary-500" />
-              ИИ Парсер
-            </div>
+              {t('Auto.text_c25627')}
+                                      </div>
             <span className="text-xs bg-primary-100 dark:bg-primary-900/50 text-primary-700 dark:text-primary-400 border border-primary-200 dark:border-primary-800 px-2 py-1 rounded-full">{filteredConversations.length}</span>
           </div>
           {uniqueCountries.length > 0 && (
@@ -130,7 +133,7 @@ export function AdminAiChats() {
                 onChange={e => setCountryFilter(e.target.value)}
                 className="flex-1 bg-white dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-lg text-xs py-1.5 px-2 outline-none focus:border-primary-500"
               >
-                <option value="ALL">Все страны</option>
+                <option value="ALL">{t('Auto.text_2aa3f1')}</option>
                 {uniqueCountries.map(code => (
                   <option key={code} value={code}>{code}</option>
                 ))}
@@ -145,8 +148,8 @@ export function AdminAiChats() {
             <EmptyState
               variant="compact"
               icon={<Bot className="w-8 h-8" />}
-              title="Нет диалогов"
-              description="Здесь появятся ОИ-чаты."
+              title={t('Auto.text_20080c')}
+              description={t('Auto.text_1d5cf0')}
             />
           ) : (
             filteredConversations.map(c => (
@@ -172,8 +175,8 @@ export function AdminAiChats() {
                   </span>
                   {c.is_paused && (
                     <span className="px-2 py-0.5 rounded-full bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800 flex items-center gap-1">
-                      <PauseCircle className="w-3 h-3" /> Перехвачен
-                    </span>
+                      <PauseCircle className="w-3 h-3" /> {t('Auto.text_5dbb3b')}
+                                                    </span>
                   )}
                 </div>
               </button>
@@ -187,7 +190,7 @@ export function AdminAiChats() {
         {!selectedConv ? (
           <div className="flex-1 flex flex-col items-center justify-center text-neutral-400">
             <Bot className="w-16 h-16 mb-4 opacity-20" />
-            <p>Выберите диалог слева</p>
+            <p>{t('Auto.text_21fd31')}</p>
           </div>
         ) : (
           <>
@@ -206,7 +209,7 @@ export function AdminAiChats() {
                     )}
                   </div>
                   <div className="text-xs text-neutral-500 flex items-center gap-2 mt-0.5">
-                    Статус: <span className={selectedConv.state === 'completed' ? 'text-green-500' : 'text-amber-500'}>{selectedConv.state}</span>
+                    {t('Auto.text_9fa7ff')} <span className={selectedConv.state === 'completed' ? 'text-green-500' : 'text-amber-500'}>{selectedConv.state}</span>
                   </div>
                 </div>
               </div>
@@ -221,22 +224,22 @@ export function AdminAiChats() {
                   }`}
                 >
                   {isPausing ? <Loader2 className="w-4 h-4 animate-spin" /> : selectedConv.is_paused ? <PlayCircle className="w-4 h-4" /> : <PauseCircle className="w-4 h-4" />}
-                  {selectedConv.is_paused ? 'Включить ИИ' : 'Перехватить диалог'}
+                  {selectedConv.is_paused ? t('Auto.text_c9e84d') : t('Auto.text_15006f')}
                 </button>
               </div>
             </div>
             
             {/* Context Header */}
             <div className="bg-primary-50 dark:bg-primary-900/10 border-b border-primary-100 dark:border-primary-900/20 p-3 flex flex-wrap gap-x-6 gap-y-2 text-xs">
-              <div className="font-semibold text-primary-700 dark:text-primary-400 w-full mb-1">Собранные данные:</div>
-              <div className="flex flex-col"><span className="text-neutral-500 mb-0.5">Стиль:</span> <span className="font-medium dark:text-white">{selectedConv.collected_data.style || '-'}</span></div>
-              <div className="flex flex-col"><span className="text-neutral-500 mb-0.5">Место:</span> <span className="font-medium dark:text-white">{selectedConv.collected_data.location || '-'}</span></div>
-              <div className="flex flex-col"><span className="text-neutral-500 mb-0.5">Размер:</span> <span className="font-medium dark:text-white">{selectedConv.collected_data.size || '-'}</span></div>
-              <div className="flex flex-col"><span className="text-neutral-500 mb-0.5">Бюджет:</span> <span className="font-medium dark:text-white">{selectedConv.collected_data.budget_amount ? `${selectedConv.collected_data.budget_amount} ${selectedConv.collected_data.budget_currency || ''}` : '-'}</span></div>
-              <div className="flex flex-col"><span className="text-neutral-500 mb-0.5">Идея:</span> <span className="font-medium dark:text-white line-clamp-2 max-w-xs" title={selectedConv.collected_data.idea}>{selectedConv.collected_data.idea || '-'}</span></div>
-              <div className="flex flex-col"><span className="text-neutral-500 mb-0.5">Референсы:</span> <span className="font-medium dark:text-white">{selectedConv.collected_data.has_references ? 'Да' : 'Нет'}</span></div>
+              <div className="font-semibold text-primary-700 dark:text-primary-400 w-full mb-1">{t('Auto.text_e5c127')}</div>
+              <div className="flex flex-col"><span className="text-neutral-500 mb-0.5">{t('styleLabel')}</span> <span className="font-medium dark:text-white">{selectedConv.collected_data.style || '-'}</span></div>
+              <div className="flex flex-col"><span className="text-neutral-500 mb-0.5">{t('locationLabel')}</span> <span className="font-medium dark:text-white">{selectedConv.collected_data.location || '-'}</span></div>
+              <div className="flex flex-col"><span className="text-neutral-500 mb-0.5">{t('sizeLabel')}</span> <span className="font-medium dark:text-white">{selectedConv.collected_data.size || '-'}</span></div>
+              <div className="flex flex-col"><span className="text-neutral-500 mb-0.5">{t('Auto.text_7e8c04')}</span> <span className="font-medium dark:text-white">{selectedConv.collected_data.budget_amount ? `${selectedConv.collected_data.budget_amount} ${selectedConv.collected_data.budget_currency || ''}` : '-'}</span></div>
+              <div className="flex flex-col"><span className="text-neutral-500 mb-0.5">{t('Auto.text_ec8375')}</span> <span className="font-medium dark:text-white line-clamp-2 max-w-xs" title={selectedConv.collected_data.idea}>{selectedConv.collected_data.idea || '-'}</span></div>
+              <div className="flex flex-col"><span className="text-neutral-500 mb-0.5">{t('Auto.text_4a8bed')}</span> <span className="font-medium dark:text-white">{selectedConv.collected_data.has_references ? t('Auto.text_e04af9') : t('Auto.text_d0cd22')}</span></div>
               {selectedConv.collected_data.images && selectedConv.collected_data.images.length > 0 && (
-                <div className="flex flex-col"><span className="text-neutral-500 mb-0.5">Фото загружено:</span> <span className="font-medium dark:text-white">{selectedConv.collected_data.images.length} шт.</span></div>
+                <div className="flex flex-col"><span className="text-neutral-500 mb-0.5">{t('Auto.text_4fe2f7')}</span> <span className="font-medium dark:text-white">{selectedConv.collected_data.images.length} {t('Auto.text_7d4437')}</span></div>
               )}
             </div>
 
@@ -271,7 +274,7 @@ export function AdminAiChats() {
                   )
                 })
               ) : (
-                <div className="text-center text-neutral-400 text-sm mt-4">Нет сообщений в истории</div>
+                <div className="text-center text-neutral-400 text-sm mt-4">{t('Auto.text_0e26cf')}</div>
               )}
               <div ref={messagesEndRef} />
             </div>

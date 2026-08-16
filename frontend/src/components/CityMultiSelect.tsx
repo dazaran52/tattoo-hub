@@ -56,7 +56,7 @@ export function CityMultiSelect({ cities, selectedCityIds, onChange, placeholder
 
   const renderTriggerText = () => {
     if (selectedCityIds.length === 0) {
-      return <span className="text-neutral-500">{placeholder || t('Все города') || 'Все города'}</span>
+      return <span className="text-neutral-500">{placeholder || t(t('Все города')) || t('Все города')}</span>
     }
 
     if (selectedCityIds.length === 1) {
@@ -66,7 +66,7 @@ export function CityMultiSelect({ cities, selectedCityIds, onChange, placeholder
 
     return (
       <span className="text-neutral-900 dark:text-white font-medium">
-        {t('selected') || 'Выбрано'}: {selectedCityIds.length}
+        {t('selected') || t('Auto.text_c8775d')}: {selectedCityIds.length}
       </span>
     )
   }
@@ -102,7 +102,7 @@ export function CityMultiSelect({ cities, selectedCityIds, onChange, placeholder
           <div className="p-2 border-b border-neutral-100 dark:border-neutral-800">
             <input
               type="text"
-              placeholder={t('Поиск города...') || 'Поиск города...'}
+              placeholder={t(t('Поиск города...')) || t('Поиск города...')}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full px-3 py-2 text-sm bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-lg outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 dark:text-white transition-all"
@@ -113,7 +113,7 @@ export function CityMultiSelect({ cities, selectedCityIds, onChange, placeholder
           <div className="max-h-60 overflow-y-auto p-2 space-y-0.5 scrollbar-thin scrollbar-thumb-neutral-200 dark:scrollbar-thumb-neutral-800">
             {filteredCities.length === 0 ? (
               <div className="p-4 text-center text-sm text-neutral-500">
-                {t('noResults') || 'Ничего не найдено'}
+                {t('noResults') || t('crmBoard.list.nothingFound')}
               </div>
             ) : (
               filteredCities.map(city => {

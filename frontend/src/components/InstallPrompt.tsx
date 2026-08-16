@@ -6,16 +6,17 @@ import { X, Download } from 'lucide-react'
 import { useTranslations, useLocale } from 'next-intl'
 
 export function InstallPrompt() {
+    const t = useTranslations();
   const pathname = usePathname()
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null)
   const [showPrompt, setShowPrompt] = useState(false)
   const lang = useLocale()
 
   const copyMap: Record<string, { title: string; description: string; action: string }> = {
-    ru: { title: 'Установить приложение', description: 'Для быстрого доступа и уведомлений', action: 'Установить' },
+    ru: { title: t('Auto.text_18f979'), description: t('Auto.text_62847e'), action: t('Auto.text_7fe136') },
     cs: { title: 'Nainstalovat aplikaci', description: 'Pro rychlý přístup a upozornění', action: 'Instalovat' },
     en: { title: 'Install app', description: 'For quick access and notifications', action: 'Install' },
-    uk: { title: 'Встановити застосунок', description: 'Для швидкого доступу та сповіщень', action: 'Встановити' },
+    uk: { title: t('Auto.text_8a3120'), description: t('Auto.text_22ce63'), action: t('Auto.text_9c5ab7') },
   }
   const copy = copyMap[lang] || copyMap.en
 

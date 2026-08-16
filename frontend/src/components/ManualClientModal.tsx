@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import { useState, useEffect } from 'react'
 import { X, User, Phone, Calendar as CalendarIcon, FileText } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
@@ -11,6 +12,7 @@ interface ManualClientModalProps {
 }
 
 export function ManualClientModal({ isOpen, onClose, onSuccess, initialDate }: ManualClientModalProps) {
+    const t = useTranslations();
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
     client_name: '',
@@ -71,12 +73,12 @@ export function ManualClientModal({ isOpen, onClose, onSuccess, initialDate }: M
         throw new Error('Failed to create client')
       }
 
-      toast.success('Клиент успешно добавлен!')
+      toast.success(t('Auto.text_1a756f'))
       onSuccess()
       onClose()
       setFormData({ client_name: '', contact: '', notes: '', session_date: '' })
     } catch (err: any) {
-      toast.error(err.message || 'Ошибка при добавлении клиента')
+      toast.error(err.message || t('Auto.text_6fcae4'))
     } finally {
       setLoading(false)
     }
@@ -86,7 +88,7 @@ export function ManualClientModal({ isOpen, onClose, onSuccess, initialDate }: M
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
       <div className="bg-white dark:bg-neutral-900 rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
         <div className="flex justify-between items-center p-6 border-b border-neutral-100 dark:border-white/5">
-          <h2 className="text-xl font-bold text-neutral-900 dark:text-white">Добавить клиента вручную</h2>
+          <h2 className="text-xl font-bold text-neutral-900 dark:text-white">{t('Auto.text_84c834')}</h2>
           <button onClick={onClose} className="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-full text-neutral-500 transition-colors">
             <X className="w-5 h-5" />
           </button>
@@ -94,7 +96,7 @@ export function ManualClientModal({ isOpen, onClose, onSuccess, initialDate }: M
         
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           <div>
-            <label className="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-1">Имя клиента</label>
+            <label className="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-1">{t('Auto.text_835a78')}</label>
             <div className="relative">
               <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
               <input
@@ -103,13 +105,13 @@ export function ManualClientModal({ isOpen, onClose, onSuccess, initialDate }: M
                 value={formData.client_name}
                 onChange={e => setFormData(p => ({ ...p, client_name: e.target.value }))}
                 className="w-full bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-xl pl-10 pr-4 py-3 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
-                placeholder="Иван Иванов"
+                placeholder={t('Auto.text_c5797b')}
               />
             </div>
           </div>
           
           <div>
-            <label className="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-1">Контакты (TG/Inst/Телефон)</label>
+            <label className="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-1">{t('Auto.text_ea0ec1')}</label>
             <div className="relative">
               <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
               <input
@@ -117,13 +119,13 @@ export function ManualClientModal({ isOpen, onClose, onSuccess, initialDate }: M
                 value={formData.contact}
                 onChange={e => setFormData(p => ({ ...p, contact: e.target.value }))}
                 className="w-full bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-xl pl-10 pr-4 py-3 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
-                placeholder="@username или +123456789"
+                placeholder={t('Auto.text_2a7dbb')}
               />
             </div>
           </div>
           
           <div>
-            <label className="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-1">Заметки / Идея</label>
+            <label className="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-1">{t('Auto.text_5ce68b')}</label>
             <div className="relative">
               <FileText className="absolute left-3 top-4 w-5 h-5 text-neutral-400" />
               <textarea
@@ -131,13 +133,13 @@ export function ManualClientModal({ isOpen, onClose, onSuccess, initialDate }: M
                 value={formData.notes}
                 onChange={e => setFormData(p => ({ ...p, notes: e.target.value }))}
                 className="w-full bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-xl pl-10 px-4 py-3 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
-                placeholder="Что будем бить?"
+                placeholder={t('whatToTattoo')}
               />
             </div>
           </div>
           
           <div>
-            <label className="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-1">Дата сеанса (необязательно)</label>
+            <label className="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-1">{t('Auto.text_7a9374')}</label>
             <div className="relative">
               <CalendarIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
               <input
@@ -154,7 +156,7 @@ export function ManualClientModal({ isOpen, onClose, onSuccess, initialDate }: M
             disabled={loading}
             className="w-full py-4 bg-primary-600 hover:bg-primary-700 text-white font-bold rounded-xl shadow-lg transition-colors disabled:opacity-50 mt-4"
           >
-            {loading ? 'Добавление...' : 'Добавить клиента в CRM'}
+            {loading ? t('Auto.text_a96b15') : t('Auto.text_39e420')}
           </button>
         </form>
       </div>

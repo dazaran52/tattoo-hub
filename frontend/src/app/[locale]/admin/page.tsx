@@ -48,6 +48,7 @@ interface AdminUserResponse {
 export default function AdminPage() {
   const router = useRouter()
   const language = useLocale()
+  const t = (key: Parameters<typeof getTranslation>[1]) => getTranslation(language as Language, key)
   
   const [profile, setProfile] = useState<Profile | null>(null)
   const [users, setUsers] = useState<AdminUserResponse[]>([])
@@ -75,7 +76,7 @@ export default function AdminPage() {
   // Balance Adjust State (1-Click Wallet Adjustment)
   const [adjustAmount, setAdjustAmount] = useState<string>('300')
   const [adjustOperation, setAdjustOperation] = useState<'add' | 'deduct'>('add')
-  const [adjustReason, setAdjustReason] = useState<string>('Компенсация')
+  const [adjustReason, setAdjustReason] = useState<string>(t('Auto.text_3c15ec'))
   const [isSubmittingAdjustBalance, setIsSubmittingAdjustBalance] = useState<boolean>(false)
 
   // Broadcast Modal State
@@ -163,7 +164,7 @@ export default function AdminPage() {
         setSelectedChatMessages(data)
       }
     } catch (e) {
-      toast.error('Не удалось загрузить сообщения')
+      toast.error(t('Auto.text_12c6dd'))
     } finally {
       setIsLoadingChatMessages(false)
     }
@@ -184,7 +185,7 @@ export default function AdminPage() {
       })
       if (!res.ok) {
         const err = await res.json()
-        throw new Error(err.detail || 'Не удалось обновить права')
+        throw new Error(err.detail || t('Auto.text_7ec775'))
       }
       const updated = await res.json()
       setUsers(prev => prev.map(u => u.id === userId ? {
@@ -203,9 +204,9 @@ export default function AdminPage() {
           can_create_leads: updated.can_create_leads
         } : null)
       }
-      toast.success('Права пользователя успешно обновлены!')
+      toast.success(t('Auto.text_a80be0'))
     } catch (e: any) {
-      toast.error(e.message || 'Ошибка обновления прав')
+      toast.error(e.message || t('Auto.text_f4a46e'))
     } finally {
       setIsUpdatingPermissions(false)
     }
@@ -247,7 +248,7 @@ export default function AdminPage() {
       setBadgeModalUser(null)
       alert(`Статус профиля ${selectedBadgeTier.toUpperCase()} успешно установлен!`)
     } catch (err: any) {
-      alert(err.message || 'Ошибка обновления статуса')
+      alert(err.message || t('crmBoard.statusUpdateError'))
     } finally {
       setIsSubmittingBadge(false)
     }
@@ -325,7 +326,7 @@ export default function AdminPage() {
   const submitAdjustBalance = async (targetUserId: string) => {
     const num = parseFloat(adjustAmount)
     if (isNaN(num) || num <= 0) {
-      toast.error('Укажите корректную сумму')
+      toast.error(t('Auto.text_d98e30'))
       return
     }
 
@@ -346,7 +347,7 @@ export default function AdminPage() {
         body: JSON.stringify({
           amount: num,
           operation: adjustOperation,
-          reason: adjustReason || 'Корректировка администратором'
+          reason: adjustReason || t('Auto.text_fddd1b')
         })
       })
 
@@ -362,14 +363,14 @@ export default function AdminPage() {
             balance: finalBal,
             amount: num,
             operation: adjustOperation,
-            reason: adjustReason || 'Корректировка администратором'
+            reason: adjustReason || t('Auto.text_fddd1b')
           })
         })
       }
 
       if (!res.ok) {
         const err = await res.json().catch(() => ({}))
-        throw new Error(err.detail || 'Не удалось изменить баланс')
+        throw new Error(err.detail || t('Auto.text_9356f8'))
       }
 
       const resData = await res.json().catch(() => ({}))
@@ -383,7 +384,7 @@ export default function AdminPage() {
         setDetailModalUser({ ...detailModalUser, balance: finalBal })
       }
     } catch (e: any) {
-      toast.error(e.message || 'Ошибка изменения баланса')
+      toast.error(e.message || t('Auto.text_435357'))
     } finally {
       setIsSubmittingAdjustBalance(false)
     }
@@ -391,7 +392,7 @@ export default function AdminPage() {
 
   const submitBroadcast = async () => {
     if (!broadcastTitle.trim() || !broadcastMessage.trim()) {
-      toast.error('Заполните тему и текст рассылки')
+      toast.error(t('Auto.text_2924ec'))
       return
     }
 
@@ -415,7 +416,7 @@ export default function AdminPage() {
 
       if (!res.ok) {
         const err = await res.json()
-        throw new Error(err.detail || 'Не удалось отправить рассылку')
+        throw new Error(err.detail || t('Auto.text_a3c07e'))
       }
 
       const resData = await res.json()
@@ -424,7 +425,7 @@ export default function AdminPage() {
       setBroadcastTitle('')
       setBroadcastMessage('')
     } catch (e: any) {
-      toast.error(e.message || 'Ошибка рассылки')
+      toast.error(e.message || t('Auto.text_70b2e1'))
     } finally {
       setIsSendingBroadcast(false)
     }
@@ -481,7 +482,7 @@ export default function AdminPage() {
   const [error, setError] = useState<string | null>(null)
   const [actionLoadingId, setActionLoadingId] = useState<string | null>(null)
 
-  const t = (key: Parameters<typeof getTranslation>[1]) => getTranslation(language as Language, key)
+
 
 
   useEffect(() => {
@@ -538,7 +539,7 @@ export default function AdminPage() {
   }
 
   const deleteUser = async (userId: string) => {
-    if (!confirm('Вы уверены, что хотите безвозвратно удалить этого пользователя? Это действие нельзя отменить.')) return
+    if (!confirm(t('Auto.text_ba74cc'))) return
 
     try {
       setActionLoadingId(userId)
@@ -578,7 +579,7 @@ export default function AdminPage() {
     if (!balanceModalUser) return
     const num = Number.parseFloat(newBalanceValue)
     if (isNaN(num) || num < 0) {
-      toast.error('Неверная сумма')
+      toast.error(t('Auto.text_c4c25f'))
       return
     }
 
@@ -610,7 +611,7 @@ export default function AdminPage() {
           user.id === userId ? { ...user, balance: num } : user
         )
       )
-      toast.success('Баланс успешно обновлен!')
+      toast.success(t('Auto.text_123376'))
     } catch (err: any) {
       toast.error(err.message)
     } finally {
@@ -674,26 +675,26 @@ export default function AdminPage() {
         {adminStats && (
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
             <div className="bg-white/60 dark:bg-neutral-900/60 backdrop-blur-xl border border-neutral-200/50 dark:border-white/5 rounded-2xl p-4 shadow-sm">
-              <p className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-1">Всего пользователей</p>
+              <p className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-1">{t('Auto.text_b1b2f0')}</p>
               <div className="flex items-baseline gap-2">
                 <span className="text-2xl font-black text-neutral-900 dark:text-white">{adminStats.total_users}</span>
-                <span className="text-xs text-neutral-400 font-medium">({adminStats.total_masters} м / {adminStats.total_clients} к)</span>
+                <span className="text-xs text-neutral-400 font-medium">({adminStats.total_masters} {t('Auto.text_1eb68c')} {adminStats.total_clients} {t('Auto.text_ddc1b9')}</span>
               </div>
             </div>
 
             <div className="bg-gradient-to-br from-amber-500/10 to-amber-500/5 border border-amber-500/30 rounded-2xl p-4 shadow-sm">
-              <p className="text-xs font-bold text-amber-500 uppercase tracking-wider mb-1">VIP & PRO Мастера</p>
+              <p className="text-xs font-bold text-amber-500 uppercase tracking-wider mb-1">{t('Auto.text_779d39')}</p>
               <div className="flex items-baseline gap-2">
                 <span className="text-2xl font-black text-amber-400">{adminStats.active_paid_masters}</span>
-                <span className="text-xs text-amber-500/80 font-medium">активных подписок</span>
+                <span className="text-xs text-amber-500/80 font-medium">{t('Auto.text_f6e156')}</span>
               </div>
             </div>
 
             <div className="bg-gradient-to-br from-purple-500/10 to-purple-500/5 border border-purple-500/30 rounded-2xl p-4 shadow-sm">
-              <p className="text-xs font-bold text-purple-400 uppercase tracking-wider mb-1">Открытые Заявки</p>
+              <p className="text-xs font-bold text-purple-400 uppercase tracking-wider mb-1">{t('Auto.text_3e899d')}</p>
               <div className="flex items-baseline gap-2">
                 <span className="text-2xl font-black text-purple-300">{adminStats.open_leads}</span>
-                <span className="text-xs text-purple-400/80 font-medium">на маркетплейсе</span>
+                <span className="text-xs text-purple-400/80 font-medium">{t('Auto.text_f806de')}</span>
               </div>
             </div>
 
@@ -703,8 +704,8 @@ export default function AdminPage() {
                 className="w-full py-2.5 px-4 bg-gradient-to-r from-accent-500 to-primary-600 hover:opacity-95 text-white font-extrabold text-xs uppercase tracking-wider rounded-xl shadow-lg shadow-accent-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
               >
                 <MessageSquare className="w-4 h-4" />
-                📢 Глобальная рассылка
-              </button>
+                {t('Auto.text_9b02c5')}
+                                            </button>
             </div>
           </div>
         )}
@@ -718,10 +719,10 @@ export default function AdminPage() {
         {/* Parent Tabs (Groups) */}
         <div className="flex flex-wrap gap-2 mb-4">
           {[
-            { id: 'management', label: 'Управление', icon: <Users className="w-4 h-4" /> },
-            { id: 'moderation', label: 'Модерация', icon: <ShieldAlert className="w-4 h-4" />, hasUnread: securityAlerts.length > 0 || (adminStats?.pending_disputes > 0) },
-            { id: 'support', label: 'Поддержка', icon: <Headphones className="w-4 h-4" /> },
-            { id: 'directories', label: 'Справочники', icon: <Database className="w-4 h-4" /> },
+            { id: 'management', label: t('Auto.text_6fdd7d'), icon: <Users className="w-4 h-4" /> },
+            { id: 'moderation', label: t('Auto.text_424b69'), icon: <ShieldAlert className="w-4 h-4" />, hasUnread: securityAlerts.length > 0 || (adminStats?.pending_disputes > 0) },
+            { id: 'support', label: t('Auto.text_662448'), icon: <Headphones className="w-4 h-4" /> },
+            { id: 'directories', label: t('Auto.text_1e6f7d'), icon: <Database className="w-4 h-4" /> },
           ].map(group => (
             <button
               key={group.id}
@@ -765,8 +766,8 @@ export default function AdminPage() {
                   activeTab === 'leads' ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-950 shadow-md scale-[1.02]' : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
                 }`}
               >
-                Заявки (TTL)
-              </button>
+                {t('Auto.text_6cd106')}
+                                            </button>
             </>
           )}
 
@@ -779,7 +780,7 @@ export default function AdminPage() {
                 }`}
               >
                 <Shield className="w-4 h-4 text-red-400" />
-                🚨 Анти-фрод ({securityAlerts.length})
+                {t('Auto.text_73fb03')}{securityAlerts.length})
                 {securityAlerts.length > 0 && (
                   <div className="absolute top-0 right-0 -mt-1 -mr-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white dark:border-neutral-900 animate-pulse" />
                 )}
@@ -790,8 +791,8 @@ export default function AdminPage() {
                   activeTab === 'disputes' ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-950 shadow-md scale-[1.02]' : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
                 }`}
               >
-                Жалобы
-                {(adminStats?.pending_disputes > 0) && (
+                {t('Auto.text_0a6011')}
+                                              {(adminStats?.pending_disputes > 0) && (
                   <div className="absolute top-0 right-0 -mt-1 -mr-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white dark:border-neutral-900 animate-pulse" />
                 )}
               </button>
@@ -801,8 +802,8 @@ export default function AdminPage() {
                   activeTab === 'appeals' ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-950 shadow-md scale-[1.02]' : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
                 }`}
               >
-                Апелляции
-              </button>
+                {t('Auto.text_8407de')}
+                                            </button>
             </>
           )}
 
@@ -814,16 +815,16 @@ export default function AdminPage() {
                   activeTab === 'chats' ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-950 shadow-md scale-[1.02]' : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
                 }`}
               >
-                Поддержка
-              </button>
+                {t('Auto.text_662448')}
+                                            </button>
               <button
                 onClick={() => setActiveTab('ai-chats')}
                 className={`px-5 py-2.5 rounded-xl font-bold text-sm transition-all ${
                   activeTab === 'ai-chats' ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-950 shadow-md scale-[1.02]' : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
                 }`}
               >
-                ИИ Диалоги
-              </button>
+                {t('Auto.text_5ce92b')}
+                                            </button>
             </>
           )}
 
@@ -835,16 +836,16 @@ export default function AdminPage() {
                   activeTab === 'locations' ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-950 shadow-md scale-[1.02]' : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
                 }`}
               >
-                Локации
-              </button>
+                {t('Auto.text_088422')}
+                                            </button>
               <button
                 onClick={() => setActiveTab('currencies')}
                 className={`px-5 py-2.5 rounded-xl font-bold text-sm transition-all ${
                   activeTab === 'currencies' ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-950 shadow-md scale-[1.02]' : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
                 }`}
               >
-                Курсы валют
-              </button>
+                {t('Auto.text_9729bf')}
+                                            </button>
             </>
           )}
         </div>
@@ -863,30 +864,30 @@ export default function AdminPage() {
               <div>
                 <h3 className="text-xl font-extrabold text-neutral-900 dark:text-white flex items-center gap-2">
                   <Shield className="w-5 h-5 text-red-500" />
-                  Монитор Анти-фрода и Безопасности
-                </h3>
+                  {t('Auto.text_29e406')}
+                                                  </h3>
                 <p className="text-xs text-neutral-500 dark:text-neutral-400 font-medium">
-                  Автоматические сработки на попытки передачи контактов и занижения стоимости сеансов
-                </p>
+                  {t('Auto.text_b46a68')}
+                                                  </p>
               </div>
 
               <button
                 onClick={fetchSecurityAlerts}
                 className="px-4 py-2 bg-neutral-200 dark:bg-neutral-800 hover:bg-neutral-300 font-bold text-xs rounded-xl transition-all cursor-pointer"
               >
-                Обновить список
-              </button>
+                {t('Auto.text_782ad0')}
+                                            </button>
             </div>
 
             {isLoadingSecurityAlerts ? (
               <div className="py-12 text-center text-neutral-400">
                 <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2" />
-                Загрузка алертов безопасности...
-              </div>
+                {t('Auto.text_5515c2')}
+                                            </div>
             ) : securityAlerts.length === 0 ? (
               <div className="py-12 text-center text-neutral-400 font-medium">
-                🛡️ Нарушений не зафиксировано. Платформа работает штатно!
-              </div>
+                {t('Auto.text_8a6b6e')}
+                                                </div>
             ) : (
               <div className="space-y-4">
                 {securityAlerts.map((alert: any) => (
@@ -904,7 +905,7 @@ export default function AdminPage() {
                       <p className="text-xs text-neutral-300 font-medium">{alert.message}</p>
                       {alert.users && (
                         <p className="text-xs text-neutral-400 font-mono">
-                          Пользователь: {alert.users.display_name || alert.users.email} ({alert.users.role}) • Чат заблокирован: {alert.users.can_chat === false ? 'ДА 🔴' : 'НЕТ 🟢'}
+                          {t('Auto.text_c38cc3')} {alert.users.display_name || alert.users.email} ({alert.users.role}{t('Auto.text_dab759')} {alert.users.can_chat === false ? t('Auto.text_a52b31') : t('Auto.text_a3f5b1')}
                         </p>
                       )}
                     </div>
@@ -914,8 +915,8 @@ export default function AdminPage() {
                         onClick={() => updateUserPermissions(alert.user_id, { can_chat: true })}
                         className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-black text-xs transition-all shadow-md shrink-0 cursor-pointer"
                       >
-                        🔓 Разблокировать чат
-                      </button>
+                        {t('Auto.text_5534b1')}
+                                                      </button>
                     )}
                   </div>
                 ))}
@@ -936,7 +937,7 @@ export default function AdminPage() {
                       userRoleTab === role ? 'bg-accent-600 text-white' : 'bg-neutral-200/50 hover:bg-neutral-300 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-600 dark:text-neutral-400'
                     }`}
                   >
-                    {role === 'all' ? 'Все' : role === 'master' ? 'Мастера' : role === 'client' ? 'Клиенты' : 'Админы'}
+                    {role === 'all' ? t('Auto.text_984bf1') : role === 'master' ? t('masters') : role === 'client' ? t('crmBoard.tabClients') : t('Auto.text_996abc')}
                   </button>
                 ))}
               </div>
@@ -945,7 +946,7 @@ export default function AdminPage() {
                 <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
                 <input
                   type="text"
-                  placeholder="Поиск по email или имени..."
+                  placeholder={t('Auto.text_961f6b')}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full pl-10 pr-4 py-2.5 bg-white/40 dark:bg-neutral-950/40 border border-neutral-200 dark:border-white/10 rounded-xl text-sm text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-accent-500/20 focus:border-accent-500 transition-all shadow-inner"
@@ -957,10 +958,10 @@ export default function AdminPage() {
                   onChange={(e: any) => setSortOrder(e.target.value)}
                   className="w-full sm:w-auto px-4 py-2.5 bg-white/60 dark:bg-neutral-950/80 border border-neutral-200 dark:border-white/10 rounded-xl text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-accent-500/20 font-semibold cursor-pointer transition-all shadow-sm"
                 >
-                  <option value="newest">Сначала новые</option>
-                  <option value="oldest">Сначала старые</option>
-                  <option value="balance_desc">Баланс (убыв)</option>
-                  <option value="balance_asc">Баланс (возр)</option>
+                  <option value="newest">{t('Auto.text_ea5256')}</option>
+                  <option value="oldest">{t('Auto.text_6dbbde')}</option>
+                  <option value="balance_desc">{t('Auto.text_0f0924')}</option>
+                  <option value="balance_asc">{t('Auto.text_167621')}</option>
                 </select>
               </div>
               </div>
@@ -970,9 +971,9 @@ export default function AdminPage() {
                 <thead className="bg-neutral-50/50 dark:bg-neutral-900/30 border-b border-neutral-200/50 dark:border-white/5 text-neutral-600 dark:text-neutral-400">
                   <tr>
                     <th className="px-6 py-4 font-bold uppercase tracking-wider text-xs">{t('user')}</th>
-                    <th className="px-6 py-4 font-bold uppercase tracking-wider text-xs">Контакты</th>
-                    <th className="px-6 py-4 font-bold uppercase tracking-wider text-xs">Баланс</th>
-                    <th className="px-6 py-4 font-bold uppercase tracking-wider text-xs">Валюта</th>
+                    <th className="px-6 py-4 font-bold uppercase tracking-wider text-xs">{t('contacts')}</th>
+                    <th className="px-6 py-4 font-bold uppercase tracking-wider text-xs">{t('Auto.text_95dcad')}</th>
+                    <th className="px-6 py-4 font-bold uppercase tracking-wider text-xs">{t('Auto.text_cf55d9')}</th>
                     <th className="px-6 py-4 font-bold uppercase tracking-wider text-xs">Status</th>
                     <th className="px-6 py-4 font-bold uppercase tracking-wider text-xs text-right">{t('actions')}</th>
                   </tr>
@@ -988,11 +989,11 @@ export default function AdminPage() {
                           </div>
                         )}
                         <div className="text-neutral-500 dark:text-neutral-400 text-xs mt-1">
-                          {user.display_name ? `${user.display_name}` : <span className="text-red-500 font-medium text-[10px] uppercase">Не завершил онбординг</span>}
+                          {user.display_name ? `${user.display_name}` : <span className="text-red-500 font-medium text-[10px] uppercase">{t('Auto.text_4687b9')}</span>}
                         </div>
                         {user.referred_by && (
                           <div className="text-xs text-neutral-400 mt-1">
-                            Приглашен(а): <span className="font-mono">{user.referred_by}</span>
+                            {t('Auto.text_5fddbc')} <span className="font-mono">{user.referred_by}</span>
                           </div>
                         )}
                       </td>
@@ -1000,8 +1001,8 @@ export default function AdminPage() {
                         {user.phone && <div className="mb-1">{user.phone}</div>}
                         {user.portfolio_url && (
                           <a href={user.portfolio_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center text-primary-600 dark:text-primary-400 hover:underline font-semibold">
-                            <LinkIcon className="w-3 h-3 mr-1" /> Портфолио
-                          </a>
+                            <LinkIcon className="w-3 h-3 mr-1" /> {t('portfolio')}
+                                                                </a>
                         )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-500 dark:text-neutral-400">
@@ -1040,10 +1041,10 @@ export default function AdminPage() {
                         )}
                         {user.role === 'master' && (
                           <div className="mt-2 text-[11px] font-bold text-neutral-500">
-                            Сертификат: {
-                              user.certificate_status === 'approved' ? 'проверен' :
-                              user.certificate_status === 'pending' ? 'ожидает проверки' :
-                              user.certificate_status === 'rejected' ? 'отклонён' : 'не загружен'
+                            {t('Auto.text_228f68')} {
+                              user.certificate_status === 'approved' ? t('Auto.text_e0359d') :
+                              user.certificate_status === 'pending' ? t('Auto.text_7cf593') :
+                              user.certificate_status === 'rejected' ? t('Auto.text_d70625') : t('Auto.text_8b1ea7')
                             }
                           </div>
                         )}
@@ -1060,8 +1061,8 @@ export default function AdminPage() {
                                 onClick={(e) => { e.stopPropagation(); setCertificateReviewUser(user); }}
                                 className="px-3.5 py-2 bg-primary-500/10 text-primary-600 dark:text-primary-400 border border-primary-500/20 rounded-xl text-xs font-bold hover:bg-primary-500/20 transition-all"
                               >
-                                Сертификат
-                              </button>
+                                {t('Auto.text_e12882')}
+                                                                                </button>
                             )}
 
                             {user.status === 'approved' && (
@@ -1072,11 +1073,11 @@ export default function AdminPage() {
                                     ? 'bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/20 hover:bg-orange-500/20'
                                     : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/20'
                                 }`}
-                                title={(user.can_chat ?? true) ? "Запретить отправку сообщений" : "Разрешить отправку сообщений"}
+                                title={(user.can_chat ?? true) ? t('Auto.text_215f2d') : t('Auto.text_c7eb57')}
                               >
                                 {(user.can_chat ?? true) ? <Lock className="w-3.5 h-3.5 mr-1" /> : <Unlock className="w-3.5 h-3.5 mr-1" />}
-                                Чат
-                              </button>
+                                {t('Auto.text_c52b4c')}
+                                                                                </button>
                             )}
 
                             {user.role === 'master' && user.status === 'approved' && (
@@ -1087,11 +1088,11 @@ export default function AdminPage() {
                                     ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20 hover:bg-amber-500/20'
                                     : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/20'
                                 }`}
-                                title={(user.can_create_leads ?? true) ? "Отозвать доступ к маркетплейсу" : "Разрешить доступ к маркетплейсу"}
+                                title={(user.can_create_leads ?? true) ? t('Auto.text_f800c0') : t('Auto.text_b2552f')}
                               >
                                 {(user.can_create_leads ?? true) ? <Lock className="w-3.5 h-3.5 mr-1" /> : <Unlock className="w-3.5 h-3.5 mr-1" />}
-                                Маркетплейс
-                              </button>
+                                {t('marketplace')}
+                                                                                </button>
                             )}
                             
                             {user.status === 'pending' && (
@@ -1099,23 +1100,23 @@ export default function AdminPage() {
                                 onClick={(e) => { e.stopPropagation(); updateUserStatus(user.id, 'approved'); }}
                                 className="px-3.5 py-2 bg-emerald-500/10 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 rounded-xl text-xs font-bold hover:bg-emerald-500/20 transition-all"
                               >
-                                Одобрить
-                              </button>
+                                {t('Auto.text_8df353')}
+                                                                                </button>
                             )}
                             {user.status === 'rejected' ? (
                               <button
                                 onClick={(e) => { e.stopPropagation(); updateUserStatus(user.id, 'pending'); }}
                                 className="px-3.5 py-2 bg-neutral-500/10 dark:bg-neutral-900/20 text-neutral-600 dark:text-neutral-400 border border-neutral-500/20 rounded-xl text-xs font-bold hover:bg-neutral-500/20 transition-all"
                               >
-                                Разбанить
-                              </button>
+                                {t('Auto.text_9c8502')}
+                                                                                </button>
                             ) : (
                               <button
                                 onClick={(e) => { e.stopPropagation(); setBanModalUser(user); setBanReason(''); }}
                                 className="px-3.5 py-2 bg-red-500/10 dark:bg-red-900/20 text-red-600 dark:text-red-400 border border-red-500/20 rounded-xl text-xs font-bold hover:bg-red-500/20 transition-all flex items-center gap-1"
                               >
-                                Забанить
-                              </button>
+                                {t('Auto.text_6875d8')}
+                                                                                    </button>
                             )}
                           </div>
                         )}
@@ -1128,8 +1129,8 @@ export default function AdminPage() {
                         <EmptyState
                           variant="compact"
                           icon={<Search className="w-7 h-7" />}
-                          title="Пользователи не найдены"
-                          description="Попробуйте изменить фильтр или выбрать другую вкладку."
+                          title={t('Auto.text_c01aee')}
+                          description={t('Auto.text_7553bc')}
                         />
                       </td>
                     </tr>
@@ -1138,7 +1139,7 @@ export default function AdminPage() {
               </table>
               <div className="flex items-center justify-between px-6 py-4 border-t border-neutral-200/50 dark:border-white/5 bg-neutral-50/30 dark:bg-neutral-900/20">
                 <div className="text-sm text-neutral-500 font-medium">
-                  Всего: {userTotalCount}
+                  {t('Auto.text_2dc772')} {userTotalCount}
                 </div>
                 <div className="flex gap-2">
                   <button 
@@ -1146,8 +1147,8 @@ export default function AdminPage() {
                     disabled={userPage === 1}
                     className="px-3 py-1.5 rounded-lg text-sm font-semibold bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 disabled:opacity-50 transition-all"
                   >
-                    Пред.
-                  </button>
+                    {t('Auto.text_ed5d96')}
+                                                        </button>
                   <span className="px-3 py-1.5 text-sm font-semibold">
                     {userPage} / {userTotalPages}
                   </span>
@@ -1156,8 +1157,8 @@ export default function AdminPage() {
                     disabled={userPage === userTotalPages}
                     className="px-3 py-1.5 rounded-lg text-sm font-semibold bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 disabled:opacity-50 transition-all"
                   >
-                    След.
-                  </button>
+                    {t('Auto.text_03d65e')}
+                                                        </button>
                 </div>
               </div>
             </div>
@@ -1174,11 +1175,11 @@ export default function AdminPage() {
       {balanceModalUser && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-200">
           <div className="bg-white/85 dark:bg-neutral-900/85 backdrop-blur-xl w-full max-w-md rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 p-6 border border-neutral-200/50 dark:border-white/5">
-            <h3 className="text-xl font-extrabold text-neutral-900 dark:text-white mb-1">Изменить баланс</h3>
+            <h3 className="text-xl font-extrabold text-neutral-900 dark:text-white mb-1">{t('Auto.text_b1d275')}</h3>
             <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-5 font-semibold">{balanceModalUser.email}</p>
             
             <div className="mb-6">
-              <label className="block text-sm font-semibold text-neutral-600 dark:text-neutral-400 mb-2">Новый баланс кошелька</label>
+              <label className="block text-sm font-semibold text-neutral-600 dark:text-neutral-400 mb-2">{t('Auto.text_27f502')}</label>
               <input
                 type="number"
                 min="0"
@@ -1193,14 +1194,14 @@ export default function AdminPage() {
                 onClick={() => setBalanceModalUser(null)}
                 className="px-5 py-3 bg-neutral-200/50 dark:bg-neutral-800 text-neutral-900 dark:text-white rounded-xl hover:bg-neutral-300 dark:hover:bg-neutral-700 font-semibold transition-all"
               >
-                Отмена
-              </button>
+                {t('cancel')}
+                                            </button>
               <button
                 onClick={submitUpdateCredits}
                 className="px-5 py-3 bg-accent-600 hover:bg-accent-500 text-white font-bold rounded-xl transition-all shadow-md shadow-accent-600/20"
               >
-                Сохранить
-              </button>
+                {t('save')}
+                                            </button>
             </div>
           </div>
         </div>
@@ -1209,12 +1210,12 @@ export default function AdminPage() {
       {badgeModalUser && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-200" onClick={() => setBadgeModalUser(null)}>
           <div className="bg-white/90 dark:bg-neutral-900/90 backdrop-blur-2xl w-full max-w-md rounded-3xl shadow-2xl overflow-hidden p-6 border border-neutral-200/50 dark:border-white/10" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-xl font-extrabold text-neutral-900 dark:text-white mb-1">Выдать статус PRO / VIP</h3>
+            <h3 className="text-xl font-extrabold text-neutral-900 dark:text-white mb-1">{t('Auto.text_5c3ad7')}</h3>
             <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-6 font-semibold">{badgeModalUser.email}</p>
 
             <div className="space-y-5 mb-8">
               <div>
-                <label className="block text-xs font-extrabold uppercase tracking-wider text-neutral-500 mb-2">Статус аккаунта</label>
+                <label className="block text-xs font-extrabold uppercase tracking-wider text-neutral-500 mb-2">{t('Auto.text_ec679a')}</label>
                 <div className="grid grid-cols-3 gap-2">
                   <button
                     type="button"
@@ -1225,8 +1226,8 @@ export default function AdminPage() {
                         : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 border-transparent hover:bg-neutral-200'
                     }`}
                   >
-                    Базовый
-                  </button>
+                    {t('Auto.text_f4b7bd')}
+                                                        </button>
                   <button
                     type="button"
                     onClick={() => setSelectedBadgeTier('pro')}
@@ -1254,17 +1255,17 @@ export default function AdminPage() {
 
               {selectedBadgeTier !== 'none' && (
                 <div>
-                  <label className="block text-xs font-extrabold uppercase tracking-wider text-neutral-500 mb-2">Длительность статуса</label>
+                  <label className="block text-xs font-extrabold uppercase tracking-wider text-neutral-500 mb-2">{t('Auto.text_4924e4')}</label>
                   <select
                     value={selectedDurationDays}
                     onChange={(e) => setSelectedDurationDays(Number(e.target.value))}
                     className="w-full bg-white dark:bg-neutral-950 border border-neutral-200 dark:border-white/10 rounded-2xl px-4 py-3 text-sm font-bold text-neutral-900 dark:text-white outline-none focus:border-amber-500"
                   >
-                    <option value={7}>7 дней (Пробный)</option>
-                    <option value={30}>30 дней (1 месяц)</option>
-                    <option value={90}>90 дней (3 месяца)</option>
-                    <option value={365}>365 дней (1 год)</option>
-                    <option value={3650}>3650 дней (Бессрочно)</option>
+                    <option value={7}>{t('Auto.text_75763a')}</option>
+                    <option value={30}>{t('Auto.text_28c4d2')}</option>
+                    <option value={90}>{t('Auto.text_b2fc5c')}</option>
+                    <option value={365}>{t('Auto.text_0aa5c0')}</option>
+                    <option value={3650}>{t('Auto.text_0d19d0')}</option>
                   </select>
                 </div>
               )}
@@ -1276,15 +1277,15 @@ export default function AdminPage() {
                 onClick={() => setBadgeModalUser(null)}
                 className="px-5 py-3 bg-neutral-200/50 dark:bg-neutral-800 text-neutral-900 dark:text-white rounded-2xl font-bold text-sm hover:bg-neutral-300 dark:hover:bg-neutral-700 transition-all"
               >
-                Отмена
-              </button>
+                {t('cancel')}
+                                            </button>
               <button
                 type="button"
                 onClick={submitUpdateBadge}
                 disabled={isSubmittingBadge}
                 className="px-6 py-3 bg-gradient-to-r from-amber-500 to-primary-600 hover:opacity-90 text-white font-extrabold text-sm rounded-2xl transition-all shadow-lg shadow-amber-500/20 flex items-center gap-2"
               >
-                {isSubmittingBadge ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Сохранить статус'}
+                {isSubmittingBadge ? <Loader2 className="w-4 h-4 animate-spin" /> : t('Auto.text_9f4b3e')}
               </button>
             </div>
           </div>
@@ -1332,8 +1333,8 @@ export default function AdminPage() {
                 }`}
               >
                 <Shield className="w-4 h-4" />
-                Профиль и Права
-              </button>
+                {t('Auto.text_4d8185')}
+                                            </button>
 
               <button
                 onClick={() => setActiveUserDetailTab('chats')}
@@ -1344,7 +1345,7 @@ export default function AdminPage() {
                 }`}
               >
                 <MessageSquare className="w-4 h-4" />
-                Переписки ({userChats.length})
+                {t('Auto.text_bad7f8')}{userChats.length})
               </button>
 
               <button
@@ -1356,7 +1357,7 @@ export default function AdminPage() {
                 }`}
               >
                 <FileText className="w-4 h-4" />
-                {detailModalUser.role === 'master' ? 'Отклики в маркете' : 'Созданные заявки'}
+                {detailModalUser.role === 'master' ? t('Auto.text_9034a0') : t('Auto.text_dc6c84')}
               </button>
             </div>
 
@@ -1366,11 +1367,11 @@ export default function AdminPage() {
                 
                 {/* Role and Status Management */}
                 <div className="bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-white/5 rounded-2xl p-5">
-                  <h4 className="text-xs font-extrabold uppercase tracking-wider text-neutral-500 mb-4">Управление Ролью и Статусом</h4>
+                  <h4 className="text-xs font-extrabold uppercase tracking-wider text-neutral-500 mb-4">{t('Auto.text_a036dd')}</h4>
                   
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div>
-                      <label className="block text-xs font-bold text-neutral-400 mb-1">Роль аккаунта</label>
+                      <label className="block text-xs font-bold text-neutral-400 mb-1">{t('Auto.text_b5c099')}</label>
                       <div className="flex gap-2">
                         {['client', 'master', 'admin'].map((r) => (
                           <button
@@ -1390,7 +1391,7 @@ export default function AdminPage() {
                     </div>
 
                     <div>
-                      <label className="block text-xs font-bold text-neutral-400 mb-1">Подтверждение мастера</label>
+                      <label className="block text-xs font-bold text-neutral-400 mb-1">{t('Auto.text_68012d')}</label>
                       <button
                         onClick={() => updateUserPermissions(detailModalUser.id, { is_verified_master: !detailModalUser.is_verified_master })}
                         disabled={isUpdatingPermissions}
@@ -1400,18 +1401,18 @@ export default function AdminPage() {
                             : 'bg-neutral-200/50 dark:bg-neutral-800 border-neutral-300 dark:border-neutral-700 text-neutral-500'
                         }`}
                       >
-                        <span>{detailModalUser.is_verified_master ? '✓ Верифицирован' : 'Не верифицирован'}</span>
+                        <span>{detailModalUser.is_verified_master ? t('Auto.text_f87ad1') : t('Auto.text_747075')}</span>
                         <UserCheck className="w-4 h-4" />
                       </button>
                     </div>
 
                     <div>
-                      <label className="block text-xs font-bold text-neutral-400 mb-1">Подписка VIP/PRO</label>
+                      <label className="block text-xs font-bold text-neutral-400 mb-1">{t('Auto.text_b92d74')}</label>
                       <button
                         onClick={() => handleOpenBadgeModal(detailModalUser)}
                         className="w-full px-4 py-2 rounded-xl text-xs font-extrabold flex items-center justify-between transition-all border bg-neutral-100 dark:bg-neutral-800 border-neutral-200 dark:border-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700"
                       >
-                        <span className="uppercase">{detailModalUser.badge_tier && detailModalUser.badge_tier !== 'none' ? `⭐ ${detailModalUser.badge_tier}` : 'Базовый (NONE)'}</span>
+                        <span className="uppercase">{detailModalUser.badge_tier && detailModalUser.badge_tier !== 'none' ? `⭐ ${detailModalUser.badge_tier}` : t('Auto.text_f9055c')}</span>
                         <Edit2 className="w-4 h-4" />
                       </button>
                     </div>
@@ -1420,7 +1421,7 @@ export default function AdminPage() {
 
                 {/* Access Control Permissions */}
                 <div className="bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-white/5 rounded-2xl p-5">
-                  <h4 className="text-xs font-extrabold uppercase tracking-wider text-neutral-500 mb-4">Блокировки и Права доступа</h4>
+                  <h4 className="text-xs font-extrabold uppercase tracking-wider text-neutral-500 mb-4">{t('Auto.text_9bcdcb')}</h4>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {/* Can Chat Toggle */}
@@ -1428,9 +1429,9 @@ export default function AdminPage() {
                       <div>
                         <div className="font-bold text-sm text-neutral-900 dark:text-white flex items-center gap-2">
                           <MessageSquare className="w-4 h-4 text-accent-500" />
-                          Отправка сообщений
-                        </div>
-                        <p className="text-xs text-neutral-500">Доступ к личным диалогам</p>
+                          {t('Auto.text_d4670b')}
+                                                                          </div>
+                        <p className="text-xs text-neutral-500">{t('Auto.text_b11d45')}</p>
                       </div>
 
                       <button
@@ -1443,7 +1444,7 @@ export default function AdminPage() {
                         }`}
                       >
                         {(detailModalUser.can_chat ?? true) ? <Unlock className="w-3.5 h-3.5" /> : <Lock className="w-3.5 h-3.5" />}
-                        {(detailModalUser.can_chat ?? true) ? 'Разрешено' : 'Заблокировано'}
+                        {(detailModalUser.can_chat ?? true) ? t('Auto.text_f6be50') : t('Auto.text_06d1f5')}
                       </button>
                     </div>
 
@@ -1452,9 +1453,9 @@ export default function AdminPage() {
                       <div>
                         <div className="font-bold text-sm text-neutral-900 dark:text-white flex items-center gap-2">
                           <FileText className="w-4 h-4 text-accent-500" />
-                          Публикация заявок
-                        </div>
-                        <p className="text-xs text-neutral-500">Доступ к Маркетплейсу</p>
+                          {t('Auto.text_22ae66')}
+                                                                          </div>
+                        <p className="text-xs text-neutral-500">{t('Auto.text_b5dbe0')}</p>
                       </div>
 
                       <button
@@ -1467,7 +1468,7 @@ export default function AdminPage() {
                         }`}
                       >
                         {(detailModalUser.can_create_leads ?? true) ? <Unlock className="w-3.5 h-3.5" /> : <Lock className="w-3.5 h-3.5" />}
-                        {(detailModalUser.can_create_leads ?? true) ? 'Разрешено' : 'Заблокировано'}
+                        {(detailModalUser.can_create_leads ?? true) ? t('Auto.text_f6be50') : t('Auto.text_06d1f5')}
                       </button>
                     </div>
                   </div>
@@ -1478,12 +1479,12 @@ export default function AdminPage() {
                 <div className="bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-white/5 rounded-2xl p-5 mt-6">
                   <h4 className="text-xs font-extrabold uppercase tracking-wider text-neutral-500 mb-4 flex items-center gap-2">
                     <Coins className="w-4 h-4 text-amber-400" />
-                    💳 Прямая Корректировка Баланса Кошелька
-                  </h4>
+                    {t('Auto.text_efdc6d')}
+                                                            </h4>
 
                   <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-white/5 rounded-xl p-4 space-y-4">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs text-neutral-400 font-medium">Текущий баланс пользователя:</span>
+                      <span className="text-xs text-neutral-400 font-medium">{t('Auto.text_2d27a7')}</span>
                       <strong className="text-base font-black text-amber-400">
                         {detailModalUser.balance || 0} {detailModalUser.currency || 'CZK'}
                       </strong>
@@ -1491,19 +1492,19 @@ export default function AdminPage() {
 
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                       <div>
-                        <label className="block text-xs font-bold text-neutral-400 mb-1">Операция</label>
+                        <label className="block text-xs font-bold text-neutral-400 mb-1">{t('Auto.text_b48047')}</label>
                         <select
                           value={adjustOperation}
                           onChange={(e: any) => setAdjustOperation(e.target.value)}
                           className="w-full px-3 py-2 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-xs font-bold"
                         >
-                          <option value="add">➕ Начислить (+)</option>
-                          <option value="deduct">➖ Списать (-)</option>
+                          <option value="add">{t('Auto.text_d96a1e')}</option>
+                          <option value="deduct">{t('Auto.text_1da33e')}</option>
                         </select>
                       </div>
 
                       <div>
-                        <label className="block text-xs font-bold text-neutral-400 mb-1">Сумма ({detailModalUser.currency || 'CZK'})</label>
+                        <label className="block text-xs font-bold text-neutral-400 mb-1">{t('Auto.text_2980dd')}{detailModalUser.currency || 'CZK'})</label>
                         <input
                           type="number"
                           value={adjustAmount}
@@ -1514,12 +1515,12 @@ export default function AdminPage() {
                       </div>
 
                       <div>
-                        <label className="block text-xs font-bold text-neutral-400 mb-1">Причина</label>
+                        <label className="block text-xs font-bold text-neutral-400 mb-1">{t('Auto.text_d88300')}</label>
                         <input
                           type="text"
                           value={adjustReason}
                           onChange={(e) => setAdjustReason(e.target.value)}
-                          placeholder="Компенсация / Оплата наличными"
+                          placeholder={t('Auto.text_50cf81')}
                           className="w-full px-3 py-2 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-xs font-medium"
                         />
                       </div>
@@ -1533,7 +1534,7 @@ export default function AdminPage() {
                       {isSubmittingAdjustBalance ? (
                         <Loader2 className="w-4 h-4 animate-spin" />
                       ) : (
-                        <span>Сохранить и отправить системное уведомление ➔</span>
+                        <span>{t('Auto.text_d31c35')}</span>
                       )}
                     </button>
                   </div>
@@ -1543,15 +1544,15 @@ export default function AdminPage() {
                 {/* Additional Metadata */}
                 <div className="bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-white/5 rounded-2xl p-5 text-xs space-y-2">
                   <div className="flex justify-between">
-                    <span className="text-neutral-500">Баланс:</span>
+                    <span className="text-neutral-500">{t('Auto.text_660c7f')}</span>
                     <strong className="text-amber-400">{detailModalUser.balance} {detailModalUser.currency || 'CZK'}</strong>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-neutral-500">VIP / PRO Статус:</span>
+                    <span className="text-neutral-500">{t('Auto.text_0bb5c4')}</span>
                     <strong className="text-purple-400">{detailModalUser.badge_tier?.toUpperCase() || 'NONE'}</strong>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-neutral-500">Дата регистрации:</span>
+                    <span className="text-neutral-500">{t('Auto.text_843f22')}</span>
                     <span className="text-neutral-300">{new Date(detailModalUser.created_at).toLocaleString()}</span>
                   </div>
                 </div>
@@ -1564,12 +1565,12 @@ export default function AdminPage() {
                 {isLoadingUserChats ? (
                   <div className="py-12 text-center">
                     <Loader2 className="w-8 h-8 text-accent-500 animate-spin mx-auto mb-2" />
-                    <p className="text-xs text-neutral-500">Загрузка переписок...</p>
+                    <p className="text-xs text-neutral-500">{t('Auto.text_7bdc38')}</p>
                   </div>
                 ) : userChats.length === 0 ? (
                   <div className="py-12 text-center text-neutral-400 text-sm">
-                    У пользователя пока нет активных диалогов.
-                  </div>
+                    {t('Auto.text_91cf5a')}
+                                                            </div>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {/* Chat List */}
@@ -1579,14 +1580,14 @@ export default function AdminPage() {
                         return (
                           <div
                             key={chat.id}
-                            onClick={() => openChatInspector(chat.id, chat.leads?.title || 'Диалог по заявке')}
+                            onClick={() => openChatInspector(chat.id, chat.leads?.title || t('Auto.text_5390af'))}
                             className="p-4 bg-neutral-50 dark:bg-neutral-950 hover:bg-accent-500/10 border border-neutral-200 dark:border-white/5 rounded-2xl cursor-pointer transition-all flex items-center justify-between"
                           >
                             <div>
                               <h5 className="font-bold text-sm text-neutral-900 dark:text-white">
-                                {counterpart?.full_name || counterpart?.email || 'Собеседник'}
+                                {counterpart?.full_name || counterpart?.email || t('Auto.text_702520')}
                               </h5>
-                              <p className="text-xs text-neutral-400 mt-0.5">{chat.leads?.title || 'Заявка'}</p>
+                              <p className="text-xs text-neutral-400 mt-0.5">{chat.leads?.title || t('Auto.text_e1149a')}</p>
                               <span className="text-[10px] text-neutral-500">{new Date(chat.created_at).toLocaleDateString()}</span>
                             </div>
                             <Eye className="w-4 h-4 text-accent-500 shrink-0" />
@@ -1600,17 +1601,17 @@ export default function AdminPage() {
                       {isLoadingChatMessages ? (
                         <div className="my-auto text-center">
                           <Loader2 className="w-6 h-6 text-accent-500 animate-spin mx-auto mb-2" />
-                          <p className="text-xs text-neutral-500">Загрузка сообщений...</p>
+                          <p className="text-xs text-neutral-500">{t('Auto.text_c69b6d')}</p>
                         </div>
                       ) : selectedChatMessages ? (
                         <>
                           <h4 className="font-bold text-xs uppercase tracking-wider text-accent-400 pb-2 border-b border-neutral-200 dark:border-white/5 mb-3">
-                            Лог сообщений: {selectedChatTitle}
+                            {t('Auto.text_af4181')} {selectedChatTitle}
                           </h4>
 
                           <div className="flex-1 overflow-y-auto space-y-3 pr-1 text-xs">
                             {selectedChatMessages.length === 0 ? (
-                              <p className="text-neutral-500 text-center my-auto">Сообщений в этом чате нет.</p>
+                              <p className="text-neutral-500 text-center my-auto">{t('Auto.text_ed1b32')}</p>
                             ) : (
                               selectedChatMessages.map((msg) => (
                                 <div
@@ -1633,8 +1634,8 @@ export default function AdminPage() {
                         </>
                       ) : (
                         <div className="my-auto text-center text-xs text-neutral-500">
-                          Выберите диалог слева для просмотра всех сообщений
-                        </div>
+                          {t('Auto.text_ec0c5f')}
+                                                                                          </div>
                       )}
                     </div>
                   </div>
@@ -1648,11 +1649,11 @@ export default function AdminPage() {
                 {isLoadingUserLeads ? (
                   <div className="py-12 text-center">
                     <Loader2 className="w-8 h-8 text-accent-500 animate-spin mx-auto mb-2" />
-                    <p className="text-xs text-neutral-500">Загрузка данных...</p>
+                    <p className="text-xs text-neutral-500">{t('Auto.text_6e6c24')}</p>
                   </div>
                 ) : !userLeadsData || userLeadsData.data.length === 0 ? (
                   <div className="py-12 text-center text-neutral-400 text-sm">
-                    {detailModalUser.role === 'master' ? 'Мастер пока не отправлял отклики.' : 'Пользователь пока не публиковал заявки.'}
+                    {detailModalUser.role === 'master' ? t('Auto.text_eb4d0b') : t('Auto.text_eeefbd')}
                   </div>
                 ) : (
                   <div className="space-y-2 max-h-[450px] overflow-y-auto pr-1">
@@ -1660,10 +1661,10 @@ export default function AdminPage() {
                       <div key={item.id} className="p-4 bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-white/5 rounded-2xl flex items-center justify-between">
                         <div>
                           <h5 className="font-bold text-sm text-neutral-900 dark:text-white">
-                            {userLeadsData.type === 'proposals' ? (item.leads?.title || 'Отклик на заявку') : item.title}
+                            {userLeadsData.type === 'proposals' ? (item.leads?.title || t('Auto.text_0247b1')) : item.title}
                           </h5>
                           <p className="text-xs text-neutral-400 mt-0.5">
-                            {userLeadsData.type === 'proposals' ? `Цена предл.: ${item.price_offer} CZK` : `Бюджет: ${item.budget || 'По договоренности'}`}
+                            {userLeadsData.type === 'proposals' ? `Цена предл.: ${item.price_offer} CZK` : `Бюджет: ${item.budget || t('Auto.text_bea4da')}`}
                           </p>
                         </div>
                         <span className="px-3 py-1 bg-accent-500/10 text-accent-400 font-extrabold text-xs rounded-full uppercase">
@@ -1687,8 +1688,8 @@ export default function AdminPage() {
             <div className="flex items-center justify-between border-b border-neutral-200 dark:border-white/10 pb-4">
               <h3 className="text-xl font-extrabold text-neutral-900 dark:text-white flex items-center gap-2">
                 <MessageSquare className="w-5 h-5 text-accent-500" />
-                📢 Глобальная рассылка
-              </h3>
+                {t('Auto.text_9b02c5')}
+                                            </h3>
               <button
                 onClick={() => setBroadcastModalOpen(false)}
                 className="w-8 h-8 rounded-xl bg-neutral-100 dark:bg-neutral-800 text-neutral-500 hover:text-neutral-900 dark:hover:text-white flex items-center justify-center cursor-pointer"
@@ -1699,36 +1700,36 @@ export default function AdminPage() {
 
             <div className="space-y-4">
               <div>
-                <label className="block text-xs font-bold text-neutral-400 mb-1">Получатели</label>
+                <label className="block text-xs font-bold text-neutral-400 mb-1">{t('Auto.text_9d5d51')}</label>
                 <select
                   value={broadcastTarget}
                   onChange={(e: any) => setBroadcastTarget(e.target.value)}
                   className="w-full px-4 py-2.5 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm font-bold text-neutral-900 dark:text-white"
                 >
-                  <option value="all">👥 Все пользователи платформы</option>
-                  <option value="master">🎨 Только мастера</option>
-                  <option value="client">📱 Только клиенты</option>
+                  <option value="all">{t('Auto.text_c7cab7')}</option>
+                  <option value="master">{t('Auto.text_180c21')}</option>
+                  <option value="client">{t('Auto.text_a6d2a4')}</option>
                 </select>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-neutral-400 mb-1">Тема сообщения</label>
+                <label className="block text-xs font-bold text-neutral-400 mb-1">{t('Auto.text_e5c41e')}</label>
                 <input
                   type="text"
                   value={broadcastTitle}
                   onChange={(e) => setBroadcastTitle(e.target.value)}
-                  placeholder="Внимание: важные обновления в выходные! 🎉"
+                  placeholder={t('Auto.text_59af1d')}
                   className="w-full px-4 py-2.5 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm font-medium text-neutral-900 dark:text-white"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-neutral-400 mb-1">Текст сообщения</label>
+                <label className="block text-xs font-bold text-neutral-400 mb-1">{t('Auto.text_2c476e')}</label>
                 <textarea
                   rows={4}
                   value={broadcastMessage}
                   onChange={(e) => setBroadcastMessage(e.target.value)}
-                  placeholder="Мы начислили +10% к пополнению баланса для всех мастеров до воскресенья!"
+                  placeholder={t('Auto.text_c01c80')}
                   className="w-full px-4 py-2.5 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm font-medium text-neutral-900 dark:text-white"
                 />
               </div>
@@ -1740,15 +1741,15 @@ export default function AdminPage() {
                 onClick={() => setBroadcastModalOpen(false)}
                 className="px-5 py-2.5 bg-neutral-200/50 dark:bg-neutral-800 text-neutral-900 dark:text-white rounded-xl font-bold text-xs cursor-pointer"
               >
-                Отмена
-              </button>
+                {t('cancel')}
+                                            </button>
               <button
                 type="button"
                 onClick={submitBroadcast}
                 disabled={isSendingBroadcast}
                 className="px-6 py-2.5 bg-gradient-to-r from-accent-500 to-primary-600 hover:opacity-90 text-white font-extrabold text-xs rounded-xl shadow-lg shadow-accent-500/20 transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
               >
-                {isSendingBroadcast ? <Loader2 className="w-4 h-4 animate-spin" /> : '🚀 Отправить рассылку всем'}
+                {isSendingBroadcast ? <Loader2 className="w-4 h-4 animate-spin" /> : t('Auto.text_ccbbcd')}
               </button>
             </div>
           </div>
@@ -1761,19 +1762,19 @@ export default function AdminPage() {
           <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-white/10 rounded-3xl p-6 sm:p-8 w-full max-w-md shadow-2xl animate-fade-in-up">
             <h3 className="text-xl font-extrabold text-neutral-900 dark:text-white mb-2 flex items-center gap-2">
               <Ban className="w-5 h-5 text-red-500" />
-              Блокировка пользователя
-            </h3>
+              {t('Auto.text_4ce484')}
+                                      </h3>
             <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-6">
-              Укажите причину блокировки для <span className="font-bold text-neutral-900 dark:text-white">{banModalUser.email}</span>. Причина может быть показана пользователю в окне апелляции.
-            </p>
+              {t('Auto.text_210159')} <span className="font-bold text-neutral-900 dark:text-white">{banModalUser.email}</span>{t('Auto.text_e3c090')}
+                                      </p>
 
             <div className="mb-6">
-              <label className="block text-xs font-bold text-neutral-400 mb-2 uppercase tracking-wider">Причина блокировки</label>
+              <label className="block text-xs font-bold text-neutral-400 mb-2 uppercase tracking-wider">{t('Auto.text_85b385')}</label>
               <textarea
                 rows={3}
                 value={banReason}
                 onChange={(e) => setBanReason(e.target.value)}
-                placeholder="Например: Фрод, нарушение правил платформы..."
+                placeholder={t('Auto.text_beb72a')}
                 className="w-full px-4 py-2.5 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm font-medium text-neutral-900 dark:text-white"
               />
             </div>
@@ -1783,23 +1784,23 @@ export default function AdminPage() {
                 onClick={() => { setBanModalUser(null); setBanReason(''); }}
                 className="px-5 py-2.5 bg-neutral-200/50 dark:bg-neutral-800 text-neutral-900 dark:text-white rounded-xl font-bold text-xs cursor-pointer hover:bg-neutral-300 dark:hover:bg-neutral-700 transition-colors"
               >
-                Отмена
-              </button>
+                {t('cancel')}
+                                            </button>
               <button
                 onClick={async () => {
                   if (!banReason.trim()) {
-                    toast.error('Укажите причину блокировки');
+                    toast.error(t('Auto.text_cf4f9d'));
                     return;
                   }
                   await updateUserStatus(banModalUser.id, 'rejected', banReason);
                   setBanModalUser(null);
                   setBanReason('');
-                  toast.success('Пользователь заблокирован');
+                  toast.success(t('Auto.text_3662d0'));
                 }}
                 className="px-6 py-2.5 bg-red-600 hover:bg-red-700 text-white font-extrabold text-xs rounded-xl shadow-lg shadow-red-500/20 transition-all flex items-center gap-2 cursor-pointer"
               >
-                Забанить навсегда
-              </button>
+                {t('Auto.text_7d5c86')}
+                                            </button>
             </div>
           </div>
         </div>

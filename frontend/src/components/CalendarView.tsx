@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import Image from 'next/image'
 import { useState, useEffect } from 'react'
 import { ChevronLeft, ChevronRight, Clock, Coffee, Plus, Calendar as CalendarIcon, PlayCircle, CheckCircle, Trash2, Edit3, Loader2, Maximize2, Minimize2 } from 'lucide-react'
@@ -27,6 +28,7 @@ interface CalendarViewProps {
 }
 
 export function CalendarView({ sessions, onUpdate, onSessionClick, onCreateSession, onSessionComplete }: CalendarViewProps) {
+    const t = useTranslations();
   const [currentDate, setCurrentDate] = useState(new Date())
   const [daysOff, setDaysOff] = useState<DayOff[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -82,19 +84,19 @@ export function CalendarView({ sessions, onUpdate, onSessionClick, onCreateSessi
         const result = await res.json()
         if (result.status === 'deleted') {
           setDaysOff(prev => prev.filter(d => d.date !== dateStr))
-          toast.success("День снова рабочий")
+          toast.success(t('Auto.text_451922'))
         } else if (result.status === 'created') {
           setDaysOff(prev => [...prev, result.data])
-          toast.success("Установлен выходной")
+          toast.success(t('Auto.text_18bca9'))
         }
       }
     } catch (e) {
-      toast.error("Ошибка сети")
+      toast.error(t('Auto.text_4920f0'))
     }
   }
 
   const handleDeleteSession = async (sessionId: string) => {
-    if (!confirm('Удалить сеанс?')) return
+    if (!confirm(t('Auto.text_cd8c9f'))) return
     try {
       const { data: { session } } = await supabase.auth.getSession()
       const token = session?.access_token
@@ -102,10 +104,10 @@ export function CalendarView({ sessions, onUpdate, onSessionClick, onCreateSessi
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       })
-      toast.success('Сеанс удален')
+      toast.success(t('Auto.text_dd99a3'))
       onUpdate()
     } catch {
-      toast.error('Ошибка удаления')
+      toast.error(t('crmBoard.deleteError'))
     }
   }
 
@@ -132,8 +134,8 @@ export function CalendarView({ sessions, onUpdate, onSessionClick, onCreateSessi
   }
 
   const days = getDaysInMonth(currentDate)
-  const monthNames = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь']
-  const dayNames = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
+  const monthNames = [t('Auto.text_ee8620'), t('Auto.text_28ffcf'), t('Auto.text_d766d4'), t('Auto.text_03e90d'), t('Auto.text_2e53bf'), t('Auto.text_cfcb9c'), t('Auto.text_89fb2f'), t('Auto.text_de5ab5'), t('Auto.text_ebfbae'), t('Auto.text_17208f'), t('Auto.text_66fbc4'), t('Auto.text_39b3dc')]
+  const dayNames = [t('Auto.text_2c1ec3'), t('Auto.text_714517'), t('Auto.text_c6e47c'), t('Auto.text_a51f2e'), t('Auto.text_012388'), t('Auto.text_3a4b2b'), t('Auto.text_4ad91d')]
 
   const nextMonth = () => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1))
   const prevMonth = () => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1))
@@ -164,8 +166,8 @@ export function CalendarView({ sessions, onUpdate, onSessionClick, onCreateSessi
                 : 'text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'
             }`}
           >
-            Сеансы
-          </button>
+            {t('crmBoard.tabSessions')}
+                                </button>
           <button
             onClick={() => setCalendarMode('day_off')}
             className={`px-4 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 ${
@@ -175,15 +177,15 @@ export function CalendarView({ sessions, onUpdate, onSessionClick, onCreateSessi
             }`}
           >
             <Coffee className="w-4 h-4" />
-            Выходные
-          </button>
+            {t('Auto.text_f38afb')}
+                                </button>
         </div>
       </div>
 
       {calendarMode === 'day_off' && (
         <div className="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 p-4 rounded-xl mb-6 text-sm flex items-start sm:items-center gap-3 border border-red-100 dark:border-red-900/30">
           <Coffee className="w-5 h-5 shrink-0 mt-0.5 sm:mt-0" />
-          <p><strong>Режим настройки выходных:</strong> кликайте по дням в календаре, чтобы отметить их как выходные дни.</p>
+          <p><strong>{t('Auto.text_0443c5')}</strong> {t('Auto.text_73e1ed')}</p>
         </div>
       )}
 
@@ -241,7 +243,7 @@ export function CalendarView({ sessions, onUpdate, onSessionClick, onCreateSessi
                 
                 {dayOff && calendarMode !== 'day_off' && (
                   <div className="w-full text-center text-xs text-red-500 font-bold bg-red-100 dark:bg-red-900/30 rounded px-1 py-0.5 mt-auto truncate">
-                    {dayOff.is_full_day ? 'Выходной' : `${dayOff.start_time?.substring(0,5)} - ${dayOff.end_time?.substring(0,5)}`}
+                    {dayOff.is_full_day ? t('Auto.text_cff546') : `${dayOff.start_time?.substring(0,5)} - ${dayOff.end_time?.substring(0,5)}`}
                   </div>
                 )}
 
@@ -250,13 +252,13 @@ export function CalendarView({ sessions, onUpdate, onSessionClick, onCreateSessi
                     {daySessions.slice(0, 2).map((s, idx) => (
                       <div key={idx} className={`flex items-center gap-1 text-[10px] sm:text-xs px-1 sm:px-2 py-0.5 sm:py-1 rounded-md font-medium truncate w-full ${s.status === 'new' ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400' : 'bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400'}`}>
                         <Clock className="w-3 h-3 shrink-0" />
-                        <span className="truncate">{s.start_time ? s.start_time.substring(0,5) : 'Без времени'}</span>
+                        <span className="truncate">{s.start_time ? s.start_time.substring(0,5) : t('Auto.text_d45b5c')}</span>
                       </div>
                     ))}
                     {daySessions.length > 2 && (
                       <div className="text-[10px] text-neutral-500 font-bold text-center">
-                        +{daySessions.length - 2} еще
-                      </div>
+                        +{daySessions.length - 2} {t('Auto.text_ff5a4e')}
+                                                          </div>
                     )}
                   </div>
                 )}
@@ -283,12 +285,12 @@ export function CalendarView({ sessions, onUpdate, onSessionClick, onCreateSessi
                     <CalendarIcon className="w-5 h-5" />
                   </div>
                   <div>
-                    <h2 className="text-xl font-bold">Расписание дня</h2>
+                    <h2 className="text-xl font-bold">{t('Auto.text_716cbc')}</h2>
                     <p className="text-sm text-neutral-500">{new Date(selectedDate).toLocaleDateString('ru-RU', { weekday: 'long', day: 'numeric', month: 'long' })}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <button onClick={() => setIsSidebarExpanded(!isSidebarExpanded)} className="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-full transition-colors" title={isSidebarExpanded ? "Свернуть" : "Развернуть"}>
+                  <button onClick={() => setIsSidebarExpanded(!isSidebarExpanded)} className="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-full transition-colors" title={isSidebarExpanded ? t('Auto.text_ca9f19') : t('Auto.text_3fbb81')}>
                     {isSidebarExpanded ? <Minimize2 className="w-5 h-5 text-neutral-400" /> : <Maximize2 className="w-5 h-5 text-neutral-400" />}
                   </button>
                   <button onClick={() => setSelectedDate(null)} className="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-full transition-colors">
@@ -302,8 +304,8 @@ export function CalendarView({ sessions, onUpdate, onSessionClick, onCreateSessi
                   <EmptyState
                     variant="compact"
                     icon={<CalendarIcon className="w-8 h-8" />}
-                    title="На этот день нет записей"
-                    description="Вы можете добавить сеанс вручную кнопкой ниже."
+                    title={t('Auto.text_fdebc0')}
+                    description={t('Auto.text_76b984')}
                   />
                 ) : (
                   <div className={isSidebarExpanded ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" : "flex flex-col gap-4"}>
@@ -325,13 +327,13 @@ export function CalendarView({ sessions, onUpdate, onSessionClick, onCreateSessi
                         </div>
                         <div className="text-right">
                           <span className="inline-block px-2 py-1 bg-neutral-100 dark:bg-neutral-700 rounded text-xs font-bold uppercase text-neutral-600 dark:text-neutral-400 mb-1">
-                            {s.status === 'in_progress' ? 'В процессе' : s.status === 'completed' ? 'Завершен' : s.status === 'booked' ? 'Записан' : s.status}
+                            {s.status === 'in_progress' ? t('crmBoard.columns.in_progress') : s.status === 'completed' ? t('Auto.text_00219e') : s.status === 'booked' ? t('Auto.text_277bbc') : s.status}
                           </span>
                           <div className="font-bold text-neutral-900 dark:text-white">{s.price ? `${s.price} Kč` : ''}</div>
                         </div>
                       </div>
                       
-                      {s.style && <div className="text-sm text-neutral-500 mb-4">Стиль: {s.style}</div>}
+                      {s.style && <div className="text-sm text-neutral-500 mb-4">{t('styleLabel')} {s.style}</div>}
                       {s.reference_images && s.reference_images.length > 0 && (
                         <div className="flex gap-2 overflow-x-auto mb-4 custom-scrollbar pb-2" onClick={(e) => e.stopPropagation()}>
                           {s.reference_images.map((url, idx) => (
@@ -348,8 +350,8 @@ export function CalendarView({ sessions, onUpdate, onSessionClick, onCreateSessi
                                 onClick={() => onSessionClick(s)}
                                 className="px-3 py-1.5 bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 font-bold text-xs rounded-lg flex items-center gap-1 hover:bg-emerald-200 transition-colors w-full"
                               >
-                                Рассмотреть заявку
-                              </button>
+                                {t('Auto.text_12650b')}
+                                                                              </button>
                             )}
                             {s.status === 'booked' && (
                               <button 
@@ -359,25 +361,25 @@ export function CalendarView({ sessions, onUpdate, onSessionClick, onCreateSessi
                                 }}
                                 className="px-3 py-1.5 bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-400 font-bold text-xs rounded-lg flex items-center gap-1 hover:bg-primary-200 transition-colors"
                               >
-                                <PlayCircle className="w-3.5 h-3.5" /> Начать
-                              </button>
+                                <PlayCircle className="w-3.5 h-3.5" /> {t('onboarding.onb_start')}
+                                                                              </button>
                             )}
                             {s.status === 'in_progress' && (
                               <button 
                                 onClick={() => onSessionComplete(s.id)}
                                 className="px-3 py-1.5 bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 font-bold text-xs rounded-lg flex items-center gap-1 hover:bg-green-200 transition-colors"
                               >
-                                <CheckCircle className="w-3.5 h-3.5" /> Завершить
-                              </button>
+                                <CheckCircle className="w-3.5 h-3.5" /> {t('Auto.text_b0e3a5')}
+                                                                              </button>
                             )}
                           </div>
                           <div className="flex gap-2">
                             {s.status !== 'new' && (
-                              <button onClick={() => onSessionClick(s)} className="p-1.5 text-neutral-400 hover:text-primary-500 rounded-md transition-colors" title="Редактировать">
+                              <button onClick={() => onSessionClick(s)} className="p-1.5 text-neutral-400 hover:text-primary-500 rounded-md transition-colors" title={t('edit')}>
                                 <Edit3 className="w-4 h-4" />
                               </button>
                             )}
-                            <button onClick={() => handleDeleteSession(s.id)} className="p-1.5 text-neutral-400 hover:text-red-500 rounded-md transition-colors" title="Удалить">
+                            <button onClick={() => handleDeleteSession(s.id)} className="p-1.5 text-neutral-400 hover:text-red-500 rounded-md transition-colors" title={t('delete')}>
                               <Trash2 className="w-4 h-4" />
                             </button>
                           </div>
@@ -395,8 +397,8 @@ export function CalendarView({ sessions, onUpdate, onSessionClick, onCreateSessi
                   className="w-full flex items-center justify-center gap-2 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 font-bold py-3.5 rounded-xl hover:bg-neutral-800 transition-all shadow-lg"
                 >
                   <Plus className="w-5 h-5" />
-                  Добавить сеанс
-                </button>
+                  {t('Auto.text_d650b9')}
+                                                  </button>
               </div>
             </motion.div>
           </div>

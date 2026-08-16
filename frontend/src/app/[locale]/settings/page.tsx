@@ -17,6 +17,7 @@ import {
 
 // Toggle Switch Component
 function Toggle({ checked, onChange, disabled = false }: { checked: boolean; onChange: () => void; disabled?: boolean }) {
+    const t = useTranslations();
   return (
     <button
       onClick={onChange}
@@ -183,7 +184,7 @@ export default function SettingsPage() {
     setEmailSuccess(false)
 
     if (!newEmail || !newEmail.includes('@')) {
-      setEmailError(language === 'ru' ? 'Неверный формат email' : 'Invalid email format')
+      setEmailError(language === 'ru' ? t('Auto.text_596caa') : 'Invalid email format')
       return
     }
 
@@ -351,11 +352,11 @@ export default function SettingsPage() {
                       try {
                         const { subscribeToPush } = await import('@/lib/push');
                         await subscribeToPush();
-                        import('react-hot-toast').then(mod => mod.default.success(t('pushEnabled') || 'Уведомления включены'));
+                        import('react-hot-toast').then(mod => mod.default.success(t('pushEnabled') || t('pushEnabled')));
                       } catch (e) {
                         setPushNotifications(false);
                         saveSetting('pushNotifications', false);
-                        import('react-hot-toast').then(mod => mod.default.error(t('pushFailed') || 'Не удалось включить уведомления'));
+                        import('react-hot-toast').then(mod => mod.default.error(t('pushFailed') || t('pushFailed')));
                       }
                     }
                   }} 
@@ -566,13 +567,13 @@ export default function SettingsPage() {
                     type="text"
                     value={deleteConfirmText}
                     onChange={(e) => setDeleteConfirmText(e.target.value)}
-                    placeholder={language === 'ru' ? 'УДАЛИТЬ' : language === 'cs' ? 'SMAZAT' : 'DELETE'}
+                    placeholder={language === 'ru' ? t('Auto.text_719612') : language === 'cs' ? 'SMAZAT' : 'DELETE'}
                     className="w-full bg-white border border-red-500/30 dark:bg-neutral-900/50 rounded-xl px-4 py-2.5 text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all shadow-inner"
                   />
                   <div className="flex gap-2">
                     <button
                       onClick={handleDeleteAccount}
-                      disabled={deleteConfirmText !== (language === 'ru' ? 'УДАЛИТЬ' : language === 'cs' ? 'SMAZAT' : 'DELETE')}
+                      disabled={deleteConfirmText !== (language === 'ru' ? t('Auto.text_719612') : language === 'cs' ? 'SMAZAT' : 'DELETE')}
                       className="px-5 py-2.5 bg-red-600 text-white rounded-xl font-bold hover:bg-red-500 transition-all disabled:opacity-50 text-sm flex items-center gap-1.5 shadow-md"
                     >
                       <Trash2 className="w-4 h-4" />

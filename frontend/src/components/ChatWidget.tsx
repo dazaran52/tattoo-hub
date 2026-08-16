@@ -231,7 +231,7 @@ export function ChatWidget() {
 
         <button
           onClick={() => setIsOpen(!isOpen)}
-          aria-label={isOpen ? "Закрыть чат" : "Открыть чат поддержки"}
+          aria-label={isOpen ? t('Auto.text_ffd2db') : t('Auto.text_3a770a')}
           className="w-14 h-14 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rounded-full flex items-center justify-center shadow-lg hover:scale-105 transition-transform border-4 border-neutral-50 dark:border-neutral-950 pointer-events-auto"
         >
           {isOpen ? <X className="w-6 h-6" /> : <MessageCircle className="w-6 h-6" />}
@@ -255,9 +255,9 @@ export function ChatWidget() {
         <div className="p-4 bg-gradient-to-r from-accent-500 to-blue-500 text-white flex justify-between items-center shrink-0">
           <h3 className="font-bold flex items-center gap-2">
             <MessageCircle className="w-5 h-5" />
-            Поддержка
-          </h3>
-          <button onClick={() => setIsOpen(false)} aria-label="Закрыть чат" className="hover:bg-white/20 p-1 rounded-lg transition-colors">
+            {t('Auto.text_662448')}
+                                        </h3>
+          <button onClick={() => setIsOpen(false)} aria-label={t('Auto.text_ffd2db')} className="hover:bg-white/20 p-1 rounded-lg transition-colors">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -322,7 +322,7 @@ export function ChatWidget() {
           <button
             type="submit"
             disabled={!newMessage.trim() || isSending}
-            aria-label="Отправить сообщение"
+            aria-label={t('Auto.text_d25719')}
             className="bg-accent-500 hover:bg-accent-600 text-white p-2 rounded-xl disabled:opacity-50 transition-colors flex items-center justify-center min-w-[40px]"
           >
             {isSending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
@@ -334,7 +334,7 @@ export function ChatWidget() {
 
       <button
         onClick={() => setIsOpen(!isOpen)}
-        aria-label={isOpen ? "Закрыть чат" : "Открыть чат поддержки"}
+        aria-label={isOpen ? t('Auto.text_ffd2db') : t('Auto.text_3a770a')}
         className="relative w-14 h-14 bg-accent-500 text-white rounded-full flex items-center justify-center shadow-lg shadow-accent-500/30 hover:scale-105 transition-transform border-4 border-white dark:border-neutral-950 pointer-events-auto"
       >
         {isOpen ? <X className="w-6 h-6" /> : <MessageCircle className="w-6 h-6" />}

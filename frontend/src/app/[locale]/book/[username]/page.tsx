@@ -1,4 +1,6 @@
 'use client'
+import { useTranslations } from "next-intl";
+
 
 import Image from 'next/image'
 import { useState, useEffect } from 'react'
@@ -74,6 +76,7 @@ const getThemeClasses = (theme: string) => {
 
 // Use a subset of Lucide icons or basic SVG if needed
 export default function BookMasterPage() {
+    const t = useTranslations();
   const params = useParams<{ username: string }>()
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -106,7 +109,7 @@ export default function BookMasterPage() {
         setIsLoadingReviews(false)
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Ошибка загрузки профиля')
+      setError(err instanceof Error ? err.message : t('profileLoadError'))
     } finally {
       setIsLoading(false)
     }
@@ -129,14 +132,14 @@ export default function BookMasterPage() {
       <div className="min-h-screen bg-neutral-50 dark:bg-[#050505] flex flex-col items-center justify-center p-4">
         <div className="bg-white dark:bg-neutral-900 rounded-3xl p-8 max-w-md w-full text-center shadow-xl border border-neutral-200 dark:border-neutral-800">
           <User className="w-16 h-16 text-neutral-400 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-neutral-900 dark:text-white mb-2">Страница не найдена</h1>
+          <h1 className="text-2xl font-bold text-neutral-900 dark:text-white mb-2">{t('Auto.text_bcec89')}</h1>
           <p className="text-neutral-500 dark:text-neutral-400 mb-6">{error}</p>
           <button 
             onClick={() => router.push('/')}
             className="w-full bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 font-bold py-3 rounded-xl hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-colors"
           >
-            На главную
-          </button>
+            {t('Auto.text_3ddda6')}
+                              </button>
         </div>
       </div>
     )
@@ -181,7 +184,7 @@ export default function BookMasterPage() {
           </div>
           <div className="mb-2 flex flex-wrap items-center justify-center gap-2.5">
             <h1 className="text-3xl font-extrabold tracking-tight">
-              {master.display_name || master.username || 'Мастер'}
+              {master.display_name || master.username || t('Auto.text_2bb1fb')}
             </h1>
             <VerifiedMasterBadge verified={master.certificate_status === 'approved'} />
             <MasterTierBadge badgeTier={master.badge_tier} />
@@ -215,8 +218,8 @@ export default function BookMasterPage() {
               ) : (
                 <LinkIcon className="w-4 h-4" />
               )}
-              Смотреть внешнее портфолио
-            </a>
+              {t('Auto.text_17de2c')}
+                                      </a>
           )}
         </div>
 
@@ -228,24 +231,24 @@ export default function BookMasterPage() {
               activeTab === 'booking' ? tClasses.tabActive : tClasses.tabInactive
             }`}
           >
-            Запись на сеанс
-          </button>
+            {t('Auto.text_e988f8')}
+                                </button>
           <button
             onClick={() => setActiveTab('portfolio')}
             className={`flex-1 py-2.5 text-sm font-semibold rounded-xl transition-all ${
               activeTab === 'portfolio' ? tClasses.tabActive : tClasses.tabInactive
             }`}
           >
-            Портфолио
-          </button>
+            {t('portfolio')}
+                                </button>
           <button
             onClick={() => setActiveTab('reviews')}
             className={`flex-1 py-2.5 text-sm font-semibold rounded-xl transition-all ${
               activeTab === 'reviews' ? tClasses.tabActive : tClasses.tabInactive
             }`}
           >
-            Отзывы
-          </button>
+            {t('Auto.text_1c3fea')}
+                                </button>
         </div>
 
         {activeTab === 'booking' ? (
@@ -257,8 +260,8 @@ export default function BookMasterPage() {
                   onClick={() => setIsBookingStarted(true)}
                   className={`w-full py-4 rounded-2xl font-bold text-lg ${tClasses.buttonPrimary}`}
                 >
-                  Начать
-                </button>
+                  {t('onboarding.onb_start')}
+                                                  </button>
               </div>
             ) : (
               <LeadWizard
@@ -274,7 +277,7 @@ export default function BookMasterPage() {
           </>
         ) : activeTab === 'portfolio' ? (
           <div className={`rounded-3xl p-8 transition-colors duration-500 ${tClasses.card}`}>
-            <h2 className="text-2xl font-bold mb-6 text-center">Портфолио</h2>
+            <h2 className="text-2xl font-bold mb-6 text-center">{t('portfolio')}</h2>
             {master.portfolio_posts && master.portfolio_posts.length > 0 ? (
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                 {master.portfolio_posts.map((post: PortfolioPost) => {
@@ -305,13 +308,13 @@ export default function BookMasterPage() {
             ) : (
               <div className="text-center py-12 text-neutral-500 dark:text-neutral-400">
                 <ImageIcon className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                <p>Мастер пока не добавил фото в портфолио</p>
+                <p>{t('Auto.text_c35611')}</p>
               </div>
             )}
           </div>
         ) : (
           <div className={`rounded-3xl p-8 transition-colors duration-500 ${tClasses.card}`}>
-            <h2 className="text-2xl font-bold mb-6 text-center">Отзывы</h2>
+            <h2 className="text-2xl font-bold mb-6 text-center">{t('Auto.text_1c3fea')}</h2>
             {isLoadingReviews ? (
               <div className="flex justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-neutral-500" /></div>
             ) : reviews.length > 0 ? (
@@ -334,7 +337,7 @@ export default function BookMasterPage() {
             ) : (
               <div className="text-center py-12 text-neutral-500 dark:text-neutral-400">
                 <Star className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                <p>У мастера пока нет отзывов</p>
+                <p>{t('Auto.text_222400')}</p>
               </div>
             )}
           </div>

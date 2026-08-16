@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Search, LayoutDashboard, ShoppingBag, ImageIcon, MessageCircle, User, Calendar, X } from 'lucide-react'
@@ -10,6 +11,7 @@ interface CommandPaletteModalProps {
 }
 
 export function CommandPaletteModal({ isOpen, onClose, onSelectTab }: CommandPaletteModalProps) {
+    const t = useTranslations();
   const [query, setQuery] = useState('')
   const router = useRouter()
 
@@ -31,12 +33,12 @@ export function CommandPaletteModal({ isOpen, onClose, onSelectTab }: CommandPal
   if (!isOpen) return null
 
   const actions = [
-    { id: 'crm', label: 'Открыть CRM Доску', icon: LayoutDashboard, category: 'Навигация', action: () => { onSelectTab('crm'); onClose(); } },
-    { id: 'feed', label: 'Открыть Маркетплейс Заявок', icon: ShoppingBag, category: 'Навигация', action: () => { onSelectTab('feed'); onClose(); } },
-    { id: 'portfolio', label: 'Открыть Портфолио', icon: ImageIcon, category: 'Навигация', action: () => { onSelectTab('portfolio'); onClose(); } },
-    { id: 'messages', label: 'Открыть Сообщения & Чат', icon: MessageCircle, category: 'Навигация', action: () => { onSelectTab('messages'); onClose(); } },
-    { id: 'profile', label: 'Перейти в Мой Профиль', icon: User, category: 'Настройки', action: () => { router.push('/profile'); onClose(); } },
-    { id: 'topup', label: 'Пополнить Баланс', icon: Calendar, category: 'Финансы', action: () => { router.push('/top-up'); onClose(); } },
+    { id: 'crm', label: t('Auto.text_ba3fcb'), icon: LayoutDashboard, category: t('Auto.text_ca76de'), action: () => { onSelectTab('crm'); onClose(); } },
+    { id: 'feed', label: t('Auto.text_c01af0'), icon: ShoppingBag, category: t('Auto.text_ca76de'), action: () => { onSelectTab('feed'); onClose(); } },
+    { id: 'portfolio', label: t('Auto.text_de901e'), icon: ImageIcon, category: t('Auto.text_ca76de'), action: () => { onSelectTab('portfolio'); onClose(); } },
+    { id: 'messages', label: t('Auto.text_b70074'), icon: MessageCircle, category: t('Auto.text_ca76de'), action: () => { onSelectTab('messages'); onClose(); } },
+    { id: 'profile', label: t('Auto.text_17722b'), icon: User, category: t('settings'), action: () => { router.push('/profile'); onClose(); } },
+    { id: 'topup', label: t('Auto.text_d8dbd5'), icon: Calendar, category: t('Auto.text_61586b'), action: () => { router.push('/top-up'); onClose(); } },
   ]
 
   const filteredActions = query
@@ -61,7 +63,7 @@ export function CommandPaletteModal({ isOpen, onClose, onSelectTab }: CommandPal
             <input
               type="text"
               autoFocus
-              placeholder="Поиск по разделам, командам и действиям... (Esc для закрытия)"
+              placeholder={t('Auto.text_7bae3b')}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               className="w-full bg-transparent text-white placeholder-neutral-400 text-sm outline-none font-medium"
@@ -74,7 +76,7 @@ export function CommandPaletteModal({ isOpen, onClose, onSelectTab }: CommandPal
           {/* Action List */}
           <div className="p-2 max-h-80 overflow-y-auto space-y-1">
             {filteredActions.length === 0 ? (
-              <div className="text-center py-8 text-neutral-400 text-sm">Ничего не найдено</div>
+              <div className="text-center py-8 text-neutral-400 text-sm">{t('crmBoard.list.nothingFound')}</div>
             ) : (
               filteredActions.map((act) => {
                 const Icon = act.icon

@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import Image from 'next/image'
 import { X, Calendar, Palette, User, MessageCircle, Send, Phone, PersonStanding, MapPin, DollarSign, Maximize2 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -21,6 +22,7 @@ interface LeadDetailsModalProps {
 }
 
 export function LeadDetailsModal({ isOpen, onClose, session, onAccept, onReject, onEdit, onSessionClick, chatId, onUpdate, onOpenDispute }: LeadDetailsModalProps) {
+    const t = useTranslations();
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
   const [isClientModalOpen, setIsClientModalOpen] = useState(false)
   const [isRejecting, setIsRejecting] = useState(false)
@@ -33,7 +35,7 @@ export function LeadDetailsModal({ isOpen, onClose, session, onAccept, onReject,
       setB2bLoading(true)
       const { data: { session: authSession } } = await supabase.auth.getSession()
       if (!authSession) {
-        toast.error('Ошибка авторизации')
+        toast.error(t('Auto.text_9f5cb5'))
         return
       }
 
@@ -45,10 +47,10 @@ export function LeadDetailsModal({ isOpen, onClose, session, onAccept, onReject,
       })
       if (!res.ok) {
         const err = await res.json()
-        throw new Error(err.detail || 'Ошибка отправки на маркетплейс')
+        throw new Error(err.detail || t('Auto.text_fbb2be'))
       }
       
-      toast.success('Лид успешно передан на маркетплейс!')
+      toast.success(t('Auto.text_83d1e2'))
       onClose()
       onUpdate?.()
     } catch (error: any) {
@@ -61,7 +63,7 @@ export function LeadDetailsModal({ isOpen, onClose, session, onAccept, onReject,
   
   const submitReject = () => {
     if (!rejectReason.trim()) {
-      toast.error('Пожалуйста, укажите причину отказа')
+      toast.error(t('Auto.text_7b674b'))
       return
     }
     // We pass the reason via a callback or we can handle the API call here.
@@ -77,20 +79,20 @@ export function LeadDetailsModal({ isOpen, onClose, session, onAccept, onReject,
   const isClient = session.status === 'client'
   
   // Parse description to extract embedded budget/city if present
-  const rawDescription = session.notes || leadData.description || session.description || 'Клиент не оставил подробного описания.'
+  const rawDescription = session.notes || leadData.description || session.description || t('Auto.text_a5fe90')
   const parsedBudgetMatch = rawDescription.match(/Бюджет:\s*([\s\S]*?)(?=(?:Желаемое время|Бюджет|Город):|$)/i)
   const parsedCityMatch = rawDescription.match(/Город:\s*([\s\S]*?)(?=(?:Желаемое время|Бюджет|Город):|$)/i)
   
-  const budgetText = leadData.display_budget || (leadData.client_budget ? `${leadData.client_budget} ${leadData.client_currency || ''}` : (leadData.is_negotiable_budget ? 'Договорная цена' : (parsedBudgetMatch ? parsedBudgetMatch[1] : null)))
+  const budgetText = leadData.display_budget || (leadData.client_budget ? `${leadData.client_budget} ${leadData.client_currency || ''}` : (leadData.is_negotiable_budget ? t('negotiableBudget') : (parsedBudgetMatch ? parsedBudgetMatch[1] : null)))
   const cityText = leadData.city_name || leadData.cities?.name_ru || session.city_name || (parsedCityMatch ? parsedCityMatch[1] : null)
-  const styleText = session.style || leadData.style || (leadData.title && leadData.title !== 'Новая заявка на татуировку' ? leadData.title : 'Не выбрано')
+  const styleText = session.style || leadData.style || (leadData.title && leadData.title !== t('Auto.text_ea68ee') ? leadData.title : t('Auto.text_591cca'))
 
   const cleanDescription = rawDescription
     .replace(/(?:Желаемое время|Бюджет|Город):[\s\S]*?(?=(?:Желаемое время|Бюджет|Город):|$)/gi, '')
     .trim()
 
-  const clientName = session.master_clients?.name || session.client_name || session.name || 'Неизвестный клиент'
-  const clientContact = session.master_clients?.phone || session.master_clients?.telegram || session.master_clients?.email || session.contact || session.email || 'Скрыто'
+  const clientName = session.master_clients?.name || session.client_name || session.name || t('crmBoard.unknownClient')
+  const clientContact = session.master_clients?.phone || session.master_clients?.telegram || session.master_clients?.email || session.contact || session.email || t('Auto.text_92c541')
 
   let images = session.reference_images?.length ? session.reference_images : (leadData.image_urls || session.image_urls || [])
   if (typeof images === 'string') {
@@ -109,8 +111,8 @@ export function LeadDetailsModal({ isOpen, onClose, session, onAccept, onReject,
           <div className="flex justify-between items-center p-6 border-b border-neutral-100 dark:border-white/5 bg-neutral-50/50 dark:bg-neutral-900/50">
             <h2 className="text-2xl font-bold text-neutral-900 dark:text-white flex items-center gap-2">
               <User className="w-6 h-6 text-primary-500" />
-              Детали заявки
-            </h2>
+              {t('leadDetails')}
+                                      </h2>
             <button onClick={onClose} className="p-2 text-neutral-500 hover:text-neutral-900 dark:hover:text-white rounded-full transition-colors bg-neutral-100 dark:bg-neutral-800">
               <X className="w-5 h-5" />
             </button>
@@ -123,7 +125,7 @@ export function LeadDetailsModal({ isOpen, onClose, session, onAccept, onReject,
               <div 
                 onClick={() => setIsClientModalOpen(true)}
                 className="w-16 h-16 bg-primary-100 dark:bg-primary-900/30 rounded-2xl flex items-center justify-center shrink-0 cursor-pointer hover:ring-2 hover:ring-primary-500 transition-all"
-                title="Посмотреть профиль клиента"
+                title={t('Auto.text_192360')}
               >
                 <User className="w-8 h-8 text-primary-500" />
               </div>
@@ -175,7 +177,7 @@ export function LeadDetailsModal({ isOpen, onClose, session, onAccept, onReject,
               <div className="bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-400 px-4 py-3 rounded-2xl flex items-center gap-3 border border-purple-100 dark:border-purple-500/20">
                 <Palette className="w-5 h-5 shrink-0" />
                 <div className="text-sm">
-                  <span className="font-bold block">Стиль</span>
+                  <span className="font-bold block">{t('leadWizard.styleLabel')}</span>
                   {styleText}
                 </div>
               </div>
@@ -185,7 +187,7 @@ export function LeadDetailsModal({ isOpen, onClose, session, onAccept, onReject,
                 <div className="bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 px-4 py-3 rounded-2xl flex items-center gap-3 border border-emerald-100 dark:border-emerald-500/20">
                   <DollarSign className="w-5 h-5 shrink-0" />
                   <div className="text-sm">
-                    <span className="font-bold block">Бюджет</span>
+                    <span className="font-bold block">{t('budgetLabel')}</span>
                     {budgetText}
                   </div>
                 </div>
@@ -197,7 +199,7 @@ export function LeadDetailsModal({ isOpen, onClose, session, onAccept, onReject,
                 <div className="bg-rose-50 dark:bg-rose-900/20 text-rose-700 dark:text-rose-400 px-4 py-3 rounded-2xl flex items-center gap-3 border border-rose-100 dark:border-rose-500/20">
                   <Calendar className="w-5 h-5 shrink-0" />
                   <div className="text-sm">
-                    <span className="font-bold block">Дата</span>
+                    <span className="font-bold block">{t('Auto.text_8cdd8b')}</span>
                     {new Date(leadData.session_date || session.session_date).toLocaleDateString('ru-RU')}{(leadData.session_time || session.start_time) ? ` ${(leadData.session_time || session.start_time).slice(0, 5)}` : ''}
                   </div>
                 </div>
@@ -208,7 +210,7 @@ export function LeadDetailsModal({ isOpen, onClose, session, onAccept, onReject,
                 <div className="bg-sky-50 dark:bg-sky-900/20 text-sky-700 dark:text-sky-400 px-4 py-3 rounded-2xl flex items-center gap-3 border border-sky-100 dark:border-sky-500/20">
                   <PersonStanding className="w-5 h-5 shrink-0" />
                   <div className="text-sm">
-                    <span className="font-bold block">Место</span>
+                    <span className="font-bold block">{t('crmBoard.placeLabel')}</span>
                     {leadData.body_place || session.body_place}
                   </div>
                 </div>
@@ -219,7 +221,7 @@ export function LeadDetailsModal({ isOpen, onClose, session, onAccept, onReject,
                 <div className="bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 px-4 py-3 rounded-2xl flex items-center gap-3 border border-amber-100 dark:border-amber-500/20">
                   <Maximize2 className="w-5 h-5 shrink-0" />
                   <div className="text-sm">
-                    <span className="font-bold block">Размер</span>
+                    <span className="font-bold block">{t('crmBoard.sizeLabel')}</span>
                     {leadData.size || session.size}
                   </div>
                 </div>
@@ -229,7 +231,7 @@ export function LeadDetailsModal({ isOpen, onClose, session, onAccept, onReject,
             {/* Description */}
             <div className="bg-neutral-50 dark:bg-neutral-800/50 rounded-2xl p-5 border border-neutral-100 dark:border-white/5">
               <p className="text-neutral-600 dark:text-neutral-300 text-sm leading-relaxed whitespace-pre-wrap">
-                {cleanDescription || 'Клиент не оставил подробного описания.'}
+                {cleanDescription || t('Auto.text_a5fe90')}
               </p>
             </div>
 
@@ -242,14 +244,14 @@ export function LeadDetailsModal({ isOpen, onClose, session, onAccept, onReject,
                   onClick={() => setIsRejecting(true)}
                   className="flex-1 py-3.5 px-4 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 rounded-xl font-bold transition-colors"
                 >
-                  Отклонить
-                </button>
+                  {t('Auto.text_8b0d89')}
+                                                  </button>
                 <button 
                   onClick={() => { onClose(); onAccept(); }}
                   className="flex-1 py-3.5 px-4 bg-primary-600 hover:bg-primary-700 text-white shadow-lg shadow-primary-500/25 rounded-xl font-bold transition-all hover:scale-[1.02]"
                 >
-                  Принять заявку
-                </button>
+                  {t('Auto.text_267bcd')}
+                                                  </button>
               </>
             ) : (
               <>
@@ -258,22 +260,22 @@ export function LeadDetailsModal({ isOpen, onClose, session, onAccept, onReject,
                     onClick={() => { onClose(); onOpenDispute(); }}
                     className="flex-1 py-3.5 px-4 bg-red-100 hover:bg-red-200 dark:bg-red-900/30 dark:hover:bg-red-900/50 text-red-700 dark:text-red-400 rounded-xl font-bold transition-colors"
                   >
-                    Открыть диспут
-                  </button>
+                    {t('Auto.text_474163')}
+                                                            </button>
                 )}
                 <button 
                   onClick={onClose}
                   className="flex-1 py-3.5 px-4 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 rounded-xl font-bold transition-colors"
                 >
-                  Закрыть
-                </button>
+                  {t('Auto.text_dd9463')}
+                                                      </button>
                 {onEdit && session.status !== 'cancelled' && (
                   <button 
                     onClick={() => { onClose(); onEdit(); }}
                     className="flex-1 py-3.5 px-4 bg-primary-600 hover:bg-primary-700 text-white shadow-lg shadow-primary-500/25 rounded-xl font-bold transition-all hover:scale-[1.02]"
                   >
-                    Редактировать
-                  </button>
+                    {t('edit')}
+                                                            </button>
                 )}
               </>
             )}
@@ -287,21 +289,21 @@ export function LeadDetailsModal({ isOpen, onClose, session, onAccept, onReject,
                 className="text-sm text-neutral-400 hover:text-primary-500 underline underline-offset-2 transition-colors flex items-center gap-2"
               >
                 {b2bLoading ? <div className="w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin" /> : null}
-                Не могу взять, отправить на маркетплейс
-              </button>
+                {t('Auto.text_dd07b6')}
+                                            </button>
             </div>
           )}
 
           {isRejecting && (
             <div className="absolute inset-0 bg-white/95 dark:bg-neutral-900/95 backdrop-blur-sm z-10 flex flex-col items-center justify-center p-6">
-              <h3 className="text-xl font-bold text-neutral-900 dark:text-white mb-2">Причина отказа</h3>
+              <h3 className="text-xl font-bold text-neutral-900 dark:text-white mb-2">{t('Auto.text_5dd299')}</h3>
               <p className="text-sm text-neutral-500 mb-6 text-center max-w-sm">
-                Пожалуйста, укажите причину отклонения заявки. Она будет отправлена клиенту.
-              </p>
+                {t('Auto.text_beda01')}
+                                            </p>
               <textarea
                 value={rejectReason}
                 onChange={(e) => setRejectReason(e.target.value)}
-                placeholder="Например: Не работаю в таком стиле / Нет свободных окон..."
+                placeholder={t('Auto.text_d08a97')}
                 className="w-full max-w-md bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-white/10 rounded-xl p-4 text-neutral-900 dark:text-white placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-red-500 min-h-[120px] resize-none mb-6"
               />
               <div className="flex gap-3 w-full max-w-md">
@@ -312,12 +314,12 @@ export function LeadDetailsModal({ isOpen, onClose, session, onAccept, onReject,
                   }}
                   className="flex-1 py-3 bg-neutral-200 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 font-bold rounded-xl hover:bg-neutral-300 dark:hover:bg-neutral-700 transition-colors"
                 >
-                  Отмена
-                </button>
+                  {t('cancel')}
+                                                  </button>
                 <button
                   onClick={() => {
                     if (!rejectReason.trim()) {
-                      toast.error('Укажите причину отказа')
+                      toast.error(t('Auto.text_7e131f'))
                       return
                     }
                     onReject(rejectReason.trim())
@@ -327,8 +329,8 @@ export function LeadDetailsModal({ isOpen, onClose, session, onAccept, onReject,
                   }}
                   className="flex-1 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl transition-colors shadow-lg shadow-red-500/20"
                 >
-                  Отклонить заявку
-                </button>
+                  {t('Auto.text_b1185f')}
+                                                  </button>
               </div>
             </div>
           )}

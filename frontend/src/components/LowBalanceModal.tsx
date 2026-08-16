@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import { Coins, X } from 'lucide-react'
 import Link from 'next/link'
 
@@ -9,6 +10,7 @@ interface LowBalanceModalProps {
 }
 
 export function LowBalanceModal({ isOpen, onClose, requiredAmount, currency }: LowBalanceModalProps) {
+    const t = useTranslations();
   if (!isOpen) return null
 
   return (
@@ -25,26 +27,26 @@ export function LowBalanceModal({ isOpen, onClose, requiredAmount, currency }: L
             <Coins className="w-10 h-10" />
           </div>
           <h2 className="text-2xl font-bold text-neutral-900 dark:text-white mb-3">
-            Недостаточно средств
-          </h2>
+            {t('Auto.text_55a626')}
+                                </h2>
           <p className="text-neutral-600 dark:text-neutral-400 mb-8">
-            Для открытия этих контактов нужно <b>{requiredAmount} {currency}</b>.<br/>
-            Пополните баланс, чтобы продолжить работу.
-          </p>
+            {t('Auto.text_151648')} <b>{requiredAmount} {currency}</b>.<br/>
+            {t('Auto.text_415fd7')}
+                                </p>
           
           <div className="flex flex-col gap-3">
             <Link 
               href="/top-up"
               className="w-full py-3.5 px-4 bg-accent-500 hover:bg-accent-600 text-white font-semibold rounded-xl transition-colors shadow-lg shadow-accent-500/25"
             >
-              Пополнить баланс
-            </Link>
+              {t('topupBalance')}
+                                      </Link>
             <button
               onClick={onClose}
               className="w-full py-3.5 px-4 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 font-semibold rounded-xl transition-colors"
             >
-              Отмена
-            </button>
+              {t('cancel')}
+                                      </button>
           </div>
         </div>
       </div>

@@ -1,4 +1,6 @@
 'use client'
+import { useTranslations } from "next-intl";
+
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -33,6 +35,7 @@ interface AnalyticsData {
 }
 
 export default function AnalyticsPage() {
+    const t = useTranslations();
   const router = useRouter()
   const [profile, setProfile] = useState<Profile | null>(null)
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null)
@@ -101,10 +104,10 @@ export default function AnalyticsPage() {
 
       <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-24">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-neutral-900 dark:text-white mb-2">Аналитика</h1>
+          <h1 className="text-3xl font-bold text-neutral-900 dark:text-white mb-2">{t('analytics')}</h1>
           <p className="text-neutral-500 dark:text-neutral-400">
-            Статистика покупок и ваша активность на платформе
-          </p>
+            {t('Auto.text_f627a9')}
+                                </p>
         </div>
 
         {/* Stats Cards */}
@@ -115,7 +118,7 @@ export default function AnalyticsPage() {
                 <TrendingUp className="w-6 h-6 text-accent-500" />
               </div>
               <div>
-                <p className="text-sm text-neutral-500 dark:text-neutral-400 font-medium">Потрачено средств</p>
+                <p className="text-sm text-neutral-500 dark:text-neutral-400 font-medium">{t('Auto.text_24dbdf')}</p>
                 <h3 className="text-3xl font-black text-neutral-900 dark:text-white mt-1">
                   {analytics.total_spent_balance}
                 </h3>
@@ -131,7 +134,7 @@ export default function AnalyticsPage() {
                 <ShoppingCart className="w-6 h-6 text-primary-500" />
               </div>
               <div>
-                <p className="text-sm text-neutral-500 dark:text-neutral-400 font-medium">Куплено лидов</p>
+                <p className="text-sm text-neutral-500 dark:text-neutral-400 font-medium">{t('Auto.text_dbad84')}</p>
                 <h3 className="text-3xl font-black text-neutral-900 dark:text-white mt-1">
                   {analytics.total_leads_bought}
                 </h3>
@@ -146,14 +149,14 @@ export default function AnalyticsPage() {
         <div className="bg-white dark:bg-neutral-900 rounded-2xl p-6 border border-neutral-200 dark:border-neutral-800 shadow-sm mb-8">
           <h3 className="text-lg font-bold text-neutral-900 dark:text-white flex items-center gap-2 mb-6">
             <Activity className="w-5 h-5 text-neutral-400" />
-            Активность (последние 30 дней)
-          </h3>
+            {t('Auto.text_e6cd31')}
+                                </h3>
           
           {(!analytics.activity_by_day || analytics.activity_by_day.length === 0) ? (
             <EmptyState
               icon={<Activity className="w-8 h-8" />}
-              title="Нет данных об активности"
-              description="Здесь появится график вашей активности за последние 30 дней после совершения первых покупок или операций."
+              title={t('Auto.text_6f73d1')}
+              description={t('Auto.text_f811e2')}
             />
           ) : (
             <div className="h-[300px] w-full">
@@ -200,8 +203,8 @@ export default function AnalyticsPage() {
                     labelStyle={{ color: '#888', marginBottom: '4px' }}
                   />
                   <Legend />
-                  <Area yAxisId="left" type="monotone" name="Потрачено средств" dataKey="spent" stroke="#06b6d4" strokeWidth={3} fillOpacity={1} fill="url(#colorSpent)" />
-                  <Area yAxisId="right" type="step" name="Куплено лидов" dataKey="bought" stroke="#a855f7" strokeWidth={3} fillOpacity={1} fill="url(#colorBought)" />
+                  <Area yAxisId="left" type="monotone" name={t('Auto.text_24dbdf')} dataKey="spent" stroke="#06b6d4" strokeWidth={3} fillOpacity={1} fill="url(#colorSpent)" />
+                  <Area yAxisId="right" type="step" name={t('Auto.text_dbad84')} dataKey="bought" stroke="#a855f7" strokeWidth={3} fillOpacity={1} fill="url(#colorBought)" />
                 </AreaChart>
               </ResponsiveContainer>
             </div>

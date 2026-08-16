@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import { Metadata } from 'next'
 
 export async function generateMetadata({ params }: { params: Promise<{ username: string }> }): Promise<Metadata> {
@@ -9,7 +10,7 @@ export async function generateMetadata({ params }: { params: Promise<{ username:
     
     if (res.ok) {
       const data = await res.json()
-      const displayName = data.display_name || data.username || 'Мастер'
+      const displayName = data.display_name || data.username || t('Auto.text_2bb1fb')
       const title = `Запись к ${displayName} | TattooHUB`
       const description = data.bio || `Запишись на сеанс татуировки к мастеру ${displayName} через TattooHUB.`
       
@@ -34,8 +35,8 @@ export async function generateMetadata({ params }: { params: Promise<{ username:
   }
 
   return {
-    title: 'Запись к мастеру | TattooHUB',
-    description: 'Оставьте заявку на сеанс татуировки.'
+    title: t('Auto.text_a559a7'),
+    description: t('Auto.text_3580a8')
   }
 }
 
@@ -44,5 +45,6 @@ export default function BookMasterLayout({
 }: {
   children: React.ReactNode
 }) {
+    const t = useTranslations();
   return <>{children}</>
 }

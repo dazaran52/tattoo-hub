@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import Image from 'next/image'
 import { useState } from 'react'
 import { X, ChevronLeft, ChevronRight, Trash2, Edit2, Check, Loader2 } from 'lucide-react'
@@ -25,6 +26,7 @@ interface PostModalProps {
 }
 
 export function PostModal({ isOpen, post, onClose, isEditable = false, onPostDeleted, onPostUpdated }: PostModalProps) {
+    const t = useTranslations();
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isEditing, setIsEditing] = useState(false)
   const [editDescription, setEditDescription] = useState('')
@@ -44,7 +46,7 @@ export function PostModal({ isOpen, post, onClose, isEditable = false, onPostDel
   }
 
   const handleDelete = async () => {
-    if (!confirm('Вы уверены, что хотите удалить этот пост? Действие необратимо.')) return
+    if (!confirm(t('Auto.text_3a4368'))) return
     
     setIsDeleting(true)
     try {
@@ -54,7 +56,7 @@ export function PostModal({ isOpen, post, onClose, isEditable = false, onPostDel
       onClose()
     } catch (err) {
       console.error(err)
-      alert('Ошибка при удалении поста')
+      alert(t('Auto.text_17bf22'))
     } finally {
       setIsDeleting(false)
     }
@@ -74,7 +76,7 @@ export function PostModal({ isOpen, post, onClose, isEditable = false, onPostDel
       setIsEditing(false)
     } catch (err) {
       console.error(err)
-      alert('Ошибка при сохранении')
+      alert(t('Auto.text_126f18'))
     } finally {
       setIsSaving(false)
     }
@@ -169,7 +171,7 @@ export function PostModal({ isOpen, post, onClose, isEditable = false, onPostDel
                   onClick={startEditing}
                   disabled={isEditing}
                   className="p-2 text-neutral-500 hover:text-accent-500 hover:bg-accent-500/10 rounded-full transition-colors disabled:opacity-50"
-                  title="Редактировать"
+                  title={t('edit')}
                 >
                   <Edit2 className="w-4 h-4" />
                 </button>
@@ -177,7 +179,7 @@ export function PostModal({ isOpen, post, onClose, isEditable = false, onPostDel
                   onClick={handleDelete}
                   disabled={isDeleting}
                   className="p-2 text-neutral-500 hover:text-red-500 hover:bg-red-500/10 rounded-full transition-colors disabled:opacity-50"
-                  title="Удалить"
+                  title={t('delete')}
                 >
                   {isDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
                 </button>
@@ -192,28 +194,28 @@ export function PostModal({ isOpen, post, onClose, isEditable = false, onPostDel
                   value={editDescription}
                   onChange={(e) => setEditDescription(e.target.value)}
                   className="w-full h-32 bg-neutral-100 dark:bg-neutral-800 border-none rounded-xl p-3 text-neutral-900 dark:text-white focus:ring-2 focus:ring-accent-500 resize-none"
-                  placeholder="Добавьте описание..."
+                  placeholder={t('Auto.text_38389a')}
                 />
                 <div className="flex gap-2 justify-end">
                   <button 
                     onClick={() => setIsEditing(false)}
                     className="px-4 py-2 text-sm font-medium text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
                   >
-                    Отмена
-                  </button>
+                    {t('cancel')}
+                                                        </button>
                   <button 
                     onClick={handleSaveDescription}
                     disabled={isSaving}
                     className="px-4 py-2 text-sm font-bold bg-accent-500 text-white hover:bg-accent-600 rounded-lg transition-colors flex items-center gap-2"
                   >
                     {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
-                    Сохранить
-                  </button>
+                    {t('save')}
+                                                        </button>
                 </div>
               </div>
             ) : (
               <div className="whitespace-pre-wrap text-neutral-800 dark:text-neutral-200 text-[15px] leading-relaxed">
-                {post.description || <span className="text-neutral-400 italic">Нет описания</span>}
+                {post.description || <span className="text-neutral-400 italic">{t('Auto.text_f29ff9')}</span>}
               </div>
             )}
           </div>

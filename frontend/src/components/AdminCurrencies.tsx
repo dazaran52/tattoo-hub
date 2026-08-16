@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import { useState, useEffect } from 'react'
 import { RefreshCw, DollarSign, Loader2, Clock, CheckCircle, ShieldCheck } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
@@ -13,6 +14,7 @@ interface CurrencyRate {
 }
 
 export function AdminCurrencies() {
+    const t = useTranslations();
   const [rates, setRates] = useState<CurrencyRate[]>([])
   const [cachedRates, setCachedRates] = useState<Record<string, number>>({})
   const [isLoading, setIsLoading] = useState(true)
@@ -37,7 +39,7 @@ export function AdminCurrencies() {
       setRates(data.rates || [])
       setCachedRates(data.cached || {})
     } catch (e) {
-      toast.error('Ошибка загрузки курсов валют')
+      toast.error(t('Auto.text_ad0f03'))
       console.error(e)
     } finally {
       setIsLoading(false)
@@ -61,7 +63,7 @@ export function AdminCurrencies() {
       })
       if (!res.ok) {
         const err = await res.json()
-        throw new Error(err.detail || 'Ошибка синхронизации')
+        throw new Error(err.detail || t('Auto.text_d9d86c'))
       }
       const data = await res.json()
       toast.success(`Курсы успешно обновлены (${data.updated_count} валют)`)
@@ -72,7 +74,7 @@ export function AdminCurrencies() {
       })
       await fetchRates()
     } catch (e: any) {
-      toast.error(e.message || 'Ошибка синхронизации с ЕЦБ')
+      toast.error(e.message || t('Auto.text_b01ab8'))
     } finally {
       setIsSyncing(false)
     }
@@ -89,11 +91,11 @@ export function AdminCurrencies() {
         <div>
           <div className="flex items-center gap-2 mb-2">
             <ShieldCheck className="w-6 h-6 text-primary-500" />
-            <h3 className="text-xl font-bold dark:text-white">Управление валютным курсом (ЕЦБ)</h3>
+            <h3 className="text-xl font-bold dark:text-white">{t('Auto.text_8b19f2')}</h3>
           </div>
           <p className="text-sm text-neutral-600 dark:text-neutral-400 max-w-2xl">
-            Система использует **EUR (1.0)** как единую базовую валюту для расчетов комиссии и оценки заявок. В интерфейсах пользователей по умолчанию отображается локальная валюта (для Чехии — **CZK**). Обновление курсов происходит автоматически или вручную через Frankfurter API.
-          </p>
+            {t('Auto.text_307832')}
+                                </p>
         </div>
 
         <button
@@ -102,15 +104,15 @@ export function AdminCurrencies() {
           className="bg-primary-600 hover:bg-primary-700 disabled:opacity-50 text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-primary-600/20 transition-all active:scale-95 whitespace-nowrap"
         >
           {isSyncing ? <Loader2 className="w-5 h-5 animate-spin" /> : <RefreshCw className="w-5 h-5" />}
-          Синхронизировать с ЕЦБ
-        </button>
+          {t('Auto.text_be4df5')}
+                          </button>
       </div>
 
       {lastSyncInfo && (
         <div className="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/50 p-4 rounded-xl flex items-center gap-3 text-emerald-800 dark:text-emerald-300 text-sm">
           <CheckCircle className="w-5 h-5 flex-shrink-0 text-emerald-600" />
           <span>
-            Успешная синхронизация с источником: <strong>{lastSyncInfo.source}</strong> (актуальность биржи: {lastSyncInfo.date_api}). Обновлено валют: {lastSyncInfo.updated_count}.
+            {t('Auto.text_77fe06')} <strong>{lastSyncInfo.source}</strong> {t('Auto.text_c8b62d')} {lastSyncInfo.date_api}{t('Auto.text_6c587e')} {lastSyncInfo.updated_count}.
           </span>
         </div>
       )}
@@ -119,19 +121,19 @@ export function AdminCurrencies() {
       <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 p-6 shadow-sm">
         <h4 className="text-lg font-bold mb-6 flex items-center gap-2 dark:text-white">
           <DollarSign className="w-5 h-5 text-primary-500" />
-          Актуальные курсы (к 1 EUR)
-        </h4>
+          {t('Auto.text_98f3cc')}
+                          </h4>
 
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-neutral-100 dark:border-neutral-800 text-neutral-500 text-sm">
-                <th className="pb-3 font-semibold">Валюта</th>
-                <th className="pb-3 font-semibold">Код</th>
-                <th className="pb-3 font-semibold">Курс (к 1 EUR)</th>
-                <th className="pb-3 font-semibold">В памяти (Кэш)</th>
-                <th className="pb-3 font-semibold">Последнее обновление</th>
-                <th className="pb-3 font-semibold text-right">Статус</th>
+                <th className="pb-3 font-semibold">{t('Auto.text_cf55d9')}</th>
+                <th className="pb-3 font-semibold">{t('Auto.text_3f34a6')}</th>
+                <th className="pb-3 font-semibold">{t('Auto.text_911559')}</th>
+                <th className="pb-3 font-semibold">{t('Auto.text_b38608')}</th>
+                <th className="pb-3 font-semibold">{t('lastRefresh')}</th>
+                <th className="pb-3 font-semibold text-right">{t('crmBoard.list.statusColumn')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800/60">
@@ -145,8 +147,8 @@ export function AdminCurrencies() {
                   <tr key={r.currency_code} className="hover:bg-neutral-50 dark:hover:bg-neutral-800/30 transition-colors">
                     <td className="py-4 font-medium flex items-center gap-2 dark:text-white">
                       <span>{r.currency_code}</span>
-                      {isBase && <span className="bg-primary-100 text-primary-800 dark:bg-primary-900/40 dark:text-primary-300 text-xs px-2 py-0.5 rounded-md font-bold">Базовая</span>}
-                      {isLaunchDefault && <span className="bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300 text-xs px-2 py-0.5 rounded-md font-bold">Рынок старта (Чехия)</span>}
+                      {isBase && <span className="bg-primary-100 text-primary-800 dark:bg-primary-900/40 dark:text-primary-300 text-xs px-2 py-0.5 rounded-md font-bold">{t('Auto.text_09825a')}</span>}
+                      {isLaunchDefault && <span className="bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300 text-xs px-2 py-0.5 rounded-md font-bold">{t('Auto.text_2da027')}</span>}
                     </td>
                     <td className="py-4 font-mono text-sm text-neutral-500 dark:text-neutral-400">{r.currency_code}</td>
                     <td className="py-4 font-mono font-bold text-base dark:text-white">
@@ -165,7 +167,7 @@ export function AdminCurrencies() {
                           ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400' 
                           : 'bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400'
                       }`}>
-                        {r.is_active ? 'Активен' : 'Отключен'}
+                        {r.is_active ? t('Auto.text_318150') : t('Auto.text_e0875f')}
                       </span>
                     </td>
                   </tr>
@@ -177,8 +179,8 @@ export function AdminCurrencies() {
                     <EmptyState
                       variant="compact"
                       icon={<DollarSign className="w-7 h-7" />}
-                      title="Таблица курсов пуста"
-                      description="Нажмите «Синхронизировать с ЕЦБ» или выполните миграцию 051."
+                      title={t('Auto.text_85c50e')}
+                      description={t('Auto.text_6a0c75')}
                     />
                   </td>
                 </tr>

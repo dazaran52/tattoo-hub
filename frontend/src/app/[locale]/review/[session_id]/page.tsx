@@ -1,4 +1,6 @@
 'use client'
+import { useTranslations } from "next-intl";
+
 
 import { useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
@@ -6,6 +8,7 @@ import { Star, CheckCircle } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
 export default function ReviewPage() {
+    const t = useTranslations();
   const params = useParams<{ session_id: string }>()
   const router = useRouter()
   const [rating, setRating] = useState<number>(0)
@@ -18,7 +21,7 @@ export default function ReviewPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (rating === 0) {
-      setError('Пожалуйста, выберите оценку от 1 до 5 звезд.')
+      setError(t('Auto.text_7d3841'))
       return
     }
 
@@ -26,7 +29,7 @@ export default function ReviewPage() {
       setIsSubmitting(true)
       setError(null)
       const { data: { session } } = await supabase.auth.getSession()
-      if (!session) throw new Error('Войдите в аккаунт, чтобы оставить отзыв')
+      if (!session) throw new Error(t('Auto.text_b169f6'))
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/reviews/${params.session_id}`, {
         method: 'POST',
         headers: {
@@ -38,12 +41,12 @@ export default function ReviewPage() {
 
       if (!res.ok) {
         const data = await res.json()
-        throw new Error(data.detail || 'Ошибка при отправке отзыва')
+        throw new Error(data.detail || t('Auto.text_543246'))
       }
 
       setIsSuccess(true)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Произошла ошибка')
+      setError(err instanceof Error ? err.message : t('Auto.text_3e1161'))
     } finally {
       setIsSubmitting(false)
     }
@@ -56,16 +59,16 @@ export default function ReviewPage() {
           <div className="w-20 h-20 bg-green-100 dark:bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
             <CheckCircle className="w-10 h-10 text-green-500" />
           </div>
-          <h1 className="text-2xl font-bold text-neutral-900 dark:text-white mb-2">Спасибо за отзыв!</h1>
+          <h1 className="text-2xl font-bold text-neutral-900 dark:text-white mb-2">{t('Auto.text_333d99')}</h1>
           <p className="text-neutral-500 dark:text-neutral-400 mb-8">
-            Ваш отзыв поможет мастеру и другим клиентам платформы.
-          </p>
+            {t('Auto.text_2217e5')}
+                              </p>
           <button 
             onClick={() => router.push('/')}
             className="w-full bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 font-bold py-3 rounded-xl hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-colors"
           >
-            На главную
-          </button>
+            {t('Auto.text_3ddda6')}
+                              </button>
         </div>
       </div>
     )
@@ -74,10 +77,10 @@ export default function ReviewPage() {
   return (
     <div className="min-h-screen bg-neutral-50 dark:bg-[#050505] flex flex-col items-center justify-center p-4">
       <div className="bg-white dark:bg-neutral-900 rounded-3xl p-8 max-w-md w-full shadow-2xl border border-neutral-200 dark:border-neutral-800">
-        <h1 className="text-2xl font-bold text-neutral-900 dark:text-white mb-2 text-center">Оцените сеанс</h1>
+        <h1 className="text-2xl font-bold text-neutral-900 dark:text-white mb-2 text-center">{t('Auto.text_c45fb0')}</h1>
         <p className="text-neutral-500 dark:text-neutral-400 mb-6 text-center text-sm">
-          Поделитесь своими впечатлениями о мастере и новой татуировке.
-        </p>
+          {t('Auto.text_1922bc')}
+                          </p>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="flex justify-center gap-2 mb-6">
@@ -103,12 +106,12 @@ export default function ReviewPage() {
 
           <div>
             <label className="block text-sm font-semibold opacity-90 mb-2 dark:text-white">
-              Ваш комментарий (необязательно)
-            </label>
+              {t('Auto.text_99fa06')}
+                                      </label>
             <textarea
               value={text}
               onChange={(e) => setText(e.target.value)}
-              placeholder="Всё прошло отлично! Мастер супер..."
+              placeholder={t('Auto.text_0c198b')}
               rows={4}
               className="w-full rounded-xl px-4 py-3 bg-neutral-100 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-accent-500/20 focus:border-accent-500 resize-none transition-all"
             />
@@ -128,7 +131,7 @@ export default function ReviewPage() {
             {isSubmitting ? (
               <div className="w-5 h-5 border-2 border-white/30 dark:border-black/30 border-t-white dark:border-t-black rounded-full animate-spin" />
             ) : (
-              'Отправить отзыв'
+              t('Auto.text_eaf992')
             )}
           </button>
         </form>

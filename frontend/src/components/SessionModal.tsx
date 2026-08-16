@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import Image from 'next/image'
 import { useState, useEffect } from 'react'
 import { X, User, Clock, FileText, Upload, Calendar as CalendarIcon, Tag, Plus, Trash2 } from 'lucide-react'
@@ -22,6 +23,7 @@ interface SessionModalProps {
 }
 
 export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialClientId, existingClients, editSession, onSellLead }: SessionModalProps) {
+    const t = useTranslations();
   const [loading, setLoading] = useState(false)
   const [isNewClient, setIsNewClient] = useState(false)
   const [clientSearchText, setClientSearchText] = useState('')
@@ -116,11 +118,11 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
         
       if (error) throw error
       
-      toast.success('Сеанс удален')
+      toast.success(t('Auto.text_dd99a3'))
       onSuccess()
       onClose()
     } catch (e: any) {
-      toast.error(e.message || 'Ошибка удаления')
+      toast.error(e.message || t('crmBoard.deleteError'))
     } finally {
       setLoading(false)
     }
@@ -128,7 +130,7 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
 
   const handleCancelSession = async () => {
     if (!editSession) return
-    if (!window.confirm('Вы уверены, что хотите отменить этот сеанс?')) return
+    if (!window.confirm(t('Auto.text_aad69e'))) return
     
     setLoading(true)
     try {
@@ -138,11 +140,11 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
         
       if (error) throw error
       
-      toast.success('Сеанс отменен')
+      toast.success(t('Auto.text_e85854'))
       onSuccess()
       onClose()
     } catch (e: any) {
-      toast.error(e.message || 'Ошибка отмены сеанса')
+      toast.error(e.message || t('Auto.text_1b2463'))
     } finally {
       setLoading(false)
     }
@@ -162,7 +164,7 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
         // 1. If new client, create client first
         if (isNewClient) {
           if (!formData.client_name) {
-            toast.error('Введите имя клиента')
+            toast.error(t('Auto.text_1e0ac6'))
             setLoading(false)
             return
           }
@@ -192,10 +194,10 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
                 finalClientId = errData.detail.client.id
                 toast.success(`Найден существующий клиент: ${errData.detail.client.name}`)
               } else {
-                throw new Error('Ошибка при создании клиента')
+                throw new Error(t('Auto.text_2fa1cf'))
               }
             } else {
-              throw new Error('Ошибка при создании клиента')
+              throw new Error(t('Auto.text_2fa1cf'))
             }
           } else {
             const newClient = await clientRes.json()
@@ -203,7 +205,7 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
           }
         } else {
           if (!finalClientId) {
-            toast.error('Выберите клиента')
+            toast.error(t('Auto.text_33e041'))
             setLoading(false)
             return
           }
@@ -316,12 +318,12 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
         if (error) throw error
       }
 
-      toast.success(editSession ? 'Сеанс обновлен' : 'Сеанс успешно создан')
+      toast.success(editSession ? t('Auto.text_fae510') : t('Auto.text_a116d9'))
       onSuccess()
       onClose()
     } catch (error: any) {
       console.error(error)
-      toast.error(error.message || 'Произошла ошибка')
+      toast.error(error.message || t('Auto.text_3e1161'))
     } finally {
       setLoading(false)
     }
@@ -335,7 +337,7 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
         <div className="flex justify-between items-center p-6 border-b border-neutral-200 dark:border-neutral-800 shrink-0">
           <h2 className="text-xl font-bold flex items-center gap-2 text-neutral-900 dark:text-white">
             <CalendarIcon className="w-5 h-5 text-accent-500" />
-            {editSession ? 'Редактировать сеанс' : 'Создать сеанс'}
+            {editSession ? t('Auto.text_7a3b90') : t('Auto.text_5d5970')}
           </h2>
           <button type="button" onClick={onClose} className="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-full transition-colors text-neutral-500">
             <X className="w-5 h-5" />
@@ -347,14 +349,14 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
           {/* Client Selection */}
           <div className="space-y-4 bg-neutral-50 dark:bg-neutral-800/50 p-4 rounded-2xl border border-neutral-200 dark:border-neutral-800">
             <div className="flex items-center justify-between">
-              <label className="text-sm font-semibold text-neutral-700 dark:text-neutral-300">Клиент *</label>
+              <label className="text-sm font-semibold text-neutral-700 dark:text-neutral-300">{t('Auto.text_09d706')}</label>
               {!isClientLocked && (
                 <button
                   type="button"
                   onClick={() => setIsNewClient(!isNewClient)}
                   className="text-xs font-bold flex items-center gap-1 text-accent-600 dark:text-accent-400 hover:text-accent-700 transition-colors"
                 >
-                  {isNewClient ? 'Выбрать существующего' : <><Plus className="w-3 h-3"/> Добавить нового</>}
+                  {isNewClient ? t('Auto.text_792e0c') : <><Plus className="w-3 h-3"/> {t('Auto.text_94b9b9')}</>}
                 </button>
               )}
             </div>
@@ -368,7 +370,7 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
                     required={isNewClient}
                     value={formData.client_name}
                     onChange={(e) => setFormData(p => ({ ...p, client_name: e.target.value }))}
-                    placeholder="Имя клиента *"
+                    placeholder={t('Auto.text_a0fb23')}
                     className="w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-xl pl-9 pr-4 py-2.5 text-sm focus:ring-2 focus:ring-accent-500/20 focus:border-accent-500 transition-all outline-none"
                   />
                 </div>
@@ -377,7 +379,7 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
                     <PhoneInput
                       value={formData.phone}
                       onChange={(val) => setFormData(p => ({ ...p, phone: val }))}
-                      placeholder="Телефон"
+                      placeholder={t('phone')}
                     />
                   </div>
                   <div className="relative">
@@ -433,7 +435,7 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
                       }}
                       onFocus={() => setIsClientDropdownOpen(true)}
                       onBlur={() => setTimeout(() => setIsClientDropdownOpen(false), 300)}
-                      placeholder="Поиск по имени, почте или контактам..."
+                      placeholder={t('Auto.text_51c6b6')}
                       className="w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-accent-500/20 focus:border-accent-500 outline-none"
                     />
                     {isClientDropdownOpen && (
@@ -458,7 +460,7 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
                             }}
                           >
                             <div className="font-medium text-neutral-900 dark:text-white">{c.name}</div>
-                            <div className="text-xs text-neutral-500">{c.phone || c.email || c.telegram || c.instagram || c.contact_info || 'Нет контактов'}</div>
+                            <div className="text-xs text-neutral-500">{c.phone || c.email || c.telegram || c.instagram || c.contact_info || t('crmBoard.noContacts')}</div>
                           </div>
                         ))}
                       </div>
@@ -472,7 +474,7 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
           {/* Session Details */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-neutral-500 dark:text-neutral-400 mb-1.5 uppercase tracking-wider">Дата сеанса *</label>
+              <label className="block text-xs font-semibold text-neutral-500 dark:text-neutral-400 mb-1.5 uppercase tracking-wider">{t('Auto.text_7d28a8')}</label>
               <input
                 type="date"
                 required
@@ -483,7 +485,7 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
             </div>
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="block text-xs font-semibold text-neutral-500 dark:text-neutral-400 mb-1.5 uppercase tracking-wider">Начало</label>
+                <label className="block text-xs font-semibold text-neutral-500 dark:text-neutral-400 mb-1.5 uppercase tracking-wider">{t('Auto.text_0d1e0c')}</label>
                 <input
                   type="time"
                   value={formData.start_time}
@@ -492,7 +494,7 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-neutral-500 dark:text-neutral-400 mb-1.5 uppercase tracking-wider">Конец</label>
+                <label className="block text-xs font-semibold text-neutral-500 dark:text-neutral-400 mb-1.5 uppercase tracking-wider">{t('Auto.text_357387')}</label>
                 <input
                   type="time"
                   value={formData.end_time}
@@ -505,7 +507,7 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-neutral-500 dark:text-neutral-400 mb-1.5 uppercase tracking-wider">Стиль татуировки</label>
+              <label className="block text-xs font-semibold text-neutral-500 dark:text-neutral-400 mb-1.5 uppercase tracking-wider">{t('leadWizard.tattooStyle')}</label>
               <div className="flex flex-col gap-3">
                 <div className="flex flex-wrap gap-2">
                   {TATTOO_STYLES.map(s => (
@@ -536,13 +538,13 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
                      const builtinStyles = formData.style.filter(s => TATTOO_STYLES.includes(s))
                      setFormData(p => ({ ...p, style: [...builtinStyles, ...customStyles] }))
                   }}
-                  placeholder="Или введите свой вариант..."
+                  placeholder={t('Auto.text_40f8cd')}
                   className="w-full bg-neutral-100 dark:bg-neutral-800 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-accent-500/20 outline-none"
                 />
               </div>
             </div>
             <div>
-              <label className="block text-xs font-semibold text-neutral-500 dark:text-neutral-400 mb-1.5 uppercase tracking-wider">Стоимость (Kč)</label>
+              <label className="block text-xs font-semibold text-neutral-500 dark:text-neutral-400 mb-1.5 uppercase tracking-wider">{t('Auto.text_1c5818')}</label>
               <input
                 type="number"
                 value={formData.price}
@@ -555,7 +557,7 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div>
-              <label className="block text-xs font-semibold text-neutral-500 dark:text-neutral-400 mb-1.5 uppercase tracking-wider">Место на теле</label>
+              <label className="block text-xs font-semibold text-neutral-500 dark:text-neutral-400 mb-1.5 uppercase tracking-wider">{t('leadWizard.tattooPlacement')}</label>
               <div className="flex flex-col gap-3">
                 <div className="flex flex-wrap gap-2">
                   {BODY_PLACES.map(place => (
@@ -577,13 +579,13 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
                   type="text"
                   value={formData.body_place}
                   onChange={(e) => setFormData(p => ({ ...p, body_place: e.target.value }))}
-                  placeholder="Уточнение (напр. Внутренняя сторона)"
+                  placeholder={t('Auto.text_239bb5')}
                   className="w-full bg-neutral-100 dark:bg-neutral-800 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-accent-500/20 outline-none"
                 />
               </div>
             </div>
             <div>
-              <label className="block text-xs font-semibold text-neutral-500 dark:text-neutral-400 mb-1.5 uppercase tracking-wider">Примерный размер</label>
+              <label className="block text-xs font-semibold text-neutral-500 dark:text-neutral-400 mb-1.5 uppercase tracking-wider">{t('approxSize')}</label>
               <div className="grid grid-cols-2 gap-2 mb-3">
                 {TATTOO_SIZES.map(sz => (
                   <button
@@ -604,7 +606,7 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
                 type="text"
                 value={formData.size}
                 onChange={(e) => setFormData(p => ({ ...p, size: e.target.value }))}
-                placeholder="Или введите размер (напр. 15x10 см)"
+                placeholder={t('Auto.text_111848')}
                 className="w-full bg-neutral-100 dark:bg-neutral-800 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-accent-500/20 outline-none"
               />
             </div>
@@ -612,7 +614,7 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-neutral-500 dark:text-neutral-400 mb-1.5 uppercase tracking-wider">Фото-референсы</label>
+              <label className="block text-xs font-semibold text-neutral-500 dark:text-neutral-400 mb-1.5 uppercase tracking-wider">{t('Auto.text_48a940')}</label>
               <div className="flex flex-wrap gap-3">
                 {existingImages.map((url, idx) => (
                   <div 
@@ -648,7 +650,7 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
                 ))}
                 <label className="w-16 h-16 rounded-lg border-2 border-dashed border-neutral-300 dark:border-neutral-700 flex flex-col items-center justify-center text-neutral-500 hover:text-accent-500 hover:border-accent-500 transition-colors cursor-pointer bg-neutral-50 dark:bg-neutral-800/50">
                   <Upload className="w-4 h-4 mb-0.5" />
-                  <span className="text-[9px] font-medium uppercase tracking-wider">Добавить</span>
+                  <span className="text-[9px] font-medium uppercase tracking-wider">{t('Auto.text_5eba28')}</span>
                   <input 
                     type="file" 
                     accept="image/*" 
@@ -667,7 +669,7 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
 
             {editSession && editSession.status === 'completed' && (
               <div>
-                <label className="block text-xs font-semibold text-neutral-500 dark:text-neutral-400 mb-1.5 uppercase tracking-wider">Фото результата</label>
+                <label className="block text-xs font-semibold text-neutral-500 dark:text-neutral-400 mb-1.5 uppercase tracking-wider">{t('Auto.text_6b1caf')}</label>
               <div className="flex flex-wrap gap-3">
                 {existingResultImages.map((url, idx) => (
                   <div 
@@ -703,7 +705,7 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
                 ))}
                 <label className="w-16 h-16 rounded-lg border-2 border-dashed border-neutral-300 dark:border-neutral-700 flex flex-col items-center justify-center text-neutral-500 hover:text-accent-500 hover:border-accent-500 transition-colors cursor-pointer bg-neutral-50 dark:bg-neutral-800/50">
                   <Upload className="w-4 h-4 mb-0.5" />
-                  <span className="text-[9px] font-medium uppercase tracking-wider">Добавить</span>
+                  <span className="text-[9px] font-medium uppercase tracking-wider">{t('Auto.text_5eba28')}</span>
                   <input 
                     type="file" 
                     accept="image/*" 
@@ -730,7 +732,7 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
                 onClick={() => setShowDeleteConfirm(true)}
                 disabled={loading || isUploading}
                 className="flex items-center justify-center p-3.5 bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 rounded-xl hover:bg-red-100 dark:hover:bg-red-500/20 transition-colors disabled:opacity-50"
-                title="Удалить сеанс"
+                title={t('Auto.text_aa7147')}
               >
                 <Trash2 className="w-5 h-5" />
               </button>
@@ -741,7 +743,7 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
                 onClick={() => onSellLead(editSession)}
                 disabled={loading || isUploading}
                 className="flex items-center justify-center p-3.5 bg-accent-50 dark:bg-accent-500/10 text-accent-600 dark:text-accent-400 rounded-xl hover:bg-accent-100 dark:hover:bg-accent-500/20 transition-colors disabled:opacity-50"
-                title="Передать / Продать лида"
+                title={t('Auto.text_0c6563')}
               >
                 <Tag className="w-5 h-5" />
               </button>
@@ -753,15 +755,15 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
                   onClick={handleDelete}
                   className="px-4 py-3.5 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl text-sm transition-colors"
                 >
-                  Удалить!
-                </button>
+                  {t('Auto.text_d0fcbe')}
+                                                  </button>
                 <button
                   type="button"
                   onClick={() => setShowDeleteConfirm(false)}
                   className="px-4 py-3.5 bg-neutral-200 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 font-bold rounded-xl text-sm transition-colors hover:bg-neutral-300 dark:hover:bg-neutral-700"
                 >
-                  Отмена
-                </button>
+                  {t('cancel')}
+                                                  </button>
               </div>
             )}
             <button
@@ -772,7 +774,7 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
               {(loading || isUploading) ? (
                 <div className="w-5 h-5 border-2 border-white/30 dark:border-black/30 border-t-white dark:border-t-black rounded-full animate-spin" />
               ) : (
-                editSession ? 'Сохранить изменения' : 'Сохранить сеанс'
+                editSession ? t('saveChanges') : t('Auto.text_3f3067')
               )}
             </button>
           </div>

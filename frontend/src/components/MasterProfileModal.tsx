@@ -1,4 +1,6 @@
 'use client'
+import { useTranslations } from "next-intl";
+
 
 import Image from 'next/image'
 import { useState, useEffect } from 'react'
@@ -10,6 +12,7 @@ import { OnlineIndicator } from '@/components/OnlineIndicator'
 import { VerifiedMasterBadge } from '@/components/PublicMasterTrust'
 
 export function MasterProfileModal({ username, onClose, onBook }: { username: string, onClose: () => void, onBook: (masterId: string) => void }) {
+    const t = useTranslations();
   const [master, setMaster] = useState<any>(null)
   const [reviews, setReviews] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -50,7 +53,7 @@ export function MasterProfileModal({ username, onClose, onBook }: { username: st
       >
         {/* Header */}
         <div className="px-6 py-4 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between bg-white dark:bg-[#0a0a0a] z-10 sticky top-0">
-          <h2 className="text-lg font-bold">Профиль мастера</h2>
+          <h2 className="text-lg font-bold">{t('Auto.text_d299dd')}</h2>
           <button onClick={onClose} className="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-full transition-colors">
             <X className="w-5 h-5" />
           </button>
@@ -93,7 +96,7 @@ export function MasterProfileModal({ username, onClose, onBook }: { username: st
                     <div className="flex items-center justify-center sm:justify-start gap-1.5 mb-3 text-yellow-500">
                       <Star className="w-5 h-5 fill-current" />
                       <span className="font-bold text-lg">{master.rating}</span>
-                      <span className="text-neutral-500 dark:text-neutral-400 text-sm">({master.review_count} отзывов)</span>
+                      <span className="text-neutral-500 dark:text-neutral-400 text-sm">({master.review_count} {t('Auto.text_f4d5ac')}</span>
                     </div>
                   )}
 
@@ -113,8 +116,8 @@ export function MasterProfileModal({ username, onClose, onBook }: { username: st
                 }}
                 className="w-full py-4 mb-8 bg-primary-600 hover:bg-primary-700 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all"
               >
-                Оставить заявку этому мастеру
-              </button>
+                {t('Auto.text_a764d9')}
+                                                </button>
 
               {/* Tabs */}
               <div className="flex gap-2 p-1.5 bg-neutral-100 dark:bg-neutral-900 rounded-xl mb-6">
@@ -126,8 +129,8 @@ export function MasterProfileModal({ username, onClose, onBook }: { username: st
                       : 'text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300 hover:bg-white/50 dark:hover:bg-neutral-800/50'
                   }`}
                 >
-                  Портфолио
-                </button>
+                  {t('portfolio')}
+                                                      </button>
                 <button
                   onClick={() => setActiveTab('reviews')}
                   className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-all ${
@@ -136,8 +139,8 @@ export function MasterProfileModal({ username, onClose, onBook }: { username: st
                       : 'text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300 hover:bg-white/50 dark:hover:bg-neutral-800/50'
                   }`}
                 >
-                  Отзывы
-                </button>
+                  {t('Auto.text_1c3fea')}
+                                                      </button>
               </div>
 
               {/* Tab Content */}
@@ -170,8 +173,8 @@ export function MasterProfileModal({ username, onClose, onBook }: { username: st
                     })
                   ) : (
                     <div className="col-span-2 text-center py-12 text-neutral-500">
-                      Портфолио пока пусто
-                    </div>
+                      {t('Auto.text_36aebb')}
+                                                                      </div>
                   )}
                 </div>
               ) : (
@@ -193,14 +196,14 @@ export function MasterProfileModal({ username, onClose, onBook }: { username: st
                     ))
                   ) : (
                     <div className="text-center py-12 text-neutral-500">
-                      Пока нет отзывов
-                    </div>
+                      {t('Auto.text_be9b89')}
+                                                                          </div>
                   )}
                 </div>
               )}
             </>
           ) : (
-            <div className="text-center py-12 text-neutral-500">Ошибка загрузки профиля</div>
+            <div className="text-center py-12 text-neutral-500">{t('profileLoadError')}</div>
           )}
         </div>
       </div>

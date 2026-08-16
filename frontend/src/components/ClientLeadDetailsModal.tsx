@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import React, { useState } from 'react'
 import Image from 'next/image'
 import { X, Calendar, Palette, Maximize2, MapPin, DollarSign, Clock, PersonStanding } from 'lucide-react'
@@ -11,6 +12,7 @@ interface ClientLeadDetailsModalProps {
 }
 
 export function ClientLeadDetailsModal({ isOpen, onClose, lead, onNavigateToCRM }: ClientLeadDetailsModalProps) {
+    const t = useTranslations();
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
 
   if (!isOpen || !lead) return null
@@ -33,7 +35,7 @@ export function ClientLeadDetailsModal({ isOpen, onClose, lead, onNavigateToCRM 
           <X className="w-5 h-5" />
         </button>
 
-        <h2 className="text-xl font-black mb-6 text-neutral-900 dark:text-white">Детали заявки</h2>
+        <h2 className="text-xl font-black mb-6 text-neutral-900 dark:text-white">{t('leadDetails')}</h2>
 
         <div className="space-y-4">
           <div className="flex items-center gap-3">
@@ -41,8 +43,8 @@ export function ClientLeadDetailsModal({ isOpen, onClose, lead, onNavigateToCRM 
               <Maximize2 className="w-5 h-5" />
             </div>
             <div>
-              <p className="text-xs text-neutral-500 font-bold uppercase">Размер</p>
-              <p className="font-semibold text-neutral-900 dark:text-white">{lead.size || 'Не указан'}</p>
+              <p className="text-xs text-neutral-500 font-bold uppercase">{t('crmBoard.sizeLabel')}</p>
+              <p className="font-semibold text-neutral-900 dark:text-white">{lead.size || t('Auto.text_cdded4')}</p>
             </div>
           </div>
 
@@ -51,8 +53,8 @@ export function ClientLeadDetailsModal({ isOpen, onClose, lead, onNavigateToCRM 
               <Palette className="w-5 h-5" />
             </div>
             <div>
-              <p className="text-xs text-neutral-500 font-bold uppercase">Стиль</p>
-              <p className="font-semibold text-neutral-900 dark:text-white">{lead.style || 'Не указан'}</p>
+              <p className="text-xs text-neutral-500 font-bold uppercase">{t('leadWizard.styleLabel')}</p>
+              <p className="font-semibold text-neutral-900 dark:text-white">{lead.style || t('Auto.text_cdded4')}</p>
             </div>
           </div>
 
@@ -61,8 +63,8 @@ export function ClientLeadDetailsModal({ isOpen, onClose, lead, onNavigateToCRM 
               <PersonStanding className="w-5 h-5" />
             </div>
             <div>
-              <p className="text-xs text-neutral-500 font-bold uppercase">Место</p>
-              <p className="font-semibold text-neutral-900 dark:text-white">{lead.body_place || 'Не указано'}</p>
+              <p className="text-xs text-neutral-500 font-bold uppercase">{t('crmBoard.placeLabel')}</p>
+              <p className="font-semibold text-neutral-900 dark:text-white">{lead.body_place || t('Auto.text_7cddff')}</p>
             </div>
           </div>
 
@@ -71,9 +73,9 @@ export function ClientLeadDetailsModal({ isOpen, onClose, lead, onNavigateToCRM 
               <MapPin className="w-5 h-5" />
             </div>
             <div>
-              <p className="text-xs text-neutral-500 font-bold uppercase">Город</p>
+              <p className="text-xs text-neutral-500 font-bold uppercase">{t('leadWizard.cityLabel')}</p>
               <p className="font-semibold text-neutral-900 dark:text-white">
-                {lead.cities?.name_ru || lead.city_name || 'Не указан'}
+                {lead.cities?.name_ru || lead.city_name || t('Auto.text_cdded4')}
               </p>
             </div>
           </div>
@@ -83,9 +85,9 @@ export function ClientLeadDetailsModal({ isOpen, onClose, lead, onNavigateToCRM 
               <DollarSign className="w-5 h-5" />
             </div>
             <div>
-              <p className="text-xs text-neutral-500 font-bold uppercase">Бюджет</p>
+              <p className="text-xs text-neutral-500 font-bold uppercase">{t('budgetLabel')}</p>
               <p className="font-semibold text-neutral-900 dark:text-white">
-                {lead.is_negotiable_budget ? 'По договоренности' : `${lead.client_budget} ${lead.client_currency || 'CZK'}`}
+                {lead.is_negotiable_budget ? t('Auto.text_bea4da') : `${lead.client_budget} ${lead.client_currency || 'CZK'}`}
               </p>
             </div>
           </div>
@@ -95,9 +97,9 @@ export function ClientLeadDetailsModal({ isOpen, onClose, lead, onNavigateToCRM 
               <Clock className="w-5 h-5" />
             </div>
             <div>
-              <p className="text-xs text-neutral-500 font-bold uppercase">Статус</p>
+              <p className="text-xs text-neutral-500 font-bold uppercase">{t('crmBoard.list.statusColumn')}</p>
               <p className="font-semibold text-neutral-900 dark:text-white">
-                {['new', 'open', 'active'].includes(lead.status) ? 'В поиске мастера' : lead.status === 'accepted' ? 'В работе' : lead.status}
+                {['new', 'open', 'active'].includes(lead.status) ? t('statusSearching') : lead.status === 'accepted' ? t('statusAccepted') : lead.status}
               </p>
             </div>
           </div>
@@ -105,7 +107,7 @@ export function ClientLeadDetailsModal({ isOpen, onClose, lead, onNavigateToCRM 
 
         {images.length > 0 && (
           <div className="mt-6">
-            <p className="text-xs text-neutral-500 font-bold uppercase mb-3">Референсы ({images.length})</p>
+            <p className="text-xs text-neutral-500 font-bold uppercase mb-3">{t('Auto.text_b46518')}{images.length})</p>
             <div className="flex gap-2 overflow-x-auto pb-2 snap-x">
               {images.map((img: string, i: number) => (
                 <div 
@@ -132,8 +134,8 @@ export function ClientLeadDetailsModal({ isOpen, onClose, lead, onNavigateToCRM 
               onClick={onNavigateToCRM}
               className="flex-1 py-3 px-4 bg-primary-600 hover:bg-primary-700 text-white font-bold rounded-xl transition-colors"
             >
-              Перейти к управлению заявкой
-            </button>
+              {t('Auto.text_55db8e')}
+                                      </button>
           )}
         </div>
       </div>
