@@ -118,9 +118,11 @@ export default function DashboardPage() {
         response = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/profile`,
           {
+            cache: 'no-store',
             headers: {
               'Authorization': `Bearer ${session.access_token}`,
               'Content-Type': 'application/json',
+              'Cache-Control': 'no-cache, no-store, must-revalidate'
             },
           }
         );
