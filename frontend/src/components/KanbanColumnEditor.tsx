@@ -10,6 +10,9 @@ interface Props {
   onCancel: () => void
 }
 
+export function KanbanColumnEditor({ columns, onSave, onCancel }: Props) {
+    const t = useTranslations();
+    
 const AVAILABLE_COLORS = [
   { value: 'emerald', hex: '#10b981', label: t('Auto.text_c5be1a') },
   { value: 'violet', hex: '#8b5cf6', label: t('Auto.text_04a710') },
@@ -36,8 +39,6 @@ const AVAILABLE_ICONS = [
   { value: 'Zap', label: t('Auto.text_0cf0ee') }
 ]
 
-export function KanbanColumnEditor({ columns, onSave, onCancel }: Props) {
-    const t = useTranslations();
   const [cols, setCols] = useState<KanbanColumn[]>(columns)
 
   const handleAdd = () => {
