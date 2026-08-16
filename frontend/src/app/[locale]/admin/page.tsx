@@ -912,13 +912,14 @@ export default function AdminPage() {
                     <th className="px-6 py-4 font-bold uppercase tracking-wider text-xs">{t('user')}</th>
                     <th className="px-6 py-4 font-bold uppercase tracking-wider text-xs">Контакты</th>
                     <th className="px-6 py-4 font-bold uppercase tracking-wider text-xs">Баланс</th>
+                    <th className="px-6 py-4 font-bold uppercase tracking-wider text-xs">Валюта</th>
                     <th className="px-6 py-4 font-bold uppercase tracking-wider text-xs">Status</th>
                     <th className="px-6 py-4 font-bold uppercase tracking-wider text-xs text-right">{t('actions')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-neutral-200/50 dark:divide-white/5">
                   {filteredAndSortedUsers.map(user => (
-                    <tr key={user.id} className="hover:bg-neutral-50/50 dark:hover:bg-neutral-800/30 transition-colors">
+                    <tr key={user.id} onClick={() => openUserDetailModal(user)} className="cursor-pointer hover:bg-neutral-50/50 dark:hover:bg-neutral-800/30 transition-colors">
                       <td className="px-6 py-4">
                         <div className="font-bold text-neutral-900 dark:text-white">{user.email}</div>
                         {user.role && (
@@ -946,7 +947,16 @@ export default function AdminPage() {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-500 dark:text-neutral-400">
                         {(user.role === 'master' || user.is_admin || user.is_verified_master) ? (
                           <div className="font-extrabold text-accent-600 dark:text-accent-400 text-base">
-                            {user.balance} {user.currency || 'CZK'}
+                            {user.balance}
+                          </div>
+                        ) : (
+                          <div className="text-xs text-neutral-400 dark:text-neutral-500 font-medium">-</div>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-500 dark:text-neutral-400">
+                        {(user.role === 'master' || user.is_admin || user.is_verified_master) ? (
+                          <div className="font-bold text-neutral-400 text-xs">
+                            {user.currency || 'CZK'}
                           </div>
                         ) : (
                           <div className="text-xs text-neutral-400 dark:text-neutral-500 font-medium">-</div>
@@ -985,18 +995,9 @@ export default function AdminPage() {
                           </div>
                         ) : (
                           <div className="flex justify-end gap-2">
-                            <button
-                              onClick={() => openUserDetailModal(user)}
-                              className="px-3.5 py-2 bg-accent-500/10 hover:bg-accent-500/20 text-accent-600 dark:text-accent-400 border border-accent-500/20 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm"
-                              title="Инспектор пользователя"
-                            >
-                              <Eye className="w-3.5 h-3.5" />
-                              Инспектор
-                            </button>
-                            
                             {user.role === 'master' && user.certificate_status === 'pending' && user.certificate_url && (
                               <button
-                                onClick={() => setCertificateReviewUser(user)}
+                                onClick={(e) => { e.stopPropagation(); setCertificateReviewUser(user); }}
                                 className="px-3.5 py-2 bg-primary-500/10 text-primary-600 dark:text-primary-400 border border-primary-500/20 rounded-xl text-xs font-bold hover:bg-primary-500/20 transition-all"
                               >
                                 Сертификат
@@ -1005,7 +1006,7 @@ export default function AdminPage() {
 
                             {user.role === 'master' && user.status === 'approved' && (
                               <button
-                                onClick={() => updateUserPermissions(user.id, { is_verified_master: false, can_create_leads: false })}
+                                onClick={(e) => { e.stopPropagation(); updateUserPermissions(user.id, { is_verified_master: false, can_create_leads: false }); }}
                                 className="px-3.5 py-2 bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 rounded-xl text-xs font-bold hover:bg-amber-500/20 transition-all"
                                 title="Отозвать доступ к маркетплейсу, но оставить аккаунт активным"
                               >
@@ -1015,7 +1016,7 @@ export default function AdminPage() {
                             
                             {user.status === 'pending' && (
                               <button
-                                onClick={() => updateUserStatus(user.id, 'approved')}
+                                onClick={(e) => { e.stopPropagation(); updateUserStatus(user.id, 'approved'); }}
                                 className="px-3.5 py-2 bg-emerald-500/10 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 rounded-xl text-xs font-bold hover:bg-emerald-500/20 transition-all"
                               >
                                 Одобрить
@@ -1023,14 +1024,14 @@ export default function AdminPage() {
                             )}
                             {user.status === 'rejected' ? (
                               <button
-                                onClick={() => updateUserStatus(user.id, 'pending')}
+                                onClick={(e) => { e.stopPropagation(); updateUserStatus(user.id, 'pending'); }}
                                 className="px-3.5 py-2 bg-neutral-500/10 dark:bg-neutral-900/20 text-neutral-600 dark:text-neutral-400 border border-neutral-500/20 rounded-xl text-xs font-bold hover:bg-neutral-500/20 transition-all"
                               >
                                 Разбанить
                               </button>
                             ) : (
                               <button
-                                onClick={() => { setBanModalUser(user); setBanReason(''); }}
+                                onClick={(e) => { e.stopPropagation(); setBanModalUser(user); setBanReason(''); }}
                                 className="px-3.5 py-2 bg-red-500/10 dark:bg-red-900/20 text-red-600 dark:text-red-400 border border-red-500/20 rounded-xl text-xs font-bold hover:bg-red-500/20 transition-all flex items-center gap-1"
                               >
                                 Забанить
