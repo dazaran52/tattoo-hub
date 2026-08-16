@@ -24,6 +24,7 @@ export interface Profile {
   discount_tokens: number
   gamification_level?: string
   can_create_leads?: boolean
+  can_chat?: boolean
   role?: string
   is_verified_master?: boolean
   certificate_url?: string

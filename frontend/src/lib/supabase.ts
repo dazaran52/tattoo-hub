@@ -24,6 +24,7 @@ export type Profile = {
   referred_by?: string | null
   country_ids?: string[]
   can_create_leads?: boolean
+  can_chat?: boolean
   city_ids?: string[]
   discount_tokens: number
   unlocked_leads_count?: number
