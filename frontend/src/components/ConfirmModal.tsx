@@ -16,13 +16,15 @@ export function ConfirmModal({
   isOpen,
   title,
   message,
-  confirmText = t('Auto.text_e04af9'),
-  cancelText = t('cancel'),
+  confirmText: _confirmText,
+  cancelText: _cancelText,
   onConfirm,
   onCancel,
   type = 'info'
 }: ConfirmModalProps) {
     const t = useTranslations();
+    const confirmText = _confirmText || t('Auto.text_e04af9');
+    const cancelText = _cancelText || t('cancel');
   if (!isOpen) return null
 
   const getThemeClasses = () => {

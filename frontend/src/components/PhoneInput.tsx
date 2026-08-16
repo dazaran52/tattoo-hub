@@ -24,8 +24,9 @@ interface PhoneInputProps {
   className?: string
 }
 
-export function PhoneInput({ value, onChange, placeholder = t('Auto.text_9fdc3f'), disabled = false, className = "" }: PhoneInputProps) {
+export function PhoneInput({ value, onChange, placeholder: _placeholder, disabled = false, className = "" }: PhoneInputProps) {
     const t = useTranslations();
+    const placeholder = _placeholder || t('Auto.text_9fdc3f');
   const [isOpen, setIsOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
