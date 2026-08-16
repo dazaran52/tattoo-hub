@@ -46,6 +46,6 @@ export default function BookMasterLayout({
 }: {
   children: React.ReactNode
 }) {
-    const t = useTranslations();
+
   return <>{children}</>
 }
