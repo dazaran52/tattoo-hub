@@ -1288,7 +1288,7 @@ export default function AdminPage() {
                 <div className="bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-white/5 rounded-2xl p-5">
                   <h4 className="text-xs font-extrabold uppercase tracking-wider text-neutral-500 mb-4">Управление Ролью и Статусом</h4>
                   
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div>
                       <label className="block text-xs font-bold text-neutral-400 mb-1">Роль аккаунта</label>
                       <div className="flex gap-2">
@@ -1323,6 +1323,26 @@ export default function AdminPage() {
                         <span>{detailModalUser.is_verified_master ? '✓ Верифицирован' : 'Не верифицирован'}</span>
                         <UserCheck className="w-4 h-4" />
                       </button>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-neutral-400 mb-1">Подписка VIP/PRO</label>
+                      <div className="flex gap-2">
+                        {['none', 'pro', 'vip'].map((b) => (
+                          <button
+                            key={b}
+                            onClick={() => updateUserPermissions(detailModalUser.id, { badge_tier: b })}
+                            disabled={isUpdatingPermissions}
+                            className={`px-3 py-1.5 rounded-xl text-xs font-bold uppercase transition-all border flex-1 ${
+                              (detailModalUser.badge_tier || 'none') === b
+                                ? 'bg-purple-500 text-white border-purple-500 shadow-md'
+                                : 'bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800'
+                            }`}
+                          >
+                            {b}
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </div>
