@@ -243,6 +243,7 @@ export default function AdminPage() {
       }
 
       setUsers(prev => prev.map(u => u.id === badgeModalUser.id ? { ...u, badge_tier: selectedBadgeTier } : u))
+      setDetailModalUser(prev => prev && prev.id === badgeModalUser.id ? { ...prev, badge_tier: selectedBadgeTier } : prev)
       setBadgeModalUser(null)
       alert(`Статус профиля ${selectedBadgeTier.toUpperCase()} успешно установлен!`)
     } catch (err: any) {
@@ -1377,22 +1378,13 @@ export default function AdminPage() {
 
                     <div>
                       <label className="block text-xs font-bold text-neutral-400 mb-1">Подписка VIP/PRO</label>
-                      <div className="flex gap-2">
-                        {['none', 'pro', 'vip'].map((b) => (
-                          <button
-                            key={b}
-                            onClick={() => updateUserPermissions(detailModalUser.id, { badge_tier: b })}
-                            disabled={isUpdatingPermissions}
-                            className={`px-3 py-1.5 rounded-xl text-xs font-bold uppercase transition-all border flex-1 ${
-                              (detailModalUser.badge_tier || 'none') === b
-                                ? 'bg-purple-500 text-white border-purple-500 shadow-md'
-                                : 'bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800'
-                            }`}
-                          >
-                            {b}
-                          </button>
-                        ))}
-                      </div>
+                      <button
+                        onClick={() => handleOpenBadgeModal(detailModalUser)}
+                        className="w-full px-4 py-2 rounded-xl text-xs font-extrabold flex items-center justify-between transition-all border bg-neutral-100 dark:bg-neutral-800 border-neutral-200 dark:border-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700"
+                      >
+                        <span className="uppercase">{detailModalUser.badge_tier && detailModalUser.badge_tier !== 'none' ? `⭐ ${detailModalUser.badge_tier}` : 'Базовый (NONE)'}</span>
+                        <Edit2 className="w-4 h-4" />
+                      </button>
                     </div>
                   </div>
                 </div>
