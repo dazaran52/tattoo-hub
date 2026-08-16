@@ -1013,6 +1013,14 @@ export default function AdminPage() {
                               </button>
                             )}
                             
+                            {user.status === 'pending' && (
+                              <button
+                                onClick={() => updateUserStatus(user.id, 'approved')}
+                                className="px-3.5 py-2 bg-emerald-500/10 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 rounded-xl text-xs font-bold hover:bg-emerald-500/20 transition-all"
+                              >
+                                Одобрить
+                              </button>
+                            )}
                             {user.status === 'rejected' ? (
                               <button
                                 onClick={() => updateUserStatus(user.id, 'pending')}
