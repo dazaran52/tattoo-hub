@@ -47,14 +47,14 @@ export function AddClientModal({ isOpen, onClose, onSuccess, onDuplicateFound }:
         if (res.status === 409) {
           const errData = await res.json().catch(() => null)
           if (errData?.detail?.error === 'client_exists') {
-            toast((t) => (
+            toast((toastInstance) => (
               <div className="flex flex-col gap-2">
                 <span className="font-medium text-sm">
                   {t('Auto.text_2057e3')} <b>{errData.detail.client.name}</b>
                 </span>
                 <button 
                   onClick={() => {
-                    toast.dismiss(t.id);
+                    toast.dismiss(toastInstance.id);
                     if (onDuplicateFound) onDuplicateFound(errData.detail.client.id);
                   }}
                   className="bg-primary-600 hover:bg-primary-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold w-fit transition-colors"

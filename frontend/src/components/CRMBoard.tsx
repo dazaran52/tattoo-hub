@@ -75,12 +75,12 @@ export interface KanbanColumn {
 // letting the board render localized labels for anyone who hasn't customized
 // their columns.
 const DEFAULT_COLUMNS: KanbanColumn[] = [
-  { id: 'new', title: t('crmBoard.columns.new'), iconName: 'UserPlus', color: 'emerald' },
-  { id: 'discussing', title: t('Auto.text_0425ad'), iconName: 'MessageCircle', color: 'violet' },
-  { id: 'booked', title: t('Auto.text_277bbc'), iconName: 'Calendar', color: 'blue' },
-  { id: 'in_progress', title: t('crmBoard.columns.in_progress'), iconName: 'PlayCircle', color: 'yellow' },
-  { id: 'completed', title: t('crmBoard.columns.completed'), iconName: 'CheckCircle', color: 'green' },
-  { id: 'cancelled', title: t('cancel'), iconName: 'Flag', color: 'red' },
+  { id: 'new', title: 'Новые', iconName: 'UserPlus', color: 'emerald' },
+  { id: 'discussing', title: 'В обсуждении', iconName: 'MessageCircle', color: 'violet' },
+  { id: 'booked', title: 'Забронировано', iconName: 'Calendar', color: 'blue' },
+  { id: 'in_progress', title: 'В процессе', iconName: 'PlayCircle', color: 'yellow' },
+  { id: 'completed', title: 'Завершено', iconName: 'CheckCircle', color: 'green' },
+  { id: 'cancelled', title: 'Отменено', iconName: 'Flag', color: 'red' },
 ]
 
 const COLOR_STYLES: Record<string, { bg: string, border: string, leftBorder: string, ring: string, checkboxBg: string, checkboxHover: string, cardBg: string }> = {
