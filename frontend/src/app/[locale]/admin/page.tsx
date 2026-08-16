@@ -1055,13 +1055,33 @@ export default function AdminPage() {
                               </button>
                             )}
 
+                            {user.status === 'approved' && (
+                              <button
+                                onClick={(e) => { e.stopPropagation(); updateUserPermissions(user.id, { can_chat: !(user.can_chat ?? true) }); }}
+                                className={`px-3.5 py-2 border rounded-xl text-xs font-bold transition-all flex items-center ${
+                                  (user.can_chat ?? true)
+                                    ? 'bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/20 hover:bg-orange-500/20'
+                                    : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/20'
+                                }`}
+                                title={(user.can_chat ?? true) ? "Запретить отправку сообщений" : "Разрешить отправку сообщений"}
+                              >
+                                {(user.can_chat ?? true) ? <Lock className="w-3.5 h-3.5 mr-1" /> : <Unlock className="w-3.5 h-3.5 mr-1" />}
+                                Чат
+                              </button>
+                            )}
+
                             {user.role === 'master' && user.status === 'approved' && (
                               <button
-                                onClick={(e) => { e.stopPropagation(); updateUserPermissions(user.id, { is_verified_master: false, can_create_leads: false }); }}
-                                className="px-3.5 py-2 bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 rounded-xl text-xs font-bold hover:bg-amber-500/20 transition-all"
-                                title="Отозвать доступ к маркетплейсу, но оставить аккаунт активным"
+                                onClick={(e) => { e.stopPropagation(); updateUserPermissions(user.id, { can_create_leads: !(user.can_create_leads ?? true) }); }}
+                                className={`px-3.5 py-2 border rounded-xl text-xs font-bold transition-all flex items-center ${
+                                  (user.can_create_leads ?? true)
+                                    ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20 hover:bg-amber-500/20'
+                                    : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/20'
+                                }`}
+                                title={(user.can_create_leads ?? true) ? "Отозвать доступ к маркетплейсу" : "Разрешить доступ к маркетплейсу"}
                               >
-                                <Lock className="w-3.5 h-3.5 inline-block mr-1" /> Маркетплейс
+                                {(user.can_create_leads ?? true) ? <Lock className="w-3.5 h-3.5 mr-1" /> : <Unlock className="w-3.5 h-3.5 mr-1" />}
+                                Маркетплейс
                               </button>
                             )}
                             
