@@ -325,7 +325,23 @@ export default function DashboardPage() {
             </div>
 
             {/* Content Rendering based on Tab */}
-            {activeTab === 'feed' && <LeadsFeed onUnlockSuccess={handleUnlockSuccess} isAdmin={profile.is_admin} userCities={profile.city_ids || []} />}
+            {activeTab === 'feed' && (
+              profile.can_create_leads === false ? (
+                <div className="flex flex-col items-center justify-center p-12 text-center bg-red-50/50 dark:bg-red-950/20 rounded-3xl border border-red-200/50 dark:border-red-900/30 backdrop-blur-sm mt-4">
+                  <div className="w-16 h-16 rounded-full bg-red-100 dark:bg-red-900/50 flex items-center justify-center mb-4 border border-red-200 dark:border-red-800">
+                    <svg className="w-8 h-8 text-red-600 dark:text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-xl font-extrabold text-red-900 dark:text-red-300 mb-2">Доступ к Маркетплейсу ограничен</h3>
+                  <p className="text-sm font-medium text-red-700/80 dark:text-red-400/80 max-w-md">
+                    Ваш доступ к маркетплейсу был отозван администратором. Если вы считаете, что произошла ошибка, пожалуйста, обратитесь в поддержку.
+                  </p>
+                </div>
+              ) : (
+                <LeadsFeed onUnlockSuccess={handleUnlockSuccess} isAdmin={profile.is_admin} userCities={profile.city_ids || []} />
+              )
+            )}
 
           {activeTab === 'crm' && <CRMBoard initialViewLeadId={viewLeadId} initialViewSessionId={viewSessionId} />}
           {activeTab === 'portfolio' && <PortfolioTab profile={profile} />}

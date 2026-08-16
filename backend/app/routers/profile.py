@@ -71,6 +71,7 @@ class ProfileResponse(BaseModel):
     gamification_level: str = "Newbie"
     role: str | None = None
     is_verified_master: bool = False
+    can_create_leads: bool = True
     badge_tier: str = "none"
     badge_expires_at: str | None = None
     certificate_url: str | None = None
