@@ -1,6 +1,8 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import createMiddleware from 'next-intl/middleware'
 
+import { createServerClient, type CookieOptions } from '@supabase/ssr'
+
 const protectedRoutes = ['/dashboard', '/profile', '/settings']
 const locales = ['en', 'cs', 'ru', 'uk']
 
@@ -9,19 +11,37 @@ const intlMiddleware = createMiddleware({
   defaultLocale: 'en'
 })
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
+  
+  // 1. Generate base response using next-intl
+  let response = intlMiddleware(request)
 
-  // Check for Supabase auth cookie
-  const allCookies = request.cookies.getAll()
-  const hasAuthCookie = allCookies.some(cookie => 
-    cookie.name.includes('-auth-token') || 
-    cookie.name === 'sb-access-token' || 
-    cookie.name === 'sb-refresh-token'
+  // 2. Initialize Supabase client to automatically refresh session if needed
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co',
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder',
+    {
+      cookies: {
+        get(name: string) {
+          return request.cookies.get(name)?.value
+        },
+        set(name: string, value: string, options: CookieOptions) {
+          request.cookies.set({ name, value, ...options })
+          response.cookies.set({ name, value, ...options })
+        },
+        remove(name: string, options: CookieOptions) {
+          request.cookies.set({ name, value: '', ...options })
+          response.cookies.set({ name, value: '', ...options })
+        },
+      },
+    }
   )
 
-  // Because next-intl prefixes the locale (e.g. /en/dashboard), we check if the path starts with any locale + protected route
-  // Or we can just check if any protected route is included
+  // This will automatically refresh the token if it's expired
+  const { data: { user } } = await supabase.auth.getUser()
+
+  // 3. Authorization checks
   const isProtectedRoute = protectedRoutes.some(route => 
     locales.some(locale => pathname.startsWith(`/${locale}${route}`) || pathname === `/${locale}${route}`) ||
     pathname.startsWith(route)
@@ -29,17 +49,17 @@ export function middleware(request: NextRequest) {
 
   const isLoginRoute = locales.some(locale => pathname === `/${locale}/login`) || pathname === '/login'
 
-  if (isProtectedRoute && !hasAuthCookie) {
+  if (isProtectedRoute && !user) {
     const loginUrl = new URL('/login', request.url)
     return NextResponse.redirect(loginUrl)
   }
 
-  if (isLoginRoute && hasAuthCookie) {
+  if (isLoginRoute && user) {
     const dashboardUrl = new URL('/dashboard', request.url)
     return NextResponse.redirect(dashboardUrl)
   }
 
-  return intlMiddleware(request)
+  return response
 }
 
 export const config = {
