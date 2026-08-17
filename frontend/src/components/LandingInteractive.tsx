@@ -96,14 +96,24 @@ export function LandingInteractive() {
             <p className="text-lg md:text-xl text-neutral-400 max-w-2xl mb-12 leading-relaxed">
               {t('landing.description')}
             </p>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onTap={() => setStep(1)}
-              className="px-10 py-5 rounded-full bg-white text-black font-bold text-xl transition-shadow shadow-[0_0_40px_rgba(255,255,255,0.3)]"
-            >
-              {t('landing.start_btn')}
-            </motion.button>
+            <div className="flex flex-col items-center gap-4">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onTap={() => setStep(1)}
+                className="px-10 py-5 rounded-full bg-white text-black font-bold text-xl transition-shadow shadow-[0_0_40px_rgba(255,255,255,0.3)]"
+              >
+                {t('landing.start_btn')}
+              </motion.button>
+              
+              <button 
+                onClick={() => router.push(`/${lang}/login`)}
+                className="text-neutral-400 hover:text-white transition-colors text-sm font-medium flex items-center gap-2"
+              >
+                <LogIn className="w-4 h-4" />
+                {t('loginTab')}
+              </button>
+            </div>
           </motion.div>
         )}
 
