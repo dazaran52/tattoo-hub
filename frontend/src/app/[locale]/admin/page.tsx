@@ -1090,7 +1090,7 @@ export default function AdminPage() {
                                                                                 </button>
                             )}
 
-                            {(user.role === 'master' || user.role === 'client') && user.status === 'approved' && (
+                            {user.role === 'master' && user.status === 'approved' && (
                               <button
                                 onClick={(e) => { 
                                   e.stopPropagation(); 
@@ -1476,36 +1476,38 @@ export default function AdminPage() {
                     </div>
 
                     {/* Can Create Leads Toggle */}
-                    <div className="p-4 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-white/5 rounded-xl flex items-center justify-between">
-                      <div>
-                        <div className="font-bold text-sm text-neutral-900 dark:text-white flex items-center gap-2">
-                          <FileText className="w-4 h-4 text-accent-500" />
-                          {t('publicationOfApplications')}
-                                                                          </div>
-                        <p className="text-xs text-neutral-500">{t('accessToTheMarketplace')}</p>
-                      </div>
+                    {detailModalUser.role === 'master' && (
+                      <div className="p-4 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-white/5 rounded-xl flex items-center justify-between">
+                        <div>
+                          <div className="font-bold text-sm text-neutral-900 dark:text-white flex items-center gap-2">
+                            <FileText className="w-4 h-4 text-accent-500" />
+                            {t('publicationOfApplications')}
+                          </div>
+                          <p className="text-xs text-neutral-500">{t('accessToTheMarketplace')}</p>
+                        </div>
 
-                      <button
-                        onClick={() => {
-                          const isRestricting = detailModalUser.can_create_leads ?? true;
-                          let reason = undefined;
-                          if (isRestricting) {
-                            reason = prompt(t('banSystem.promptBanReason') || 'Укажите причину ограничения:');
-                            if (reason === null) return;
-                          }
-                          updateUserPermissions(detailModalUser.id, { can_create_leads: !isRestricting, ban_reason: reason || undefined });
-                        }}
-                        disabled={isUpdatingPermissions}
-                        className={`px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all flex items-center gap-1 ${
-                          (detailModalUser.can_create_leads ?? true)
-                            ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/30'
-                            : 'bg-red-500/10 text-red-500 border border-red-500/30'
-                        }`}
-                      >
-                        {(detailModalUser.can_create_leads ?? true) ? <Unlock className="w-3.5 h-3.5" /> : <Lock className="w-3.5 h-3.5" />}
-                        {(detailModalUser.can_create_leads ?? true) ? t('allowed') : t('blocked')}
-                      </button>
-                    </div>
+                        <button
+                          onClick={() => {
+                            const isRestricting = detailModalUser.can_create_leads ?? true;
+                            let reason = undefined;
+                            if (isRestricting) {
+                              reason = prompt(t('banSystem.promptBanReason') || 'Укажите причину ограничения:');
+                              if (reason === null) return;
+                            }
+                            updateUserPermissions(detailModalUser.id, { can_create_leads: !isRestricting, ban_reason: reason || undefined });
+                          }}
+                          disabled={isUpdatingPermissions}
+                          className={`px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all flex items-center gap-1 ${
+                            (detailModalUser.can_create_leads ?? true)
+                              ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/30'
+                              : 'bg-red-500/10 text-red-500 border border-red-500/30'
+                          }`}
+                        >
+                          {(detailModalUser.can_create_leads ?? true) ? <Unlock className="w-3.5 h-3.5" /> : <Lock className="w-3.5 h-3.5" />}
+                          {(detailModalUser.can_create_leads ?? true) ? t('allowed') : t('blocked')}
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
 
