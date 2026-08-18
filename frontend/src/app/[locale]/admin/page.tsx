@@ -664,11 +664,11 @@ export default function AdminPage() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10">
         <div className="mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <h2 className="text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-white">Admin Panel</h2>
-            <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400 font-medium">Manage users and leads</p>
+            <h2 className="text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-white">{t('adminPanelTitle')}</h2>
+            <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400 font-medium">{t('manageUsersAndLeads')}</p>
           </div>
           <div className="bg-primary-100 dark:bg-primary-900/50 text-primary-700 dark:text-primary-400 px-4 py-2 rounded-xl font-bold text-sm border border-primary-200 dark:border-primary-800/50 shadow-sm">
-            Admin Access
+            {t('adminAccess')}
           </div>
         </div>
 

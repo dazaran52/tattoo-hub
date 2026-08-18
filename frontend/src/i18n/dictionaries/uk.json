@@ -1565,5 +1565,15 @@
     "text_7d3841": "Пожалуйста, выберите оценку от 1 до 5 звезд."
   },
   "statusApproved": "Схвалено",
-  "statusBanned": "Заблоковано"
+  "statusBanned": "Заблоковано",
+  "printImage": "Друк зображення",
+  "egTattooSleeve": "напр. Рукав на правій руці",
+  "clientRequirementsStyle": "Вимоги клієнта, локація, стиль...",
+  "uploading": "Завантаження...",
+  "clickOrDragImagesHere": "Натисніть або перетягніть зображення сюди",
+  "adminPanelTitle": "Панель адміністратора",
+  "manageUsersAndLeads": "Управління користувачами та заявками",
+  "adminAccess": "Доступ адміністратора",
+  "telegram": "Telegram",
+  "instagram": "Instagram"
 }

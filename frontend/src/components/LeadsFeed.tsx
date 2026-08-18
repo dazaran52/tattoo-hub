@@ -1232,7 +1232,7 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
                   value={formData.title}
                   onChange={e => setFormData({...formData, title: e.target.value})}
                   className="w-full bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-lg px-4 py-2.5 text-neutral-900 dark:text-white focus:ring-2 focus:ring-neutral-900 dark:focus:ring-white focus:border-transparent outline-none transition-all"
-                  placeholder="e.g. Tattoo sleeve on right arm"
+                  placeholder={t('egTattooSleeve')}
                 />
               </div>
 
@@ -1282,7 +1282,7 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
                   value={formData.description}
                   onChange={e => setFormData({...formData, description: e.target.value})}
                   className="w-full bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-lg px-4 py-2.5 text-neutral-900 dark:text-white focus:ring-2 focus:ring-neutral-900 dark:focus:ring-white focus:border-transparent outline-none transition-all"
-                  placeholder="Client requirements, location, style..."
+                  placeholder={t('clientRequirementsStyle')}
                 />
               </div>
 
@@ -1349,12 +1349,12 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
                   {uploadingImages ? (
                     <div className="flex flex-col items-center justify-center text-neutral-500">
                       <Loader2 className="w-8 h-8 animate-spin mb-2" />
-                      <span className="text-sm">Uploading...</span>
+                      <span className="text-sm">{t('uploading')}</span>
                     </div>
                   ) : (
                     <div className="flex flex-col items-center justify-center text-neutral-500">
                       <ImageIcon className="w-8 h-8 mb-2 opacity-50" />
-                      <span className="text-sm font-medium">Click or drag images here</span>
+                      <span className="text-sm font-medium">{t('clickOrDragImagesHere')}</span>
                     </div>
                   )}
                 </div>

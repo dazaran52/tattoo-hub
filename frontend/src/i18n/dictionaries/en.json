@@ -1573,5 +1573,15 @@
   "errorSendingFeedback": "Error sending feedback",
   "logInToLeave": "Log in to leave a review",
   "statusApproved": "Approved",
-  "statusBanned": "Banned"
+  "statusBanned": "Banned",
+  "printImage": "Print Image",
+  "egTattooSleeve": "e.g. Tattoo sleeve on right arm",
+  "clientRequirementsStyle": "Client requirements, location, style...",
+  "uploading": "Uploading...",
+  "clickOrDragImagesHere": "Click or drag images here",
+  "adminPanelTitle": "Admin Panel",
+  "manageUsersAndLeads": "Manage users and leads",
+  "adminAccess": "Admin Access",
+  "telegram": "Telegram",
+  "instagram": "Instagram"
 }

@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
+import { useTranslations } from 'next-intl'
 
 export default function ErrorBoundary({
   error,
@@ -12,6 +13,8 @@ export default function ErrorBoundary({
   useEffect(() => {
     console.error('App Error:', error)
   }, [error])
+
+  const t = useTranslations();
 
   return (
     <div className="min-h-screen bg-neutral-900 dark:bg-neutral-50 dark:bg-neutral-950 flex items-center justify-center p-4">
@@ -29,7 +32,7 @@ export default function ErrorBoundary({
           onClick={reset}
           className="w-full px-4 py-2 bg-neutral-900 dark:bg-neutral-50 text-white dark:text-neutral-950 rounded-lg font-medium hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-colors"
         >
-          Zkusit znovu
+          {t('tryAgain')}
         </button>
       </div>
     </div>

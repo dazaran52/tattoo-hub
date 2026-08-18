@@ -1565,5 +1565,15 @@
     "text_7d3841": "Пожалуйста, выберите оценку от 1 до 5 звезд."
   },
   "statusApproved": "Schváleno",
-  "statusBanned": "Zablokováno"
+  "statusBanned": "Zablokováno",
+  "printImage": "Tisk obrázku",
+  "egTattooSleeve": "např. Tetování rukávu na pravé ruce",
+  "clientRequirementsStyle": "Požadavky klienta, lokalita, styl...",
+  "uploading": "Nahrávání...",
+  "clickOrDragImagesHere": "Klikněte nebo přetáhněte obrázky sem",
+  "adminPanelTitle": "Administrátorský panel",
+  "manageUsersAndLeads": "Správa uživatelů a poptávek",
+  "adminAccess": "Administrátorský přístup",
+  "telegram": "Telegram",
+  "instagram": "Instagram"
 }

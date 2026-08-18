@@ -38,7 +38,7 @@ export function ImageViewerModal({ isOpen, imageUrl, onClose, showActions = fals
       printWindow.document.write(`
         <html>
           <head>
-            <title>Print Image</title>
+            <title>${t('printImage')}</title>
             <style>
               body { margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; background: white; }
               img { max-width: 100%; max-height: 100vh; object-fit: contain; }

@@ -387,7 +387,7 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
                       type="email"
                       value={formData.email}
                       onChange={(e) => setFormData(p => ({ ...p, email: e.target.value }))}
-                      placeholder="Email"
+                      placeholder={t('email')}
                       className="w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-accent-500/20 focus:border-accent-500 transition-all outline-none"
                     />
                   </div>
@@ -398,7 +398,7 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
                       type="text"
                       value={formData.telegram}
                       onChange={(e) => setFormData(p => ({ ...p, telegram: e.target.value }))}
-                      placeholder="Telegram"
+                      placeholder={t('telegram')}
                       className="w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-accent-500/20 focus:border-accent-500 transition-all outline-none"
                     />
                   </div>
@@ -407,7 +407,7 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
                       type="text"
                       value={formData.instagram}
                       onChange={(e) => setFormData(p => ({ ...p, instagram: e.target.value }))}
-                      placeholder="Instagram"
+                      placeholder={t('instagram')}
                       className="w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-accent-500/20 focus:border-accent-500 transition-all outline-none"
                     />
                   </div>

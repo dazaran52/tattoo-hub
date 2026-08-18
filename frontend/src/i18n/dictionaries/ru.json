@@ -1573,5 +1573,15 @@
   "errorSendingFeedback": "Ошибка при отправке отзыва",
   "logInToLeave": "Войдите в аккаунт, чтобы оставить отзыв",
   "statusApproved": "Одобрен",
-  "statusBanned": "Заблокирован"
+  "statusBanned": "Заблокирован",
+  "printImage": "Печать изображения",
+  "egTattooSleeve": "напр. Рукав на правой руке",
+  "clientRequirementsStyle": "Требования клиента, местоположение, стиль...",
+  "uploading": "Загрузка...",
+  "clickOrDragImagesHere": "Нажмите или перетащите изображения сюда",
+  "adminPanelTitle": "Панель администратора",
+  "manageUsersAndLeads": "Управление пользователями и заявками",
+  "adminAccess": "Доступ администратора",
+  "telegram": "Telegram",
+  "instagram": "Instagram"
 }
