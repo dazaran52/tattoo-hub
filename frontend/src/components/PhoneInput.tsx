@@ -26,7 +26,7 @@ interface PhoneInputProps {
 
 export function PhoneInput({ value, onChange, placeholder: _placeholder, disabled = false, className = "" }: PhoneInputProps) {
     const t = useTranslations();
-    const placeholder = _placeholder || t('key_9fdc3f');
+    const placeholder = _placeholder || t('phoneNumber');
   const [isOpen, setIsOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
@@ -188,7 +188,7 @@ export function PhoneInput({ value, onChange, placeholder: _placeholder, disable
               >
                 <span className="text-xl">{country.flag}</span>
                 <span className="font-medium text-sm text-neutral-900 dark:text-white flex-1 text-left">
-                  {country.code === 'Other' ? t('key_f752e9') : country.code}
+                  {country.code === 'Other' ? t('anotherCountry') : country.code}
                 </span>
                 <span className="text-xs text-neutral-500 font-mono">
                   {country.dialCode ? `+${country.dialCode}` : ''}

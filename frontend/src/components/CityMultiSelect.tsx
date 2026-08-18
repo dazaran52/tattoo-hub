@@ -66,7 +66,7 @@ export function CityMultiSelect({ cities, selectedCityIds, onChange, placeholder
 
     return (
       <span className="text-neutral-900 dark:text-white font-medium">
-        {t('selected') || t('key_c8775d')}: {selectedCityIds.length}
+        {t('selected') || t('selected2')}: {selectedCityIds.length}
       </span>
     )
   }

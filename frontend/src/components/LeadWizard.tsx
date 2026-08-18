@@ -191,7 +191,7 @@ export function LeadWizard({ master, masterId, source = 'platform', isLoggedIn, 
       if (initialData.client_priority || initialData.priority) setClientPriority(initialData.client_priority || initialData.priority)
       if (initialData.budget || initialData.client_budget) {
         const b = String(initialData.budget || initialData.client_budget)
-        if (b.toLowerCase().includes(t('key_95c94f')) || b.toLowerCase().includes('negotiable')) {
+        if (b.toLowerCase().includes(t('agreement')) || b.toLowerCase().includes('negotiable')) {
           setIsNegotiable(true)
         } else {
           setBudgetVal(String(parseInt(b, 10) || ''))
@@ -219,7 +219,7 @@ export function LeadWizard({ master, masterId, source = 'platform', isLoggedIn, 
           if (pending.body_place) setBodyPlace(pending.body_place)
           if (pending.size) setSize(pending.size)
           if (pending.client_priority || pending.priority) setClientPriority(pending.client_priority || pending.priority)
-          if (pending.is_negotiable_budget || (typeof pending.budget === 'string' && (pending.budget.toLowerCase().includes(t('key_95c94f')) || pending.budget.toLowerCase().includes('negotiable')))) {
+          if (pending.is_negotiable_budget || (typeof pending.budget === 'string' && (pending.budget.toLowerCase().includes(t('agreement')) || pending.budget.toLowerCase().includes('negotiable')))) {
             setIsNegotiable(true)
           } else if (pending.budget_val) {
             setBudgetVal(String(pending.budget_val))

@@ -84,19 +84,19 @@ export function CalendarView({ sessions, onUpdate, onSessionClick, onCreateSessi
         const result = await res.json()
         if (result.status === 'deleted') {
           setDaysOff(prev => prev.filter(d => d.date !== dateStr))
-          toast.success(t('key_451922'))
+          toast.success(t('itSAWorking'))
         } else if (result.status === 'created') {
           setDaysOff(prev => [...prev, result.data])
-          toast.success(t('key_18bca9'))
+          toast.success(t('dayOffSet'))
         }
       }
     } catch (e) {
-      toast.error(t('key_4920f0'))
+      toast.error(t('networkError'))
     }
   }
 
   const handleDeleteSession = async (sessionId: string) => {
-    if (!confirm(t('key_cd8c9f'))) return
+    if (!confirm(t('deleteSession'))) return
     try {
       const { data: { session } } = await supabase.auth.getSession()
       const token = session?.access_token
@@ -104,7 +104,7 @@ export function CalendarView({ sessions, onUpdate, onSessionClick, onCreateSessi
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       })
-      toast.success(t('key_dd99a3'))
+      toast.success(t('sessionDeleted'))
       onUpdate()
     } catch {
       toast.error(t('crmBoard.deleteError'))
@@ -134,8 +134,8 @@ export function CalendarView({ sessions, onUpdate, onSessionClick, onCreateSessi
   }
 
   const days = getDaysInMonth(currentDate)
-  const monthNames = [t('key_ee8620'), t('key_28ffcf'), t('key_d766d4'), t('key_03e90d'), t('key_2e53bf'), t('key_cfcb9c'), t('key_89fb2f'), t('key_de5ab5'), t('key_ebfbae'), t('key_17208f'), t('key_66fbc4'), t('key_39b3dc')]
-  const dayNames = [t('key_2c1ec3'), t('key_714517'), t('key_c6e47c'), t('key_a51f2e'), t('key_012388'), t('key_3a4b2b'), t('key_4ad91d')]
+  const monthNames = [t('january'), t('february'), t('march'), t('april'), t('may'), t('june'), t('july'), t('august'), t('september'), t('october'), t('november'), t('december')]
+  const dayNames = [t('mon'), t('w'), t('wed'), t('thu'), t('fri'), t('sat'), t('sun')]
 
   const nextMonth = () => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1))
   const prevMonth = () => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1))
@@ -177,7 +177,7 @@ export function CalendarView({ sessions, onUpdate, onSessionClick, onCreateSessi
             }`}
           >
             <Coffee className="w-4 h-4" />
-            {t('key_f38afb')}
+            {t('weekend')}
                                 </button>
         </div>
       </div>
@@ -185,7 +185,7 @@ export function CalendarView({ sessions, onUpdate, onSessionClick, onCreateSessi
       {calendarMode === 'day_off' && (
         <div className="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 p-4 rounded-xl mb-6 text-sm flex items-start sm:items-center gap-3 border border-red-100 dark:border-red-900/30">
           <Coffee className="w-5 h-5 shrink-0 mt-0.5 sm:mt-0" />
-          <p><strong>{t('key_0443c5')}</strong> {t('key_73e1ed')}</p>
+          <p><strong>{t('holidaySettingMode')}</strong> {t('clickOnDaysOn')}</p>
         </div>
       )}
 
@@ -243,7 +243,7 @@ export function CalendarView({ sessions, onUpdate, onSessionClick, onCreateSessi
                 
                 {dayOff && calendarMode !== 'day_off' && (
                   <div className="w-full text-center text-xs text-red-500 font-bold bg-red-100 dark:bg-red-900/30 rounded px-1 py-0.5 mt-auto truncate">
-                    {dayOff.is_full_day ? t('key_cff546') : `${dayOff.start_time?.substring(0,5)} - ${dayOff.end_time?.substring(0,5)}`}
+                    {dayOff.is_full_day ? t('dayOff') : `${dayOff.start_time?.substring(0,5)} - ${dayOff.end_time?.substring(0,5)}`}
                   </div>
                 )}
 
@@ -252,12 +252,12 @@ export function CalendarView({ sessions, onUpdate, onSessionClick, onCreateSessi
                     {daySessions.slice(0, 2).map((s, idx) => (
                       <div key={idx} className={`flex items-center gap-1 text-[10px] sm:text-xs px-1 sm:px-2 py-0.5 sm:py-1 rounded-md font-medium truncate w-full ${s.status === 'new' ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400' : 'bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400'}`}>
                         <Clock className="w-3 h-3 shrink-0" />
-                        <span className="truncate">{s.start_time ? s.start_time.substring(0,5) : t('key_d45b5c')}</span>
+                        <span className="truncate">{s.start_time ? s.start_time.substring(0,5) : t('withoutTime')}</span>
                       </div>
                     ))}
                     {daySessions.length > 2 && (
                       <div className="text-[10px] text-neutral-500 font-bold text-center">
-                        +{daySessions.length - 2} {t('key_ff5a4e')}
+                        +{daySessions.length - 2} {t('more')}
                                                           </div>
                     )}
                   </div>
@@ -285,12 +285,12 @@ export function CalendarView({ sessions, onUpdate, onSessionClick, onCreateSessi
                     <CalendarIcon className="w-5 h-5" />
                   </div>
                   <div>
-                    <h2 className="text-xl font-bold">{t('key_716cbc')}</h2>
+                    <h2 className="text-xl font-bold">{t('dailySchedule')}</h2>
                     <p className="text-sm text-neutral-500">{new Date(selectedDate).toLocaleDateString('ru-RU', { weekday: 'long', day: 'numeric', month: 'long' })}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <button onClick={() => setIsSidebarExpanded(!isSidebarExpanded)} className="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-full transition-colors" title={isSidebarExpanded ? t('key_ca9f19') : t('key_3fbb81')}>
+                  <button onClick={() => setIsSidebarExpanded(!isSidebarExpanded)} className="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-full transition-colors" title={isSidebarExpanded ? t('collapse') : t('expand')}>
                     {isSidebarExpanded ? <Minimize2 className="w-5 h-5 text-neutral-400" /> : <Maximize2 className="w-5 h-5 text-neutral-400" />}
                   </button>
                   <button onClick={() => setSelectedDate(null)} className="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-full transition-colors">
@@ -304,8 +304,8 @@ export function CalendarView({ sessions, onUpdate, onSessionClick, onCreateSessi
                   <EmptyState
                     variant="compact"
                     icon={<CalendarIcon className="w-8 h-8" />}
-                    title={t('key_fdebc0')}
-                    description={t('key_76b984')}
+                    title={t('thereAreNoEntries')}
+                    description={t('youCanAddA')}
                   />
                 ) : (
                   <div className={isSidebarExpanded ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" : "flex flex-col gap-4"}>
@@ -327,7 +327,7 @@ export function CalendarView({ sessions, onUpdate, onSessionClick, onCreateSessi
                         </div>
                         <div className="text-right">
                           <span className="inline-block px-2 py-1 bg-neutral-100 dark:bg-neutral-700 rounded text-xs font-bold uppercase text-neutral-600 dark:text-neutral-400 mb-1">
-                            {s.status === 'in_progress' ? t('crmBoard.columns.in_progress') : s.status === 'completed' ? t('key_00219e') : s.status === 'booked' ? t('key_277bbc') : s.status}
+                            {s.status === 'in_progress' ? t('crmBoard.columns.in_progress') : s.status === 'completed' ? t('completed') : s.status === 'booked' ? t('recorded') : s.status}
                           </span>
                           <div className="font-bold text-neutral-900 dark:text-white">{s.price ? `${s.price} Kč` : ''}</div>
                         </div>
@@ -350,7 +350,7 @@ export function CalendarView({ sessions, onUpdate, onSessionClick, onCreateSessi
                                 onClick={() => onSessionClick(s)}
                                 className="px-3 py-1.5 bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 font-bold text-xs rounded-lg flex items-center gap-1 hover:bg-emerald-200 transition-colors w-full"
                               >
-                                {t('key_12650b')}
+                                {t('considerTheApplication')}
                                                                               </button>
                             )}
                             {s.status === 'booked' && (
@@ -369,7 +369,7 @@ export function CalendarView({ sessions, onUpdate, onSessionClick, onCreateSessi
                                 onClick={() => onSessionComplete(s.id)}
                                 className="px-3 py-1.5 bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 font-bold text-xs rounded-lg flex items-center gap-1 hover:bg-green-200 transition-colors"
                               >
-                                <CheckCircle className="w-3.5 h-3.5" /> {t('key_b0e3a5')}
+                                <CheckCircle className="w-3.5 h-3.5" /> {t('complete')}
                                                                               </button>
                             )}
                           </div>
@@ -397,7 +397,7 @@ export function CalendarView({ sessions, onUpdate, onSessionClick, onCreateSessi
                   className="w-full flex items-center justify-center gap-2 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 font-bold py-3.5 rounded-xl hover:bg-neutral-800 transition-all shadow-lg"
                 >
                   <Plus className="w-5 h-5" />
-                  {t('key_d650b9')}
+                  {t('addSession')}
                                                   </button>
               </div>
             </motion.div>

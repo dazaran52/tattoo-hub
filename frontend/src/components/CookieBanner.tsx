@@ -13,7 +13,7 @@ export function CookieBanner() {
   const copyMap = {
     ru: {
       before: t('cookie2'),
-      policy: t('key_b34c5f'),
+      policy: t('privacyPolicy3'),
       accept: t('guide.understand'),
     },
     cs: {
@@ -28,8 +28,8 @@ export function CookieBanner() {
     },
     uk: {
       before: t('cookie'),
-      policy: t('key_9db40e'),
-      accept: t('key_fc737a'),
+      policy: t('privacyPolicy2'),
+      accept: t('iVeRealized'),
     },
   } as Record<string, { before: string; policy: string; accept: string }>
 

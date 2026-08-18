@@ -191,7 +191,7 @@ export function AdminChat() {
     const userId = balanceModalUser.id
     const num = parseInt(newBalanceValue)
     if (isNaN(num) || num < 0) {
-      toast.error(t('key_c4c25f'))
+      toast.error(t('invalidAmount'))
       return
     }
 
@@ -207,7 +207,7 @@ export function AdminChat() {
         })
       })
       if (!res.ok) throw new Error('Failed to update balance')
-      toast.success(t('key_2461eb'))
+      toast.success(t('balanceUpdated2'))
       setUsersMap(prev => ({ ...prev, [userId]: { ...prev[userId], balance: num } }))
       setBalanceModalUser(null)
     } catch (err: any) {
@@ -223,9 +223,9 @@ export function AdminChat() {
 
     setConfirmModal({
       isOpen: true,
-      title: isBanned ? t('key_ea8259') : t('key_30a06e'),
-      message: `Вы уверены, что хотите ${isBanned ? t('key_c1a096') : t('key_e3d581')} пользователя ${user.email}?`,
-      confirmText: isBanned ? t('unlock') : t('key_35903d'),
+      title: isBanned ? t('unblockUser') : t('blockUser'),
+      message: `Вы уверены, что хотите ${isBanned ? t('unlock2') : t('block2')} пользователя ${user.email}?`,
+      confirmText: isBanned ? t('unlock') : t('block'),
       cancelText: t('cancel'),
       type: isBanned ? 'info' : 'danger',
       onConfirm: async () => {
@@ -240,7 +240,7 @@ export function AdminChat() {
             body: JSON.stringify({ status: newStatus })
           })
           if (!res.ok) throw new Error('Failed to update status')
-          toast.success(isBanned ? t('key_985991') : t('key_3662d0'))
+          toast.success(isBanned ? t('userIsUnblocked') : t('userIsBlocked'))
           setUsersMap(prev => ({ ...prev, [userId]: { ...prev[userId], status: newStatus } }))
         } catch (err: any) {
           toast.error(err.message)
@@ -251,13 +251,13 @@ export function AdminChat() {
 
   const handleClearChat = (userId: string) => {
     const user = usersMap[userId]
-    const userEmail = user?.email || t('key_b69603')
+    const userEmail = user?.email || t('thisUser')
 
     setConfirmModal({
       isOpen: true,
-      title: t('key_179d24'),
+      title: t('clearChatHistory'),
       message: `Вы уверены, что хотите полностью очистить историю этого чата с ${userEmail}? Действие необратимо.`,
-      confirmText: t('key_707436'),
+      confirmText: t('clear'),
       cancelText: t('cancel'),
       type: 'danger',
       onConfirm: async () => {
@@ -270,7 +270,7 @@ export function AdminChat() {
             }
           })
           if (!res.ok) throw new Error('Failed to clear chat')
-          toast.success(t('key_12c18f'))
+          toast.success(t('chatCleared'))
           setMessages([])
           setChatList(prev => prev.filter(c => c.id !== userId))
           setSelectedUserId(null)
@@ -287,7 +287,7 @@ export function AdminChat() {
       <div className="w-1/3 border-r border-neutral-200 dark:border-neutral-800 flex flex-col bg-neutral-50 dark:bg-neutral-900/50">
         <div className="p-4 border-b border-neutral-200 dark:border-neutral-800 flex items-center gap-2 font-bold text-neutral-900 dark:text-white">
           <MessageCircle className="w-5 h-5 text-accent-500" />
-          {t('key_4c6209')}
+          {t('activeChats')}
                           </div>
         <div className="flex-1 overflow-y-auto">
           {isLoadingChats ? (
@@ -296,8 +296,8 @@ export function AdminChat() {
             <EmptyState
               variant="compact"
               icon={<MessageCircle className="w-8 h-8" />}
-              title={t('key_e399ae')}
-              description={t('key_255b98')}
+              title={t('noActiveChats')}
+              description={t('userRequestsWillAppear')}
             />
           ) : (
             chatList.map(c => (
@@ -328,7 +328,7 @@ export function AdminChat() {
         {!selectedUserId ? (
           <div className="flex-1 flex flex-col items-center justify-center text-neutral-400">
             <MessageCircle className="w-16 h-16 mb-4 opacity-20" />
-            <p>{t('key_f45b18')}</p>
+            <p>{t('selectChatOnThe')}</p>
           </div>
         ) : (
           <>
@@ -354,7 +354,7 @@ export function AdminChat() {
                 <button
                   onClick={() => handleUpdateBalance(selectedUserId)}
                   className="p-2 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-600 dark:text-neutral-300 rounded-lg transition-colors"
-                  title={t('key_b1d275')}
+                  title={t('changeBalance')}
                 >
                   <Coins className="w-4 h-4" />
                 </button>
@@ -365,14 +365,14 @@ export function AdminChat() {
                       ? 'bg-green-100 text-green-600 hover:bg-green-200 dark:bg-green-900/30 dark:hover:bg-green-900/50' 
                       : 'bg-amber-100 text-amber-600 hover:bg-amber-200 dark:bg-amber-900/30 dark:hover:bg-amber-900/50'
                   }`}
-                  title={usersMap[selectedUserId]?.status === 'rejected' ? t('unlock') : t('key_35903d')}
+                  title={usersMap[selectedUserId]?.status === 'rejected' ? t('unlock') : t('block')}
                 >
                   {usersMap[selectedUserId]?.status === 'rejected' ? <CheckCircle2 className="w-4 h-4" /> : <Ban className="w-4 h-4" />}
                 </button>
                 <button
                   onClick={() => handleClearChat(selectedUserId)}
                   className="p-2 bg-red-100 hover:bg-red-200 dark:bg-red-900/30 dark:hover:bg-red-900/50 text-red-600 rounded-lg transition-colors"
-                  title={t('key_6b30d3')}
+                  title={t('clearChat')}
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>
@@ -420,7 +420,7 @@ export function AdminChat() {
                 type="text"
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
-                placeholder={t('key_a97f7e')}
+                placeholder={t('enterAMessageTo')}
                 className="flex-1 bg-white dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-700 focus:border-accent-500 focus:ring-1 focus:ring-accent-500 rounded-xl px-4 py-2 text-sm text-neutral-900 dark:text-white outline-none transition-all"
               />
               <button
@@ -439,7 +439,7 @@ export function AdminChat() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200" onClick={(e) => { if (e.target === e.currentTarget) setBalanceModalUser(null) }}>
           <div className="bg-white dark:bg-neutral-900 w-full max-w-md rounded-2xl shadow-xl overflow-hidden animate-in zoom-in-95 duration-200 p-6 border border-neutral-200 dark:border-neutral-800">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-bold text-neutral-900 dark:text-white">{t('key_f5116f')}</h3>
+              <h3 className="text-lg font-bold text-neutral-900 dark:text-white">{t('changeUserBalance')}</h3>
               <button 
                 onClick={() => setBalanceModalUser(null)}
                 className="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200"
@@ -450,7 +450,7 @@ export function AdminChat() {
             <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-4">{balanceModalUser.email}</p>
             
             <div className="mb-6">
-              <label className="block text-sm font-medium text-neutral-600 dark:text-neutral-400 mb-2">{t('key_27f502')}</label>
+              <label className="block text-sm font-medium text-neutral-600 dark:text-neutral-400 mb-2">{t('newWalletBalance')}</label>
               <input
                 type="number"
                 min="0"

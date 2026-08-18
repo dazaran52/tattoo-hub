@@ -34,24 +34,24 @@ export function CertificateVerificationCard({
   const status = profile.certificate_status || 'not_submitted'
 
   const copy = {
-    title: isRussian ? t('key_0dbd54') : 'Training certificate verification',
+    title: isRussian ? t('confirmationOfTraining') : 'Training certificate verification',
     description: isRussian
-      ? t('key_fa4247')
+      ? t('downloadYourTrainingCertificate')
       : 'Upload your training certificate. An administrator will review it manually; clients never see the document.',
     upload: profile.certificate_url
-      ? (isRussian ? t('key_fea053') : 'Upload a new certificate')
-      : (isRussian ? t('key_e93d8a') : 'Upload certificate'),
+      ? (isRussian ? t('uploadNewCertificate') : 'Upload a new certificate')
+      : (isRussian ? t('downloadCertificate') : 'Upload certificate'),
   }
 
   const statusView = {
     not_submitted: {
       icon: FileUp,
-      text: isRussian ? t('key_a95fa0') : 'No certificate submitted',
+      text: isRussian ? t('theCertificateHasNot') : 'No certificate submitted',
       classes: 'bg-neutral-500/10 text-neutral-600 dark:text-neutral-300',
     },
     pending: {
       icon: Clock3,
-      text: isRussian ? t('key_b62a46') : 'Waiting for manual review',
+      text: isRussian ? t('awaitingManualReview') : 'Waiting for manual review',
       classes: 'bg-amber-500/10 text-amber-700 dark:text-amber-300',
     },
     approved: {
@@ -61,7 +61,7 @@ export function CertificateVerificationCard({
     },
     rejected: {
       icon: XCircle,
-      text: isRussian ? t('key_362df2') : 'Certificate rejected',
+      text: isRussian ? t('certificateRejected') : 'Certificate rejected',
       classes: 'bg-red-500/10 text-red-700 dark:text-red-300',
     },
   }[status]
@@ -100,7 +100,7 @@ export function CertificateVerificationCard({
           certificate_reviewed_at: undefined,
           certificate_rejection_reason: undefined,
         })
-        toast.success(isRussian ? t('key_ae237a') : 'Certificate sent for review')
+        toast.success(isRussian ? t('theCertificateHasBeen') : 'Certificate sent for review')
 
         if (oldPath && oldPath !== objectPath) {
           void supabase.storage.from('certificates').remove([oldPath])
@@ -111,7 +111,7 @@ export function CertificateVerificationCard({
       }
     } catch (error) {
       console.error(error)
-      toast.error(isRussian ? t('key_6146c6') : 'Certificate upload failed')
+      toast.error(isRussian ? t('failedToLoadCertificate') : 'Certificate upload failed')
     } finally {
       setIsUploading(false)
     }
@@ -143,7 +143,7 @@ export function CertificateVerificationCard({
         <div className="mt-5 flex gap-3 rounded-2xl border border-red-500/20 bg-red-500/5 p-4 text-sm text-red-700 dark:text-red-300">
           <ShieldAlert className="mt-0.5 h-5 w-5 shrink-0" />
           <div>
-            <p className="font-bold">{isRussian ? t('key_5dd299') : 'Rejection reason'}</p>
+            <p className="font-bold">{isRussian ? t('reasonForRefusal') : 'Rejection reason'}</p>
             <p className="mt-1">{profile.certificate_rejection_reason}</p>
           </div>
         </div>
@@ -157,7 +157,7 @@ export function CertificateVerificationCard({
           className="inline-flex items-center gap-2 rounded-xl bg-primary-600 px-4 py-3 text-sm font-bold text-white transition hover:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-50"
         >
           <FileUp className="h-4 w-4" />
-          {isUploading ? (isRussian ? t('key_89d69a') : 'Uploading…') : copy.upload}
+          {isUploading ? (isRussian ? t('loading2') : 'Uploading…') : copy.upload}
         </button>
         <span className="text-xs text-neutral-500">PDF, JPG, PNG, WEBP · max 10 MB</span>
         <input

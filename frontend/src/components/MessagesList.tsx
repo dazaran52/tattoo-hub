@@ -98,12 +98,12 @@ export function MessagesList({ userRole = 'master', onViewLead, onViewSession }:
       switch (chat.kanban_status) {
         case 'new': return t('newLeadBtn')
         case 'discussing': return t('statusAccepted')
-        case 'booked': return t('key_c80538')
+        case 'booked': return t('record')
         case 'completed': return t('crmBoard.columns.completed')
         case 'cancelled': return t('crmBoard.columns.cancelled')
       }
     }
-    return chat.proposal_status === 'accepted' ? t('statusAccepted') : chat.proposal_status === 'booked' ? t('key_c80538') : t('crmBoard.columns.completed')
+    return chat.proposal_status === 'accepted' ? t('statusAccepted') : chat.proposal_status === 'booked' ? t('record') : t('crmBoard.columns.completed')
   }
 
   // Responsive state
@@ -301,7 +301,7 @@ export function MessagesList({ userRole = 'master', onViewLead, onViewSession }:
     const tempMessage: Message = {
       id: tempId,
       sender_type: userRole,
-      content: t('key_a2ed26'),
+      content: t('loadingPhotos'),
       created_at: new Date().toISOString(),
       is_sending: true
     }
@@ -343,12 +343,12 @@ export function MessagesList({ userRole = 'master', onViewLead, onViewSession }:
       setMessages(prev => prev.map(m => m.id === tempId ? msg : m))
 
       setChats(prev => prev.map(c =>
-        c.id === selectedChat.id ? { ...c, last_message: { content: t('key_4d07df'), created_at: msg.created_at, sender_type: msg.sender_type } } : c
+        c.id === selectedChat.id ? { ...c, last_message: { content: t('photo'), created_at: msg.created_at, sender_type: msg.sender_type } } : c
       ))
 
       scrollToBottom()
     } catch (error: any) {
-      toast.error(t('key_5069c8') + error.message)
+      toast.error(t('errorLoadingPhoto') + error.message)
       setMessages(prev => prev.map(m => m.id === tempId ? { ...m, is_sending: false, is_error: true } : m))
     } finally {
       // setSending(false)
@@ -361,7 +361,7 @@ export function MessagesList({ userRole = 'master', onViewLead, onViewSession }:
 
   const filteredChats = chats.filter(chat => {
     const rawTitle = chat.leads?.title
-    const fallbackTitle = (!rawTitle || rawTitle.startsWith(t('key_09f329')) || rawTitle === t('key_ea68ee')) ? t('landing.client_title') : rawTitle
+    const fallbackTitle = (!rawTitle || rawTitle.startsWith(t('tattoo')) || rawTitle === t('newTattooApplication')) ? t('landing.client_title') : rawTitle
     const clientName = chat.client_info?.name || fallbackTitle
     return clientName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       chat.client_info?.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -381,11 +381,11 @@ export function MessagesList({ userRole = 'master', onViewLead, onViewSession }:
       <EmptyState
         className="h-[calc(100vh-140px)] min-h-[600px] rounded-3xl border-0"
         icon={<MessageCircle className="w-10 h-10 text-primary-500" />}
-        title={userRole === 'client' ? t('key_3155c7') : t('key_e399ae')}
+        title={userRole === 'client' ? t('youDonTHave') : t('noActiveChats')}
         description={userRole === 'client'
-          ? t('key_77e57b')
-          : t('key_2f89dc')}
-        actionLabel={userRole === 'client' ? t('key_cd3cd9') : undefined}
+          ? t('yourCorrespondenceWithThe')
+          : t('respondToRequestsOr')}
+        actionLabel={userRole === 'client' ? t('findAMaster') : undefined}
         onAction={userRole === 'client' ? () => window.location.href = '/dashboard' : undefined}
       />
     )
@@ -408,7 +408,7 @@ export function MessagesList({ userRole = 'master', onViewLead, onViewSession }:
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
             <input
               type="text"
-              placeholder={t('key_cf99fd')}
+              placeholder={t('searchByNameOr2')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white pl-9 pr-4 py-2 rounded-xl text-sm border border-neutral-200 dark:border-white/10 focus:border-primary-500 outline-none transition-colors"
@@ -420,7 +420,7 @@ export function MessagesList({ userRole = 'master', onViewLead, onViewSession }:
           {filteredChats.map(chat => {
             const isSelected = selectedChat?.id === chat.id
             const rawTitleItem = chat.leads?.title
-            const fallbackTitleItem = (!rawTitleItem || rawTitleItem.startsWith(t('key_09f329')) || rawTitleItem === t('key_ea68ee')) ? t('crmBoard.unknownClient') : rawTitleItem
+            const fallbackTitleItem = (!rawTitleItem || rawTitleItem.startsWith(t('tattoo')) || rawTitleItem === t('newTattooApplication')) ? t('crmBoard.unknownClient') : rawTitleItem
             const clientName = chat.client_info?.name || fallbackTitleItem
 
             return (
@@ -470,22 +470,22 @@ export function MessagesList({ userRole = 'master', onViewLead, onViewSession }:
                           if (content.startsWith('[SYSTEM_CARD]:')) {
                             try {
                               const cardData = JSON.parse(content.replace('[SYSTEM_CARD]:', '').trim())
-                              if (cardData.type === 'session_created') return t('key_819d88')
-                              if (cardData.type === 'new_lead') return t('key_f62444')
-                              if (cardData.type === 'master_rejected') return t('key_b7bdbf')
-                              if (cardData.type === 'master_accepted') return t('key_e51ca4')
-                              return t('key_ef6da9')
+                              if (cardData.type === 'session_created') return t('sessionScheduled2')
+                              if (cardData.type === 'new_lead') return t('newApplication')
+                              if (cardData.type === 'master_rejected') return t('refusalOfApplication')
+                              if (cardData.type === 'master_accepted') return t('sessionAccepted2')
+                              return t('systemNotification2')
                             } catch (e) {
-                              return t('key_ef6da9')
+                              return t('systemNotification2')
                             }
                           }
                           return content.startsWith('http') && content.includes('supabase')
-                            ? t('key_4d07df')
+                            ? t('photo')
                             : content
                         })()}
                       </p>
                     ) : (
-                      <p className="text-xs text-neutral-400 italic">{t('key_29d4bc')}</p>
+                      <p className="text-xs text-neutral-400 italic">{t('noMessages2')}</p>
                     )}
                   </div>
 
@@ -528,7 +528,7 @@ export function MessagesList({ userRole = 'master', onViewLead, onViewSession }:
                   const isPersonal = selectedChat.leads?.is_personal;
                   client = {
                     id: 'temp-' + selectedChat.id,
-                    name: selectedChat.client_info?.name || t('key_5f9aab'),
+                    name: selectedChat.client_info?.name || t('newClient'),
                     lead_id: selectedChat.lead_id,
                     leads: selectedChat.leads,
                     source: isPersonal ? 'direct' : 'marketplace',
@@ -537,8 +537,8 @@ export function MessagesList({ userRole = 'master', onViewLead, onViewSession }:
                     instagram: '',
                     email: selectedChat.client_info?.email || '',
                     notes: isPersonal
-                      ? t('key_fce07e')
-                      : t('key_f0bd4f'),
+                      ? t('personalApplicationFromYour')
+                      : t('attentionTheApplicationHas'),
                     master_sessions: []
                   };
                 }
@@ -584,7 +584,7 @@ export function MessagesList({ userRole = 'master', onViewLead, onViewSession }:
                       const online = isOnline(recId, recLastSeen)
                       const text = formatLastSeenText(recLastSeen, online)
                       return online ? (
-                        <span className="text-emerald-500 font-semibold">{t('key_49baa6')}</span>
+                        <span className="text-emerald-500 font-semibold">{t('online')}</span>
                       ) : (
                         <span className="text-neutral-500 dark:text-neutral-400">{text}</span>
                       )
@@ -601,7 +601,7 @@ export function MessagesList({ userRole = 'master', onViewLead, onViewSession }:
                 }}
               >
                 <span className="text-xs font-semibold px-3 py-1.5 bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 rounded-lg whitespace-nowrap hover:bg-primary-200 dark:hover:bg-primary-900/50 transition-colors">
-                  {t('key_360b26')}{selectedChat.sessions_count || 1})
+                  {t('sessions')}{selectedChat.sessions_count || 1})
                 </span>
               </div>
             </div>
@@ -609,15 +609,15 @@ export function MessagesList({ userRole = 'master', onViewLead, onViewSession }:
             <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
               <div className="bg-amber-500/10 text-amber-600 dark:text-amber-400 p-3 rounded-2xl text-xs flex gap-2 mx-auto max-w-lg mb-6">
                 <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-                <p>{t('key_8ce5ed')}</p>
+                <p>{t('discussAllImportantDetails')}</p>
               </div>
 
               {messages.length === 0 ? (
                 <EmptyState
                   variant="compact"
                   icon={<MessageCircle className="w-8 h-8" />}
-                  title={t('key_fd29f4')}
-                  description={t('key_d39d0c')}
+                  title={t('thereAreNoMessages')}
+                  description={t('writeToTheClient')}
                 />
               ) : (
                 messages.map(msg => {
@@ -635,23 +635,23 @@ export function MessagesList({ userRole = 'master', onViewLead, onViewSession }:
                           <div className="bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-white/10 p-5 rounded-2xl shadow-sm text-center max-w-sm w-full">
                             <Calendar className="w-8 h-8 text-primary-500 mx-auto mb-3" />
                             <h4 className="font-bold text-neutral-900 dark:text-white mb-2">
-                              {cardData.type === 'session_created' ? t('key_b4f583') : cardData.type === 'new_lead' ? t('newLeadBtn') : cardData.type === 'master_rejected' ? t('key_e5eda3') : cardData.type === 'master_accepted' ? t('key_a1a3f0') : t('key_41206b')}
+                              {cardData.type === 'session_created' ? t('sessionScheduled') : cardData.type === 'new_lead' ? t('newLeadBtn') : cardData.type === 'master_rejected' ? t('refusal') : cardData.type === 'master_accepted' ? t('sessionAccepted') : t('systemNotification')}
                             </h4>
                             {cardData.type === 'session_created' && (
                               <>
                                 <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-4">
-                                  {userRole === 'client' ? t('key_de6b00') : t('key_fe06e0')} <br />
+                                  {userRole === 'client' ? t('yourSessionHasBeen') : t('youHaveScheduledA')} <br />
                                   {new Date(cardData.date).toLocaleDateString('ru-RU')} {t('leadWizard.atTime')} {cardData.time}
                                 </p>
                                 <div className="bg-neutral-50 dark:bg-neutral-900/50 rounded-xl py-2 px-4 text-sm font-medium text-neutral-900 dark:text-white border border-neutral-100 dark:border-white/5 mb-4">
-                                  {t('key_d0f448')} {cardData.price} CZK
+                                  {t('price2')} {cardData.price} CZK
                                 </div>
                                 {onViewSession && selectedChat?.client_session_id && (
                                   <button
                                     onClick={() => onViewSession(selectedChat.client_session_id!)}
                                     className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-bold rounded-xl transition-colors w-full"
                                   >
-                                    {t('key_0b3d3b')}
+                                    {t('look')}
                                                                                       </button>
                                 )}
                               </>
@@ -659,15 +659,15 @@ export function MessagesList({ userRole = 'master', onViewLead, onViewSession }:
                             {cardData.type === 'master_rejected' && (
                               <>
                                 <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-4 whitespace-pre-wrap">
-                                  {userRole === 'client' ? t('key_d52b32') : t('key_0b8fd6')}<br /><br />
-                                  <strong>{t('key_ce28b8')}</strong> {cardData.reason}
+                                  {userRole === 'client' ? t('theMasterRejectedThe') : t('youHaveRejectedYour')}<br /><br />
+                                  <strong>{t('cause')}</strong> {cardData.reason}
                                 </p>
                               </>
                             )}
                             {cardData.type === 'master_accepted' && (
                               <>
                                 <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-4 whitespace-pre-wrap">
-                                  {userRole === 'client' ? t('key_e6e1c8') : t('key_0c699f')}
+                                  {userRole === 'client' ? t('theMasterHasAccepted') : t('youHaveAcceptedYour')}
                                 </p>
                               </>
                             )}
@@ -675,14 +675,14 @@ export function MessagesList({ userRole = 'master', onViewLead, onViewSession }:
                               <>
                                 <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-4 whitespace-pre-wrap">
 
-                                  {userRole === 'client' ? t('key_0b0257') : t('key_307a7e')}
+                                  {userRole === 'client' ? t('youHaveSubmittedA') : t('theClientHasCreated')}
                                 </p>
                                 {onViewLead && selectedChat?.leads && (
                                   <button
                                     onClick={() => onViewLead(selectedChat.leads, selectedChat)}
                                     className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-bold rounded-xl transition-colors w-full"
                                   >
-                                    {t('key_0b3d3b')}
+                                    {t('look')}
                                                                                       </button>
                                 )}
                               </>
@@ -690,7 +690,7 @@ export function MessagesList({ userRole = 'master', onViewLead, onViewSession }:
                           </div>
                         ) : (
                           <div className="bg-neutral-100 dark:bg-neutral-800 text-neutral-500 text-xs py-1 px-3 rounded-full">
-                            {t('key_41206b')}
+                            {t('systemNotification')}
                                                                   </div>
                         )}
                       </div>
@@ -772,8 +772,8 @@ export function MessagesList({ userRole = 'master', onViewLead, onViewSession }:
             <EmptyState
               variant="compact"
               icon={<MessageCircle className="w-10 h-10" />}
-              title={t('key_f45b18')}
-              description={t('key_b40406')}
+              title={t('selectChatOnThe')}
+              description={t('toViewMessageHistory')}
             />
           </div>
         )}

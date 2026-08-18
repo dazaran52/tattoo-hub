@@ -49,7 +49,7 @@ export function CreateDisputeModal({ isOpen, onClose, leadId, onSuccess }: Creat
       
       setImages(prev => [...prev, ...compressedImages])
     } catch (error) {
-      toast.error(t('key_cd1471'))
+      toast.error(t('errorWhileProcessingImages'))
     }
   }
 
@@ -65,7 +65,7 @@ export function CreateDisputeModal({ isOpen, onClose, leadId, onSuccess }: Creat
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!reason.trim()) {
-      toast.error(t('key_d8ef4d'))
+      toast.error(t('describeTheReason'))
       return
     }
 
@@ -114,11 +114,11 @@ export function CreateDisputeModal({ isOpen, onClose, leadId, onSuccess }: Creat
         throw new Error(errorData.detail || 'Failed to create dispute')
       }
 
-      toast.success(t('key_33697f'))
+      toast.success(t('disputeSuccessfullyOpened'))
       onSuccess()
       onClose()
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : t('key_1c820c'))
+      toast.error(error instanceof Error ? error.message : t('errorCreatingDispute'))
     } finally {
       setIsSubmitting(false)
     }
@@ -132,7 +132,7 @@ export function CreateDisputeModal({ isOpen, onClose, leadId, onSuccess }: Creat
             <div className="p-2 bg-red-100 dark:bg-red-500/20 text-red-600 dark:text-red-400 rounded-xl">
               <ShieldAlert className="w-5 h-5" />
             </div>
-            <h2 className="text-xl font-bold text-neutral-900 dark:text-white">{t('key_474163')}</h2>
+            <h2 className="text-xl font-bold text-neutral-900 dark:text-white">{t('openADispute')}</h2>
           </div>
           <button onClick={onClose} className="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-full transition-colors">
             <X className="w-5 h-5 text-neutral-500" />
@@ -141,25 +141,25 @@ export function CreateDisputeModal({ isOpen, onClose, leadId, onSuccess }: Creat
 
         <form onSubmit={handleSubmit} className="p-6 overflow-y-auto space-y-6">
           <div className="bg-yellow-50 dark:bg-yellow-500/10 border border-yellow-200 dark:border-yellow-500/20 rounded-2xl p-4 text-sm text-yellow-800 dark:text-yellow-200 leading-relaxed">
-            {t('key_980ea1')}
+            {t('creatingADisputeIs')}
                                 </div>
 
           <div className="space-y-2">
             <label className="text-sm font-semibold text-neutral-900 dark:text-white">
-              {t('key_203d84')}
+              {t('detailedDescriptionOfThe')}
                                       </label>
             <textarea
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               className="w-full bg-neutral-50 dark:bg-neutral-800 border-none rounded-2xl p-4 text-neutral-900 dark:text-white focus:ring-2 focus:ring-red-500 min-h-[120px] resize-none"
-              placeholder={t('key_f66c9c')}
+              placeholder={t('theClientStoppedCommunicating')}
               required
             />
           </div>
 
           <div className="space-y-3">
             <label className="text-sm font-semibold text-neutral-900 dark:text-white flex items-center justify-between">
-              <span>{t('key_dfed3a')}</span>
+              <span>{t('screenshotsOfCorrespondence')}</span>
               <span className="text-neutral-500 text-xs font-normal">{images.length}/5</span>
             </label>
             
@@ -184,7 +184,7 @@ export function CreateDisputeModal({ isOpen, onClose, leadId, onSuccess }: Creat
                   className="aspect-square rounded-xl border-2 border-dashed border-neutral-200 dark:border-neutral-700 hover:border-red-500 dark:hover:border-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors flex flex-col items-center justify-center gap-2 text-neutral-500 hover:text-red-600 dark:hover:text-red-400"
                 >
                   <Upload className="w-6 h-6" />
-                  <span className="text-xs font-medium">{t('key_5eba28')}</span>
+                  <span className="text-xs font-medium">{t('add')}</span>
                 </button>
               )}
             </div>
@@ -206,7 +206,7 @@ export function CreateDisputeModal({ isOpen, onClose, leadId, onSuccess }: Creat
             {isSubmitting ? (
               <div className="w-6 h-6 border-3 border-white/30 border-t-white rounded-full animate-spin" />
             ) : (
-              t('key_474163')
+              t('openADispute')
             )}
           </button>
         </form>

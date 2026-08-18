@@ -183,7 +183,7 @@ export default function DashboardPage() {
     }
     const url = `${window.location.origin}/book/${profile.username}`
     navigator.clipboard.writeText(url)
-    toast.success(language === 'ru' ? t('key_f4c946') : 'Booking link copied!')
+    toast.success(language === 'ru' ? t('theLinkToThe') : 'Booking link copied!')
   }
 
   if (isLoading) {
@@ -264,7 +264,7 @@ export default function DashboardPage() {
                     className="inline-flex items-center gap-1.5 text-xs font-bold bg-primary-100 dark:bg-primary-500/20 text-primary-700 dark:text-primary-300 px-3 py-1.5 rounded-full hover:bg-primary-200 dark:hover:bg-primary-500/30 transition-colors"
                   >
                     <Share2 className="w-3.5 h-3.5" />
-                    {language === 'ru' ? t('key_7bde34') : 'Share Booking Link'}
+                    {language === 'ru' ? t('shareBusinessCard') : 'Share Booking Link'}
                   </button>
                 </div>
               </div>
@@ -335,9 +335,9 @@ export default function DashboardPage() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                     </svg>
                   </div>
-                  <h3 className="text-xl font-extrabold text-red-900 dark:text-red-300 mb-2">{t('key_bcd143')}</h3>
+                  <h3 className="text-xl font-extrabold text-red-900 dark:text-red-300 mb-2">{t('accessToTheMarketplace2')}</h3>
                   <p className="text-sm font-medium text-red-700/80 dark:text-red-400/80 max-w-md mb-4">
-                    {t('key_811f9d')}
+                    {t('yourAccessToThe2')}
                   </p>
                   {profile.ban_reason && (
                     <div className="bg-red-100/50 dark:bg-red-900/40 border border-red-200 dark:border-red-800 rounded-lg p-4 mb-6 max-w-md w-full text-left">
@@ -461,7 +461,7 @@ export default function DashboardPage() {
                         },
                         body: JSON.stringify({ status: 'in_progress' })
                       })
-                      toast.success(t('key_d3671f'))
+                      toast.success(t('theApplicationHasBeen3'))
                     }
                   } catch (e) {
                     console.error(e)
@@ -482,7 +482,7 @@ export default function DashboardPage() {
                         },
                         body: JSON.stringify({ status: 'cancelled', reject_reason: reason })
                       })
-                      toast.success(t('key_fe1f20'))
+                      toast.success(t('applicationRejected'))
                     }
                   } catch (e) {
                     console.error(e)

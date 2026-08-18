@@ -159,7 +159,7 @@ export function NotificationsMenu() {
     }
     try {
       if (!('Notification' in window)) {
-        toast.error(t('key_613abb'))
+        toast.error(t('yourBrowserDoesNot'))
         setHideBanner(true)
         return
       }
@@ -170,16 +170,16 @@ export function NotificationsMenu() {
         // Attempt subscription
         const { subscribeToPush } = await import('@/lib/push')
         await subscribeToPush()
-        toast.success(t('key_5b9fd7'))
+        toast.success(t('notificationsEnabled'))
       } else if (permission === 'denied') {
         setPushDenied(true)
-        toast.error(t('key_9a0c71'))
+        toast.error(t('youHaveDisabledNotifications'))
       } else {
         setHideBanner(true)
       }
     } catch (err: any) {
       console.error('Failed to request push permissions:', err)
-      toast.error(t('key_33d239') + (err.message || t('pushFailed')))
+      toast.error(t('error2') + (err.message || t('pushFailed')))
       setHideBanner(true)
     }
   }
@@ -214,7 +214,7 @@ export function NotificationsMenu() {
               <div className="flex items-center gap-2">
                 <button 
                   onClick={() => setActiveTab('active')}
-                  aria-label={t('key_dee94b')}
+                  aria-label={t('backToActiveNotifications')}
                   className="p-1 -ml-1 text-neutral-500 hover:text-neutral-900 dark:hover:text-white transition-colors"
                 >
                   <ArrowLeft className="w-4 h-4" />
@@ -229,7 +229,7 @@ export function NotificationsMenu() {
                   onClick={markAllAsRead}
                   className="text-xs font-medium text-accent-600 dark:text-accent-400 hover:text-accent-700 transition-colors flex items-center gap-1"
                 >
-                  <Check className="w-3 h-3" /> {t('key_ed0248')}
+                  <Check className="w-3 h-3" /> {t('readAll')}
                                                   </button>
               )}
               {activeTab === 'active' && unreadCount === 0 && notifications.length > 0 && (
@@ -237,15 +237,15 @@ export function NotificationsMenu() {
                   onClick={archiveAllRead}
                   className="text-xs font-medium text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300 transition-colors flex items-center gap-1"
                 >
-                  <Archive className="w-3 h-3" /> {t('key_60e711')}
+                  <Archive className="w-3 h-3" /> {t('clearAll')}
                                                   </button>
               )}
               {activeTab === 'active' && (
                 <button 
                   onClick={() => setActiveTab('archived')}
-                  aria-label={t('key_28ca4c')}
+                  aria-label={t('goToArchive')}
                   className="p-1 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
-                  title={t('key_28ca4c')}
+                  title={t('goToArchive')}
                 >
                   <Archive className="w-4 h-4" />
                 </button>
@@ -259,12 +259,12 @@ export function NotificationsMenu() {
                 {activeTab === 'active' ? (
                   <>
                     <Bell className="w-8 h-8 text-neutral-300 dark:text-neutral-700 mb-3" />
-                    <p>{t('key_087a66')}</p>
+                    <p>{t('noNewNotifications')}</p>
                   </>
                 ) : (
                   <>
                     <Archive className="w-8 h-8 text-neutral-300 dark:text-neutral-700 mb-3" />
-                    <p>{t('key_3e2219')}</p>
+                    <p>{t('archiveIsEmpty')}</p>
                   </>
                 )}
               </div>
@@ -295,9 +295,9 @@ export function NotificationsMenu() {
                   {activeTab === 'active' && n.is_read && (
                     <button 
                       onClick={(e) => archiveNotification(e, n.id)}
-                      aria-label={t('key_ce2250')}
+                      aria-label={t('toTheArchive')}
                       className="absolute top-4 right-4 p-1.5 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
-                      title={t('key_ce2250')}
+                      title={t('toTheArchive')}
                     >
                       <X className="w-4 h-4" />
                     </button>
@@ -311,13 +311,13 @@ export function NotificationsMenu() {
             <div className="p-3 bg-primary-50 dark:bg-primary-900/20 border-t border-primary-100 dark:border-primary-900/30 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <BellRing className="w-4 h-4 text-primary-600 dark:text-primary-400" />
-                <span className="text-xs font-medium text-primary-700 dark:text-primary-300">{t('key_03d8e7')}</span>
+                <span className="text-xs font-medium text-primary-700 dark:text-primary-300">{t('enablePushNotifications2')}</span>
               </div>
               <button 
                 onClick={requestPushPermission}
                 className="text-xs font-bold px-3 py-1.5 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors shadow-sm cursor-pointer relative z-50 pointer-events-auto"
               >
-                {t('key_417b33')}
+                {t('turnOn')}
                                             </button>
             </div>
           )}

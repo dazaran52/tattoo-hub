@@ -39,7 +39,7 @@ export function AdminCurrencies() {
       setRates(data.rates || [])
       setCachedRates(data.cached || {})
     } catch (e) {
-      toast.error(t('key_ad0f03'))
+      toast.error(t('errorLoadingCurrencyRates'))
       console.error(e)
     } finally {
       setIsLoading(false)
@@ -63,7 +63,7 @@ export function AdminCurrencies() {
       })
       if (!res.ok) {
         const err = await res.json()
-        throw new Error(err.detail || t('key_d9d86c'))
+        throw new Error(err.detail || t('synchronizationError'))
       }
       const data = await res.json()
       toast.success(`Курсы успешно обновлены (${data.updated_count} валют)`)
@@ -74,7 +74,7 @@ export function AdminCurrencies() {
       })
       await fetchRates()
     } catch (e: any) {
-      toast.error(e.message || t('key_b01ab8'))
+      toast.error(e.message || t('synchronizationErrorWithEcb'))
     } finally {
       setIsSyncing(false)
     }
@@ -91,7 +91,7 @@ export function AdminCurrencies() {
         <div>
           <div className="flex items-center gap-2 mb-2">
             <ShieldCheck className="w-6 h-6 text-primary-500" />
-            <h3 className="text-xl font-bold dark:text-white">{t('key_8b19f2')}</h3>
+            <h3 className="text-xl font-bold dark:text-white">{t('exchangeRateManagementEcb')}</h3>
           </div>
           <p className="text-sm text-neutral-600 dark:text-neutral-400 max-w-2xl">
             {t('eur10CzkFrankfurter')}
@@ -104,7 +104,7 @@ export function AdminCurrencies() {
           className="bg-primary-600 hover:bg-primary-700 disabled:opacity-50 text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-primary-600/20 transition-all active:scale-95 whitespace-nowrap"
         >
           {isSyncing ? <Loader2 className="w-5 h-5 animate-spin" /> : <RefreshCw className="w-5 h-5" />}
-          {t('key_be4df5')}
+          {t('synchronizeWithEcb')}
                           </button>
       </div>
 
@@ -112,7 +112,7 @@ export function AdminCurrencies() {
         <div className="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/50 p-4 rounded-xl flex items-center gap-3 text-emerald-800 dark:text-emerald-300 text-sm">
           <CheckCircle className="w-5 h-5 flex-shrink-0 text-emerald-600" />
           <span>
-            {t('key_77fe06')} <strong>{lastSyncInfo.source}</strong> {t('key_c8b62d')} {lastSyncInfo.date_api}{t('key_6c587e')} {lastSyncInfo.updated_count}.
+            {t('successfulSynchronizationWithSource')} <strong>{lastSyncInfo.source}</strong> {t('exchangeRelevance')} {lastSyncInfo.date_api}{t('updatedCurrencies')} {lastSyncInfo.updated_count}.
           </span>
         </div>
       )}
@@ -128,10 +128,10 @@ export function AdminCurrencies() {
           <table className="w-full text-left border-collapse min-w-max">
             <thead>
               <tr className="border-b border-neutral-100 dark:border-neutral-800 text-neutral-500 text-sm">
-                <th className="pb-3 font-semibold">{t('key_cf55d9')}</th>
-                <th className="pb-3 font-semibold">{t('key_3f34a6')}</th>
+                <th className="pb-3 font-semibold">{t('currency')}</th>
+                <th className="pb-3 font-semibold">{t('code')}</th>
                 <th className="pb-3 font-semibold">{t('1Eur')}</th>
-                <th className="pb-3 font-semibold">{t('key_b38608')}</th>
+                <th className="pb-3 font-semibold">{t('inMemoryCache')}</th>
                 <th className="pb-3 font-semibold">{t('lastRefresh')}</th>
                 <th className="pb-3 font-semibold text-right">{t('crmBoard.list.statusColumn')}</th>
               </tr>
@@ -147,8 +147,8 @@ export function AdminCurrencies() {
                   <tr key={r.currency_code} className="hover:bg-neutral-50 dark:hover:bg-neutral-800/30 transition-colors">
                     <td className="py-4 font-medium flex items-center gap-2 dark:text-white">
                       <span>{r.currency_code}</span>
-                      {isBase && <span className="bg-primary-100 text-primary-800 dark:bg-primary-900/40 dark:text-primary-300 text-xs px-2 py-0.5 rounded-md font-bold">{t('key_09825a')}</span>}
-                      {isLaunchDefault && <span className="bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300 text-xs px-2 py-0.5 rounded-md font-bold">{t('key_2da027')}</span>}
+                      {isBase && <span className="bg-primary-100 text-primary-800 dark:bg-primary-900/40 dark:text-primary-300 text-xs px-2 py-0.5 rounded-md font-bold">{t('basic')}</span>}
+                      {isLaunchDefault && <span className="bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300 text-xs px-2 py-0.5 rounded-md font-bold">{t('startMarketCzechRepublic')}</span>}
                     </td>
                     <td className="py-4 font-mono text-sm text-neutral-500 dark:text-neutral-400">{r.currency_code}</td>
                     <td className="py-4 font-mono font-bold text-base dark:text-white">
@@ -167,7 +167,7 @@ export function AdminCurrencies() {
                           ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400' 
                           : 'bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400'
                       }`}>
-                        {r.is_active ? t('key_318150') : t('key_e0875f')}
+                        {r.is_active ? t('active') : t('disabled')}
                       </span>
                     </td>
                   </tr>
@@ -179,7 +179,7 @@ export function AdminCurrencies() {
                     <EmptyState
                       variant="compact"
                       icon={<DollarSign className="w-7 h-7" />}
-                      title={t('key_85c50e')}
+                      title={t('courseTableIsEmpty')}
                       description={t('051')}
                     />
                   </td>

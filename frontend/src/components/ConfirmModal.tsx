@@ -23,7 +23,7 @@ export function ConfirmModal({
   type = 'info'
 }: ConfirmModalProps) {
     const t = useTranslations();
-    const confirmText = _confirmText || t('key_e04af9');
+    const confirmText = _confirmText || t('yes');
     const cancelText = _cancelText || t('cancel');
   if (!isOpen) return null
 

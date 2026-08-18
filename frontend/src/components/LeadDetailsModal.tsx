@@ -35,7 +35,7 @@ export function LeadDetailsModal({ isOpen, onClose, session, onAccept, onReject,
       setB2bLoading(true)
       const { data: { session: authSession } } = await supabase.auth.getSession()
       if (!authSession) {
-        toast.error(t('key_9f5cb5'))
+        toast.error(t('authorizationError'))
         return
       }
 
@@ -47,10 +47,10 @@ export function LeadDetailsModal({ isOpen, onClose, session, onAccept, onReject,
       })
       if (!res.ok) {
         const err = await res.json()
-        throw new Error(err.detail || t('key_fbb2be'))
+        throw new Error(err.detail || t('errorSendingToMarketplace'))
       }
       
-      toast.success(t('key_83d1e2'))
+      toast.success(t('theLeadWasSuccessfully'))
       onClose()
       onUpdate?.()
     } catch (error: any) {
@@ -63,7 +63,7 @@ export function LeadDetailsModal({ isOpen, onClose, session, onAccept, onReject,
   
   const submitReject = () => {
     if (!rejectReason.trim()) {
-      toast.error(t('key_7b674b'))
+      toast.error(t('pleaseIndicateTheReason3'))
       return
     }
     // We pass the reason via a callback or we can handle the API call here.
@@ -79,20 +79,20 @@ export function LeadDetailsModal({ isOpen, onClose, session, onAccept, onReject,
   const isClient = session.status === 'client'
   
   // Parse description to extract embedded budget/city if present
-  const rawDescription = session.notes || leadData.description || session.description || t('key_a5fe90')
+  const rawDescription = session.notes || leadData.description || session.description || t('theClientDidNot')
   const parsedBudgetMatch = rawDescription.match(/Бюджет:\s*([\s\S]*?)(?=(?:Желаемое время|Бюджет|Город):|$)/i)
   const parsedCityMatch = rawDescription.match(/Город:\s*([\s\S]*?)(?=(?:Желаемое время|Бюджет|Город):|$)/i)
   
   const budgetText = leadData.display_budget || (leadData.client_budget ? `${leadData.client_budget} ${leadData.client_currency || ''}` : (leadData.is_negotiable_budget ? t('negotiableBudget') : (parsedBudgetMatch ? parsedBudgetMatch[1] : null)))
   const cityText = leadData.city_name || leadData.cities?.name_ru || session.city_name || (parsedCityMatch ? parsedCityMatch[1] : null)
-  const styleText = session.style || leadData.style || (leadData.title && leadData.title !== t('key_ea68ee') ? leadData.title : t('key_591cca'))
+  const styleText = session.style || leadData.style || (leadData.title && leadData.title !== t('newTattooApplication') ? leadData.title : t('notSelected'))
 
   const cleanDescription = rawDescription
     .replace(/(?:Желаемое время|Бюджет|Город):[\s\S]*?(?=(?:Желаемое время|Бюджет|Город):|$)/gi, '')
     .trim()
 
   const clientName = session.master_clients?.name || session.client_name || session.name || t('crmBoard.unknownClient')
-  const clientContact = session.master_clients?.phone || session.master_clients?.telegram || session.master_clients?.email || session.contact || session.email || t('key_92c541')
+  const clientContact = session.master_clients?.phone || session.master_clients?.telegram || session.master_clients?.email || session.contact || session.email || t('hidden')
 
   let images = session.reference_images?.length ? session.reference_images : (leadData.image_urls || session.image_urls || [])
   if (typeof images === 'string') {
@@ -125,7 +125,7 @@ export function LeadDetailsModal({ isOpen, onClose, session, onAccept, onReject,
               <div 
                 onClick={() => setIsClientModalOpen(true)}
                 className="w-16 h-16 bg-primary-100 dark:bg-primary-900/30 rounded-2xl flex items-center justify-center shrink-0 cursor-pointer hover:ring-2 hover:ring-primary-500 transition-all"
-                title={t('key_192360')}
+                title={t('viewClientProfile')}
               >
                 <User className="w-8 h-8 text-primary-500" />
               </div>
@@ -199,7 +199,7 @@ export function LeadDetailsModal({ isOpen, onClose, session, onAccept, onReject,
                 <div className="bg-rose-50 dark:bg-rose-900/20 text-rose-700 dark:text-rose-400 px-4 py-3 rounded-2xl flex items-center gap-3 border border-rose-100 dark:border-rose-500/20">
                   <Calendar className="w-5 h-5 shrink-0" />
                   <div className="text-sm">
-                    <span className="font-bold block">{t('key_8cdd8b')}</span>
+                    <span className="font-bold block">{t('date')}</span>
                     {new Date(leadData.session_date || session.session_date).toLocaleDateString('ru-RU')}{(leadData.session_time || session.start_time) ? ` ${(leadData.session_time || session.start_time).slice(0, 5)}` : ''}
                   </div>
                 </div>
@@ -231,7 +231,7 @@ export function LeadDetailsModal({ isOpen, onClose, session, onAccept, onReject,
             {/* Description */}
             <div className="bg-neutral-50 dark:bg-neutral-800/50 rounded-2xl p-5 border border-neutral-100 dark:border-white/5">
               <p className="text-neutral-600 dark:text-neutral-300 text-sm leading-relaxed whitespace-pre-wrap">
-                {cleanDescription || t('key_a5fe90')}
+                {cleanDescription || t('theClientDidNot')}
               </p>
             </div>
 
@@ -244,13 +244,13 @@ export function LeadDetailsModal({ isOpen, onClose, session, onAccept, onReject,
                   onClick={() => setIsRejecting(true)}
                   className="flex-1 py-3.5 px-4 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 rounded-xl font-bold transition-colors"
                 >
-                  {t('key_8b0d89')}
+                  {t('reject')}
                                                   </button>
                 <button 
                   onClick={() => { onClose(); onAccept(); }}
                   className="flex-1 py-3.5 px-4 bg-primary-600 hover:bg-primary-700 text-white shadow-lg shadow-primary-500/25 rounded-xl font-bold transition-all hover:scale-[1.02]"
                 >
-                  {t('key_267bcd')}
+                  {t('acceptApplication')}
                                                   </button>
               </>
             ) : (
@@ -260,14 +260,14 @@ export function LeadDetailsModal({ isOpen, onClose, session, onAccept, onReject,
                     onClick={() => { onClose(); onOpenDispute(); }}
                     className="flex-1 py-3.5 px-4 bg-red-100 hover:bg-red-200 dark:bg-red-900/30 dark:hover:bg-red-900/50 text-red-700 dark:text-red-400 rounded-xl font-bold transition-colors"
                   >
-                    {t('key_474163')}
+                    {t('openADispute')}
                                                             </button>
                 )}
                 <button 
                   onClick={onClose}
                   className="flex-1 py-3.5 px-4 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 rounded-xl font-bold transition-colors"
                 >
-                  {t('key_dd9463')}
+                  {t('close')}
                                                       </button>
                 {onEdit && session.status !== 'cancelled' && (
                   <button 
@@ -289,21 +289,21 @@ export function LeadDetailsModal({ isOpen, onClose, session, onAccept, onReject,
                 className="text-sm text-neutral-400 hover:text-primary-500 underline underline-offset-2 transition-colors flex items-center gap-2"
               >
                 {b2bLoading ? <div className="w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin" /> : null}
-                {t('key_dd07b6')}
+                {t('iCanTTake')}
                                             </button>
             </div>
           )}
 
           {isRejecting && (
             <div className="absolute inset-0 bg-white/95 dark:bg-neutral-900/95 backdrop-blur-sm z-10 flex flex-col items-center justify-center p-6">
-              <h3 className="text-xl font-bold text-neutral-900 dark:text-white mb-2">{t('key_5dd299')}</h3>
+              <h3 className="text-xl font-bold text-neutral-900 dark:text-white mb-2">{t('reasonForRefusal')}</h3>
               <p className="text-sm text-neutral-500 mb-6 text-center max-w-sm">
-                {t('key_beda01')}
+                {t('pleaseIndicateTheReason2')}
                                             </p>
               <textarea
                 value={rejectReason}
                 onChange={(e) => setRejectReason(e.target.value)}
-                placeholder={t('key_d08a97')}
+                placeholder={t('forExampleIDon')}
                 className="w-full max-w-md bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-white/10 rounded-xl p-4 text-neutral-900 dark:text-white placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-red-500 min-h-[120px] resize-none mb-6"
               />
               <div className="flex gap-3 w-full max-w-md">
@@ -319,7 +319,7 @@ export function LeadDetailsModal({ isOpen, onClose, session, onAccept, onReject,
                 <button
                   onClick={() => {
                     if (!rejectReason.trim()) {
-                      toast.error(t('key_7e131f'))
+                      toast.error(t('pleaseIndicateTheReason'))
                       return
                     }
                     onReject(rejectReason.trim())
@@ -329,7 +329,7 @@ export function LeadDetailsModal({ isOpen, onClose, session, onAccept, onReject,
                   }}
                   className="flex-1 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl transition-colors shadow-lg shadow-red-500/20"
                 >
-                  {t('key_b1185f')}
+                  {t('rejectApplication')}
                                                   </button>
               </div>
             </div>

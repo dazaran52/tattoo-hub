@@ -84,7 +84,7 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId: 
   if (!isOpen) return null
 
   const handleDeleteClient = async () => {
-    if (!confirm(t('key_a32e88'))) return
+    if (!confirm(t('areYouSureYou3'))) return
     try {
       const { data: { session } } = await supabase.auth.getSession()
       const token = session?.access_token
@@ -93,7 +93,7 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId: 
         headers: { 'Authorization': `Bearer ${token}` }
       })
       if (!res.ok) throw new Error()
-      toast.success(t('key_b9e5e8'))
+      toast.success(t('clientDeleted'))
       onUpdate()
       onClose()
     } catch {
@@ -102,7 +102,7 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId: 
   }
 
   const handleDeleteSession = async (sessionId: string) => {
-    if (!confirm(t('key_608df4'))) return
+    if (!confirm(t('areYouSureYou2'))) return
     try {
       const { data: { session } } = await supabase.auth.getSession()
       const token = session?.access_token
@@ -111,10 +111,10 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId: 
         headers: { 'Authorization': `Bearer ${token}` }
       })
       if (!res.ok) throw new Error()
-      toast.success(t('key_dd99a3'))
+      toast.success(t('sessionDeleted'))
       onUpdate()
     } catch {
-      toast.error(t('key_ddc15f'))
+      toast.error(t('sessionDeletionError'))
     }
   }
 
@@ -125,7 +125,7 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId: 
 
   const budgetText = lead.display_budget || (lead.client_budget ? `${lead.client_budget} ${lead.client_currency || ''}` : (lead.is_negotiable_budget ? t('negotiableBudget') : (parsedBudgetMatch ? parsedBudgetMatch[1] : null)))
   const cityText = lead.city_name || lead.cities?.name_ru || (parsedCityMatch ? parsedCityMatch[1] : null)
-  const styleText = lead.style || (lead.title && lead.title !== t('key_ea68ee') ? lead.title : null)
+  const styleText = lead.style || (lead.title && lead.title !== t('newTattooApplication') ? lead.title : null)
 
   return (
     <>
@@ -150,19 +150,19 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId: 
                 <div className="flex items-center gap-2">
                   {isPersonal ? (
                     <span className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
-                      {t('key_70b7f8')}
+                      {t('personalApplication')}
                                                                   </span>
                   ) : isUnlocked ? (
                     <span className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-                      {t('key_92e563')}
+                      {t('fromTheMarketplaceContacts')}
                                                                       </span>
                   ) : isMarketplaceSold ? (
                     <span className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
-                      {t('key_e7a5b7')}
+                      {t('listedOnTheMarketplace')}
                                                                           </span>
                   ) : (
                     <span className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20 flex items-center gap-1">
-                      <Lock className="w-3 h-3" /> {t('key_d029d4')}
+                      <Lock className="w-3 h-3" /> {t('fromTheMarketplaceClosed')}
                                                                               </span>
                   )}
                 </div>
@@ -181,21 +181,21 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId: 
               className={`flex-1 py-3.5 text-sm font-bold border-b-2 transition-all flex items-center justify-center gap-2 ${activeTab === 'info' ? 'border-primary-500 text-primary-600 dark:text-primary-400' : 'border-transparent text-neutral-500 hover:text-neutral-900 dark:hover:text-white'}`}
             >
               <FileText className="w-4 h-4" />
-              <span>{t('key_a7fd9b')}</span>
+              <span>{t('information')}</span>
             </button>
             <button 
               onClick={() => setActiveTab('sessions')}
               className={`flex-1 py-3.5 text-sm font-bold border-b-2 transition-all flex items-center justify-center gap-2 ${activeTab === 'sessions' ? 'border-primary-500 text-primary-600 dark:text-primary-400' : 'border-transparent text-neutral-500 hover:text-neutral-900 dark:hover:text-white'}`}
             >
               <Calendar className="w-4 h-4" />
-              <span>{t('key_360b26')}{client.master_sessions?.length || 0})</span>
+              <span>{t('sessions')}{client.master_sessions?.length || 0})</span>
             </button>
             <button 
               onClick={() => setActiveTab('chat')}
               className={`flex-1 py-3.5 text-sm font-bold border-b-2 transition-all flex items-center justify-center gap-2 ${activeTab === 'chat' ? 'border-primary-500 text-primary-600 dark:text-primary-400' : 'border-transparent text-neutral-500 hover:text-neutral-900 dark:hover:text-white'}`}
             >
               <MessageCircle className="w-4 h-4" />
-              <span>{t('key_c52b4c')}</span>
+              <span>{t('chat')}</span>
               {!isUnlocked && <Lock className="w-3 h-3 text-purple-500" />}
             </button>
           </div>
@@ -207,7 +207,7 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId: 
                 {/* Client Name Header */}
                 <div className="flex justify-between items-start">
                   <div className="flex-1 mr-4">
-                    <label className="text-xs font-bold text-neutral-400 uppercase tracking-wider">{t('key_835a78')}</label>
+                    <label className="text-xs font-bold text-neutral-400 uppercase tracking-wider">{t('clientName')}</label>
                     <input 
                       defaultValue={client.name}
                       readOnly={client.id.startsWith('temp-') || !isUnlocked}
@@ -216,7 +216,7 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId: 
                          if (e.target.value.trim() && e.target.value !== client.name) {
                            await supabase.from('master_clients').update({name: e.target.value.trim()}).eq('id', client.id)
                            onUpdate()
-                           toast.success(t('key_92e9b6'))
+                           toast.success(t('nameSaved'))
                          }
                       }}
                       className="mt-1 block text-xl font-extrabold text-neutral-900 dark:text-white bg-transparent border-b-2 border-transparent hover:border-neutral-200 dark:hover:border-neutral-700 focus:border-primary-500 outline-none w-full transition-colors pb-1 read-only:opacity-80"
@@ -237,7 +237,7 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId: 
                   <div className="flex items-center justify-between">
                     <label className="text-xs font-extrabold text-neutral-400 uppercase tracking-wider flex items-center gap-1.5">
                       <Phone className="w-3.5 h-3.5 text-primary-500"/> 
-                      <span>{t('key_b36933')}</span>
+                      <span>{t('contactDetails')}</span>
                     </label>
                     {isUnlocked && (client.telegram || client.phone) && (
                       <div className="flex gap-2">
@@ -256,7 +256,7 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId: 
                             href={`tel:${client.phone}`}
                             className="px-2.5 py-1 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-lg text-xs font-bold flex items-center gap-1 hover:bg-emerald-500/20 transition-colors"
                           >
-                            <Phone className="w-3 h-3" /> {t('key_ccfa07')}
+                            <Phone className="w-3 h-3" /> {t('call')}
                                                                                     </a>
                         )}
                       </div>
@@ -269,7 +269,7 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId: 
                         <Lock className="w-5 h-5" />
                       </div>
                       <div>
-                        <h4 className="text-sm font-bold text-neutral-900 dark:text-white">{t('key_783bfd')}</h4>
+                        <h4 className="text-sm font-bold text-neutral-900 dark:text-white">{t('contactsAreHidden')}</h4>
                         <p className="text-xs text-neutral-500 dark:text-neutral-400 max-w-sm mx-auto mt-1">
                           {t('email2')}
                                                                               </p>
@@ -348,17 +348,17 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId: 
                 {cityText && (
                   <div className="flex items-center gap-1.5 text-xs font-bold text-orange-600 dark:text-orange-400 bg-orange-500/10 px-3 py-1.5 rounded-xl border border-orange-500/20 w-fit">
                     <MapPin className="w-3.5 h-3.5" />
-                    <span>{t('key_066fa8')} {cityText}</span>
+                    <span>{t('city2')} {cityText}</span>
                   </div>
                 )}
 
                 {/* Master Notes */}
                 <div>
-                  <label className="text-xs font-bold text-neutral-400 uppercase tracking-wider flex items-center gap-1"><FileText className="w-3.5 h-3.5"/> {t('key_f6184d')}</label>
+                  <label className="text-xs font-bold text-neutral-400 uppercase tracking-wider flex items-center gap-1"><FileText className="w-3.5 h-3.5"/> {t('masterSNotes')}</label>
                   <textarea 
                     defaultValue={client.notes || ''}
                     readOnly={client.id.startsWith('temp-')}
-                    placeholder={t('key_fb7f1c')}
+                    placeholder={t('addANoteAbout')}
                     className="mt-2 w-full p-4 bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-200 dark:border-white/5 rounded-2xl focus:ring-2 focus:ring-primary-500 outline-none text-neutral-900 dark:text-white text-sm"
                     rows={4}
                     onBlur={async (e) => {
@@ -375,13 +375,13 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId: 
             {activeTab === 'sessions' && (
               <div className="space-y-4">
                 <div className="flex justify-between items-center mb-2">
-                  <h3 className="font-bold text-neutral-900 dark:text-white text-sm">{t('key_32453e')}</h3>
+                  <h3 className="font-bold text-neutral-900 dark:text-white text-sm">{t('sessionHistory')}</h3>
                   {!client.id.startsWith('temp-') && (
                     <button 
                       onClick={() => setIsSessionModalOpen(true)}
                       className="flex items-center gap-1.5 text-xs font-bold text-primary-600 dark:text-primary-400 bg-primary-500/10 px-3 py-1.5 rounded-xl hover:bg-primary-500/20 transition-colors"
                     >
-                      <Plus className="w-4 h-4"/> {t('key_d650b9')}
+                      <Plus className="w-4 h-4"/> {t('addSession')}
                                                                   </button>
                   )}
                 </div>
@@ -401,7 +401,7 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId: 
                                 {new Date(s.session_date).toLocaleDateString('ru-RU')}
                               </div>
                               <div className="text-xs text-neutral-500">
-                                {s.start_time || t('key_e1c80f')} {s.end_time ? `- ${s.end_time}` : ''}
+                                {s.start_time || t('noTimeSpecified')} {s.end_time ? `- ${s.end_time}` : ''}
                               </div>
                               <div className="mt-1">
                                 {isSoldB2b ? (
@@ -410,7 +410,7 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId: 
                                                                                       </span>
                                 ) : (
                                   <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400">
-                                    {s.status === 'in_progress' ? t('crmBoard.columns.in_progress') : s.status === 'completed' ? t('key_00219e') : s.status === 'booked' ? t('key_277bbc') : s.status}
+                                    {s.status === 'in_progress' ? t('crmBoard.columns.in_progress') : s.status === 'completed' ? t('completed') : s.status === 'booked' ? t('recorded') : s.status}
                                   </span>
                                 )}
                               </div>
@@ -435,7 +435,7 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId: 
                                   onClick={(e) => { e.stopPropagation(); setSessionToComplete(s.id); }}
                                   className="px-2.5 py-1 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold text-xs rounded-lg flex items-center gap-1 hover:bg-emerald-500/20 transition-colors"
                                 >
-                                  <CheckCircle className="w-3.5 h-3.5" /> {t('key_b0e3a5')}
+                                  <CheckCircle className="w-3.5 h-3.5" /> {t('complete')}
                                                                                 </button>
                               )}
 
@@ -476,7 +476,7 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId: 
                                   setSessionToEdit({ ...s, master_clients: { id: client.id, name: client.name } });
                                 }} 
                                 className="p-2 text-neutral-400 hover:text-primary-500 hover:bg-primary-500/10 rounded-lg transition-colors" 
-                                title={t('key_7a3b90')}
+                                title={t('editSession')}
                               >
                                 <Edit3 className="w-4 h-4" />
                               </button>
@@ -529,7 +529,7 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId: 
                           <div className="mt-1 bg-emerald-500/10 p-3 rounded-xl border border-emerald-500/20">
                             <div className="flex items-center gap-2 mb-2">
                               <CheckCircle className="w-4 h-4 text-emerald-500" />
-                              <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">{t('key_e35ee4')}</span>
+                              <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">{t('sessionResult')}</span>
                             </div>
                             <div className="w-full flex gap-2 overflow-x-auto custom-scrollbar pb-1">
                               {s.result_image_urls.map((url: string, idx: number) => (
@@ -544,7 +544,7 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId: 
                 ) : (
                   <div className="text-center py-12 text-neutral-400 border-2 border-dashed border-neutral-200 dark:border-white/10 rounded-3xl">
                     <Calendar className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                    <p className="text-sm font-semibold">{t('key_0ea2ee')}</p>
+                    <p className="text-sm font-semibold">{t('thisClientHasNo')}</p>
                   </div>
                 )}
               </div>
@@ -559,9 +559,9 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId: 
                       <MessageCircle className="w-8 h-8" />
                     </div>
                     <div>
-                      <h3 className="font-extrabold text-neutral-900 dark:text-white text-lg">{t('key_c71d55')}</h3>
+                      <h3 className="font-extrabold text-neutral-900 dark:text-white text-lg">{t('chatWithAClient')}</h3>
                       <p className="text-sm text-neutral-500 max-w-sm mx-auto mt-1">
-                        {client.lead_id ? t('key_7083f7') : t('key_565a13')}
+                        {client.lead_id ? t('openAChatTo') : t('forClientsAddedManually')}
                       </p>
                     </div>
                     {client.lead_id && (
@@ -569,7 +569,7 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId: 
                         onClick={() => setIsChatOpen(true)}
                         className="px-6 py-3 bg-primary-600 text-white font-bold rounded-2xl shadow-lg shadow-primary-500/25 hover:bg-primary-700 transition-all hover:scale-[1.02]"
                       >
-                        {t('key_c91d1e')}
+                        {t('openDialogue')}
                                                                         </button>
                     )}
                   </>
@@ -579,9 +579,9 @@ export function ClientDetailsModal({ isOpen, onClose, client, onUpdate, chatId: 
                       <Lock className="w-7 h-7" />
                     </div>
                     <div>
-                      <h3 className="font-extrabold text-neutral-900 dark:text-white text-lg">{t('key_ff7201')}</h3>
+                      <h3 className="font-extrabold text-neutral-900 dark:text-white text-lg">{t('chatBlocked')}</h3>
                       <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-2 leading-relaxed">
-                        {t('key_ebd7dd')}
+                        {t('communicationWithTheClient')}
                                                                             </p>
                     </div>
                   </div>

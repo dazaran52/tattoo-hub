@@ -311,7 +311,7 @@ export function LandingInteractive() {
                     )}
                   </div>
                   <button onClick={() => {setStep(1); setGuideSlide(0)}} className="mt-6 text-sm text-neutral-500 hover:text-white transition-colors">
-                    {t('key_7222e6')}
+                    {t('backToChoosingA')}
                                                             </button>
                 </motion.div>
               )}

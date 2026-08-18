@@ -97,12 +97,12 @@ export function CompleteSessionModal({ isOpen, onClose, sessionId, onSuccess }: 
 
       if (!res.ok) throw new Error('Failed to complete session')
 
-      toast.success(t('key_27a90e'))
+      toast.success(t('theSessionIsOver'))
       onSuccess()
       onClose()
     } catch (e) {
       console.error(e)
-      toast.error(t('key_a1fd7c'))
+      toast.error(t('errorTerminatingSession'))
     } finally {
       setLoading(false)
     }
@@ -127,14 +127,14 @@ export function CompleteSessionModal({ isOpen, onClose, sessionId, onSuccess }: 
         >
           <div className="p-6">
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-bold">{t('key_61e71f')}</h2>
+              <h2 className="text-xl font-bold">{t('endingASession')}</h2>
               <button onClick={onClose} className="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-full">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             <p className="text-sm text-neutral-500 mb-6">
-              {t('key_6b4638')}
+              {t('uploadPhotosOfThe')}
                                       </p>
 
             <div className="space-y-4">
@@ -154,7 +154,7 @@ export function CompleteSessionModal({ isOpen, onClose, sessionId, onSuccess }: 
                     />
                     <label htmlFor="portfolio-upload" className="cursor-pointer flex flex-col items-center gap-2 text-neutral-500">
                       <Upload className="w-8 h-8" />
-                      <span className="text-sm font-semibold">{t('key_84df5d')}</span>
+                      <span className="text-sm font-semibold">{t('clickToSelectFiles')}</span>
                     </label>
                   </div>
                 )}
@@ -187,7 +187,7 @@ export function CompleteSessionModal({ isOpen, onClose, sessionId, onSuccess }: 
               {publishToPortfolio && (
                 <div>
                   <label className="block text-sm font-bold text-neutral-700 dark:text-neutral-300 mb-2">
-                    {t('key_1c6332')}
+                    {t('descriptionForThePost')}
                                                         </label>
                   <textarea
                     value={description}
@@ -205,7 +205,7 @@ export function CompleteSessionModal({ isOpen, onClose, sessionId, onSuccess }: 
                   onChange={e => setPublishToPortfolio(e.target.checked)}
                   className="w-5 h-5 rounded border-neutral-300 text-primary-600 focus:ring-primary-500"
                 />
-                <span className="text-sm font-medium">{t('key_87a3ad')}</span>
+                <span className="text-sm font-medium">{t('publishAPhotoIn')}</span>
               </label>
 
               <label className="flex items-center gap-3 p-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-xl cursor-pointer">
@@ -215,7 +215,7 @@ export function CompleteSessionModal({ isOpen, onClose, sessionId, onSuccess }: 
                   onChange={e => setSendReviewRequest(e.target.checked)}
                   className="w-5 h-5 rounded border-neutral-300 text-primary-600 focus:ring-primary-500"
                 />
-                <span className="text-sm font-medium">{t('key_6cee16')}</span>
+                <span className="text-sm font-medium">{t('sendALetterTo')}</span>
               </label>
 
               <button
@@ -224,7 +224,7 @@ export function CompleteSessionModal({ isOpen, onClose, sessionId, onSuccess }: 
                 className="w-full py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-bold flex items-center justify-center gap-2 transition-colors disabled:opacity-50"
               >
                 {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <ImageIcon className="w-5 h-5" />}
-                {t('key_103592')}
+                {t('endSession')}
                                             </button>
             </div>
           </div>

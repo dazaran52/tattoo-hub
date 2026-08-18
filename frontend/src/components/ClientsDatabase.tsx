@@ -117,7 +117,7 @@ export function ClientsDatabase() {
 
   const handleDelete = async (e: React.MouseEvent, id: string) => {
     e.stopPropagation()
-    if (!confirm(t('key_a32e88'))) return
+    if (!confirm(t('areYouSureYou3'))) return
 
     try {
       const { data: session } = await supabase.auth.getSession()
@@ -138,11 +138,11 @@ export function ClientsDatabase() {
         .update({ is_deleted: true })
         .eq('client_id', id)
 
-      toast.success(t('key_b9e5e8'))
+      toast.success(t('clientDeleted'))
       fetchClients()
     } catch (error) {
       console.error(error)
-      toast.error(t('key_3e7011'))
+      toast.error(t('clientDeletionError'))
     }
   }
 
@@ -167,7 +167,7 @@ export function ClientsDatabase() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
           <input 
             type="text" 
-            placeholder={t('key_e132e1')} 
+            placeholder={t('searchByNameOr')} 
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl pl-10 pr-4 py-3 focus:ring-2 focus:ring-primary-500/20 outline-none"
@@ -178,7 +178,7 @@ export function ClientsDatabase() {
           className="flex items-center gap-2 px-5 py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-bold shadow-md hover:shadow-lg transition-all hover:-translate-y-0.5 whitespace-nowrap"
         >
           <UserPlus className="w-5 h-5" />
-          {t('key_c6bfc9')}
+          {t('addAClient')}
                           </button>
       </div>
 
@@ -189,7 +189,7 @@ export function ClientsDatabase() {
               <tr className="bg-neutral-50 dark:bg-neutral-800/50 text-xs uppercase tracking-wider text-neutral-500 dark:text-neutral-400 border-b border-neutral-200 dark:border-neutral-800">
                 <th className="p-4 font-bold">{t('landing.client_title')}</th>
                 <th className="p-4 font-bold">{t('crmBoard.tabSessions')}</th>
-                <th className="p-4 font-bold">{t('key_699396')}</th>
+                <th className="p-4 font-bold">{t('lastSession')}</th>
                 <th className="p-4 font-bold text-right">{t('actions')}</th>
               </tr>
             </thead>
@@ -217,7 +217,7 @@ export function ClientsDatabase() {
                           <div className="font-bold text-neutral-900 dark:text-white flex items-center gap-2">
                             {client.name}
                             {(client.source === 'direct' || client.leads?.is_personal) ? (
-                              <span className="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-[10px] px-2 py-0.5 rounded font-bold">{t('key_08f3aa')}</span>
+                              <span className="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-[10px] px-2 py-0.5 rounded font-bold">{t('personal')}</span>
                             ) : (client.source === 'marketplace' || (client.lead_id && !client.leads?.is_personal)) ? (
                               <span className="bg-accent-100 dark:bg-accent-500/20 text-accent-600 dark:text-accent-400 text-[10px] px-2 py-0.5 rounded font-bold">{t('marketplace')}</span>
                             ) : null}
@@ -238,16 +238,16 @@ export function ClientsDatabase() {
                         <div className="text-sm">
                           <div className="font-semibold">{new Date(latestSession.session_date).toLocaleDateString('ru-RU')}</div>
                           <div className="text-xs text-neutral-500">
-                            {latestSession.status === 'completed' ? t('key_00219e') : 
-                             (latestSession.status === 'booked' || latestSession.status === 'scheduled') ? t('key_a3fe9f') :
+                            {latestSession.status === 'completed' ? t('completed') : 
+                             (latestSession.status === 'booked' || latestSession.status === 'scheduled') ? t('scheduled') :
                              latestSession.status === 'in_progress' ? t('crmBoard.columns.in_progress') : 
-                             latestSession.status === 'new' ? t('key_97ae6e') :
-                             latestSession.status === 'discussing' ? t('key_0425ad') :
-                             latestSession.status === 'cancelled' ? t('key_3062e6') : t('key_a3fe9f')}
+                             latestSession.status === 'new' ? t('new3') :
+                             latestSession.status === 'discussing' ? t('inDialogue') :
+                             latestSession.status === 'cancelled' ? t('canceled') : t('scheduled')}
                           </div>
                         </div>
                       ) : (
-                        <span className="text-sm text-neutral-400">{t('key_3b6b69')}</span>
+                        <span className="text-sm text-neutral-400">{t('noSessions')}</span>
                       )}
                     </td>
                     <td className="p-4 text-right">
@@ -277,9 +277,9 @@ export function ClientsDatabase() {
                   variant="table"
                   colSpan={4}
                   icon={<UserPlus className="w-8 h-8" />}
-                  title={t('key_5d5eab')}
-                  description={searchQuery ? t('key_f5b616') : t('key_0cb5aa')}
-                  actionLabel={!searchQuery ? t('key_c6bfc9') : undefined}
+                  title={t('noClientsFound')}
+                  description={searchQuery ? t('thereAreNoClients2') : t('thereAreNoClients')}
+                  actionLabel={!searchQuery ? t('addAClient') : undefined}
                   onAction={!searchQuery ? () => setIsAddModalOpen(true) : undefined}
                 />
               )}

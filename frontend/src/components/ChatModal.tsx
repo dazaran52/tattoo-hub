@@ -157,7 +157,7 @@ export function ChatModal({ isOpen, onClose, chatId, leadTitle, currentUserRole 
       setMessages(prev => [...prev, msg])
       scrollToBottom()
     } catch (error: any) {
-      toast.error(t('key_5069c8') + error.message)
+      toast.error(t('errorLoadingPhoto') + error.message)
     } finally {
       setSending(false)
     }
@@ -228,7 +228,7 @@ export function ChatModal({ isOpen, onClose, chatId, leadTitle, currentUserRole 
                 </h2>
                 <p className="text-xs mt-0.5 font-medium">
                   {online ? (
-                    <span className="text-emerald-500 font-semibold">{t('key_49baa6')}</span>
+                    <span className="text-emerald-500 font-semibold">{t('online')}</span>
                   ) : (
                     <span className="text-neutral-500 dark:text-neutral-400">{lastSeenText}</span>
                   )}
@@ -243,9 +243,9 @@ export function ChatModal({ isOpen, onClose, chatId, leadTitle, currentUserRole 
           {!chatId ? (
             <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
               <AlertCircle className="w-12 h-12 text-neutral-300 dark:text-neutral-700 mb-4" />
-              <h3 className="text-lg font-bold text-neutral-900 dark:text-white mb-2">{t('key_3d91a7')}</h3>
+              <h3 className="text-lg font-bold text-neutral-900 dark:text-white mb-2">{t('chatUnavailable')}</h3>
               <p className="text-sm text-neutral-500">
-                {t('key_c5ea3d')}
+                {t('theChatHasNot')}
                                                 </p>
             </div>
           ) : (
@@ -258,18 +258,18 @@ export function ChatModal({ isOpen, onClose, chatId, leadTitle, currentUserRole 
                       disabled={isLoadingMore}
                       className="px-4 py-2 text-xs font-medium text-primary-600 bg-white dark:bg-neutral-800 border border-primary-100 dark:border-primary-500/20 hover:bg-primary-50 dark:hover:bg-neutral-700 disabled:opacity-50 rounded-xl shadow-sm transition-all"
                     >
-                      {isLoadingMore ? t('loading') : t('key_fb9450')}
+                      {isLoadingMore ? t('loading') : t('loadPreviousPosts')}
                     </button>
                   </div>
                 )}
                 <div className="bg-amber-500/10 text-amber-600 dark:text-amber-400 p-3 rounded-2xl text-xs flex gap-2">
                   <AlertCircle className="w-4 h-4 shrink-0" />
-                  {t('key_e37de7')}
+                  {t('linksAndPhoneNumbers')}
                                                           </div>
 
             {messages.length === 0 ? (
               <div className="text-center text-neutral-400 py-8 text-sm">
-                {t('key_096fab')}
+                {t('writeTheFirstMessage')}
                                                             </div>
             ) : (
               messages.map(msg => {
@@ -287,45 +287,45 @@ export function ChatModal({ isOpen, onClose, chatId, leadTitle, currentUserRole 
                         <div className="bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-white/10 p-5 rounded-2xl shadow-sm text-center max-w-sm w-full">
                            <MessageCircle className="w-8 h-8 text-primary-500 mx-auto mb-3" />
                            <h4 className="font-bold text-neutral-900 dark:text-white mb-2">
-                             {cardData.type === 'session_created' ? t('key_b4f583') : cardData.type === 'master_rejected' ? t('key_e5eda3') : cardData.type === 'master_accepted' ? t('key_a1a3f0') : cardData.type === 'new_lead' ? t('newLeadBtn') : t('key_41206b')}
+                             {cardData.type === 'session_created' ? t('sessionScheduled') : cardData.type === 'master_rejected' ? t('refusal') : cardData.type === 'master_accepted' ? t('sessionAccepted') : cardData.type === 'new_lead' ? t('newLeadBtn') : t('systemNotification')}
                            </h4>
                            {cardData.type === 'session_created' && (
                              <>
                                <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-4">
-                                 {currentUserRole === 'client' ? t('key_de6b00') : t('key_fe06e0')} <br/>
+                                 {currentUserRole === 'client' ? t('yourSessionHasBeen') : t('youHaveScheduledA')} <br/>
                                  {new Date(cardData.date).toLocaleDateString('ru-RU')} {t('leadWizard.atTime')} {cardData.time}
                                </p>
                                <div className="bg-neutral-50 dark:bg-neutral-900/50 rounded-xl py-2 px-4 text-sm font-medium text-neutral-900 dark:text-white border border-neutral-100 dark:border-white/5">
-                                 {t('key_d0f448')} {cardData.price} CZK
+                                 {t('price2')} {cardData.price} CZK
                                </div>
                              </>
                            )}
                            {cardData.type === 'new_lead' && (
                              <>
                                <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-4 whitespace-pre-wrap">
-                                 {currentUserRole === 'client' ? t('key_0b0257') : t('key_307a7e')}
+                                 {currentUserRole === 'client' ? t('youHaveSubmittedA') : t('theClientHasCreated')}
                                </p>
                              </>
                            )}
                            {cardData.type === 'master_rejected' && (
                              <>
                                <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-4 whitespace-pre-wrap">
-                                 {currentUserRole === 'client' ? t('key_d52b32') : t('key_0b8fd6')}<br/><br/>
-                                 <strong>{t('key_ce28b8')}</strong> {cardData.reason}
+                                 {currentUserRole === 'client' ? t('theMasterRejectedThe') : t('youHaveRejectedYour')}<br/><br/>
+                                 <strong>{t('cause')}</strong> {cardData.reason}
                                </p>
                              </>
                            )}
                            {cardData.type === 'master_accepted' && (
                              <>
                                <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-4 whitespace-pre-wrap">
-                                 {currentUserRole === 'client' ? t('key_e6e1c8') : t('key_0c699f')}
+                                 {currentUserRole === 'client' ? t('theMasterHasAccepted') : t('youHaveAcceptedYour')}
                                </p>
                              </>
                            )}
                         </div>
                       ) : (
                         <div className="bg-neutral-100 dark:bg-neutral-800 text-neutral-500 text-xs py-1 px-3 rounded-full">
-                          {t('key_41206b')}
+                          {t('systemNotification')}
                                                               </div>
                       )}
                     </div>

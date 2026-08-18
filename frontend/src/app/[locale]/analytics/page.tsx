@@ -106,7 +106,7 @@ export default function AnalyticsPage() {
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-neutral-900 dark:text-white mb-2">{t('analytics')}</h1>
           <p className="text-neutral-500 dark:text-neutral-400">
-            {t('key_f627a9')}
+            {t('purchaseStatisticsAndYour')}
                                 </p>
         </div>
 
@@ -118,7 +118,7 @@ export default function AnalyticsPage() {
                 <TrendingUp className="w-6 h-6 text-accent-500" />
               </div>
               <div>
-                <p className="text-sm text-neutral-500 dark:text-neutral-400 font-medium">{t('key_24dbdf')}</p>
+                <p className="text-sm text-neutral-500 dark:text-neutral-400 font-medium">{t('fundsSpent')}</p>
                 <h3 className="text-3xl font-black text-neutral-900 dark:text-white mt-1">
                   {analytics.total_spent_balance}
                 </h3>
@@ -134,7 +134,7 @@ export default function AnalyticsPage() {
                 <ShoppingCart className="w-6 h-6 text-primary-500" />
               </div>
               <div>
-                <p className="text-sm text-neutral-500 dark:text-neutral-400 font-medium">{t('key_dbad84')}</p>
+                <p className="text-sm text-neutral-500 dark:text-neutral-400 font-medium">{t('leadsPurchased')}</p>
                 <h3 className="text-3xl font-black text-neutral-900 dark:text-white mt-1">
                   {analytics.total_leads_bought}
                 </h3>
@@ -155,7 +155,7 @@ export default function AnalyticsPage() {
           {(!analytics.activity_by_day || analytics.activity_by_day.length === 0) ? (
             <EmptyState
               icon={<Activity className="w-8 h-8" />}
-              title={t('key_6f73d1')}
+              title={t('noActivityData')}
               description={t('302')}
             />
           ) : (
@@ -203,8 +203,8 @@ export default function AnalyticsPage() {
                     labelStyle={{ color: '#888', marginBottom: '4px' }}
                   />
                   <Legend />
-                  <Area yAxisId="left" type="monotone" name={t('key_24dbdf')} dataKey="spent" stroke="#06b6d4" strokeWidth={3} fillOpacity={1} fill="url(#colorSpent)" />
-                  <Area yAxisId="right" type="step" name={t('key_dbad84')} dataKey="bought" stroke="#a855f7" strokeWidth={3} fillOpacity={1} fill="url(#colorBought)" />
+                  <Area yAxisId="left" type="monotone" name={t('fundsSpent')} dataKey="spent" stroke="#06b6d4" strokeWidth={3} fillOpacity={1} fill="url(#colorSpent)" />
+                  <Area yAxisId="right" type="step" name={t('leadsPurchased')} dataKey="bought" stroke="#a855f7" strokeWidth={3} fillOpacity={1} fill="url(#colorBought)" />
                 </AreaChart>
               </ResponsiveContainer>
             </div>

@@ -46,7 +46,7 @@ export function PostModal({ isOpen, post, onClose, isEditable = false, onPostDel
   }
 
   const handleDelete = async () => {
-    if (!confirm(t('key_3a4368'))) return
+    if (!confirm(t('areYouSureYou4'))) return
     
     setIsDeleting(true)
     try {
@@ -56,7 +56,7 @@ export function PostModal({ isOpen, post, onClose, isEditable = false, onPostDel
       onClose()
     } catch (err) {
       console.error(err)
-      alert(t('key_17bf22'))
+      alert(t('errorWhenDeletingPost'))
     } finally {
       setIsDeleting(false)
     }
@@ -76,7 +76,7 @@ export function PostModal({ isOpen, post, onClose, isEditable = false, onPostDel
       setIsEditing(false)
     } catch (err) {
       console.error(err)
-      alert(t('key_126f18'))
+      alert(t('errorWhileSaving'))
     } finally {
       setIsSaving(false)
     }
@@ -194,7 +194,7 @@ export function PostModal({ isOpen, post, onClose, isEditable = false, onPostDel
                   value={editDescription}
                   onChange={(e) => setEditDescription(e.target.value)}
                   className="w-full h-32 bg-neutral-100 dark:bg-neutral-800 border-none rounded-xl p-3 text-neutral-900 dark:text-white focus:ring-2 focus:ring-accent-500 resize-none"
-                  placeholder={t('key_38389a')}
+                  placeholder={t('addADescription')}
                 />
                 <div className="flex gap-2 justify-end">
                   <button 
@@ -215,7 +215,7 @@ export function PostModal({ isOpen, post, onClose, isEditable = false, onPostDel
               </div>
             ) : (
               <div className="whitespace-pre-wrap text-neutral-800 dark:text-neutral-200 text-[15px] leading-relaxed">
-                {post.description || <span className="text-neutral-400 italic">{t('key_f29ff9')}</span>}
+                {post.description || <span className="text-neutral-400 italic">{t('noDescription2')}</span>}
               </div>
             )}
           </div>

@@ -27,11 +27,11 @@ export function LowBalanceModal({ isOpen, onClose, requiredAmount, currency }: L
             <Coins className="w-10 h-10" />
           </div>
           <h2 className="text-2xl font-bold text-neutral-900 dark:text-white mb-3">
-            {t('key_55a626')}
+            {t('insufficientFunds')}
                                 </h2>
           <p className="text-neutral-600 dark:text-neutral-400 mb-8">
-            {t('key_151648')} <b>{requiredAmount} {currency}</b>.<br/>
-            {t('key_415fd7')}
+            {t('toOpenTheseContacts')} <b>{requiredAmount} {currency}</b>.<br/>
+            {t('topUpYourBalance2')}
                                 </p>
           
           <div className="flex flex-col gap-3">

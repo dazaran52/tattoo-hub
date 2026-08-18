@@ -132,13 +132,13 @@ export default function BookMasterPage() {
       <div className="min-h-screen bg-neutral-50 dark:bg-[#050505] flex flex-col items-center justify-center p-4">
         <div className="bg-white dark:bg-neutral-900 rounded-3xl p-8 max-w-md w-full text-center shadow-xl border border-neutral-200 dark:border-neutral-800">
           <User className="w-16 h-16 text-neutral-400 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-neutral-900 dark:text-white mb-2">{t('key_bcec89')}</h1>
+          <h1 className="text-2xl font-bold text-neutral-900 dark:text-white mb-2">{t('pageNotFound')}</h1>
           <p className="text-neutral-500 dark:text-neutral-400 mb-6">{error}</p>
           <button 
             onClick={() => router.push('/')}
             className="w-full bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 font-bold py-3 rounded-xl hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-colors"
           >
-            {t('key_3ddda6')}
+            {t('home')}
                               </button>
         </div>
       </div>
@@ -184,7 +184,7 @@ export default function BookMasterPage() {
           </div>
           <div className="mb-2 flex flex-wrap items-center justify-center gap-2.5">
             <h1 className="text-3xl font-extrabold tracking-tight">
-              {master.display_name || master.username || t('key_2bb1fb')}
+              {master.display_name || master.username || t('master')}
             </h1>
             <VerifiedMasterBadge verified={master.certificate_status === 'approved'} />
             <MasterTierBadge badgeTier={master.badge_tier} />
@@ -218,7 +218,7 @@ export default function BookMasterPage() {
               ) : (
                 <LinkIcon className="w-4 h-4" />
               )}
-              {t('key_17de2c')}
+              {t('viewExternalPortfolio')}
                                       </a>
           )}
         </div>
@@ -231,7 +231,7 @@ export default function BookMasterPage() {
               activeTab === 'booking' ? tClasses.tabActive : tClasses.tabInactive
             }`}
           >
-            {t('key_e988f8')}
+            {t('signUpForA2')}
                                 </button>
           <button
             onClick={() => setActiveTab('portfolio')}
@@ -247,7 +247,7 @@ export default function BookMasterPage() {
               activeTab === 'reviews' ? tClasses.tabActive : tClasses.tabInactive
             }`}
           >
-            {t('key_1c3fea')}
+            {t('reviews2')}
                                 </button>
         </div>
 
@@ -308,13 +308,13 @@ export default function BookMasterPage() {
             ) : (
               <div className="text-center py-12 text-neutral-500 dark:text-neutral-400">
                 <ImageIcon className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                <p>{t('key_c35611')}</p>
+                <p>{t('theArtistHasNot')}</p>
               </div>
             )}
           </div>
         ) : (
           <div className={`rounded-3xl p-8 transition-colors duration-500 ${tClasses.card}`}>
-            <h2 className="text-2xl font-bold mb-6 text-center">{t('key_1c3fea')}</h2>
+            <h2 className="text-2xl font-bold mb-6 text-center">{t('reviews2')}</h2>
             {isLoadingReviews ? (
               <div className="flex justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-neutral-500" /></div>
             ) : reviews.length > 0 ? (
@@ -337,7 +337,7 @@ export default function BookMasterPage() {
             ) : (
               <div className="text-center py-12 text-neutral-500 dark:text-neutral-400">
                 <Star className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                <p>{t('key_222400')}</p>
+                <p>{t('theMasterHasNo')}</p>
               </div>
             )}
           </div>

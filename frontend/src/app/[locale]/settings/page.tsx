@@ -567,13 +567,13 @@ export default function SettingsPage() {
                     type="text"
                     value={deleteConfirmText}
                     onChange={(e) => setDeleteConfirmText(e.target.value)}
-                    placeholder={language === 'ru' ? t('key_719612') : language === 'cs' ? 'SMAZAT' : 'DELETE'}
+                    placeholder={language === 'ru' ? t('delete3') : language === 'cs' ? 'SMAZAT' : 'DELETE'}
                     className="w-full bg-white border border-red-500/30 dark:bg-neutral-900/50 rounded-xl px-4 py-2.5 text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all shadow-inner"
                   />
                   <div className="flex gap-2">
                     <button
                       onClick={handleDeleteAccount}
-                      disabled={deleteConfirmText !== (language === 'ru' ? t('key_719612') : language === 'cs' ? 'SMAZAT' : 'DELETE')}
+                      disabled={deleteConfirmText !== (language === 'ru' ? t('delete3') : language === 'cs' ? 'SMAZAT' : 'DELETE')}
                       className="px-5 py-2.5 bg-red-600 text-white rounded-xl font-bold hover:bg-red-500 transition-all disabled:opacity-50 text-sm flex items-center gap-1.5 shadow-md"
                     >
                       <Trash2 className="w-4 h-4" />

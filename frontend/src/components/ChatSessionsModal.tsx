@@ -74,7 +74,7 @@ export function ChatSessionsModal({ chatId, clientInfo, userRole, onClose, onUpd
               {t('newLeadAlerts')}
                                       </button>
             <button onClick={() => setActiveTab('all')} className={`px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-colors ${activeTab === 'all' ? 'bg-primary-600 text-white' : 'bg-neutral-100 dark:bg-white/5 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-white/10'}`}>
-              {t('key_aecf7f')}
+              {t('allSessions')}
                                       </button>
           </div>
         )}
@@ -83,7 +83,7 @@ export function ChatSessionsModal({ chatId, clientInfo, userRole, onClose, onUpd
           {loading ? (
             <div className="text-center text-neutral-500">{t('loading')}</div>
           ) : filteredSessions.length === 0 ? (
-            <div className="text-center text-neutral-500 py-10">{t('key_3b6b69')}</div>
+            <div className="text-center text-neutral-500 py-10">{t('noSessions')}</div>
           ) : (
             filteredSessions.map(session => (
               <div key={session.id} className="bg-neutral-50 dark:bg-white/5 border border-neutral-100 dark:border-white/10 p-4 rounded-2xl flex flex-col sm:flex-row gap-4">
@@ -93,7 +93,7 @@ export function ChatSessionsModal({ chatId, clientInfo, userRole, onClose, onUpd
                 <div className="flex-1 min-w-0">
                   <div className="flex justify-between items-start mb-2">
                     <h3 className="font-bold dark:text-white truncate pr-2">
-                      {(!session.master_clients?.leads?.title || session.master_clients.leads.title.startsWith(t('key_09f329')) || session.master_clients.leads.title === t('key_ea68ee')) 
+                      {(!session.master_clients?.leads?.title || session.master_clients.leads.title.startsWith(t('tattoo')) || session.master_clients.leads.title === t('newTattooApplication')) 
                         ? t('newLeadBtn') 
                         : session.master_clients.leads.title}
                     </h3>
@@ -125,7 +125,7 @@ export function ChatSessionsModal({ chatId, clientInfo, userRole, onClose, onUpd
                         onClick={() => setSelectedSessionForAccept(session)}
                         className="flex-1 py-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-medium rounded-xl transition-colors"
                       >
-                        {t('key_0b3d3b')}
+                        {t('look')}
                                                           </button>
                     </div>
                   )}

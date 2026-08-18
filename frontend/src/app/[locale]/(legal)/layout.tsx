@@ -12,7 +12,7 @@ export default function LegalLayout({ children }: { children: React.ReactNode })
           className="inline-flex items-center gap-2 text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white transition-colors mb-8 font-medium"
         >
           <ArrowLeft className="w-5 h-5" />
-          {t('key_f75319')}
+          {t('returnToHome')}
                           </Link>
         
         <div className="bg-white dark:bg-neutral-900 rounded-3xl p-8 sm:p-12 shadow-xl border border-neutral-200 dark:border-neutral-800">

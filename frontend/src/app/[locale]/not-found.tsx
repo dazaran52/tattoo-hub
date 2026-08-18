@@ -12,10 +12,10 @@ export default function NotFound() {
         </h1>
         <div className="space-y-2">
           <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">
-            {t('key_bcec89')}
+            {t('pageNotFound')}
                                 </h2>
           <p className="text-neutral-500 dark:text-neutral-400 max-w-sm mx-auto">
-            {t('key_95315d')}
+            {t('looksLikeYouVe')}
                                 </p>
         </div>
         
@@ -25,7 +25,7 @@ export default function NotFound() {
             className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-neutral-900 dark:bg-white text-white dark:text-neutral-950 font-semibold rounded-xl hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />
-            {t('key_14e495')}
+            {t('returnHome')}
                                 </Link>
         </div>
       </div>

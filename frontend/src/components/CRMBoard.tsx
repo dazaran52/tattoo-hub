@@ -1082,7 +1082,7 @@ export function CRMBoard({ initialViewLeadId, initialViewSessionId }: { initialV
           if (sessionDetails?.lead_id || sessionDetails?.master_clients?.lead_id) {
             setDisputeLeadId(sessionDetails.lead_id || sessionDetails.master_clients?.lead_id || null)
           } else {
-            toast.error(t('key_600d65'))
+            toast.error(t('unableToOpenA'))
           }
         }}
       />
@@ -1093,7 +1093,7 @@ export function CRMBoard({ initialViewLeadId, initialViewSessionId }: { initialV
           onClose={() => setSellLeadSession(null)}
           onSuccess={() => {
             setSellLeadSession(null)
-            toast.success(t('key_dad593'))
+            toast.success(t('leadIsUpFor'))
           }}
           language={lang}
           cities={cities}

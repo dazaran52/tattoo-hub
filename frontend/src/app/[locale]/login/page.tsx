@@ -112,10 +112,10 @@ function LoginContent() {
   const t = (key: Parameters<typeof getTranslation>[1]) => getTranslation(language as Language, key)
 
   const roleLabels: Record<string, { master: string; client: string; theme: string }> = {
-    ru: { master: t('key_2bb1fb'), client: t('landing.client_title'), theme: t('key_fb8534') },
+    ru: { master: t('master'), client: t('landing.client_title'), theme: t('switchTopic2') },
     cs: { master: 'Tatér', client: 'Klient', theme: 'Přepnout motiv' },
     en: { master: 'Artist', client: 'Client', theme: 'Toggle theme' },
-    uk: { master: t('key_71dc75'), client: t('key_313ec9'), theme: t('key_539b9c') },
+    uk: { master: t('meister'), client: t('client2'), theme: t('switchTopic') },
   }
 
   const handleAuthSuccess = (session: any, isSpecialAdmin: boolean = false) => {
@@ -517,9 +517,9 @@ function LoginContent() {
                           </div>
                           <span className="text-xs font-medium text-neutral-500 leading-relaxed">
                             {language === 'cs' && <>Souhlasím s <a href="/terms" target="_blank" className="text-neutral-900 dark:text-white hover:underline">{t('termsOfService')}</a> a <a href="/privacy" target="_blank" className="text-neutral-900 dark:text-white hover:underline">{t('privacyPolicy')}</a>.</>}
-                            {language === 'ru' && <>{t('key_1ddda2')} <a href="/terms" target="_blank" className="text-neutral-900 dark:text-white hover:underline">{t('termsOfService')}</a> {t('key_4bfb64')} <a href="/privacy" target="_blank" className="text-neutral-900 dark:text-white hover:underline">{t('privacyPolicy')}</a>.</>}
+                            {language === 'ru' && <>{t('iAgreeWith')} <a href="/terms" target="_blank" className="text-neutral-900 dark:text-white hover:underline">{t('termsOfService')}</a> {t('and')} <a href="/privacy" target="_blank" className="text-neutral-900 dark:text-white hover:underline">{t('privacyPolicy')}</a>.</>}
                             {language === 'en' && <>I agree to the <a href="/terms" target="_blank" className="text-neutral-900 dark:text-white hover:underline">{t('termsOfService')}</a> and <a href="/privacy" target="_blank" className="text-neutral-900 dark:text-white hover:underline">{t('privacyPolicy')}</a>.</>}
-                            {language === 'uk' && <>{t('key_0da2c9')} <a href="/terms" target="_blank" className="text-neutral-900 dark:text-white hover:underline">{t('termsOfService')}</a> {t('key_cbf0cc')} <a href="/privacy" target="_blank" className="text-neutral-900 dark:text-white hover:underline">{t('privacyPolicy')}</a>.</>}
+                            {language === 'uk' && <>{t('iLlGetAlong')} <a href="/terms" target="_blank" className="text-neutral-900 dark:text-white hover:underline">{t('termsOfService')}</a> {t('that')} <a href="/privacy" target="_blank" className="text-neutral-900 dark:text-white hover:underline">{t('privacyPolicy')}</a>.</>}
                           </span>
                         </label>
                       </motion.div>

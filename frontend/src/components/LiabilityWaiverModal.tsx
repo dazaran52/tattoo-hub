@@ -21,7 +21,7 @@ export function LiabilityWaiverModal({ isOpen, onClose, sessionId, clientName, o
 
   const handleSign = async () => {
     if (!agreed || !signature) {
-      toast.error(t('key_0f2729'))
+      toast.error(t('pleaseCheckTheBox'))
       return
     }
 
@@ -39,12 +39,12 @@ export function LiabilityWaiverModal({ isOpen, onClose, sessionId, clientName, o
 
       if (!res.ok) throw new Error('Failed to sign waiver')
 
-      toast.success(t('key_99e653'))
+      toast.success(t('theAgreementHasBeen'))
       onSuccess()
       onClose()
     } catch (e) {
       console.error(e)
-      toast.error(t('key_a71d89'))
+      toast.error(t('errorWhenSigningConsent'))
     } finally {
       setLoading(false)
     }
@@ -72,7 +72,7 @@ export function LiabilityWaiverModal({ isOpen, onClose, sessionId, clientName, o
               <div className="bg-primary-100 dark:bg-primary-900/30 p-2 rounded-xl text-primary-600 dark:text-primary-400">
                 <FileText className="w-5 h-5" />
               </div>
-              <h2 className="text-xl font-bold">{t('key_6fbb51')}</h2>
+              <h2 className="text-xl font-bold">{t('informationConsent')}</h2>
             </div>
             <button onClick={onClose} className="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-full">
               <X className="w-5 h-5" />
@@ -81,16 +81,16 @@ export function LiabilityWaiverModal({ isOpen, onClose, sessionId, clientName, o
 
           <div className="p-6 overflow-y-auto bg-neutral-50 dark:bg-neutral-900/50">
             <div className="prose dark:prose-invert prose-sm max-w-none text-neutral-600 dark:text-neutral-400">
-              <p>{t('key_541658')} <strong>{clientName}</strong>{t('key_56789f')}</p>
+              <p>{t('i')} <strong>{clientName}</strong>{t('iHerebyConfirmThe')}</p>
               <ul className="list-disc pl-5 space-y-2 mt-4">
                 <li>{t('18')}</li>
-                <li>{t('key_94ba1d')}</li>
-                <li>{t('key_307fe7')}</li>
-                <li>{t('key_717bb1')}</li>
-                <li>{t('key_964c19')}</li>
+                <li>{t('iAmNotUnder')}</li>
+                <li>{t('iDoNotSuffer')}</li>
+                <li>{t('iConfirmThatI')}</li>
+                <li>{t('iUnderstandThatThe')}</li>
               </ul>
               <p className="mt-4 text-xs">
-                {t('key_3ad74e')}
+                {t('bySigningThisAgreement')}
                                             </p>
             </div>
           </div>
@@ -105,19 +105,19 @@ export function LiabilityWaiverModal({ isOpen, onClose, sessionId, clientName, o
                   className="w-5 h-5 mt-0.5 rounded border-neutral-300 text-primary-600 focus:ring-primary-500"
                 />
                 <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                  {t('key_98eaef')}
+                  {t('iHaveCarefullyRead')}
                                                   </span>
               </label>
 
               <div>
                 <label className="block text-sm font-bold text-neutral-700 dark:text-neutral-300 mb-2">
-                  {t('key_e3a73f')}
+                  {t('enterYourFullName')}
                                                   </label>
                 <input
                   type="text"
                   value={signature}
                   onChange={e => setSignature(e.target.value)}
-                  placeholder={t('key_6d7a4f')}
+                  placeholder={t('ivanovIvanIvanovich')}
                   className="w-full bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-primary-500 outline-none transition-shadow"
                 />
               </div>
@@ -128,7 +128,7 @@ export function LiabilityWaiverModal({ isOpen, onClose, sessionId, clientName, o
                 className="w-full py-3 bg-primary-600 hover:bg-primary-700 disabled:bg-neutral-300 dark:disabled:bg-neutral-800 text-white rounded-xl font-bold flex items-center justify-center gap-2 transition-colors"
               >
                 {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <CheckCircle className="w-5 h-5" />}
-                {t('key_4307aa')}
+                {t('signAndStartSession')}
                                             </button>
             </div>
           </div>

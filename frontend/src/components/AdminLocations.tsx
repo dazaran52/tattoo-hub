@@ -70,7 +70,7 @@ export function AdminLocations() {
   const autoTranslateCity = async () => {
     const query = newCityRu || newCityEn || newCityCs || newCityUk
     if (!query.trim()) {
-      toast.error(t('key_f7b18c'))
+      toast.error(t('enterTheCityName'))
       return
     }
 
@@ -101,10 +101,10 @@ export function AdminLocations() {
         
         toast.success(t('openstreetmap2'))
       } else {
-        toast.error(t('key_1d483d'))
+        toast.error(t('cityNotFoundIn'))
       }
     } catch (err) {
-      toast.error(t('key_9400e1'))
+      toast.error(t('errorWhenAccessingThe'))
     } finally {
       setTranslatingCity(false)
     }
@@ -165,7 +165,7 @@ export function AdminLocations() {
         })
       })
       if (!res.ok) throw new Error('Failed to add country')
-      toast.success(t('key_b28019'))
+      toast.success(t('countryAddedSuccessfully'))
       setNewCountryCode('')
       setCountrySearch('')
       setNewCountryRu('')
@@ -174,7 +174,7 @@ export function AdminLocations() {
       setNewCountryUk('')
       fetchData()
     } catch (err) {
-      toast.error(t('key_42b02d'))
+      toast.error(t('errorAddingCountry'))
     } finally {
       setActionLoadingId(null)
     }
@@ -182,11 +182,11 @@ export function AdminLocations() {
 
   const handleDeleteCountry = (id: string) => {
     const country = countries.find(c => c.id === id)
-    const countryName = country ? country.name_ru : t('key_6a06b9')
+    const countryName = country ? country.name_ru : t('thisCountry')
 
     setConfirmModal({
       isOpen: true,
-      title: t('key_2908a3'),
+      title: t('removeCountry'),
       message: `Вы уверены, что хотите удалить страну ${countryName}? Это также может удалить связанные города.`,
       confirmText: t('delete'),
       cancelText: t('cancel'),
@@ -203,10 +203,10 @@ export function AdminLocations() {
             }
           })
           if (!res.ok) throw new Error('Failed to delete country')
-          toast.success(t('key_bc09bf'))
+          toast.success(t('countryRemoved'))
           fetchData()
         } catch (err) {
-          toast.error(t('key_2ed68b'))
+          toast.error(t('errorDeletingCountry'))
         } finally {
           setActionLoadingId(null)
         }
@@ -235,14 +235,14 @@ export function AdminLocations() {
         })
       })
       if (!res.ok) throw new Error('Failed to add city')
-      toast.success(t('key_3b974b'))
+      toast.success(t('cityAddedSuccessfully'))
       setNewCityRu('')
       setNewCityEn('')
       setNewCityCs('')
       setNewCityUk('')
       fetchData()
     } catch (err) {
-      toast.error(t('key_4178d9'))
+      toast.error(t('errorAddingCity'))
     } finally {
       setActionLoadingId(null)
     }
@@ -250,11 +250,11 @@ export function AdminLocations() {
 
   const handleDeleteCity = (id: string) => {
     const city = cities.find(c => c.id === id)
-    const cityName = city ? city.name_ru : t('key_7fa2ea')
+    const cityName = city ? city.name_ru : t('thisCity')
 
     setConfirmModal({
       isOpen: true,
-      title: t('key_dd6357'),
+      title: t('deleteCity'),
       message: `Вы уверены, что хотите удалить город ${cityName}?`,
       confirmText: t('delete'),
       cancelText: t('cancel'),
@@ -271,10 +271,10 @@ export function AdminLocations() {
             }
           })
           if (!res.ok) throw new Error('Failed to delete city')
-          toast.success(t('key_830781'))
+          toast.success(t('cityRemoved'))
           fetchData()
         } catch (err) {
-          toast.error(t('key_b87688'))
+          toast.error(t('errorDeletingCity'))
         } finally {
           setActionLoadingId(null)
         }
@@ -297,7 +297,7 @@ export function AdminLocations() {
       <div className="bg-white dark:bg-neutral-900 rounded-3xl border border-neutral-200 dark:border-white/5 p-6 md:p-8 shadow-sm">
         <h3 className="text-xl font-extrabold text-neutral-900 dark:text-white mb-6 flex items-center gap-2">
           <Globe className="w-6 h-6 text-primary-500" />
-          {t('key_f49228')}
+          {t('countries')}
                           </h3>
         
         <form onSubmit={handleAddCountry} className="flex flex-col gap-4 mb-6">
@@ -308,7 +308,7 @@ export function AdminLocations() {
               <input 
                 required 
                 type="text" 
-                placeholder={t('key_9c0925')} 
+                placeholder={t('searchForACountry')} 
                 value={countrySearch} 
                 onChange={(e) => {
                   setCountrySearch(e.target.value)
@@ -349,7 +349,7 @@ export function AdminLocations() {
             </div>
             <button disabled={actionLoadingId === 'new_country' || !newCountryCode} className="w-full md:w-auto bg-primary-600 hover:bg-primary-700 text-white px-6 py-2.5 rounded-xl font-bold shadow-lg shadow-primary-500/20 disabled:opacity-50 flex items-center justify-center gap-2 transition-all">
               {actionLoadingId === 'new_country' ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
-              {t('key_5eba28')}
+              {t('add')}
                                       </button>
           </div>
         </form>
@@ -359,8 +359,8 @@ export function AdminLocations() {
             <EmptyState
               variant="compact"
               icon={<Globe className="w-7 h-7" />}
-              title={t('key_1be137')}
-              description={t('key_9766a5')}
+              title={t('noCountriesAdded')}
+              description={t('addYourFirstCountry')}
             />
           ) : countries.map(c => (
             <div key={c.id} className="flex justify-between items-center p-4 bg-neutral-50/50 dark:bg-neutral-800/30 rounded-2xl border border-neutral-200/50 dark:border-white/5 hover:bg-neutral-100 dark:hover:bg-neutral-800/50 transition-colors">
@@ -385,7 +385,7 @@ export function AdminLocations() {
       <div className="bg-white dark:bg-neutral-900 rounded-3xl border border-neutral-200 dark:border-white/5 p-6 md:p-8 shadow-sm">
         <h3 className="text-xl font-extrabold text-neutral-900 dark:text-white mb-6 flex items-center gap-2">
           <MapPin className="w-6 h-6 text-primary-500" />
-          {t('key_e4775a')}
+          {t('cities')}
                           </h3>
         
         <form onSubmit={handleAddCity} className="flex flex-col gap-4 mb-6">
@@ -416,14 +416,14 @@ export function AdminLocations() {
                 title={t('openstreetmap')}
               >
                 {translatingCity ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4 text-primary-500" />}
-                <span className="hidden lg:inline">{t('key_49d29b')}</span>
+                <span className="hidden lg:inline">{t('findTranslations')}</span>
               </button>
               <button 
                 disabled={actionLoadingId === 'new_city'} 
                 className="w-full sm:w-auto bg-primary-600 hover:bg-primary-700 text-white px-6 py-2.5 rounded-xl font-bold shadow-lg shadow-primary-500/20 disabled:opacity-50 flex items-center justify-center gap-2 transition-all"
               >
                 {actionLoadingId === 'new_city' ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
-                {t('key_5eba28')}
+                {t('add')}
                                             </button>
             </div>
           </div>
@@ -434,8 +434,8 @@ export function AdminLocations() {
             <EmptyState
               variant="compact"
               icon={<MapPin className="w-7 h-7" />}
-              title={t('key_34144e')}
-              description={t('key_8bf621')}
+              title={t('noCities')}
+              description={t('addYourFirstCity')}
             />
           ) : cities.map(c => {
             const country = countries.find(co => co.id === c.country_id)

@@ -13,10 +13,10 @@ export function InstallPrompt() {
   const lang = useLocale()
 
   const copyMap: Record<string, { title: string; description: string; action: string }> = {
-    ru: { title: t('key_18f979'), description: t('key_62847e'), action: t('key_7fe136') },
+    ru: { title: t('installTheApplication'), description: t('forQuickAccessAnd2'), action: t('install2') },
     cs: { title: 'Nainstalovat aplikaci', description: 'Pro rychlý přístup a upozornění', action: 'Instalovat' },
     en: { title: 'Install app', description: 'For quick access and notifications', action: 'Install' },
-    uk: { title: t('key_8a3120'), description: t('key_22ce63'), action: t('key_9c5ab7') },
+    uk: { title: t('installTheShutter'), description: t('forQuickAccessAnd'), action: t('install') },
   }
   const copy = copyMap[lang] || copyMap.en
 

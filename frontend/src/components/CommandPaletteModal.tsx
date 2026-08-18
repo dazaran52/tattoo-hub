@@ -33,12 +33,12 @@ export function CommandPaletteModal({ isOpen, onClose, onSelectTab }: CommandPal
   if (!isOpen) return null
 
   const actions = [
-    { id: 'crm', label: t('crm2'), icon: LayoutDashboard, category: t('key_ca76de'), action: () => { onSelectTab('crm'); onClose(); } },
-    { id: 'feed', label: t('key_c01af0'), icon: ShoppingBag, category: t('key_ca76de'), action: () => { onSelectTab('feed'); onClose(); } },
-    { id: 'portfolio', label: t('key_de901e'), icon: ImageIcon, category: t('key_ca76de'), action: () => { onSelectTab('portfolio'); onClose(); } },
-    { id: 'messages', label: t('key_b70074'), icon: MessageCircle, category: t('key_ca76de'), action: () => { onSelectTab('messages'); onClose(); } },
-    { id: 'profile', label: t('key_17722b'), icon: User, category: t('settings'), action: () => { router.push('/profile'); onClose(); } },
-    { id: 'topup', label: t('key_d8dbd5'), icon: Calendar, category: t('key_61586b'), action: () => { router.push('/top-up'); onClose(); } },
+    { id: 'crm', label: t('crm2'), icon: LayoutDashboard, category: t('navigation'), action: () => { onSelectTab('crm'); onClose(); } },
+    { id: 'feed', label: t('openApplicationMarketplace'), icon: ShoppingBag, category: t('navigation'), action: () => { onSelectTab('feed'); onClose(); } },
+    { id: 'portfolio', label: t('openPortfolio'), icon: ImageIcon, category: t('navigation'), action: () => { onSelectTab('portfolio'); onClose(); } },
+    { id: 'messages', label: t('openMessagesChat'), icon: MessageCircle, category: t('navigation'), action: () => { onSelectTab('messages'); onClose(); } },
+    { id: 'profile', label: t('goToMyProfile'), icon: User, category: t('settings'), action: () => { router.push('/profile'); onClose(); } },
+    { id: 'topup', label: t('topUpYourBalance'), icon: Calendar, category: t('finance'), action: () => { router.push('/top-up'); onClose(); } },
   ]
 
   const filteredActions = query

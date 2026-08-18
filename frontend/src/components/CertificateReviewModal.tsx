@@ -42,15 +42,15 @@ export function CertificateReviewModal({ user, onClose, onReviewed }: Certificat
       setIsLoading(true)
       try {
         const { data: { session } } = await supabase.auth.getSession()
-        if (!session) throw new Error(t('key_01ed67'))
+        if (!session) throw new Error(t('noActiveSession'))
         const response = await fetch(`${API_URL}/api/admin/users/${user.id}/certificate-url`, {
           headers: { Authorization: `Bearer ${session.access_token}` },
         })
         const data = await response.json().catch(() => ({}))
-        if (!response.ok) throw new Error(data.detail || t('key_257aa4'))
+        if (!response.ok) throw new Error(data.detail || t('failedToOpenCertificate'))
         if (!cancelled) setPreviewUrl(data.url)
       } catch (error) {
-        if (!cancelled) toast.error(error instanceof Error ? error.message : t('key_e0e3af'))
+        if (!cancelled) toast.error(error instanceof Error ? error.message : t('loadingError'))
       } finally {
         if (!cancelled) setIsLoading(false)
       }
@@ -63,13 +63,13 @@ export function CertificateReviewModal({ user, onClose, onReviewed }: Certificat
 
   const submitReview = async (status: 'approved' | 'rejected') => {
     if (status === 'rejected' && !reason.trim()) {
-      toast.error(t('key_7e131f'))
+      toast.error(t('pleaseIndicateTheReason'))
       return
     }
     setIsReviewing(true)
     try {
       const { data: { session } } = await supabase.auth.getSession()
-      if (!session) throw new Error(t('key_01ed67'))
+      if (!session) throw new Error(t('noActiveSession'))
       const response = await fetch(`${API_URL}/api/admin/users/${user.id}/certificate-review`, {
         method: 'PUT',
         headers: {
@@ -79,12 +79,12 @@ export function CertificateReviewModal({ user, onClose, onReviewed }: Certificat
         body: JSON.stringify({ status, reason: status === 'rejected' ? reason.trim() : null }),
       })
       const data = await response.json().catch(() => ({}))
-      if (!response.ok) throw new Error(data.detail || t('key_6abaf4'))
+      if (!response.ok) throw new Error(data.detail || t('failedToSaveSolution'))
       onReviewed(user.id, status, data.certificate_rejection_reason)
-      toast.success(status === 'approved' ? t('key_bdc167') : t('key_362df2'))
+      toast.success(status === 'approved' ? t('certificateConfirmed') : t('certificateRejected'))
       onClose()
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : t('key_2ab0af'))
+      toast.error(error instanceof Error ? error.message : t('validationError'))
     } finally {
       setIsReviewing(false)
     }
@@ -97,11 +97,11 @@ export function CertificateReviewModal({ user, onClose, onReviewed }: Certificat
           <div>
             <h2 id="certificate-review-title" className="flex items-center gap-2 text-xl font-black">
               <FileCheck2 className="h-5 w-5 text-primary-500" />
-              {t('key_f851e8')}
+              {t('certificateVerification')}
                                       </h2>
             <p className="mt-1 text-sm text-neutral-500">{user.display_name || user.email}</p>
           </div>
-          <button type="button" onClick={onClose} aria-label={t('key_dd9463')} className="rounded-full p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800">
+          <button type="button" onClick={onClose} aria-label={t('close')} className="rounded-full p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800">
             <X className="h-5 w-5" />
           </button>
         </div>
@@ -111,21 +111,21 @@ export function CertificateReviewModal({ user, onClose, onReviewed }: Certificat
             <Loader2 className="h-7 w-7 animate-spin text-primary-500" />
           ) : previewUrl ? (
             <a href={previewUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-xl bg-primary-600 px-5 py-3 font-bold text-white hover:bg-primary-700">
-              {t('key_718e05')}
+              {t('openPrivateDocument')}
                                             <ExternalLink className="h-4 w-4" />
             </a>
           ) : (
-            <p className="text-sm text-neutral-500">{t('key_a62100')}</p>
+            <p className="text-sm text-neutral-500">{t('documentUnavailable')}</p>
           )}
         </div>
 
         <label className="mt-5 block text-sm font-bold text-neutral-700 dark:text-neutral-300">
-          {t('key_5dd299')}
+          {t('reasonForRefusal')}
                             <textarea
             value={reason}
             onChange={(event) => setReason(event.target.value)}
             rows={3}
-            placeholder={t('key_b72ebf')}
+            placeholder={t('forExampleTheDocument')}
             className="mt-2 w-full resize-none rounded-2xl border border-neutral-200 bg-white px-4 py-3 font-normal outline-none focus:border-primary-500 dark:border-neutral-700 dark:bg-neutral-950"
           />
         </label>
@@ -133,7 +133,7 @@ export function CertificateReviewModal({ user, onClose, onReviewed }: Certificat
         <div className="mt-6 grid gap-3 sm:grid-cols-2">
           <button type="button" disabled={isReviewing || !previewUrl} onClick={() => submitReview('rejected')} className="inline-flex items-center justify-center gap-2 rounded-xl border border-red-500/30 px-4 py-3 font-bold text-red-600 hover:bg-red-500/10 disabled:opacity-40">
             <XCircle className="h-5 w-5" />
-            {t('key_8b0d89')}
+            {t('reject')}
                                 </button>
           <button type="button" disabled={isReviewing || !previewUrl} onClick={() => submitReview('approved')} className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-3 font-bold text-white hover:bg-emerald-700 disabled:opacity-40">
             {isReviewing ? <Loader2 className="h-5 w-5 animate-spin" /> : <CheckCircle2 className="h-5 w-5" />}

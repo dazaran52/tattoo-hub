@@ -50,7 +50,7 @@ export function AddClientModal({ isOpen, onClose, onSuccess, onDuplicateFound }:
             toast((toastInstance) => (
               <div className="flex flex-col gap-2">
                 <span className="font-medium text-sm">
-                  {t('key_2057e3')} <b>{errData.detail.client.name}</b>
+                  {t('aClientWithThese')} <b>{errData.detail.client.name}</b>
                 </span>
                 <button 
                   onClick={() => {
@@ -59,7 +59,7 @@ export function AddClientModal({ isOpen, onClose, onSuccess, onDuplicateFound }:
                   }}
                   className="bg-primary-600 hover:bg-primary-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold w-fit transition-colors"
                 >
-                  {t('key_485265')}
+                  {t('goToProfile')}
                                         </button>
               </div>
             ), { duration: 5000 })
@@ -67,14 +67,14 @@ export function AddClientModal({ isOpen, onClose, onSuccess, onDuplicateFound }:
             return
           }
         }
-        throw new Error(t('key_2fa1cf'))
+        throw new Error(t('errorCreatingClient'))
       }
       
-      toast.success(t('key_0b6607'))
+      toast.success(t('clientAddedSuccessfully'))
       onSuccess()
       onClose()
     } catch (err) {
-      toast.error(t('key_3e1161'))
+      toast.error(t('anErrorHasOccurred'))
     } finally {
       setLoading(false)
     }
@@ -86,7 +86,7 @@ export function AddClientModal({ isOpen, onClose, onSuccess, onDuplicateFound }:
         <div className="flex justify-between items-center p-6 border-b border-neutral-200 dark:border-neutral-800">
           <h2 className="text-xl font-bold flex items-center gap-2 text-neutral-900 dark:text-white">
             <UserPlus className="w-5 h-5 text-primary-500" />
-            {t('key_c6bfc9')}
+            {t('addAClient')}
                                 </h2>
           <button onClick={onClose} className="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-full transition-colors text-neutral-500">
             <X className="w-5 h-5" />
@@ -95,13 +95,13 @@ export function AddClientModal({ isOpen, onClose, onSuccess, onDuplicateFound }:
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-neutral-500 dark:text-neutral-400 mb-1.5 uppercase tracking-wider">{t('key_96dfbd')}</label>
+            <label className="block text-xs font-semibold text-neutral-500 dark:text-neutral-400 mb-1.5 uppercase tracking-wider">{t('name')}</label>
             <input
               type="text"
               required
               value={formData.name}
               onChange={(e) => setFormData(p => ({ ...p, name: e.target.value }))}
-              placeholder={t('key_835a78')}
+              placeholder={t('clientName')}
               className="w-full bg-neutral-100 dark:bg-neutral-800 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary-500/20 outline-none"
             />
           </div>
@@ -150,11 +150,11 @@ export function AddClientModal({ isOpen, onClose, onSuccess, onDuplicateFound }:
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-neutral-500 dark:text-neutral-400 mb-1.5 uppercase tracking-wider">{t('key_c88662')}</label>
+            <label className="block text-xs font-semibold text-neutral-500 dark:text-neutral-400 mb-1.5 uppercase tracking-wider">{t('notes')}</label>
             <textarea
               value={formData.notes}
               onChange={(e) => setFormData(p => ({ ...p, notes: e.target.value }))}
-              placeholder={t('key_565a58')}
+              placeholder={t('additionalInformation')}
               className="w-full bg-neutral-100 dark:bg-neutral-800 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary-500/20 outline-none min-h-[100px] resize-none"
             />
           </div>
@@ -172,7 +172,7 @@ export function AddClientModal({ isOpen, onClose, onSuccess, onDuplicateFound }:
               disabled={loading}
               className="px-5 py-2.5 bg-primary-600 hover:bg-primary-700 text-white text-sm font-bold rounded-xl transition-colors disabled:opacity-50"
             >
-              {loading ? t('key_32f23b') : t('key_c6bfc9')}
+              {loading ? t('creation') : t('addAClient')}
             </button>
           </div>
         </form>

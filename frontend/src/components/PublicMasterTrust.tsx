@@ -100,15 +100,15 @@ export function MasterTrustSummary({ cityIds = [] }: MasterTrustSummaryProps) {
 export function WhatHappensNext({ className = '' }: { className?: string }) {
     const t = useTranslations();
   const steps = [
-    { icon: Send, text: t('key_dbb77b') },
-    { icon: MessageCircle, text: t('key_8e45a6') },
-    { icon: CalendarCheck, text: t('key_843257') },
+    { icon: Send, text: t('theMasterWillReceive') },
+    { icon: MessageCircle, text: t('willContactYouTo') },
+    { icon: CalendarCheck, text: t('theAppointmentWillBe') },
   ]
 
   return (
     <section className={`mb-6 rounded-3xl p-6 sm:p-7 ${className}`} aria-labelledby="what-happens-next-title">
       <h2 id="what-happens-next-title" className="mb-5 text-xl font-extrabold">
-        {t('key_3aa2b0')}
+        {t('whatHappensAfterApplication')}
                     </h2>
       <ol className="space-y-4">
         {steps.map(({ icon: Icon, text }, index) => (
@@ -117,14 +117,14 @@ export function WhatHappensNext({ className = '' }: { className?: string }) {
               <Icon className="h-4 w-4" aria-hidden="true" />
             </span>
             <div>
-              <span className="text-xs font-bold uppercase tracking-wider text-neutral-500">{t('key_81c019')} {index + 1}</span>
+              <span className="text-xs font-bold uppercase tracking-wider text-neutral-500">{t('step')} {index + 1}</span>
               <p className="mt-0.5 text-sm leading-relaxed text-neutral-600 dark:text-neutral-300">{text}</p>
             </div>
           </li>
         ))}
       </ol>
       <p className="mt-5 rounded-2xl border border-amber-500/20 bg-amber-500/10 px-4 py-3 text-sm text-amber-700 dark:text-amber-200">
-        {t('key_b7555a')}
+        {t('submittingAnApplicationDoes')}
                     </p>
     </section>
   )
