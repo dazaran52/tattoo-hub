@@ -1409,32 +1409,36 @@ export default function AdminPage() {
                       </div>
                     </div>
 
-                    <div>
-                      <label className="block text-xs font-bold text-neutral-400 mb-1">{t('masterConfirmation')}</label>
-                      <button
-                        onClick={() => updateUserPermissions(detailModalUser.id, { is_verified_master: !detailModalUser.is_verified_master })}
-                        disabled={isUpdatingPermissions}
-                        className={`w-full px-4 py-2 rounded-xl text-xs font-extrabold flex items-center justify-between transition-all border ${
-                          detailModalUser.is_verified_master
-                            ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-500'
-                            : 'bg-neutral-200/50 dark:bg-neutral-800 border-neutral-300 dark:border-neutral-700 text-neutral-500'
-                        }`}
-                      >
-                        <span>{detailModalUser.is_verified_master ? t('verified') : t('notVerified')}</span>
-                        <UserCheck className="w-4 h-4" />
-                      </button>
-                    </div>
+                    {detailModalUser.role !== 'client' && (
+                      <div>
+                        <label className="block text-xs font-bold text-neutral-400 mb-1">{t('masterConfirmation')}</label>
+                        <button
+                          onClick={() => updateUserPermissions(detailModalUser.id, { is_verified_master: !detailModalUser.is_verified_master })}
+                          disabled={isUpdatingPermissions}
+                          className={`w-full px-4 py-2 rounded-xl text-xs font-extrabold flex items-center justify-between transition-all border ${
+                            detailModalUser.is_verified_master
+                              ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-500'
+                              : 'bg-neutral-200/50 dark:bg-neutral-800 border-neutral-300 dark:border-neutral-700 text-neutral-500'
+                          }`}
+                        >
+                          <span>{detailModalUser.is_verified_master ? t('verified') : t('notVerified')}</span>
+                          <UserCheck className="w-4 h-4" />
+                        </button>
+                      </div>
+                    )}
 
-                    <div>
-                      <label className="block text-xs font-bold text-neutral-400 mb-1">{t('vipPro2')}</label>
-                      <button
-                        onClick={() => handleOpenBadgeModal(detailModalUser)}
-                        className="w-full px-4 py-2 rounded-xl text-xs font-extrabold flex items-center justify-between transition-all border bg-neutral-100 dark:bg-neutral-800 border-neutral-200 dark:border-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700"
-                      >
-                        <span className="uppercase">{detailModalUser.badge_tier && detailModalUser.badge_tier !== 'none' ? `⭐ ${detailModalUser.badge_tier}` : t('none')}</span>
-                        <Edit2 className="w-4 h-4" />
-                      </button>
-                    </div>
+                    {detailModalUser.role !== 'client' && (
+                      <div>
+                        <label className="block text-xs font-bold text-neutral-400 mb-1">{t('vipPro2')}</label>
+                        <button
+                          onClick={() => handleOpenBadgeModal(detailModalUser)}
+                          className="w-full px-4 py-2 rounded-xl text-xs font-extrabold flex items-center justify-between transition-all border bg-neutral-100 dark:bg-neutral-800 border-neutral-200 dark:border-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700"
+                        >
+                          <span className="uppercase">{detailModalUser.badge_tier && detailModalUser.badge_tier !== 'none' ? `⭐ ${detailModalUser.badge_tier}` : t('none')}</span>
+                          <Edit2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -1580,14 +1584,18 @@ export default function AdminPage() {
 
                 {/* Additional Metadata */}
                 <div className="bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-white/5 rounded-2xl p-5 text-xs space-y-2">
-                  <div className="flex justify-between">
-                    <span className="text-neutral-500">{t('balance')}</span>
-                    <strong className="text-amber-400">{detailModalUser.balance} {detailModalUser.currency || 'CZK'}</strong>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-neutral-500">{t('vipPro')}</span>
-                    <strong className="text-purple-400">{detailModalUser.badge_tier?.toUpperCase() || 'NONE'}</strong>
-                  </div>
+                  {detailModalUser.role !== 'client' && (
+                    <>
+                      <div className="flex justify-between">
+                        <span className="text-neutral-500">{t('balance')}</span>
+                        <strong className="text-amber-400">{detailModalUser.balance} {detailModalUser.currency || 'CZK'}</strong>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-neutral-500">{t('vipPro')}</span>
+                        <strong className="text-purple-400">{detailModalUser.badge_tier?.toUpperCase() || 'NONE'}</strong>
+                      </div>
+                    </>
+                  )}
                   <div className="flex justify-between">
                     <span className="text-neutral-500">{t('registrationDate')}</span>
                     <span className="text-neutral-300">{new Date(detailModalUser.created_at).toLocaleString()}</span>
