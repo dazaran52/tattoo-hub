@@ -529,7 +529,7 @@
     }
   },
   "noResults": "Žádné výsledky",
-  "statusPending": "Čekání",
+  "statusPending": "Čeká se",
   "statusPaused": "V pauze",
   "resume": "Resumé",
   "pause": "Pauza",
@@ -1563,5 +1563,7 @@
     "text_543246": "Ошибка при отправке отзыва",
     "text_b169f6": "Войдите в аккаунт, чтобы оставить отзыв",
     "text_7d3841": "Пожалуйста, выберите оценку от 1 до 5 звезд."
-  }
+  },
+  "statusApproved": "Schváleno",
+  "statusBanned": "Zablokováno"
 }

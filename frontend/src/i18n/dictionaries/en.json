@@ -530,7 +530,7 @@
     }
   },
   "noResults": "No results",
-  "statusPending": "Waiting",
+  "statusPending": "Pending",
   "statusPaused": "On pause",
   "resume": "Resume",
   "pause": "Pause",
@@ -1571,5 +1571,7 @@
   "sendFeedback": "Send feedback",
   "everythingWentGreatSuper": "Everything went great! Super master...",
   "errorSendingFeedback": "Error sending feedback",
-  "logInToLeave": "Log in to leave a review"
+  "logInToLeave": "Log in to leave a review",
+  "statusApproved": "Approved",
+  "statusBanned": "Banned"
 }

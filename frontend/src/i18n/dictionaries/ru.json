@@ -530,7 +530,7 @@
     }
   },
   "noResults": "Нет результатов",
-  "statusPending": "В ожидании",
+  "statusPending": "На модерации",
   "statusPaused": "На паузе",
   "resume": "Возобновить",
   "pause": "Пауза",
@@ -1571,5 +1571,7 @@
   "sendFeedback": "Отправить отзыв",
   "everythingWentGreatSuper": "Всё прошло отлично! Мастер супер...",
   "errorSendingFeedback": "Ошибка при отправке отзыва",
-  "logInToLeave": "Войдите в аккаунт, чтобы оставить отзыв"
+  "logInToLeave": "Войдите в аккаунт, чтобы оставить отзыв",
+  "statusApproved": "Одобрен",
+  "statusBanned": "Заблокирован"
 }

@@ -975,7 +975,7 @@ export default function AdminPage() {
                     <th className="px-6 py-4 font-bold uppercase tracking-wider text-xs">{t('contacts')}</th>
                     <th className="px-6 py-4 font-bold uppercase tracking-wider text-xs">{t('balance2')}</th>
                     <th className="px-6 py-4 font-bold uppercase tracking-wider text-xs">{t('currency')}</th>
-                    <th className="px-6 py-4 font-bold uppercase tracking-wider text-xs">Status</th>
+                    <th className="px-6 py-4 font-bold uppercase tracking-wider text-xs">{t('status')}</th>
                     <th className="px-6 py-4 font-bold uppercase tracking-wider text-xs text-right">{t('actions')}</th>
                   </tr>
                 </thead>
@@ -986,7 +986,7 @@ export default function AdminPage() {
                         <div className="font-bold text-neutral-900 dark:text-white">{user.email}</div>
                         {user.role && (
                           <div className="text-[10px] font-black uppercase tracking-wider text-accent-600 dark:text-accent-400 mt-1">
-                            {user.role}
+                            {user.role === 'admin' ? t('admin') : user.role === 'master' ? t('master') : t('client')}
                           </div>
                         )}
                         <div className="text-neutral-500 dark:text-neutral-400 text-xs mt-1">
@@ -1027,17 +1027,17 @@ export default function AdminPage() {
                       <td className="px-6 py-4">
                         {user.status === 'pending' && (
                           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-100/50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 border border-amber-200/50 dark:border-amber-500/20">
-                            <Clock className="w-3.5 h-3.5" /> Pending
+                            <Clock className="w-3.5 h-3.5" /> {t('statusPending')}
                           </span>
                         )}
                         {user.status === 'approved' && (
                           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-green-100/50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border border-green-200/50 dark:border-green-500/20">
-                            <CheckCircle className="w-3.5 h-3.5" /> Approved
+                            <CheckCircle className="w-3.5 h-3.5" /> {t('statusApproved')}
                           </span>
                         )}
                         {user.status === 'rejected' && (
                           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-red-100/50 dark:bg-red-900/20 text-red-700 dark:text-red-400 border border-red-200/50 dark:border-red-500/20">
-                            <XCircle className="w-3.5 h-3.5" /> Banned
+                            <XCircle className="w-3.5 h-3.5" /> {t('statusBanned')}
                           </span>
                         )}
                         {user.role === 'master' && (
