@@ -694,7 +694,7 @@
   "idea": "Idea:",
   "budget": "Budget:",
   "collectedData": "Collected data:",
-  "status": "Status:",
+  "status": "Status",
   "selectDialogOnThe": "Select dialog on the left",
   "intercepted": "Intercepted",
   "allCountries": "All countries",
