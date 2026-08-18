@@ -48,3 +48,12 @@ def send_push_notification(user_id: str, title: str, body: str, url: str = "/das
                 supabase.table("push_subscriptions").delete().eq("id", sub["id"]).execute()
         except Exception as e:
             print(f"Error sending push: {e}")
+
+def notify_admins(title: str, body: str, url: str = "/admin"):
+    """Send a web push notification to all admins."""
+    supabase = get_supabase_client()
+    res = supabase.table("users").select("id").eq("is_admin", True).execute()
+    if not res.data:
+        return
+    for admin in res.data:
+        send_push_notification(admin["id"], title, body, url)

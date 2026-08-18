@@ -48,7 +48,7 @@ export function AdminLeads() {
       const data = await res.json()
       setLeads(data || [])
     } catch (e: any) {
-      toast.error(t('Auto.text_a42fd9') + e.message)
+      toast.error(t('key_a42fd9') + e.message)
     } finally {
       setLoading(false)
     }
@@ -77,14 +77,14 @@ export function AdminLeads() {
       toast.success(successMessage)
       fetchLeads()
     } catch (e: any) {
-      toast.error(t('Auto.text_33d239') + e.message)
+      toast.error(t('key_33d239') + e.message)
     } finally {
       setActionLoading(null)
     }
   }
 
   const handleDeleteLead = async (leadId: string) => {
-    if (!confirm(t('Auto.text_f84231'))) return
+    if (!confirm(t('key_f84231'))) return
     setActionLoading(leadId)
     try {
       const { data: { session } } = await supabase.auth.getSession()
@@ -98,10 +98,10 @@ export function AdminLeads() {
         }
       })
       if (!res.ok) throw new Error('Failed to delete lead')
-      toast.success(t('Auto.text_c0d65a'))
+      toast.success(t('key_c0d65a'))
       setLeads(leads.filter(l => l.id !== leadId))
     } catch (e: any) {
-      toast.error(t('Auto.text_d53d95') + e.message)
+      toast.error(t('key_d53d95') + e.message)
     } finally {
       setActionLoading(null)
     }
@@ -113,10 +113,10 @@ export function AdminLeads() {
         <div>
           <h3 className="text-lg font-bold flex items-center gap-2 text-neutral-900 dark:text-white">
             <ShieldAlert className="w-5 h-5 text-amber-500" />
-            {t('Auto.text_ed12a1')}
+            {t('ttl')}
                                 </h3>
           <p className="text-xs text-neutral-500 mt-1">
-            {t('Auto.text_e33ef3')}
+            {t('key_e33ef3')}
                                 </p>
         </div>
 
@@ -126,11 +126,11 @@ export function AdminLeads() {
             onChange={(e) => setStatusFilter(e.target.value)}
             className="px-3 py-1.5 bg-neutral-100 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 rounded-lg text-xs font-semibold text-neutral-800 dark:text-neutral-200"
           >
-            <option value="moderation">{t('Auto.text_4d501d')}</option>
-            <option value="new">{t('Auto.text_6fb487')}</option>
-            <option value="accepted">{t('Auto.text_3e7ef0')}</option>
-            <option value="expired">{t('Auto.text_2f6d64')}</option>
-            <option value="all">{t('Auto.text_c6ff0d')}</option>
+            <option value="moderation">{t('moderation')}</option>
+            <option value="new">{t('new2')}</option>
+            <option value="accepted">{t('accepted')}</option>
+            <option value="expired">{t('expired2')}</option>
+            <option value="all">{t('key_c6ff0d')}</option>
           </select>
 
           <button
@@ -151,8 +151,8 @@ export function AdminLeads() {
       ) : leads.length === 0 ? (
         <div className="text-center py-12 bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800">
           <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-3 opacity-80" />
-          <h4 className="text-base font-bold text-neutral-700 dark:text-neutral-300">{t('Auto.text_ab7757')}</h4>
-          <p className="text-xs text-neutral-500 mt-1">{t('Auto.text_2e86dc')}</p>
+          <h4 className="text-base font-bold text-neutral-700 dark:text-neutral-300">{t('key_ab7757')}</h4>
+          <p className="text-xs text-neutral-500 mt-1">{t('key_2e86dc')}</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -163,7 +163,7 @@ export function AdminLeads() {
             >
               {lead.status === 'moderation' && (
                 <div className="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-extrabold px-2.5 py-0.5 rounded-bl-lg uppercase tracking-wider">
-                  {t('Auto.text_8653b5')}
+                  {t('key_8653b5')}
                                           </div>
               )}
 
@@ -172,7 +172,7 @@ export function AdminLeads() {
                   <span className="text-xs font-bold text-neutral-400">ID: {lead.id.slice(0, 8)}...</span>
                   {lead.is_personal ? (
                     <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20">
-                      <User className="w-3 h-3" /> {t('Auto.text_89da0e')}
+                      <User className="w-3 h-3" /> {t('key_89da0e')}
                                                       </span>
                   ) : (
                     <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
@@ -181,22 +181,22 @@ export function AdminLeads() {
                   )}
                 </div>
 
-                <h4 className="font-bold text-base text-neutral-900 dark:text-white mb-1 line-clamp-1">{t('Auto.text_9010d8')}{lead.id.substring(0, 6)}</h4>
+                <h4 className="font-bold text-base text-neutral-900 dark:text-white mb-1 line-clamp-1">{t('key_9010d8')}{lead.id.substring(0, 6)}</h4>
                 <p className="text-xs text-neutral-600 dark:text-neutral-400 mb-3 line-clamp-2">{lead.description?.replace(/\s*(Бюджет|Город):.*?(?=(\n|$))/gi, '')}</p>
 
                 <div className="bg-neutral-50 dark:bg-neutral-950 p-2.5 rounded-lg border border-neutral-200/60 dark:border-neutral-800 space-y-1.5 text-xs mb-4">
                   <div className="flex justify-between">
-                    <span className="text-neutral-500">{t('Auto.text_9fa7ff')}</span>
+                    <span className="text-neutral-500">{t('key_9fa7ff')}</span>
                     <span className="font-bold capitalize text-neutral-800 dark:text-neutral-200">{lead.status}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-neutral-500">{t('Auto.text_f69a92')}</span>
+                    <span className="text-neutral-500">{t('id')}</span>
                     <span className="font-mono text-[11px] text-neutral-700 dark:text-neutral-300">
-                      {lead.assigned_master_id ? lead.assigned_master_id.slice(0, 8) + '...' : t('Auto.text_a02dda')}
+                      {lead.assigned_master_id ? lead.assigned_master_id.slice(0, 8) + '...' : t('key_a02dda')}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-neutral-500 flex items-center gap-1"><Clock className="w-3 h-3" /> {t('Auto.text_c43158')}</span>
+                    <span className="text-neutral-500 flex items-center gap-1"><Clock className="w-3 h-3" /> {t('key_c43158')}</span>
                     <span className="text-[11px] text-neutral-600 dark:text-neutral-400">
                       {lead.timer_start_at ? new Date(lead.timer_start_at).toLocaleString('ru-RU', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '—'}
                     </span>
@@ -208,30 +208,30 @@ export function AdminLeads() {
                 {lead.status === 'moderation' && (
                   <>
                     <button
-                      onClick={() => handleUpdateLead(lead.id, { assigned_master_id: undefined, is_personal: false, status: 'new' }, t('Auto.text_206055'))}
+                      onClick={() => handleUpdateLead(lead.id, { assigned_master_id: undefined, is_personal: false, status: 'new' }, t('key_206055'))}
                       disabled={actionLoading === lead.id}
                       className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-3 rounded-lg text-xs transition-colors flex items-center justify-center gap-1.5"
                     >
-                      <Globe className="w-3.5 h-3.5" /> {t('Auto.text_79e066')}
+                      <Globe className="w-3.5 h-3.5" /> {t('key_79e066')}
                                                       </button>
 
                     <button
-                      onClick={() => handleUpdateLead(lead.id, { status: 'new' }, t('Auto.text_394890'))}
+                      onClick={() => handleUpdateLead(lead.id, { status: 'new' }, t('key_394890'))}
                       disabled={actionLoading === lead.id}
                       className="w-full bg-neutral-800 dark:bg-neutral-200 hover:bg-neutral-700 dark:hover:bg-white text-white dark:text-neutral-900 font-bold py-2 px-3 rounded-lg text-xs transition-colors flex items-center justify-center gap-1.5"
                     >
-                      <RefreshCw className="w-3.5 h-3.5" /> {t('Auto.text_722618')}
+                      <RefreshCw className="w-3.5 h-3.5" /> {t('new')}
                                                       </button>
                   </>
                 )}
 
                 {lead.status !== 'expired' && (
                   <button
-                    onClick={() => handleUpdateLead(lead.id, { status: 'expired' }, t('Auto.text_66d151'))}
+                    onClick={() => handleUpdateLead(lead.id, { status: 'expired' }, t('key_66d151'))}
                     disabled={actionLoading === lead.id}
                     className="w-full bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/20 font-bold py-2 px-3 rounded-lg text-xs transition-colors flex items-center justify-center gap-1.5"
                   >
-                    <AlertTriangle className="w-3.5 h-3.5" /> {t('Auto.text_d9fce8')}
+                    <AlertTriangle className="w-3.5 h-3.5" /> {t('expired')}
                                                 </button>
                 )}
 
@@ -240,7 +240,7 @@ export function AdminLeads() {
                   disabled={actionLoading === lead.id}
                   className="w-full bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 border border-red-500/20 font-bold py-2 px-3 rounded-lg text-xs transition-colors flex items-center justify-center gap-1.5"
                 >
-                  <Trash2 className="w-3.5 h-3.5" /> {t('Auto.text_f192de')}
+                  <Trash2 className="w-3.5 h-3.5" /> {t('key_f192de')}
                                           </button>
               </div>
             </div>

@@ -269,19 +269,22 @@ async def update_user_status(
             # Send Email
             user_email = target_user.get("email")
             if user_email:
+                from app.services.i18n import get_text
+                # Default to ru for admin actions if no locale is known
                 send_transactional_email(
                     to_email=user_email,
-                    subject="Ваш аккаунт мастера Tattoo Hub одобрен",
-                    html_content="<h1>Добро пожаловать в Tattoo Hub!</h1><p>Ваш аккаунт одобрен. Статус проверки сертификата отображается отдельно в профиле.</p>"
+                    subject=get_text("ru", "email.master_approved.subject"),
+                    html_content=get_text("ru", "email.master_approved.body")
                 )
         elif update_data.status == "rejected":
             # Send Email for rejection
             user_email = response.data[0].get("email")
             if user_email:
+                from app.services.i18n import get_text
                 send_transactional_email(
                     to_email=user_email,
-                    subject="Статус вашего профиля Tattoo Hub",
-                    html_content="<h1>Здравствуйте</h1><p>К сожалению, мы не можем подтвердить ваш аккаунт на данный момент.</p>"
+                    subject=get_text("ru", "email.master_rejected.subject"),
+                    html_content=get_text("ru", "email.master_rejected.body")
                 )
             
         return {"message": f"User status updated to {update_data.status}"}
@@ -870,6 +873,7 @@ class UserPermissionsUpdate(BaseModel):
     is_verified_master: bool | None = None
     can_chat: bool | None = None
     can_create_leads: bool | None = None
+    ban_reason: str | None = None
 
 @router.put("/users/{user_id}/permissions")
 async def update_user_permissions(
@@ -889,6 +893,8 @@ async def update_user_permissions(
             update_data["can_chat"] = permissions.can_chat
         if permissions.can_create_leads is not None:
             update_data["can_create_leads"] = permissions.can_create_leads
+        if permissions.ban_reason is not None:
+            update_data["ban_reason"] = permissions.ban_reason
 
         res = supabase.table("users").update(update_data).eq("id", user_id).execute()
         if not res.data:

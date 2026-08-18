@@ -73,7 +73,16 @@ export function LandingInteractive() {
       {/* Top Bar */}
       <div className="absolute top-6 left-6 right-6 z-50 flex justify-between items-center pointer-events-none">
         <div className="pointer-events-auto"><Logo /></div>
-        <div className="pointer-events-auto"><LanguageSelector /></div>
+        <div className="pointer-events-auto flex items-center gap-3">
+          <button
+            onClick={() => router.push('/login')}
+            className="flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-white/10 dark:bg-neutral-800/80 border border-white/20 dark:border-neutral-700 hover:bg-white/20 dark:hover:bg-neutral-700 text-white dark:text-neutral-300 hover:text-white dark:hover:text-white text-sm font-bold backdrop-blur-md transition-all shadow-sm"
+          >
+            <LogIn className="w-4 h-4" />
+            <span className="hidden sm:inline">{t('landing.btn_login')}</span>
+          </button>
+          <LanguageSelector />
+        </div>
       </div>
 
       <AnimatePresence mode="wait">
@@ -302,7 +311,7 @@ export function LandingInteractive() {
                     )}
                   </div>
                   <button onClick={() => {setStep(1); setGuideSlide(0)}} className="mt-6 text-sm text-neutral-500 hover:text-white transition-colors">
-                    {t('Auto.text_7222e6')}
+                    {t('key_7222e6')}
                                                             </button>
                 </motion.div>
               )}

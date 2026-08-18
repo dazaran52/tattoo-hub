@@ -77,7 +77,7 @@ export default function OnboardingPage() {
   const handleNextStep = (e: React.FormEvent) => {
     e.preventDefault()
     if (!selectedCountry || selectedCities.length === 0 || !displayName.trim()) {
-      toast.error(t('Auto.text_4ed556'))
+      toast.error(t('key_4ed556'))
       return
     }
     if (profile?.role === 'master') {
@@ -90,7 +90,7 @@ export default function OnboardingPage() {
   const handleFinalSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (profile?.role === 'master' && !portfolioUrl.trim()) {
-      toast.error(t('Auto.text_c41584'))
+      toast.error(t('key_c41584'))
       return
     }
     submitProfile()
@@ -122,10 +122,10 @@ export default function OnboardingPage() {
 
       if (!response.ok) throw new Error('Failed to update profile')
       
-      toast.success(t('Auto.text_ce0ec8'))
+      toast.success(t('key_ce0ec8'))
       setIsSuccess(true)
     } catch (err: any) {
-      toast.error(err.message || t('Auto.text_3e1161'))
+      toast.error(err.message || t('key_3e1161'))
     } finally {
       setIsLoading(false)
     }
@@ -151,10 +151,10 @@ export default function OnboardingPage() {
         
         <div className="relative z-10 flex flex-col items-center md:items-start text-center md:text-left w-full max-w-lg space-y-4">
           <h1 className="text-3xl md:text-5xl font-bold tracking-tighter text-neutral-900 dark:text-white drop-shadow-lg">
-            {t('Auto.text_fb3968')}
+            {t('key_fb3968')}
                                 </h1>
           <p className="text-lg md:text-xl text-neutral-600 dark:text-neutral-300 font-light">
-            {t('Auto.text_e0965c')} {profile?.role === 'master' ? t('Auto.text_36318e') : t('Auto.text_666490')}.
+            {t('key_e0965c')} {profile?.role === 'master' ? t('key_36318e') : t('key_666490')}.
           </p>
         </div>
       </div>
@@ -182,14 +182,14 @@ export default function OnboardingPage() {
                 <h2 className="text-2xl font-bold mb-4 dark:text-white">{t('onboarding.onb_slide4_title')}</h2>
                 <p className="text-neutral-500 mb-8 leading-relaxed text-sm">
                   {profile?.role === 'master' 
-                    ? t('Auto.text_148524')
-                    : t('Auto.text_fbaef2')}
+                    ? t('crm7')
+                    : t('key_fbaef2')}
                 </p>
                 <button
                   onClick={() => router.push(profile?.role === 'master' ? '/dashboard' : '/')}
                   className="w-full py-4 bg-gradient-to-r from-primary-600 to-primary-600 hover:from-primary-500 hover:to-primary-500 text-white font-bold rounded-2xl flex items-center justify-center gap-2 transition-all shadow-[0_10px_30px_rgba(99,102,241,0.3)]"
                 >
-                  {profile?.role === 'master' ? t('Auto.text_0e5605') : t('Auto.text_3ddda6')} <ArrowRight className="w-5 h-5" />
+                  {profile?.role === 'master' ? t('crm6') : t('key_3ddda6')} <ArrowRight className="w-5 h-5" />
                 </button>
               </motion.div>
             ) : (
@@ -209,10 +209,10 @@ export default function OnboardingPage() {
 
                 <div className="mb-8">
                   <h2 className="text-2xl font-bold dark:text-white mb-2">
-                    {step === 1 ? t('Auto.text_814624') : t('Auto.text_ed9f54')}
+                    {step === 1 ? t('key_814624') : t('key_ed9f54')}
                   </h2>
                   <p className="text-sm text-neutral-500">
-                    {step === 1 ? t('Auto.text_3c5e22') : t('Auto.text_3e853a')}
+                    {step === 1 ? t('key_3c5e22') : t('key_3e853a')}
                   </p>
                 </div>
 
@@ -220,7 +220,7 @@ export default function OnboardingPage() {
                   <form onSubmit={handleNextStep} className="space-y-5">
                     <div className="space-y-1.5">
                       <label className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 ml-1">
-                        {profile?.role === 'master' ? t('Auto.text_09a4a5') : t('leadWizard.yourNameLabel')}
+                        {profile?.role === 'master' ? t('key_09a4a5') : t('leadWizard.yourNameLabel')}
                       </label>
                       <div className="relative group">
                         <User className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400 transition-colors ${profile?.role === 'master' ? 'group-focus-within:text-orange-500' : 'group-focus-within:text-primary-500'}`} />
@@ -229,7 +229,7 @@ export default function OnboardingPage() {
                           type="text"
                           value={displayName}
                           onChange={e => setDisplayName(e.target.value)}
-                          placeholder={t('Auto.text_e336de')}
+                          placeholder={t('key_e336de')}
                           className={`w-full pl-12 pr-4 py-4 bg-white/50 dark:bg-neutral-950/50 border border-neutral-200 dark:border-white/10 rounded-2xl focus:outline-none focus:ring-2 transition-all ${profile?.role === 'master' ? 'focus:ring-orange-500/20 focus:border-orange-500' : 'focus:ring-primary-500/20 focus:border-primary-500'}`}
                         />
                       </div>
@@ -277,14 +277,14 @@ export default function OnboardingPage() {
                       type="submit"
                       className={`w-full py-4 mt-4 text-white font-bold rounded-2xl flex items-center justify-center gap-2 transition-all mt-8 ${profile?.role === 'master' ? 'bg-gradient-to-r from-orange-600 to-amber-500 hover:from-orange-500 hover:to-amber-400 shadow-[0_10px_30px_rgba(234,88,12,0.3)]' : 'bg-gradient-to-r from-primary-600 to-primary-600 hover:from-primary-500 hover:to-primary-500 shadow-[0_10px_30px_rgba(99,102,241,0.3)]'}`}
                     >
-                      {totalSteps === 1 ? t('Auto.text_b0e3a5') : t('guide.next')} <ArrowRight className="w-5 h-5" />
+                      {totalSteps === 1 ? t('key_b0e3a5') : t('guide.next')} <ArrowRight className="w-5 h-5" />
                     </button>
                   </form>
                 ) : (
                   <form onSubmit={handleFinalSubmit} className="space-y-5">
                     <div className="space-y-1.5">
                       <label className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 ml-1">
-                        {t('Auto.text_0f5233')} <span className="text-red-500">*</span>
+                        {t('key_0f5233')} <span className="text-red-500">*</span>
                       </label>
                       <div className="relative group">
                         <LinkIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400 transition-colors group-focus-within:text-orange-500" />
@@ -298,7 +298,7 @@ export default function OnboardingPage() {
                         />
                       </div>
                       <p className="text-xs text-neutral-500 ml-1 mt-2 leading-relaxed">
-                        {t('Auto.text_37a388')}
+                        {t('key_37a388')}
                                                                             </p>
                     </div>
 
@@ -315,7 +315,7 @@ export default function OnboardingPage() {
                         disabled={isLoading}
                         className="flex-1 py-4 bg-gradient-to-r from-orange-600 to-amber-500 hover:from-orange-500 hover:to-amber-400 text-white font-bold rounded-2xl flex items-center justify-center gap-2 transition-all shadow-[0_10px_30px_rgba(234,88,12,0.3)] disabled:opacity-50"
                       >
-                        {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : t('Auto.text_9f4469')}
+                        {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : t('key_9f4469')}
                       </button>
                     </div>
                   </form>

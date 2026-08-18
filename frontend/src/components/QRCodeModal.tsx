@@ -53,7 +53,7 @@ export function QRCodeModal({ isOpen, onClose, url }: QRCodeModalProps) {
           <X className="w-5 h-5" />
         </button>
 
-        <h3 className="text-xl font-bold mb-6 text-center">{t('Auto.text_dbb4dc')}</h3>
+        <h3 className="text-xl font-bold mb-6 text-center">{t('qr')}</h3>
         
         <div className="bg-white p-4 rounded-2xl shadow-inner border border-neutral-200 mb-6">
           <QRCodeSVG
@@ -70,7 +70,7 @@ export function QRCodeModal({ isOpen, onClose, url }: QRCodeModalProps) {
           className="w-full flex items-center justify-center gap-2 bg-primary-600 hover:bg-primary-700 text-white font-bold py-3 rounded-xl transition-colors"
         >
           <Download className="w-5 h-5" />
-          {t('Auto.text_b19bbf')}
+          {t('png')}
                           </button>
       </div>
     </div>

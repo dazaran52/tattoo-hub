@@ -26,7 +26,7 @@ export function B2bSellModal({ isOpen, onClose, leadId, sessionTitle, clientName
       const { data: { session } } = await supabase.auth.getSession()
       const token = session?.access_token
       if (!token) {
-        toast.error(t('Auto.text_9f5cb5'))
+        toast.error(t('key_9f5cb5'))
         return
       }
 
@@ -41,15 +41,15 @@ export function B2bSellModal({ isOpen, onClose, leadId, sessionTitle, clientName
 
       if (!res.ok) {
         const err = await res.json().catch(() => ({}))
-        throw new Error(err.detail || t('Auto.text_5ce3b3'))
+        throw new Error(err.detail || t('key_5ce3b3'))
       }
 
-      toast.success(t('Auto.text_547174'))
+      toast.success(t('key_547174'))
       onSuccess()
       onClose()
     } catch (err: any) {
       console.error(err)
-      toast.error(err.message || t('Auto.text_c9205d'))
+      toast.error(err.message || t('key_c9205d'))
     } finally {
       setLoading(false)
     }
@@ -79,8 +79,8 @@ export function B2bSellModal({ isOpen, onClose, leadId, sessionTitle, clientName
               <Share2 className="w-6 h-6" />
             </div>
             <div>
-              <h3 className="text-xl font-bold text-neutral-900 dark:text-white">{t('Auto.text_e1d2aa')}</h3>
-              <p className="text-xs text-neutral-500">{clientName ? `Клиент: ${clientName}` : sessionTitle || t('Auto.text_915112')}</p>
+              <h3 className="text-xl font-bold text-neutral-900 dark:text-white">{t('key_e1d2aa')}</h3>
+              <p className="text-xs text-neutral-500">{clientName ? `Клиент: ${clientName}` : sessionTitle || t('b2b')}</p>
             </div>
           </div>
 
@@ -88,13 +88,13 @@ export function B2bSellModal({ isOpen, onClose, leadId, sessionTitle, clientName
             <div className="flex items-start gap-3">
               <ShieldCheck className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
               <p className="text-neutral-700 dark:text-neutral-300">
-                {t('Auto.text_2cc69f')}
+                {t('key_2cc69f')}
                                             </p>
             </div>
             <div className="flex items-start gap-3">
               <DollarSign className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
               <p className="text-neutral-700 dark:text-neutral-300">
-                {t('Auto.text_d19b85')} <strong className="text-primary-600 dark:text-primary-400">{t('Auto.text_8e8dcf')}</strong> {t('Auto.text_27fa78')}
+                {t('key_d19b85')} <strong className="text-primary-600 dark:text-primary-400">{t('80')}</strong> {t('key_27fa78')}
                                             </p>
             </div>
           </div>
@@ -116,7 +116,7 @@ export function B2bSellModal({ isOpen, onClose, leadId, sessionTitle, clientName
                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
               ) : (
                 <>
-                  <span>{t('Auto.text_f4e3f8')}</span>
+                  <span>{t('key_f4e3f8')}</span>
                   <ArrowRight className="w-4 h-4" />
                 </>
               )}

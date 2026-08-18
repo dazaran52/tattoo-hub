@@ -50,10 +50,10 @@ export function Header({ profile, onLogout, maxWidthClass = 'max-w-7xl', onOpenC
     try {
       setIsSubscribing(true)
       await subscribeToPush()
-      toast.success(t('Auto.text_d4a234'))
+      toast.success(t('key_d4a234'))
     } catch (err: any) {
       if (Notification.permission === 'denied') {
-        toast.error(t('Auto.text_1ed205'))
+        toast.error(t('key_1ed205'))
       } else {
         toast.error(t('pushFailed'))
       }
@@ -109,7 +109,7 @@ export function Header({ profile, onLogout, maxWidthClass = 'max-w-7xl', onOpenC
           {/* Logo */}
           <button 
             onClick={() => router.push('/dashboard')}
-            aria-label={t('Auto.text_3ddda6')}
+            aria-label={t('key_3ddda6')}
             className="flex items-center gap-2 hover:opacity-80 transition-opacity cursor-pointer"
           >
             <Logo />
@@ -207,7 +207,7 @@ export function Header({ profile, onLogout, maxWidthClass = 'max-w-7xl', onOpenC
             <div ref={menuRef} id="tour-profile" className="relative">
               <button
                 onClick={() => setMenuOpen(!menuOpen)}
-                aria-label={menuOpen ? t('Auto.text_545446') : t('Auto.text_7b3e8f')}
+                aria-label={menuOpen ? t('key_545446') : t('key_7b3e8f')}
                 className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
               >
                 {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -245,7 +245,7 @@ export function Header({ profile, onLogout, maxWidthClass = 'max-w-7xl', onOpenC
                     {profile.role === 'master' && !profile.is_admin && (
                       <a href="/profile" className="flex items-center gap-3 px-4 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800">
                         <User className="w-4 h-4" />
-                        {t('Auto.text_2bb0a6')}
+                        {t('key_2bb0a6')}
                                                                     </a>
                     )}
                     <a href="/settings" className="flex items-center gap-3 px-4 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800">

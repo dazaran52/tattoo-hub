@@ -12,8 +12,8 @@ export function CookieBanner() {
 
   const copyMap = {
     ru: {
-      before: t('Auto.text_8333b4'),
-      policy: t('Auto.text_b34c5f'),
+      before: t('cookie2'),
+      policy: t('key_b34c5f'),
       accept: t('guide.understand'),
     },
     cs: {
@@ -27,9 +27,9 @@ export function CookieBanner() {
       accept: 'Got it',
     },
     uk: {
-      before: t('Auto.text_0ec3d9'),
-      policy: t('Auto.text_9db40e'),
-      accept: t('Auto.text_fc737a'),
+      before: t('cookie'),
+      policy: t('key_9db40e'),
+      accept: t('key_fc737a'),
     },
   } as Record<string, { before: string; policy: string; accept: string }>
 

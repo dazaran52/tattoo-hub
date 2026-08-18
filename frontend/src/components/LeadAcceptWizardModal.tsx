@@ -1,4 +1,4 @@
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import React, { useState, useEffect } from 'react'
 import { X, Calendar as CalendarIcon, CheckCircle, MessageCircle, DollarSign, Clock, ChevronLeft, ChevronRight } from 'lucide-react'
 import toast from 'react-hot-toast'
@@ -23,7 +23,8 @@ interface DayOff {
 }
 
 export function LeadAcceptWizardModal({ isOpen, onClose, onSuccess, session, allSessions, onSessionClick }: LeadAcceptWizardModalProps) {
-    const t = useTranslations();
+  const t = useTranslations();
+  const language = useLocale();
   const [step, setStep] = useState(1)
   const [loading, setLoading] = useState(false)
   const [price, setPrice] = useState(session.price?.toString() || '')
@@ -68,8 +69,8 @@ export function LeadAcceptWizardModal({ isOpen, onClose, onSuccess, session, all
   }
 
   const days = getDaysInMonth(currentMonthDate)
-  const monthNames = [t('Auto.text_ee8620'), t('Auto.text_28ffcf'), t('Auto.text_d766d4'), t('Auto.text_03e90d'), t('Auto.text_2e53bf'), t('Auto.text_cfcb9c'), t('Auto.text_89fb2f'), t('Auto.text_de5ab5'), t('Auto.text_ebfbae'), t('Auto.text_17208f'), t('Auto.text_66fbc4'), t('Auto.text_39b3dc')]
-  const dayNames = [t('Auto.text_2c1ec3'), t('Auto.text_714517'), t('Auto.text_c6e47c'), t('Auto.text_a51f2e'), t('Auto.text_012388'), t('Auto.text_3a4b2b'), t('Auto.text_4ad91d')]
+  const monthNames = [t('key_ee8620'), t('key_28ffcf'), t('key_d766d4'), t('key_03e90d'), t('key_2e53bf'), t('key_cfcb9c'), t('key_89fb2f'), t('key_de5ab5'), t('key_ebfbae'), t('key_17208f'), t('key_66fbc4'), t('key_39b3dc')]
+  const dayNames = [t('key_2c1ec3'), t('key_714517'), t('key_c6e47c'), t('key_a51f2e'), t('key_012388'), t('key_3a4b2b'), t('key_4ad91d')]
 
   const nextMonth = () => setCurrentMonthDate(new Date(currentMonthDate.getFullYear(), currentMonthDate.getMonth() + 1, 1))
   const prevMonth = () => setCurrentMonthDate(new Date(currentMonthDate.getFullYear(), currentMonthDate.getMonth() - 1, 1))
@@ -118,7 +119,8 @@ export function LeadAcceptWizardModal({ isOpen, onClose, onSuccess, session, all
               price: price ? parseFloat(price) : null,
               start_time: startTime,
               end_time: endTime,
-              date: selectedDate
+              date: selectedDate,
+              locale: language
             }),
             signal: controller.signal
           })
@@ -131,13 +133,13 @@ export function LeadAcceptWizardModal({ isOpen, onClose, onSuccess, session, all
             const data = await res.json()
             if (data.status === 'no_email') {
               // Copy text to clipboard if no email
-              const msg = `Привет! Я готов взять твою заявку в работу. \nПредварительная стоимость: ${price ? price + ' Kč' : t('Auto.text_68773a')}.\nВремя сеанса: ${startTime} - ${endTime}.\nЕсли есть вопросы — пиши!`
+              const msg = `Привет! Я готов взять твою заявку в работу. \nПредварительная стоимость: ${price ? price + ' Kč' : t('key_68773a')}.\nВремя сеанса: ${startTime} - ${endTime}.\nЕсли есть вопросы — пиши!`
               navigator.clipboard.writeText(msg).catch(() => {})
-              toast.success(t('Auto.text_8521ef'))
+              toast.success(t('email5'))
             } else if (data.status === 'smtp_failed') {
-              toast.error(t('Auto.text_55302c'))
+              toast.error(t('email4'))
             } else {
-              toast.success(t('Auto.text_f16c12'))
+              toast.success(t('key_f16c12'))
             }
           }
         } catch (err) {
@@ -145,12 +147,12 @@ export function LeadAcceptWizardModal({ isOpen, onClose, onSuccess, session, all
         }
       }
 
-      toast.success(t('Auto.text_f5e42a'))
+      toast.success(t('key_f5e42a'))
       onClose()
       onSuccess()
     } catch (error: any) {
       console.error(error)
-      toast.error(error.message || t('Auto.text_db49c9'))
+      toast.error(error.message || t('key_db49c9'))
     } finally {
       setLoading(false)
     }
@@ -162,8 +164,8 @@ export function LeadAcceptWizardModal({ isOpen, onClose, onSuccess, session, all
   const parsedBudgetFromDesc = leadData.description?.match(/Бюджет:\s*(.+)/)?.[1]
   const clientBudget = leadData.client_budget 
     ? `${leadData.client_budget} ${leadData.client_currency || 'CZK'}` 
-    : (leadData.is_negotiable_budget ? t('negotiableBudget') : (parsedBudgetFromDesc || t('Auto.text_bd9e24')))
-  const clientPrefTime = leadData.description?.match(/Желаемое время:\s*(.+)/)?.[1] || t('Auto.text_7cddff')
+    : (leadData.is_negotiable_budget ? t('negotiableBudget') : (parsedBudgetFromDesc || t('key_bd9e24')))
+  const clientPrefTime = leadData.description?.match(/Желаемое время:\s*(.+)/)?.[1] || t('key_7cddff')
 
   return (
     <div className="fixed inset-0 z-[130] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
@@ -172,7 +174,7 @@ export function LeadAcceptWizardModal({ isOpen, onClose, onSuccess, session, all
         <div className="flex justify-between items-center p-6 border-b border-neutral-200 dark:border-neutral-800">
           <h2 className="text-xl font-bold flex items-center gap-2 text-neutral-900 dark:text-white">
             <CheckCircle className="w-5 h-5 text-emerald-500" />
-            {t('Auto.text_8efe08')}
+            {t('key_8efe08')}
                                 </h2>
           <button onClick={onClose} className="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-full transition-colors text-neutral-500">
             <X className="w-5 h-5" />
@@ -193,16 +195,16 @@ export function LeadAcceptWizardModal({ isOpen, onClose, onSuccess, session, all
             <div className="animate-in fade-in slide-in-from-right-4 duration-300">
               <h3 className="text-lg font-bold mb-4 flex items-center gap-2 text-neutral-900 dark:text-white">
                 <DollarSign className="w-5 h-5 text-emerald-500" />
-                {t('Auto.text_01dab7')}
+                {t('key_01dab7')}
                                             </h3>
               
               <div className="bg-neutral-50 dark:bg-neutral-800/50 p-4 rounded-2xl mb-6">
-                <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-1">{t('Auto.text_735393')}</p>
+                <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-1">{t('key_735393')}</p>
                 <p className="font-medium text-neutral-900 dark:text-white">{clientBudget}</p>
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-2">{t('Auto.text_02bf33')}</label>
+                <label className="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-2">{t('k')}</label>
                 <input
                   type="number"
                   value={price}
@@ -210,7 +212,7 @@ export function LeadAcceptWizardModal({ isOpen, onClose, onSuccess, session, all
                   placeholder="0.00"
                   className="w-full bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
                 />
-                <p className="text-xs text-neutral-500 mt-2">{t('Auto.text_668ab1')}</p>
+                <p className="text-xs text-neutral-500 mt-2">{t('key_668ab1')}</p>
               </div>
             </div>
           )}
@@ -219,11 +221,11 @@ export function LeadAcceptWizardModal({ isOpen, onClose, onSuccess, session, all
             <div className="animate-in fade-in slide-in-from-right-4 duration-300">
               <h3 className="text-lg font-bold mb-4 flex items-center gap-2 text-neutral-900 dark:text-white">
                 <Clock className="w-5 h-5 text-emerald-500" />
-                {t('Auto.text_fcd4bc')}
+                {t('key_fcd4bc')}
                                             </h3>
               
               <div className="bg-neutral-50 dark:bg-neutral-800/50 p-4 rounded-2xl mb-4">
-                <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-1">{t('Auto.text_108fd2')}</p>
+                <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-1">{t('key_108fd2')}</p>
                 <p className="font-medium text-neutral-900 dark:text-white">{clientPrefTime}</p>
               </div>
               
@@ -302,10 +304,10 @@ export function LeadAcceptWizardModal({ isOpen, onClose, onSuccess, session, all
                   <div className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-700 p-4 flex-1">
                   <h4 className="text-sm font-bold text-neutral-900 dark:text-white mb-3 flex items-center gap-2">
                     <Clock className="w-4 h-4 text-primary-500" />
-                    {t('Auto.text_f51461')} {new Date(selectedDate).toLocaleDateString('ru-RU')}
+                    {t('key_f51461')} {new Date(selectedDate).toLocaleDateString('ru-RU')}
                   </h4>
                   {selectedDateSessions.length === 0 ? (
-                    <p className="text-sm text-neutral-500 dark:text-neutral-400">{t('Auto.text_8f2d71')}</p>
+                    <p className="text-sm text-neutral-500 dark:text-neutral-400">{t('key_8f2d71')}</p>
                   ) : (
                     <div className="space-y-2">
                       {selectedDateSessions.map(s => (
@@ -321,7 +323,7 @@ export function LeadAcceptWizardModal({ isOpen, onClose, onSuccess, session, all
                               </span>
                             ) : (
                               <span className="font-medium text-neutral-500 dark:text-neutral-400 text-xs bg-neutral-200 dark:bg-neutral-700 px-2 py-1 rounded w-fit">
-                                {t('Auto.text_e1c80f')}
+                                {t('key_e1c80f')}
                                                                             </span>
                             )}
                           </div>
@@ -330,7 +332,7 @@ export function LeadAcceptWizardModal({ isOpen, onClose, onSuccess, session, all
                               {s.master_clients?.name || t('landing.client_title')}
                             </span>
                             <span className="text-[10px] uppercase font-bold text-neutral-500 dark:text-neutral-400">
-                              {s.status === 'new' ? t('newLeadBtn') : s.status === 'discussing' ? t('Auto.text_0425ad') : s.status === 'booked' ? t('Auto.text_277bbc') : s.status === 'in_progress' ? t('crmBoard.columns.in_progress') : s.status === 'completed' ? t('crmBoard.columns.completed') : s.status === 'cancelled' ? t('cancel') : s.status}
+                              {s.status === 'new' ? t('newLeadBtn') : s.status === 'discussing' ? t('key_0425ad') : s.status === 'booked' ? t('key_277bbc') : s.status === 'in_progress' ? t('crmBoard.columns.in_progress') : s.status === 'completed' ? t('crmBoard.columns.completed') : s.status === 'cancelled' ? t('cancel') : s.status}
                             </span>
                           </div>
                         </button>
@@ -341,7 +343,7 @@ export function LeadAcceptWizardModal({ isOpen, onClose, onSuccess, session, all
 
                 <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-2">{t('Auto.text_0d1e0c')}</label>
+                  <label className="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-2">{t('key_0d1e0c')}</label>
                   <input
                     type="time"
                     value={startTime}
@@ -350,7 +352,7 @@ export function LeadAcceptWizardModal({ isOpen, onClose, onSuccess, session, all
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-2">{t('Auto.text_357387')}</label>
+                  <label className="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-2">{t('key_357387')}</label>
                   <input
                     type="time"
                     value={endTime}
@@ -372,9 +374,9 @@ export function LeadAcceptWizardModal({ isOpen, onClose, onSuccess, session, all
                 <div>
                   <p className="text-sm font-bold text-emerald-900 dark:text-emerald-400 flex items-center gap-1.5">
                     <MessageCircle className="w-4 h-4" />
-                    {t('Auto.text_436661')}
+                    {t('key_436661')}
                                                         </p>
-                  <p className="text-xs text-emerald-700 dark:text-emerald-600 mt-1">{t('Auto.text_fae039')}</p>
+                  <p className="text-xs text-emerald-700 dark:text-emerald-600 mt-1">{t('email3')}</p>
                 </div>
               </label>
             </div>

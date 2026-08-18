@@ -25,6 +25,7 @@ export interface Profile {
   gamification_level?: string
   can_create_leads?: boolean
   can_chat?: boolean
+  ban_reason?: string
   role?: string
   is_verified_master?: boolean
   certificate_url?: string

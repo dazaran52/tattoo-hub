@@ -34,7 +34,7 @@ export function OnboardingTour({ startTour, onTourEnd }: OnboardingTourProps) {
           element: '#tour-balance',
           popover: {
             title: t('yourBalance'),
-            description: t('Auto.text_0f49ba'),
+            description: t('key_0f49ba'),
             side: 'bottom',
             align: 'start'
           }
@@ -42,8 +42,8 @@ export function OnboardingTour({ startTour, onTourEnd }: OnboardingTourProps) {
         {
           element: '#tour-crm',
           popover: {
-            title: t('Auto.text_5eca2a'),
-            description: t('Auto.text_650666'),
+            title: t('crm5'),
+            description: t('key_650666'),
             side: 'bottom',
             align: 'start'
           }
@@ -51,8 +51,8 @@ export function OnboardingTour({ startTour, onTourEnd }: OnboardingTourProps) {
         {
           element: '#tour-feed',
           popover: {
-            title: t('Auto.text_6fca6d'),
-            description: t('Auto.text_b429a6'),
+            title: t('key_6fca6d'),
+            description: t('key_b429a6'),
             side: 'bottom',
             align: 'start'
           }
@@ -60,8 +60,8 @@ export function OnboardingTour({ startTour, onTourEnd }: OnboardingTourProps) {
         {
           element: '#tour-portfolio',
           popover: {
-            title: t('Auto.text_8119f7'),
-            description: t('Auto.text_1dea20'),
+            title: t('key_8119f7'),
+            description: t('key_1dea20'),
             side: 'bottom',
             align: 'start'
           }
@@ -69,8 +69,8 @@ export function OnboardingTour({ startTour, onTourEnd }: OnboardingTourProps) {
         {
           element: '#tour-messages',
           popover: {
-            title: t('Auto.text_fd480b'),
-            description: t('Auto.text_c84c18'),
+            title: t('key_fd480b'),
+            description: t('key_c84c18'),
             side: 'bottom',
             align: 'start'
           }
@@ -79,7 +79,7 @@ export function OnboardingTour({ startTour, onTourEnd }: OnboardingTourProps) {
           element: '#tour-profile',
           popover: {
             title: t('profileAndSettings'),
-            description: t('Auto.text_1abdcf'),
+            description: t('key_1abdcf'),
             side: 'left',
             align: 'start'
           }

@@ -53,13 +53,13 @@ export default function TopUpPage() {
         headers: { 'Authorization': `Bearer ${session.access_token}` }
       })
       if (!response.ok) {
-        setWalletError(t('Auto.text_6e16da'))
+        setWalletError(t('key_6e16da'))
         return
       }
       const profile = await response.json()
       const currency = String(profile.currency || '').toUpperCase()
       if (!['CZK', 'EUR', 'USD'].includes(currency)) {
-        setWalletError(t('Auto.text_7d4b05'))
+        setWalletError(t('key_7d4b05'))
         return
       }
       setWalletCurrency(currency)
@@ -67,7 +67,7 @@ export default function TopUpPage() {
       setBadgeExpiresAt(profile.badge_expires_at || null)
       setCurrentBalance(profile.balance || 0)
     }
-    loadWallet().catch(() => setWalletError(t('Auto.text_6e16da')))
+    loadWallet().catch(() => setWalletError(t('key_6e16da')))
   }, [])
 
   const handleExtendVip = async () => {
@@ -85,7 +85,7 @@ export default function TopUpPage() {
 
       if (!response.ok) {
         const err = await response.json()
-        throw new Error(err.detail || t('Auto.text_fbd0c5'))
+        throw new Error(err.detail || t('key_fbd0c5'))
       }
 
       const resData = await response.json()
@@ -94,7 +94,7 @@ export default function TopUpPage() {
       setCurrentBalance(resData.new_balance)
       alert(`👑 VIP-статус успешно продлен на 30 дней! Списано ${resData.cost} ${resData.currency}.`)
     } catch (error: any) {
-      alert(error.message || t('Auto.text_207de5'))
+      alert(error.message || t('key_207de5'))
     } finally {
       setIsExtendingVip(false)
     }
@@ -137,7 +137,7 @@ export default function TopUpPage() {
       }
     } catch (error: any) {
       console.error('Payment error:', error)
-      alert(error.message || t('Auto.text_f460d9'))
+      alert(error.message || t('key_f460d9'))
     } finally {
       setIsLoadingPackage(null)
     }
@@ -150,9 +150,9 @@ export default function TopUpPage() {
       amounts: { CZK: 300, EUR: 12, USD: 13 },
       creditAmounts: { CZK: 300, EUR: 12, USD: 13 },
       perks: [
-        t('Auto.text_9c79bd'),
-        t('Auto.text_e4936c'),
-        t('Auto.text_2d98eb'),
+        t('11'),
+        t('307'),
+        t('key_2d98eb'),
       ],
       color: 'from-blue-500/10 to-blue-500/5 dark:from-blue-900/20 dark:to-blue-900/5',
       borderColor: 'border-blue-500/30 dark:border-blue-800'
@@ -160,15 +160,15 @@ export default function TopUpPage() {
     {
       id: 'standard',
       name: 'Standard Pack',
-      badge: t('Auto.text_6d2a24'),
-      bonusText: t('Auto.text_bfd2d0'),
+      badge: t('key_6d2a24'),
+      bonusText: t('105'),
       popular: true,
       amounts: { CZK: 500, EUR: 20, USD: 22 },
       creditAmounts: { CZK: 550, EUR: 22, USD: 24.2 },
       perks: [
-        t('Auto.text_5c024b'),
-        t('Auto.text_e4936c'),
-        t('Auto.text_2d98eb'),
+        t('104'),
+        t('307'),
+        t('key_2d98eb'),
       ],
       color: 'from-primary-500/20 to-primary-500/5 dark:from-primary-900/30 dark:to-primary-900/10',
       borderColor: 'border-primary-500/60 shadow-lg shadow-primary-500/20'
@@ -176,14 +176,14 @@ export default function TopUpPage() {
     {
       id: 'pro',
       name: 'Pro Pack',
-      badge: t('Auto.text_6e39ac'),
-      bonusText: t('Auto.text_d688ab'),
+      badge: t('155'),
+      bonusText: t('154'),
       amounts: { CZK: 1000, EUR: 40, USD: 44 },
       creditAmounts: { CZK: 1150, EUR: 46, USD: 50.6 },
       perks: [
-        t('Auto.text_f1cacd'),
-        t('Auto.text_ed22e9'),
-        t('Auto.text_432186'),
+        t('153'),
+        t('pro3'),
+        t('103'),
       ],
       color: 'from-amber-500/20 to-amber-500/5 dark:from-amber-900/30 dark:to-amber-900/10',
       borderColor: 'border-amber-500/50 shadow-lg shadow-amber-500/10'
@@ -191,15 +191,15 @@ export default function TopUpPage() {
     {
       id: 'vip',
       name: 'VIP Pack',
-      badge: t('Auto.text_ea51e7'),
-      bonusText: t('Auto.text_d7d71f'),
+      badge: t('203'),
+      bonusText: t('202'),
       vip: true,
       amounts: { CZK: 2000, EUR: 80, USD: 88 },
       creditAmounts: { CZK: 2400, EUR: 96, USD: 105.6 },
       perks: [
-        t('Auto.text_7716c1'),
-        t('Auto.text_7e8d1a'),
-        t('Auto.text_04471c'),
+        t('20'),
+        t('vip6'),
+        t('02'),
       ],
       color: 'from-rose-500/20 to-rose-500/5 dark:from-rose-900/30 dark:to-rose-900/10',
       borderColor: 'border-rose-500/60 shadow-xl shadow-rose-500/25'
@@ -226,12 +226,12 @@ export default function TopUpPage() {
             className="flex items-center gap-2 text-neutral-600 dark:text-neutral-400 hover:text-neutral-950 dark:hover:text-white transition-colors font-semibold"
           >
             <ArrowLeft className="w-5 h-5" />
-            {t('Auto.text_9cfd28')}
+            {t('key_9cfd28')}
                                 </button>
 
           <div className="flex items-center gap-2 bg-gradient-to-r from-amber-500/10 via-rose-500/10 to-primary-500/10 border border-amber-500/30 rounded-2xl px-4 py-2 shadow-lg backdrop-blur-xl">
             <Coins className="w-4 h-4 text-amber-400" />
-            <span className="text-xs font-bold text-neutral-400">{t('Auto.text_e4d101')}</span>
+            <span className="text-xs font-bold text-neutral-400">{t('key_e4d101')}</span>
             <strong className="text-sm font-black text-amber-300">{currentBalance} {walletCurrency}</strong>
           </div>
         </div>
@@ -242,11 +242,11 @@ export default function TopUpPage() {
           </div>
 
           <h1 className="text-3xl sm:text-5xl font-extrabold text-neutral-900 dark:text-white tracking-tight mb-4 flex items-center justify-center gap-3">
-            {t('Auto.text_4794c3')}
+            {t('key_4794c3')}
                                   <Sparkles className="w-7 h-7 text-amber-400 animate-pulse" />
           </h1>
           <p className="text-base sm:text-lg text-neutral-500 dark:text-neutral-400 max-w-2xl mx-auto font-medium">
-            {t('Auto.text_083d4a')} <strong className="text-emerald-400 font-black">{t('Auto.text_648f73')}</strong> {t('Auto.text_79c38d')}
+            {t('key_083d4a')} <strong className="text-emerald-400 font-black">{t('305')}</strong> {t('key_79c38d')}
                                 </p>
         </div>
 
@@ -266,16 +266,16 @@ export default function TopUpPage() {
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <h3 className="font-black text-white text-xl">
-                  {badgeTier === 'vip' ? t('Auto.text_526272') : badgeTier === 'pro' ? t('Auto.text_3272c5') : t('Auto.text_f81f48')}
+                  {badgeTier === 'vip' ? t('vip5') : badgeTier === 'pro' ? t('pro2') : t('vip0')}
                 </h3>
               </div>
               <p className="text-sm text-neutral-300 font-medium leading-relaxed mb-2">
                 {badgeTier === 'vip' 
-                  ? t('Auto.text_585735')
-                  : t('Auto.text_31bb1c')}
+                  ? t('03')
+                  : t('key_31bb1c')}
               </p>
               <p className="text-xs text-neutral-400 font-medium">
-                {badgeExpiresAt ? `Действует до: ${new Date(badgeExpiresAt).toLocaleDateString('ru-RU')}` : t('Auto.text_84acd2')}
+                {badgeExpiresAt ? `Действует до: ${new Date(badgeExpiresAt).toLocaleDateString('ru-RU')}` : t('306')}
               </p>
             </div>
           </div>
@@ -298,7 +298,7 @@ export default function TopUpPage() {
               ) : (
                 <>
                   <Sparkles className="w-5 h-5 text-amber-200" />
-                  <span>{badgeTier === 'vip' ? t('Auto.text_8d7dcc') : t('Auto.text_a01a2c')} ({walletCurrency === 'EUR' ? '12 EUR' : walletCurrency === 'USD' ? '13 USD' : '300 CZK'})</span>
+                  <span>{badgeTier === 'vip' ? t('vip302') : t('vip30')} ({walletCurrency === 'EUR' ? '12 EUR' : walletCurrency === 'USD' ? '13 USD' : '300 CZK'})</span>
                 </>
               )}
             </button>
@@ -335,22 +335,22 @@ export default function TopUpPage() {
                 
                 {/* Price Display */}
                 <div className="my-4 flex flex-col items-center">
-                  <span className="text-xs text-neutral-400 font-bold uppercase tracking-wider">{t('Auto.text_4e91a7')}</span>
+                  <span className="text-xs text-neutral-400 font-bold uppercase tracking-wider">{t('key_4e91a7')}</span>
                   <span className="text-3xl font-black text-white">
                     {payAmount} {walletCurrency}
                   </span>
                   
                   {bonusAmount > 0 ? (
                     <span className="text-xs font-black text-emerald-400 mt-1 bg-emerald-500/10 px-2 py-0.5 rounded-lg border border-emerald-500/20">
-                      +{bonusAmount} {walletCurrency} {t('Auto.text_e48292')}
+                      +{bonusAmount} {walletCurrency} {t('key_e48292')}
                                                     </span>
                   ) : (
-                    <span className="text-xs text-neutral-500 mt-1">{t('Auto.text_044675')}</span>
+                    <span className="text-xs text-neutral-500 mt-1">{t('key_044675')}</span>
                   )}
                 </div>
 
                 <div className="w-full bg-white/5 rounded-2xl p-3 mb-6 border border-white/10 text-center">
-                  <span className="text-[11px] text-neutral-400 font-bold block">{t('Auto.text_873e76')}</span>
+                  <span className="text-[11px] text-neutral-400 font-bold block">{t('key_873e76')}</span>
                   <span className="text-lg font-black text-amber-400">
                     {creditAmount} {walletCurrency}
                   </span>
@@ -379,7 +379,7 @@ export default function TopUpPage() {
                   {isLoadingPackage === pkg.id ? (
                     <Loader2 className="w-5 h-5 animate-spin" />
                   ) : (
-                    t('Auto.text_6792b8')
+                    t('key_6792b8')
                   )}
                 </button>
               </div>
@@ -393,13 +393,13 @@ export default function TopUpPage() {
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-2">
                 <Crown className="w-6 h-6 text-amber-400" />
-                <h3 className="text-xl font-bold text-white">{t('Auto.text_1a8ea9')}</h3>
+                <h3 className="text-xl font-bold text-white">{t('key_1a8ea9')}</h3>
                 <span className="bg-amber-500/20 text-amber-300 text-xs font-black px-2.5 py-0.5 rounded-full border border-amber-500/30">
-                  {t('Auto.text_f8e1d9')}
+                  {t('304')}
                                                   </span>
               </div>
               <p className="text-xs sm:text-sm text-neutral-400">
-                {t('Auto.text_4de3f1')} <strong>{currentMinCustom} {walletCurrency}</strong> {t('Auto.text_a0b016')} <strong className="text-amber-400">{t('Auto.text_732d89')}</strong> {t('Auto.text_e21c81')}
+                {t('key_4de3f1')} <strong>{currentMinCustom} {walletCurrency}</strong> {t('key_a0b016')} <strong className="text-amber-400">{t('303')}</strong> {t('vip4')}
                                             </p>
 
               <div className="mt-4 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
@@ -418,13 +418,13 @@ export default function TopUpPage() {
                 </div>
 
                 <div className="flex flex-col justify-center px-4 py-2 bg-amber-500/10 rounded-2xl border border-amber-500/20">
-                  <span className="text-[10px] text-neutral-400 font-bold uppercase">{t('Auto.text_9c444b')}</span>
+                  <span className="text-[10px] text-neutral-400 font-bold uppercase">{t('key_9c444b')}</span>
                   <span className="text-lg font-black text-amber-400">
                     {isCustomValid ? `${customTotalCredit} ${walletCurrency}` : '—'}
                   </span>
                   {isCustomValid && (
                     <span className="text-[10px] text-emerald-400 font-bold">
-                      (+{customBonusAmount} {walletCurrency} {t('Auto.text_5aa063')}
+                      (+{customBonusAmount} {walletCurrency} {t('key_5aa063')}
                                                               </span>
                   )}
                 </div>
@@ -432,7 +432,7 @@ export default function TopUpPage() {
 
               {!isCustomValid && (
                 <p className="text-xs text-red-400 font-semibold mt-2">
-                  {t('Auto.text_cad629')} {currentMinCustom} {walletCurrency}
+                  {t('key_cad629')} {currentMinCustom} {walletCurrency}
                 </p>
               )}
             </div>
@@ -447,7 +447,7 @@ export default function TopUpPage() {
               ) : (
                 <>
                   <Gift className="w-4 h-4" />
-                  <span>{t('Auto.text_caccbb')} {isCustomValid ? customNum : '0'} {walletCurrency}</span>
+                  <span>{t('key_caccbb')} {isCustomValid ? customNum : '0'} {walletCurrency}</span>
                 </>
               )}
             </button>
@@ -457,12 +457,12 @@ export default function TopUpPage() {
         {/* Security & Guarantee Footer */}
         <div className="max-w-3xl mx-auto bg-white/40 dark:bg-neutral-900/40 border border-neutral-200/50 dark:border-white/5 backdrop-blur-xl rounded-3xl p-6 text-center shadow-lg">
           <div className="flex flex-wrap items-center justify-center gap-6 text-xs text-neutral-400 font-bold mb-3">
-            <span className="flex items-center gap-1.5"><ShieldCheck className="w-4 h-4 text-emerald-400"/> {t('Auto.text_593c53')}</span>
-            <span className="flex items-center gap-1.5"><Zap className="w-4 h-4 text-amber-400"/> {t('Auto.text_2d98eb')}</span>
-            <span className="flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 text-blue-400"/> {t('Auto.text_24733b')}</span>
+            <span className="flex items-center gap-1.5"><ShieldCheck className="w-4 h-4 text-emerald-400"/> {t('stripe')}</span>
+            <span className="flex items-center gap-1.5"><Zap className="w-4 h-4 text-amber-400"/> {t('key_2d98eb')}</span>
+            <span className="flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 text-blue-400"/> {t('key_24733b')}</span>
           </div>
           <p className="text-xs text-neutral-500 dark:text-neutral-400 font-medium">
-            {t('Auto.text_352c57')} <strong>Stripe</strong>{t('Auto.text_4a4460')}
+            {t('key_352c57')} <strong>Stripe</strong>{t('key_4a4460')}
                                 </p>
         </div>
       </main>

@@ -118,7 +118,7 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
         
       if (error) throw error
       
-      toast.success(t('Auto.text_dd99a3'))
+      toast.success(t('key_dd99a3'))
       onSuccess()
       onClose()
     } catch (e: any) {
@@ -130,7 +130,7 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
 
   const handleCancelSession = async () => {
     if (!editSession) return
-    if (!window.confirm(t('Auto.text_aad69e'))) return
+    if (!window.confirm(t('key_aad69e'))) return
     
     setLoading(true)
     try {
@@ -140,11 +140,11 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
         
       if (error) throw error
       
-      toast.success(t('Auto.text_e85854'))
+      toast.success(t('key_e85854'))
       onSuccess()
       onClose()
     } catch (e: any) {
-      toast.error(e.message || t('Auto.text_1b2463'))
+      toast.error(e.message || t('key_1b2463'))
     } finally {
       setLoading(false)
     }
@@ -164,7 +164,7 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
         // 1. If new client, create client first
         if (isNewClient) {
           if (!formData.client_name) {
-            toast.error(t('Auto.text_1e0ac6'))
+            toast.error(t('key_1e0ac6'))
             setLoading(false)
             return
           }
@@ -194,10 +194,10 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
                 finalClientId = errData.detail.client.id
                 toast.success(`Найден существующий клиент: ${errData.detail.client.name}`)
               } else {
-                throw new Error(t('Auto.text_2fa1cf'))
+                throw new Error(t('key_2fa1cf'))
               }
             } else {
-              throw new Error(t('Auto.text_2fa1cf'))
+              throw new Error(t('key_2fa1cf'))
             }
           } else {
             const newClient = await clientRes.json()
@@ -205,7 +205,7 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
           }
         } else {
           if (!finalClientId) {
-            toast.error(t('Auto.text_33e041'))
+            toast.error(t('key_33e041'))
             setLoading(false)
             return
           }
@@ -318,12 +318,12 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
         if (error) throw error
       }
 
-      toast.success(editSession ? t('Auto.text_fae510') : t('Auto.text_a116d9'))
+      toast.success(editSession ? t('key_fae510') : t('key_a116d9'))
       onSuccess()
       onClose()
     } catch (error: any) {
       console.error(error)
-      toast.error(error.message || t('Auto.text_3e1161'))
+      toast.error(error.message || t('key_3e1161'))
     } finally {
       setLoading(false)
     }
@@ -337,7 +337,7 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
         <div className="flex justify-between items-center p-6 border-b border-neutral-200 dark:border-neutral-800 shrink-0">
           <h2 className="text-xl font-bold flex items-center gap-2 text-neutral-900 dark:text-white">
             <CalendarIcon className="w-5 h-5 text-accent-500" />
-            {editSession ? t('Auto.text_7a3b90') : t('Auto.text_5d5970')}
+            {editSession ? t('key_7a3b90') : t('key_5d5970')}
           </h2>
           <button type="button" onClick={onClose} className="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-full transition-colors text-neutral-500">
             <X className="w-5 h-5" />
@@ -349,14 +349,14 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
           {/* Client Selection */}
           <div className="space-y-4 bg-neutral-50 dark:bg-neutral-800/50 p-4 rounded-2xl border border-neutral-200 dark:border-neutral-800">
             <div className="flex items-center justify-between">
-              <label className="text-sm font-semibold text-neutral-700 dark:text-neutral-300">{t('Auto.text_09d706')}</label>
+              <label className="text-sm font-semibold text-neutral-700 dark:text-neutral-300">{t('key_09d706')}</label>
               {!isClientLocked && (
                 <button
                   type="button"
                   onClick={() => setIsNewClient(!isNewClient)}
                   className="text-xs font-bold flex items-center gap-1 text-accent-600 dark:text-accent-400 hover:text-accent-700 transition-colors"
                 >
-                  {isNewClient ? t('Auto.text_792e0c') : <><Plus className="w-3 h-3"/> {t('Auto.text_94b9b9')}</>}
+                  {isNewClient ? t('key_792e0c') : <><Plus className="w-3 h-3"/> {t('key_94b9b9')}</>}
                 </button>
               )}
             </div>
@@ -370,7 +370,7 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
                     required={isNewClient}
                     value={formData.client_name}
                     onChange={(e) => setFormData(p => ({ ...p, client_name: e.target.value }))}
-                    placeholder={t('Auto.text_a0fb23')}
+                    placeholder={t('key_a0fb23')}
                     className="w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-xl pl-9 pr-4 py-2.5 text-sm focus:ring-2 focus:ring-accent-500/20 focus:border-accent-500 transition-all outline-none"
                   />
                 </div>
@@ -435,7 +435,7 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
                       }}
                       onFocus={() => setIsClientDropdownOpen(true)}
                       onBlur={() => setTimeout(() => setIsClientDropdownOpen(false), 300)}
-                      placeholder={t('Auto.text_51c6b6')}
+                      placeholder={t('key_51c6b6')}
                       className="w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-accent-500/20 focus:border-accent-500 outline-none"
                     />
                     {isClientDropdownOpen && (
@@ -474,7 +474,7 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
           {/* Session Details */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-neutral-500 dark:text-neutral-400 mb-1.5 uppercase tracking-wider">{t('Auto.text_7d28a8')}</label>
+              <label className="block text-xs font-semibold text-neutral-500 dark:text-neutral-400 mb-1.5 uppercase tracking-wider">{t('key_7d28a8')}</label>
               <input
                 type="date"
                 required
@@ -485,7 +485,7 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
             </div>
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="block text-xs font-semibold text-neutral-500 dark:text-neutral-400 mb-1.5 uppercase tracking-wider">{t('Auto.text_0d1e0c')}</label>
+                <label className="block text-xs font-semibold text-neutral-500 dark:text-neutral-400 mb-1.5 uppercase tracking-wider">{t('key_0d1e0c')}</label>
                 <input
                   type="time"
                   value={formData.start_time}
@@ -494,7 +494,7 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-neutral-500 dark:text-neutral-400 mb-1.5 uppercase tracking-wider">{t('Auto.text_357387')}</label>
+                <label className="block text-xs font-semibold text-neutral-500 dark:text-neutral-400 mb-1.5 uppercase tracking-wider">{t('key_357387')}</label>
                 <input
                   type="time"
                   value={formData.end_time}
@@ -538,13 +538,13 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
                      const builtinStyles = formData.style.filter(s => TATTOO_STYLES.includes(s))
                      setFormData(p => ({ ...p, style: [...builtinStyles, ...customStyles] }))
                   }}
-                  placeholder={t('Auto.text_40f8cd')}
+                  placeholder={t('key_40f8cd')}
                   className="w-full bg-neutral-100 dark:bg-neutral-800 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-accent-500/20 outline-none"
                 />
               </div>
             </div>
             <div>
-              <label className="block text-xs font-semibold text-neutral-500 dark:text-neutral-400 mb-1.5 uppercase tracking-wider">{t('Auto.text_1c5818')}</label>
+              <label className="block text-xs font-semibold text-neutral-500 dark:text-neutral-400 mb-1.5 uppercase tracking-wider">{t('k2')}</label>
               <input
                 type="number"
                 value={formData.price}
@@ -579,7 +579,7 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
                   type="text"
                   value={formData.body_place}
                   onChange={(e) => setFormData(p => ({ ...p, body_place: e.target.value }))}
-                  placeholder={t('Auto.text_239bb5')}
+                  placeholder={t('key_239bb5')}
                   className="w-full bg-neutral-100 dark:bg-neutral-800 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-accent-500/20 outline-none"
                 />
               </div>
@@ -606,7 +606,7 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
                 type="text"
                 value={formData.size}
                 onChange={(e) => setFormData(p => ({ ...p, size: e.target.value }))}
-                placeholder={t('Auto.text_111848')}
+                placeholder={t('15x10')}
                 className="w-full bg-neutral-100 dark:bg-neutral-800 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-accent-500/20 outline-none"
               />
             </div>
@@ -614,7 +614,7 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-neutral-500 dark:text-neutral-400 mb-1.5 uppercase tracking-wider">{t('Auto.text_48a940')}</label>
+              <label className="block text-xs font-semibold text-neutral-500 dark:text-neutral-400 mb-1.5 uppercase tracking-wider">{t('key_48a940')}</label>
               <div className="flex flex-wrap gap-3">
                 {existingImages.map((url, idx) => (
                   <div 
@@ -650,7 +650,7 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
                 ))}
                 <label className="w-16 h-16 rounded-lg border-2 border-dashed border-neutral-300 dark:border-neutral-700 flex flex-col items-center justify-center text-neutral-500 hover:text-accent-500 hover:border-accent-500 transition-colors cursor-pointer bg-neutral-50 dark:bg-neutral-800/50">
                   <Upload className="w-4 h-4 mb-0.5" />
-                  <span className="text-[9px] font-medium uppercase tracking-wider">{t('Auto.text_5eba28')}</span>
+                  <span className="text-[9px] font-medium uppercase tracking-wider">{t('key_5eba28')}</span>
                   <input 
                     type="file" 
                     accept="image/*" 
@@ -669,7 +669,7 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
 
             {editSession && editSession.status === 'completed' && (
               <div>
-                <label className="block text-xs font-semibold text-neutral-500 dark:text-neutral-400 mb-1.5 uppercase tracking-wider">{t('Auto.text_6b1caf')}</label>
+                <label className="block text-xs font-semibold text-neutral-500 dark:text-neutral-400 mb-1.5 uppercase tracking-wider">{t('key_6b1caf')}</label>
               <div className="flex flex-wrap gap-3">
                 {existingResultImages.map((url, idx) => (
                   <div 
@@ -705,7 +705,7 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
                 ))}
                 <label className="w-16 h-16 rounded-lg border-2 border-dashed border-neutral-300 dark:border-neutral-700 flex flex-col items-center justify-center text-neutral-500 hover:text-accent-500 hover:border-accent-500 transition-colors cursor-pointer bg-neutral-50 dark:bg-neutral-800/50">
                   <Upload className="w-4 h-4 mb-0.5" />
-                  <span className="text-[9px] font-medium uppercase tracking-wider">{t('Auto.text_5eba28')}</span>
+                  <span className="text-[9px] font-medium uppercase tracking-wider">{t('key_5eba28')}</span>
                   <input 
                     type="file" 
                     accept="image/*" 
@@ -732,7 +732,7 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
                 onClick={() => setShowDeleteConfirm(true)}
                 disabled={loading || isUploading}
                 className="flex items-center justify-center p-3.5 bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 rounded-xl hover:bg-red-100 dark:hover:bg-red-500/20 transition-colors disabled:opacity-50"
-                title={t('Auto.text_aa7147')}
+                title={t('key_aa7147')}
               >
                 <Trash2 className="w-5 h-5" />
               </button>
@@ -743,7 +743,7 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
                 onClick={() => onSellLead(editSession)}
                 disabled={loading || isUploading}
                 className="flex items-center justify-center p-3.5 bg-accent-50 dark:bg-accent-500/10 text-accent-600 dark:text-accent-400 rounded-xl hover:bg-accent-100 dark:hover:bg-accent-500/20 transition-colors disabled:opacity-50"
-                title={t('Auto.text_0c6563')}
+                title={t('key_0c6563')}
               >
                 <Tag className="w-5 h-5" />
               </button>
@@ -755,7 +755,7 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
                   onClick={handleDelete}
                   className="px-4 py-3.5 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl text-sm transition-colors"
                 >
-                  {t('Auto.text_d0fcbe')}
+                  {t('key_d0fcbe')}
                                                   </button>
                 <button
                   type="button"
@@ -774,7 +774,7 @@ export function SessionModal({ isOpen, onClose, onSuccess, initialDate, initialC
               {(loading || isUploading) ? (
                 <div className="w-5 h-5 border-2 border-white/30 dark:border-black/30 border-t-white dark:border-t-black rounded-full animate-spin" />
               ) : (
-                editSession ? t('saveChanges') : t('Auto.text_3f3067')
+                editSession ? t('saveChanges') : t('key_3f3067')
               )}
             </button>
           </div>

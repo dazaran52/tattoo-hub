@@ -120,7 +120,7 @@ export function SessionsList({ sessions, searchQuery, setSearchQuery, onStatusCh
       setSelectedIds(new Set())
       onUpdate()
     } catch (err) {
-      toast.error(t('Auto.text_70f4ad'))
+      toast.error(t('key_70f4ad'))
     }
   }
 
@@ -133,7 +133,7 @@ export function SessionsList({ sessions, searchQuery, setSearchQuery, onStatusCh
       toast.success(`Статус обновлен для ${selectedIds.size} сеансов`)
       setSelectedIds(new Set())
     } catch (err) {
-      toast.error(t('Auto.text_fa1f89'))
+      toast.error(t('key_fa1f89'))
     }
   }
 
@@ -154,14 +154,14 @@ export function SessionsList({ sessions, searchQuery, setSearchQuery, onStatusCh
           >
             <option value="all">{t('crmBoard.list.allStatuses')}</option>
             <option value="new">{t('crmBoard.columns.new')}</option>
-            <option value="discussing">{t('Auto.text_0425ad')}</option>
-            <option value="booked">{t('Auto.text_277bbc')}</option>
+            <option value="discussing">{t('key_0425ad')}</option>
+            <option value="booked">{t('key_277bbc')}</option>
             <option value="in_progress">{t('crmBoard.columns.in_progress')}</option>
             <option value="completed">{t('crmBoard.columns.completed')}</option>
             <option value="cancelled">{t('cancel')}</option>
           </select>
           <div className="text-sm text-neutral-500 font-medium">
-            {t('Auto.text_38d5dd')} {filteredAndSorted.length}
+            {t('key_38d5dd')} {filteredAndSorted.length}
           </div>
         </div>
 
@@ -172,10 +172,10 @@ export function SessionsList({ sessions, searchQuery, setSearchQuery, onStatusCh
               onChange={(e) => { if(e.target.value) handleBulkStatusChange(e.target.value); e.target.value=''; }}
               className="bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-400 border border-primary-200 dark:border-primary-800 rounded-xl px-3 py-1.5 text-sm outline-none font-bold"
             >
-              <option value="">{t('Auto.text_98c05b')}</option>
+              <option value="">{t('key_98c05b')}</option>
               <option value="new">{t('crmBoard.columns.new')}</option>
-              <option value="discussing">{t('Auto.text_0425ad')}</option>
-              <option value="booked">{t('Auto.text_277bbc')}</option>
+              <option value="discussing">{t('key_0425ad')}</option>
+              <option value="booked">{t('key_277bbc')}</option>
               <option value="in_progress">{t('crmBoard.columns.in_progress')}</option>
               <option value="completed">{t('crmBoard.columns.completed')}</option>
               <option value="cancelled">{t('cancel')}</option>
@@ -254,7 +254,7 @@ export function SessionsList({ sessions, searchQuery, setSearchQuery, onStatusCh
                     <div className="font-bold text-neutral-900 dark:text-white flex items-center gap-2">
                       {session.master_clients?.name}
                       {(session.source === 'direct' || (!session.source && (session.master_clients?.source === 'direct' || session.master_clients?.leads?.is_personal))) ? (
-                        <span className="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-[10px] px-2 py-0.5 rounded font-bold">{t('Auto.text_08f3aa')}</span>
+                        <span className="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-[10px] px-2 py-0.5 rounded font-bold">{t('key_08f3aa')}</span>
                       ) : (session.source === 'marketplace' || (!session.source && (session.master_clients?.source === 'marketplace' || (session.master_clients?.lead_id && !session.master_clients?.leads?.is_personal)))) ? (
                         <span className="bg-accent-100 dark:bg-accent-500/20 text-accent-600 dark:text-accent-400 text-[10px] px-2 py-0.5 rounded font-bold">{t('marketplace')}</span>
                       ) : null}
@@ -272,7 +272,7 @@ export function SessionsList({ sessions, searchQuery, setSearchQuery, onStatusCh
                     )}
                     {cardView === 'expanded' && (
                       <div className="text-[10px] text-neutral-400 mt-1">
-                        {t('Auto.text_d4a1ff')} {new Date(session.created_at).toLocaleDateString('ru-RU')}
+                        {t('key_d4a1ff')} {new Date(session.created_at).toLocaleDateString('ru-RU')}
                       </div>
                     )}
                   </td>
@@ -304,8 +304,8 @@ export function SessionsList({ sessions, searchQuery, setSearchQuery, onStatusCh
                       className="bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg px-3 py-1.5 text-sm outline-none font-medium cursor-pointer"
                     >
                       <option value="new">{t('crmBoard.columns.new')}</option>
-                      <option value="discussing">{t('Auto.text_0425ad')}</option>
-                      <option value="booked">{t('Auto.text_277bbc')}</option>
+                      <option value="discussing">{t('key_0425ad')}</option>
+                      <option value="booked">{t('key_277bbc')}</option>
                       <option value="in_progress">{t('crmBoard.columns.in_progress')}</option>
                       <option value="completed">{t('crmBoard.columns.completed')}</option>
                       <option value="cancelled">{t('cancel')}</option>
@@ -318,8 +318,8 @@ export function SessionsList({ sessions, searchQuery, setSearchQuery, onStatusCh
                   variant="table"
                   colSpan={6}
                   icon={<Search className="w-8 h-8" />}
-                  title={t('Auto.text_9aaa16')}
-                  description={searchQuery ? t('Auto.text_307cbd') : t('Auto.text_800a7f')}
+                  title={t('key_9aaa16')}
+                  description={searchQuery ? t('key_307cbd') : t('key_800a7f')}
                 />
               )}
             </tbody>
@@ -350,7 +350,7 @@ export function SessionsList({ sessions, searchQuery, setSearchQuery, onStatusCh
                 {t('back')}
                                             </button>
               <span className="text-sm font-medium px-2">
-                {page} {t('Auto.text_b98ccb')} {totalPages}
+                {page} {t('key_b98ccb')} {totalPages}
               </span>
               <button 
                 onClick={() => setPage(p => Math.min(totalPages, p + 1))}

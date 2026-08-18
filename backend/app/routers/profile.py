@@ -72,6 +72,8 @@ class ProfileResponse(BaseModel):
     role: str | None = None
     is_verified_master: bool = False
     can_create_leads: bool = True
+    can_chat: bool = True
+    ban_reason: str | None = None
     badge_tier: str = "none"
     badge_expires_at: str | None = None
     certificate_url: str | None = None
@@ -592,4 +594,40 @@ async def delete_profile(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error deleting profile: {str(e)}"
+        )
+
+class AppealRequest(BaseModel):
+    appeal_text: str
+
+@router.post("/profile/appeal")
+async def submit_ban_appeal(
+    req: AppealRequest,
+    background_tasks: BackgroundTasks,
+    current_user: AuthUser = Depends(get_current_user),
+    supabase: AsyncClient = Depends(get_async_supabase_client),
+):
+    try:
+        await supabase.table("ban_appeals").insert({
+            "user_id": current_user.user_id,
+            "appeal_text": req.appeal_text,
+            "status": "pending"
+        }).execute()
+        
+        # Notify admins
+        from app.services.notifications import notify_admins
+        from app.services.i18n import get_text
+        import asyncio
+        background_tasks.add_task(
+            asyncio.to_thread,
+            notify_admins,
+            get_text("ru", "notification.new_appeal.title"),
+            get_text("ru", "notification.new_appeal.body"),
+            "/admin?tab=moderation"
+        )
+        
+        return {"status": "ok"}
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e),
         )

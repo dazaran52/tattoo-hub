@@ -138,10 +138,10 @@ export default function ProfilePage() {
       
       setProfile(updated)
       setIsEditing(false)
-      toast.success(language === 'ru' ? t('Auto.text_707972') : 'Profile saved')
+      toast.success(language === 'ru' ? t('key_707972') : 'Profile saved')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to save profile')
-      toast.error(language === 'ru' ? t('Auto.text_03870f') : 'Save failed')
+      toast.error(language === 'ru' ? t('key_03870f') : 'Save failed')
     } finally {
       setIsSaving(false)
     }
@@ -171,9 +171,9 @@ export default function ProfilePage() {
       
       const updated = await api.updateProfile({ avatar_url: data.publicUrl })
       setProfile(updated)
-      toast.success(language === 'ru' ? t('Auto.text_3bf0a3') : 'Avatar updated')
+      toast.success(language === 'ru' ? t('key_3bf0a3') : 'Avatar updated')
     } catch (error: any) {
-      toast.error(language === 'ru' ? t('Auto.text_bacef8') : 'Upload error')
+      toast.error(language === 'ru' ? t('key_bacef8') : 'Upload error')
       console.error(error)
     } finally {
       setIsUploading(false)
@@ -190,7 +190,7 @@ export default function ProfilePage() {
 
   const copyPublicLink = async () => {
     if (!profile?.username) {
-      toast.error(language === 'ru' ? t('Auto.text_2fcf8a') : 'Set username first')
+      toast.error(language === 'ru' ? t('username3') : 'Set username first')
       return
     }
     const url = `${window.location.origin}/book/${profile.username}`
@@ -199,7 +199,7 @@ export default function ProfilePage() {
       try {
         await navigator.share({
           title: profile.display_name || 'Tattoo Master',
-          text: language === 'ru' ? t('Auto.text_3c6e98') : 'Book a session with me!',
+          text: language === 'ru' ? t('key_3c6e98') : 'Book a session with me!',
           url: url
         })
         return
@@ -210,7 +210,7 @@ export default function ProfilePage() {
     }
 
     navigator.clipboard.writeText(url)
-    toast.success(language === 'ru' ? t('Auto.text_fbd40e') : 'Link copied')
+    toast.success(language === 'ru' ? t('key_fbd40e') : 'Link copied')
   }
 
   if (isLoading) {
@@ -253,7 +253,7 @@ export default function ProfilePage() {
               <ArrowLeft className="w-5 h-5" />
               {t('back')}
             </button>
-            <h1 className="text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-white">{t('Auto.text_2bb0a6')}</h1>
+            <h1 className="text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-white">{t('key_2bb0a6')}</h1>
           </div>
           <button
             onClick={() => isEditing ? handleSave() : setIsEditing(true)}
@@ -345,10 +345,10 @@ export default function ProfilePage() {
               <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2" />
               <h3 className="font-bold text-lg mb-2 flex items-center gap-2">
                 <Globe className="w-5 h-5" />
-                {t('Auto.text_18f9b5')}
+                {t('key_18f9b5')}
                                             </h3>
               <p className="text-primary-100 text-sm mb-4">
-                {t('Auto.text_68ebab')}
+                {t('key_68ebab')}
                                             </p>
               
               <div className="bg-black/20 rounded-xl p-3 flex items-center justify-between backdrop-blur-sm border border-white/10 mt-4">
@@ -359,20 +359,20 @@ export default function ProfilePage() {
                   <button 
                     onClick={() => {
                       if (!profile.username) {
-                        toast.error(language === 'ru' ? t('Auto.text_2fcf8a') : 'Set username first')
+                        toast.error(language === 'ru' ? t('username3') : 'Set username first')
                         return
                       }
                       setIsQRModalOpen(true)
                     }}
                     className="p-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors tooltip"
-                    title={language === 'ru' ? t('Auto.text_0277e9') : 'Show QR Code'}
+                    title={language === 'ru' ? t('qr2') : 'Show QR Code'}
                   >
                     <QrCode className="w-4 h-4" />
                   </button>
                   <button 
                     onClick={copyPublicLink}
                     className="p-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors tooltip"
-                    title={language === 'ru' ? t('Auto.text_87bc9c') : 'Share'}
+                    title={language === 'ru' ? t('key_87bc9c') : 'Share'}
                   >
                     <Share2 className="w-4 h-4" />
                   </button>
@@ -393,18 +393,18 @@ export default function ProfilePage() {
                         <div className="flex items-center gap-2">
                           <Crown className="w-6 h-6 text-amber-400 animate-bounce" />
                           <span className="font-extrabold text-lg text-neutral-900 dark:text-white">
-                            {profile.badge_tier === 'vip' ? t('Auto.text_5cdda5') : t('Auto.text_5a5522')}
+                            {profile.badge_tier === 'vip' ? t('vip3') : t('pro')}
                           </span>
                         </div>
                         <MasterTierBadge badgeTier={profile.badge_tier} />
                       </div>
                       <p className="text-xs text-neutral-600 dark:text-neutral-300 font-medium mb-4 leading-relaxed">
                         {profile.badge_tier === 'vip' 
-                          ? t('Auto.text_da10e3') 
-                          : t('Auto.text_7e299a')}
+                          ? t('0') 
+                          : t('10Pro')}
                         {profile.badge_expires_at && (
                           <span className="block mt-1.5 font-bold text-amber-500 dark:text-amber-400">
-                            {t('Auto.text_611ed2')} {new Date(profile.badge_expires_at).toLocaleDateString('ru-RU')}
+                            {t('key_611ed2')} {new Date(profile.badge_expires_at).toLocaleDateString('ru-RU')}
                           </span>
                         )}
                       </p>
@@ -413,7 +413,7 @@ export default function ProfilePage() {
                         className="w-full py-3 px-4 rounded-2xl bg-gradient-to-r from-amber-500 to-rose-600 hover:opacity-95 text-white font-black text-sm transition-all shadow-lg shadow-amber-500/25 flex items-center justify-center gap-2 group/btn active:scale-95 cursor-pointer"
                       >
                         <Sparkles className="w-4 h-4 text-amber-200" />
-                        <span>{profile.badge_tier === 'vip' ? t('Auto.text_302ec6') : t('Auto.text_143063')}</span>
+                        <span>{profile.badge_tier === 'vip' ? t('vip300Czk3') : t('vip300Czk2')}</span>
                         <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
                       </button>
                     </>
@@ -422,21 +422,21 @@ export default function ProfilePage() {
                       <div className="flex items-center gap-2 mb-2">
                         <Crown className="w-6 h-6 text-amber-400 animate-pulse" />
                         <span className="font-black text-lg text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-rose-400 to-purple-400">
-                          {t('Auto.text_05b29a')}
+                          {t('vip2')}
                                                                               </span>
                       </div>
                       <h4 className="text-sm font-extrabold text-neutral-900 dark:text-white mb-2 leading-snug">
-                        {t('Auto.text_76787b')}
+                        {t('vip')}
                                                                         </h4>
                       <p className="text-xs text-neutral-600 dark:text-neutral-300 font-medium mb-4 leading-relaxed">
-                        {t('Auto.text_a3096d')} <strong className="text-amber-500 dark:text-amber-400 font-black">300 CZK</strong> {t('Auto.text_0cb4af')}
+                        {t('3')} <strong className="text-amber-500 dark:text-amber-400 font-black">300 CZK</strong> {t('key_0cb4af')}
                                                                         </p>
                       <button
                         onClick={() => router.push('/top-up?plan=vip')}
                         className="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-amber-500 via-rose-500 to-purple-600 hover:opacity-95 text-white font-black text-sm transition-all shadow-xl shadow-amber-500/25 flex items-center justify-center gap-2 group/btn hover:scale-[1.02] active:scale-98 cursor-pointer"
                       >
                         <Sparkles className="w-4 h-4 text-amber-200" />
-                        <span>{t('Auto.text_dbd7a9')}</span>
+                        <span>{t('vip300Czk')}</span>
                         <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
                       </button>
                     </>
@@ -459,7 +459,7 @@ export default function ProfilePage() {
             <div className="bg-white/60 dark:bg-neutral-900/60 backdrop-blur-xl border border-white/40 dark:border-white/5 rounded-3xl p-6 md:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.2)]">
               <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
                 <User className="w-5 h-5 text-primary-500" />
-                {t('Auto.text_6feccb')}
+                {t('key_6feccb')}
                                             </h3>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -493,7 +493,7 @@ export default function ProfilePage() {
                     onChange={e => setBio(e.target.value)}
                     disabled={!isEditing}
                     rows={3}
-                    placeholder={t('Auto.text_48b3da')}
+                    placeholder={t('key_48b3da')}
                     className="w-full bg-white dark:bg-black/50 border border-neutral-200 dark:border-neutral-800 rounded-xl px-4 py-3 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all disabled:opacity-70 font-medium resize-none"
                   />
                 </div>
@@ -511,7 +511,7 @@ export default function ProfilePage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-bold text-neutral-700 dark:text-neutral-300 mb-2">{t('Auto.text_9fdc3f')}</label>
+                  <label className="block text-sm font-bold text-neutral-700 dark:text-neutral-300 mb-2">{t('key_9fdc3f')}</label>
                   <input
                     type="text"
                     value={phone}
@@ -525,7 +525,7 @@ export default function ProfilePage() {
                 {/* Styles */}
                 <div className="md:col-span-2 mt-4 pt-4 border-t border-neutral-100 dark:border-neutral-800">
                   <label className="block text-sm font-bold text-neutral-700 dark:text-neutral-300 mb-4">
-                    {t('Auto.text_e9c05a')}
+                    {t('key_e9c05a')}
                                                         </label>
                   <div className="flex flex-wrap gap-2">
                     {TATTOO_STYLES.map(style => {
@@ -591,11 +591,11 @@ export default function ProfilePage() {
                 {/* Theme Selector */}
                 <div className="md:col-span-2 mt-4 pt-4 border-t border-neutral-100 dark:border-neutral-800">
                   <label className="block text-sm font-bold text-neutral-700 dark:text-neutral-300 mb-4">
-                    {t('Auto.text_e781d4')}
+                    {t('key_e781d4')}
                                                         </label>
                   <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
                     {[
-                      { id: 'system', name: t('Auto.text_edb3f9'), classes: 'bg-gradient-to-r from-neutral-200 to-neutral-800 text-black dark:text-white border-neutral-300 dark:border-neutral-700' },
+                      { id: 'system', name: t('key_edb3f9'), classes: 'bg-gradient-to-r from-neutral-200 to-neutral-800 text-black dark:text-white border-neutral-300 dark:border-neutral-700' },
                       { id: 'light', name: t('light'), classes: 'bg-white text-black border-neutral-200 shadow-sm' },
                       { id: 'dark', name: t('dark'), classes: 'bg-neutral-900 text-white border-neutral-700' },
                       { id: 'violet', name: 'Violet', classes: 'bg-gradient-to-br from-primary-600 to-primary-900 text-white border-primary-500' },

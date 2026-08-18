@@ -97,12 +97,12 @@ export default function ClientPortalPage() {
 
   const sendMessage = async (e: React.FormEvent) => {
     e.preventDefault()
-    toast.error(t('Auto.text_5fb4c2'))
+    toast.error(t('key_5fb4c2'))
     window.location.href = '/login'
   }
 
   const acceptProposal = async (masterId: string) => {
-    toast.error(t('Auto.text_e04f9d'))
+    toast.error(t('key_e04f9d'))
     window.location.href = '/login'
   }
 
@@ -127,21 +127,21 @@ export default function ClientPortalPage() {
           <h1 className="text-2xl font-bold text-neutral-900 dark:text-white mb-2">{leadData.title}</h1>
           <p className="text-neutral-600 dark:text-neutral-400">{leadData.description}</p>
           <div className="mt-4 inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 text-sm font-bold">
-            {leadData.client_priority === 'cheap' ? t('Auto.text_a952bc') :
-             leadData.client_priority === 'fast' ? t('Auto.text_91e970') : t('Auto.text_a60dfe')}
+            {leadData.client_priority === 'cheap' ? t('key_a952bc') :
+             leadData.client_priority === 'fast' ? t('key_91e970') : t('key_a60dfe')}
           </div>
         </div>
 
         {isAnyAccepted && (
           <div className="bg-green-500/10 border border-green-500/20 p-4 rounded-3xl text-green-700 dark:text-green-400 font-bold flex items-center gap-3">
             <Check className="w-6 h-6" />
-            {t('Auto.text_8ca437')}
+            {t('key_8ca437')}
                                 </div>
         )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div className="space-y-4">
-            <h2 className="text-xl font-bold text-neutral-900 dark:text-white">{t('Auto.text_63dcb2')}{leadData.proposals.length})</h2>
+            <h2 className="text-xl font-bold text-neutral-900 dark:text-white">{t('key_63dcb2')}{leadData.proposals.length})</h2>
             
             {leadData.proposals.map(p => (
               <div 
@@ -170,9 +170,9 @@ export default function ClientPortalPage() {
                     <div>
                       <div className="font-bold text-neutral-900 dark:text-white">{p.master_name}</div>
                       <div className="text-xs text-neutral-500">
-                        {isSelectedStatus(p.status) && <span className="text-green-500">{t('Auto.text_3b40e3')}</span>}
-                        {p.status === 'pending' && <span className="text-amber-500">{t('Auto.text_4278b3')}</span>}
-                        {p.status === 'rejected' && <span className="text-red-500">{t('Auto.text_5a22a7')}</span>}
+                        {isSelectedStatus(p.status) && <span className="text-green-500">{t('key_3b40e3')}</span>}
+                        {p.status === 'pending' && <span className="text-amber-500">{t('key_4278b3')}</span>}
+                        {p.status === 'rejected' && <span className="text-red-500">{t('key_5a22a7')}</span>}
                       </div>
                     </div>
                   </div>
@@ -181,7 +181,7 @@ export default function ClientPortalPage() {
                   </div>
                 </div>
                 <div className="text-sm text-neutral-600 dark:text-neutral-400 bg-neutral-100 dark:bg-neutral-900 p-3 rounded-xl mb-3">
-                  <span className="font-bold block mb-1">{t('Auto.text_f5bdc8')}</span>
+                  <span className="font-bold block mb-1">{t('key_f5bdc8')}</span>
                   {p.proposed_dates}
                 </div>
 
@@ -190,7 +190,7 @@ export default function ClientPortalPage() {
                     onClick={(e) => { e.stopPropagation(); acceptProposal(p.master_id) }}
                     className="w-full bg-neutral-900 hover:bg-neutral-800 dark:bg-white dark:hover:bg-neutral-200 text-white dark:text-neutral-900 font-bold py-2.5 rounded-xl transition-all flex items-center justify-center gap-2"
                   >
-                    <Check className="w-4 h-4" /> {t('Auto.text_91e9b6')}
+                    <Check className="w-4 h-4" /> {t('key_91e9b6')}
                                               </button>
                 )}
               </div>
@@ -198,7 +198,7 @@ export default function ClientPortalPage() {
 
             {leadData.proposals.length === 0 && (
               <div className="text-center p-8 bg-white dark:bg-neutral-800 rounded-3xl border border-neutral-200 dark:border-white/5 text-neutral-500">
-                {t('Auto.text_62dd69')}
+                {t('key_62dd69')}
                                             </div>
             )}
           </div>
@@ -209,17 +209,17 @@ export default function ClientPortalPage() {
                 <div className="p-4 border-b border-neutral-100 dark:border-white/5 bg-neutral-50/50 dark:bg-neutral-900/50 flex justify-between items-center">
                   <h3 className="font-bold text-neutral-900 dark:text-white flex items-center gap-2">
                     <MessageCircle className="w-5 h-5 text-primary-500" /> 
-                    {t('Auto.text_175e7b')} {selectedProposal.master_name}
+                    {t('key_175e7b')} {selectedProposal.master_name}
                   </h3>
                 </div>
 
                 <div className="flex-1 overflow-y-auto p-4 space-y-4">
 
                   {chatLoading ? (
-                    <div className="text-center text-neutral-400 py-4">{t('Auto.text_c69b6d')}</div>
+                    <div className="text-center text-neutral-400 py-4">{t('key_c69b6d')}</div>
                   ) : messages.length === 0 ? (
                     <div className="text-center text-neutral-400 py-4 text-sm">
-                      {t('Auto.text_61c279')}
+                      {t('key_61c279')}
                                                                   </div>
                   ) : (
                     messages.map(msg => (
@@ -261,7 +261,7 @@ export default function ClientPortalPage() {
               </div>
             ) : (
               <div className="h-full border-2 border-dashed border-neutral-200 dark:border-white/10 rounded-3xl flex items-center justify-center text-neutral-400 p-8 text-center min-h-[300px]">
-                {t('Auto.text_95d25c')}
+                {t('key_95d25c')}
                                                 </div>
             )}
           </div>

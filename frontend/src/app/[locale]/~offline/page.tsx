@@ -14,10 +14,10 @@ export default function OfflinePage() {
         <WifiOff className="w-12 h-12 text-neutral-400 dark:text-neutral-500" />
       </div>
       <h1 className="text-2xl md:text-3xl font-bold text-neutral-900 dark:text-white mb-3">
-        {t('Auto.text_ed8648')}
+        {t('key_ed8648')}
                     </h1>
       <p className="text-neutral-500 dark:text-neutral-400 max-w-md mb-8">
-        {t('Auto.text_5da4cd')}
+        {t('key_5da4cd')}
                     </p>
       <Link 
         href="/"

@@ -44,7 +44,7 @@ export function ClientLeadDetailsModal({ isOpen, onClose, lead, onNavigateToCRM 
             </div>
             <div>
               <p className="text-xs text-neutral-500 font-bold uppercase">{t('crmBoard.sizeLabel')}</p>
-              <p className="font-semibold text-neutral-900 dark:text-white">{lead.size || t('Auto.text_cdded4')}</p>
+              <p className="font-semibold text-neutral-900 dark:text-white">{lead.size || t('key_cdded4')}</p>
             </div>
           </div>
 
@@ -54,7 +54,7 @@ export function ClientLeadDetailsModal({ isOpen, onClose, lead, onNavigateToCRM 
             </div>
             <div>
               <p className="text-xs text-neutral-500 font-bold uppercase">{t('leadWizard.styleLabel')}</p>
-              <p className="font-semibold text-neutral-900 dark:text-white">{lead.style || t('Auto.text_cdded4')}</p>
+              <p className="font-semibold text-neutral-900 dark:text-white">{lead.style || t('key_cdded4')}</p>
             </div>
           </div>
 
@@ -64,7 +64,7 @@ export function ClientLeadDetailsModal({ isOpen, onClose, lead, onNavigateToCRM 
             </div>
             <div>
               <p className="text-xs text-neutral-500 font-bold uppercase">{t('crmBoard.placeLabel')}</p>
-              <p className="font-semibold text-neutral-900 dark:text-white">{lead.body_place || t('Auto.text_7cddff')}</p>
+              <p className="font-semibold text-neutral-900 dark:text-white">{lead.body_place || t('key_7cddff')}</p>
             </div>
           </div>
 
@@ -75,7 +75,7 @@ export function ClientLeadDetailsModal({ isOpen, onClose, lead, onNavigateToCRM 
             <div>
               <p className="text-xs text-neutral-500 font-bold uppercase">{t('leadWizard.cityLabel')}</p>
               <p className="font-semibold text-neutral-900 dark:text-white">
-                {lead.cities?.name_ru || lead.city_name || t('Auto.text_cdded4')}
+                {lead.cities?.name_ru || lead.city_name || t('key_cdded4')}
               </p>
             </div>
           </div>
@@ -87,7 +87,7 @@ export function ClientLeadDetailsModal({ isOpen, onClose, lead, onNavigateToCRM 
             <div>
               <p className="text-xs text-neutral-500 font-bold uppercase">{t('budgetLabel')}</p>
               <p className="font-semibold text-neutral-900 dark:text-white">
-                {lead.is_negotiable_budget ? t('Auto.text_bea4da') : `${lead.client_budget} ${lead.client_currency || 'CZK'}`}
+                {lead.is_negotiable_budget ? t('key_bea4da') : `${lead.client_budget} ${lead.client_currency || 'CZK'}`}
               </p>
             </div>
           </div>
@@ -107,7 +107,7 @@ export function ClientLeadDetailsModal({ isOpen, onClose, lead, onNavigateToCRM 
 
         {images.length > 0 && (
           <div className="mt-6">
-            <p className="text-xs text-neutral-500 font-bold uppercase mb-3">{t('Auto.text_b46518')}{images.length})</p>
+            <p className="text-xs text-neutral-500 font-bold uppercase mb-3">{t('key_b46518')}{images.length})</p>
             <div className="flex gap-2 overflow-x-auto pb-2 snap-x">
               {images.map((img: string, i: number) => (
                 <div 
@@ -134,7 +134,7 @@ export function ClientLeadDetailsModal({ isOpen, onClose, lead, onNavigateToCRM 
               onClick={onNavigateToCRM}
               className="flex-1 py-3 px-4 bg-primary-600 hover:bg-primary-700 text-white font-bold rounded-xl transition-colors"
             >
-              {t('Auto.text_55db8e')}
+              {t('key_55db8e')}
                                       </button>
           )}
         </div>

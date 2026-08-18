@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
 from pydantic import BaseModel
 from typing import List, Optional
 from supabase.client import Client
@@ -14,6 +14,7 @@ class DisputeCreate(BaseModel):
 @router.post("", status_code=status.HTTP_201_CREATED)
 def create_dispute(
     payload: DisputeCreate,
+    background_tasks: BackgroundTasks,
     current_user: AuthUser = Depends(get_current_user),
     supabase: Client = Depends(get_supabase_client)
 ):
@@ -47,6 +48,24 @@ def create_dispute(
         
         if not insert_res.data:
             raise HTTPException(status_code=400, detail="Failed to create dispute")
+            
+        # Notify admins
+        from app.services.notifications import notify_admins
+        from app.services.i18n import get_text
+        import threading
+        # We use threading here since this is a sync route
+        def notify():
+            try:
+                # Default to Russian for admins
+                notify_admins(
+                    get_text("ru", "notification.new_dispute.title"),
+                    get_text("ru", "notification.new_dispute.body"),
+                    "/admin?tab=disputes"
+                )
+            except Exception as e:
+                print(f"Failed to notify admins: {e}")
+                
+        background_tasks.add_task(notify)
             
         return {"success": True, "dispute": insert_res.data[0]}
 

@@ -25,7 +25,7 @@ export function CompleteSessionModal({ isOpen, onClose, sessionId, onSuccess }: 
     if (e.target.files) {
       const filesArray = Array.from(e.target.files)
       if (images.length + filesArray.length > 5) {
-        toast.error(t('Auto.text_3764e8'))
+        toast.error(t('52'))
         return
       }
       // Check sizes
@@ -97,12 +97,12 @@ export function CompleteSessionModal({ isOpen, onClose, sessionId, onSuccess }: 
 
       if (!res.ok) throw new Error('Failed to complete session')
 
-      toast.success(t('Auto.text_27a90e'))
+      toast.success(t('key_27a90e'))
       onSuccess()
       onClose()
     } catch (e) {
       console.error(e)
-      toast.error(t('Auto.text_a1fd7c'))
+      toast.error(t('key_a1fd7c'))
     } finally {
       setLoading(false)
     }
@@ -127,20 +127,20 @@ export function CompleteSessionModal({ isOpen, onClose, sessionId, onSuccess }: 
         >
           <div className="p-6">
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-bold">{t('Auto.text_61e71f')}</h2>
+              <h2 className="text-xl font-bold">{t('key_61e71f')}</h2>
               <button onClick={onClose} className="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-full">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             <p className="text-sm text-neutral-500 mb-6">
-              {t('Auto.text_6b4638')}
+              {t('key_6b4638')}
                                       </p>
 
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-bold text-neutral-700 dark:text-neutral-300 mb-2">
-                  {t('Auto.text_9734c2')}
+                  {t('5')}
                                                   </label>
                 {images.length < 5 && (
                   <div className="border-2 border-dashed border-neutral-200 dark:border-neutral-800 rounded-xl p-4 text-center hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors">
@@ -154,7 +154,7 @@ export function CompleteSessionModal({ isOpen, onClose, sessionId, onSuccess }: 
                     />
                     <label htmlFor="portfolio-upload" className="cursor-pointer flex flex-col items-center gap-2 text-neutral-500">
                       <Upload className="w-8 h-8" />
-                      <span className="text-sm font-semibold">{t('Auto.text_84df5d')}</span>
+                      <span className="text-sm font-semibold">{t('key_84df5d')}</span>
                     </label>
                   </div>
                 )}
@@ -187,12 +187,12 @@ export function CompleteSessionModal({ isOpen, onClose, sessionId, onSuccess }: 
               {publishToPortfolio && (
                 <div>
                   <label className="block text-sm font-bold text-neutral-700 dark:text-neutral-300 mb-2">
-                    {t('Auto.text_1c6332')}
+                    {t('key_1c6332')}
                                                         </label>
                   <textarea
                     value={description}
                     onChange={e => setDescription(e.target.value)}
-                    placeholder={t('Auto.text_808acd')}
+                    placeholder={t('1')}
                     className="w-full h-24 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl p-3 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none text-sm"
                   />
                 </div>
@@ -205,7 +205,7 @@ export function CompleteSessionModal({ isOpen, onClose, sessionId, onSuccess }: 
                   onChange={e => setPublishToPortfolio(e.target.checked)}
                   className="w-5 h-5 rounded border-neutral-300 text-primary-600 focus:ring-primary-500"
                 />
-                <span className="text-sm font-medium">{t('Auto.text_87a3ad')}</span>
+                <span className="text-sm font-medium">{t('key_87a3ad')}</span>
               </label>
 
               <label className="flex items-center gap-3 p-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-xl cursor-pointer">
@@ -215,7 +215,7 @@ export function CompleteSessionModal({ isOpen, onClose, sessionId, onSuccess }: 
                   onChange={e => setSendReviewRequest(e.target.checked)}
                   className="w-5 h-5 rounded border-neutral-300 text-primary-600 focus:ring-primary-500"
                 />
-                <span className="text-sm font-medium">{t('Auto.text_6cee16')}</span>
+                <span className="text-sm font-medium">{t('key_6cee16')}</span>
               </label>
 
               <button
@@ -224,7 +224,7 @@ export function CompleteSessionModal({ isOpen, onClose, sessionId, onSuccess }: 
                 className="w-full py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-bold flex items-center justify-center gap-2 transition-colors disabled:opacity-50"
               >
                 {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <ImageIcon className="w-5 h-5" />}
-                {t('Auto.text_103592')}
+                {t('key_103592')}
                                             </button>
             </div>
           </div>

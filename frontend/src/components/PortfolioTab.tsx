@@ -48,7 +48,7 @@ export function PortfolioTab({ profile }: PortfolioTabProps) {
 
   const handleCreatePost = async () => {
     if (newFiles.length === 0) {
-      alert(lang === 'ru' ? t('Auto.text_fdd13f') : 'Select at least one file')
+      alert(lang === 'ru' ? t('key_fdd13f') : 'Select at least one file')
       return
     }
 
@@ -115,7 +115,7 @@ export function PortfolioTab({ profile }: PortfolioTabProps) {
       setNewDescription('')
     } catch (err) {
       console.error(err)
-      alert(lang === 'ru' ? t('Auto.text_ca2e8b') : 'Error creating post')
+      alert(lang === 'ru' ? t('key_ca2e8b') : 'Error creating post')
     } finally {
       setIsUploading(false)
     }
@@ -125,7 +125,7 @@ export function PortfolioTab({ profile }: PortfolioTabProps) {
     if (e.target.files) {
       const filesArray = Array.from(e.target.files)
       if (newFiles.length + filesArray.length > 5) {
-        alert(lang === 'ru' ? t('Auto.text_3764e8') : 'Max 5 files')
+        alert(lang === 'ru' ? t('52') : 'Max 5 files')
         return
       }
       setNewFiles(prev => [...prev, ...filesArray])
@@ -141,14 +141,14 @@ export function PortfolioTab({ profile }: PortfolioTabProps) {
       <div className="flex justify-between items-center mb-8">
         <div>
           <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">{t('portfolio')}</h2>
-          <p className="text-neutral-500 text-sm mt-1">{t('Auto.text_2146f1')}</p>
+          <p className="text-neutral-500 text-sm mt-1">{t('56')}</p>
         </div>
         <button
           onClick={() => setIsCreating(true)}
           className="flex items-center gap-2 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 px-5 py-2.5 rounded-xl font-bold hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-colors"
         >
           <Plus className="w-5 h-5" />
-          {t('Auto.text_e7d2ad')}
+          {t('key_e7d2ad')}
                           </button>
       </div>
 
@@ -162,9 +162,9 @@ export function PortfolioTab({ profile }: PortfolioTabProps) {
         <EmptyState
           className="py-16 border-dashed"
           icon={<ImageIcon className="w-10 h-10 text-neutral-400" />}
-          title={t('Auto.text_9cdd69')}
-          description={t('Auto.text_dd63d7')}
-          actionLabel={t('Auto.text_144882')}
+          title={t('key_9cdd69')}
+          description={t('key_dd63d7')}
+          actionLabel={t('key_144882')}
           onAction={() => setIsCreating(true)}
         />
       ) : (
@@ -202,7 +202,7 @@ export function PortfolioTab({ profile }: PortfolioTabProps) {
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
           <div className="bg-white dark:bg-neutral-900 rounded-3xl w-full max-w-2xl overflow-hidden shadow-2xl relative flex flex-col max-h-[90vh]">
             <div className="p-6 border-b border-neutral-200 dark:border-neutral-800 flex justify-between items-center">
-              <h3 className="text-xl font-bold">{t('Auto.text_e7d2ad')}</h3>
+              <h3 className="text-xl font-bold">{t('key_e7d2ad')}</h3>
               <button onClick={() => !isUploading && setIsCreating(false)} className="text-neutral-500 hover:text-neutral-900 dark:hover:text-white transition-colors">
                 <X className="w-6 h-6" />
               </button>
@@ -210,7 +210,7 @@ export function PortfolioTab({ profile }: PortfolioTabProps) {
             
             <div className="p-6 overflow-y-auto">
               <div className="mb-6">
-                <label className="block text-sm font-semibold mb-2">{t('Auto.text_a56ae9')}</label>
+                <label className="block text-sm font-semibold mb-2">{t('550')}</label>
                 <div className="grid grid-cols-3 gap-3 mb-3">
                   {newFiles.map((file, idx) => {
                     const isVid = file.type.startsWith('video/')
@@ -234,7 +234,7 @@ export function PortfolioTab({ profile }: PortfolioTabProps) {
                   {newFiles.length < 5 && (
                     <label className="aspect-square rounded-xl border-2 border-dashed border-neutral-300 dark:border-neutral-700 flex flex-col items-center justify-center cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors">
                       <Plus className="w-6 h-6 text-neutral-400 mb-1" />
-                      <span className="text-xs text-neutral-500 font-medium">{t('Auto.text_5eba28')}</span>
+                      <span className="text-xs text-neutral-500 font-medium">{t('key_5eba28')}</span>
                       <input 
                         type="file" 
                         accept="image/*,video/*" 
@@ -252,7 +252,7 @@ export function PortfolioTab({ profile }: PortfolioTabProps) {
                 <textarea
                   value={newDescription}
                   onChange={e => setNewDescription(e.target.value)}
-                  placeholder={t('Auto.text_91ed30')}
+                  placeholder={t('key_91ed30')}
                   className="w-full h-32 bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-xl p-4 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-accent-500 resize-none"
                 />
               </div>

@@ -1079,9 +1079,52 @@ const translations: Translations = {
   },
 };
 
+import ruDict from '../i18n/dictionaries/ru.json';
+import enDict from '../i18n/dictionaries/en.json';
+import csDict from '../i18n/dictionaries/cs.json';
+import ukDict from '../i18n/dictionaries/uk.json';
+
+const dictionaries: Record<Language, any> = {
+  ru: ruDict,
+  en: enDict,
+  cs: csDict,
+  uk: ukDict
+};
+
 export function getTranslation(lang: Language, key: string): string {
+  // Try resolving from dictionaries first
+  if (key.includes('.')) {
+    const parts = key.split('.');
+    let obj = dictionaries[lang];
+    for (const p of parts) {
+      if (obj && typeof obj === 'object') {
+        obj = obj[p];
+      } else {
+        obj = undefined;
+        break;
+      }
+    }
+    if (typeof obj === 'string') return obj;
+    
+    // Fallback to English dictionary
+    obj = dictionaries['en'];
+    for (const p of parts) {
+      if (obj && typeof obj === 'object') {
+        obj = obj[p];
+      } else {
+        obj = undefined;
+        break;
+      }
+    }
+    if (typeof obj === 'string') return obj;
+  } else {
+    // Top level lookup in dictionary
+    if (dictionaries[lang] && typeof dictionaries[lang][key] === 'string') return dictionaries[lang][key];
+    if (dictionaries['en'] && typeof dictionaries['en'][key] === 'string') return dictionaries['en'][key];
+  }
+
   // @ts-ignore
-  return translations[lang][key] || translations['en'][key] || key;
+  return translations[lang]?.[key] || translations['en']?.[key] || key;
 }
 
 export type { Language, Translations };

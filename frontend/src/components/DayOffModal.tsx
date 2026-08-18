@@ -37,12 +37,12 @@ export function DayOffModal({ isOpen, onClose, onSuccess }: DayOffModalProps) {
 
       if (!res.ok) throw new Error('Failed to create day off')
       
-      toast.success(t('Auto.text_2dfb6f'))
+      toast.success(t('key_2dfb6f'))
       onSuccess()
       onClose()
       setSessionDate('')
     } catch (err: any) {
-      toast.error(err.message || t('Auto.text_6c6f3b'))
+      toast.error(err.message || t('key_6c6f3b'))
     } finally {
       setLoading(false)
     }
@@ -52,7 +52,7 @@ export function DayOffModal({ isOpen, onClose, onSuccess }: DayOffModalProps) {
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
       <div className="bg-white dark:bg-neutral-900 rounded-3xl w-full max-w-sm shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
         <div className="flex justify-between items-center p-6 border-b border-neutral-100 dark:border-white/5 bg-red-50 dark:bg-red-900/10">
-          <h2 className="text-xl font-bold text-red-600 dark:text-red-400">{t('Auto.text_b4e8dd')}</h2>
+          <h2 className="text-xl font-bold text-red-600 dark:text-red-400">{t('key_b4e8dd')}</h2>
           <button onClick={onClose} className="p-2 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-full text-red-500 transition-colors">
             <X className="w-5 h-5" />
           </button>
@@ -60,7 +60,7 @@ export function DayOffModal({ isOpen, onClose, onSuccess }: DayOffModalProps) {
         
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           <div>
-            <label className="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-1">{t('Auto.text_b342e0')}</label>
+            <label className="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-1">{t('key_b342e0')}</label>
             <div className="relative">
               <CalendarIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
               <input
@@ -78,7 +78,7 @@ export function DayOffModal({ isOpen, onClose, onSuccess }: DayOffModalProps) {
             disabled={loading || !sessionDate}
             className="w-full py-4 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl shadow-lg transition-colors disabled:opacity-50 mt-4"
           >
-            {loading ? t('Auto.text_a96b15') : t('Auto.text_30d985')}
+            {loading ? t('key_a96b15') : t('key_30d985')}
           </button>
         </form>
       </div>

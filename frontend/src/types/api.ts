@@ -14,6 +14,7 @@ export interface Profile {
   badge_expires_at?: string
   can_create_leads?: boolean
   can_chat?: boolean
+  ban_reason?: string
 }
 
 export interface Lead {

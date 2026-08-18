@@ -21,7 +21,7 @@ export default function ReviewPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (rating === 0) {
-      setError(t('Auto.text_7d3841'))
+      setError(t('156'))
       return
     }
 
@@ -29,7 +29,7 @@ export default function ReviewPage() {
       setIsSubmitting(true)
       setError(null)
       const { data: { session } } = await supabase.auth.getSession()
-      if (!session) throw new Error(t('Auto.text_b169f6'))
+      if (!session) throw new Error(t('key_b169f6'))
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/reviews/${params.session_id}`, {
         method: 'POST',
         headers: {
@@ -41,12 +41,12 @@ export default function ReviewPage() {
 
       if (!res.ok) {
         const data = await res.json()
-        throw new Error(data.detail || t('Auto.text_543246'))
+        throw new Error(data.detail || t('key_543246'))
       }
 
       setIsSuccess(true)
     } catch (err) {
-      setError(err instanceof Error ? err.message : t('Auto.text_3e1161'))
+      setError(err instanceof Error ? err.message : t('key_3e1161'))
     } finally {
       setIsSubmitting(false)
     }
@@ -59,15 +59,15 @@ export default function ReviewPage() {
           <div className="w-20 h-20 bg-green-100 dark:bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
             <CheckCircle className="w-10 h-10 text-green-500" />
           </div>
-          <h1 className="text-2xl font-bold text-neutral-900 dark:text-white mb-2">{t('Auto.text_333d99')}</h1>
+          <h1 className="text-2xl font-bold text-neutral-900 dark:text-white mb-2">{t('key_333d99')}</h1>
           <p className="text-neutral-500 dark:text-neutral-400 mb-8">
-            {t('Auto.text_2217e5')}
+            {t('key_2217e5')}
                               </p>
           <button 
             onClick={() => router.push('/')}
             className="w-full bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 font-bold py-3 rounded-xl hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-colors"
           >
-            {t('Auto.text_3ddda6')}
+            {t('key_3ddda6')}
                               </button>
         </div>
       </div>
@@ -77,9 +77,9 @@ export default function ReviewPage() {
   return (
     <div className="min-h-screen bg-neutral-50 dark:bg-[#050505] flex flex-col items-center justify-center p-4">
       <div className="bg-white dark:bg-neutral-900 rounded-3xl p-8 max-w-md w-full shadow-2xl border border-neutral-200 dark:border-neutral-800">
-        <h1 className="text-2xl font-bold text-neutral-900 dark:text-white mb-2 text-center">{t('Auto.text_c45fb0')}</h1>
+        <h1 className="text-2xl font-bold text-neutral-900 dark:text-white mb-2 text-center">{t('key_c45fb0')}</h1>
         <p className="text-neutral-500 dark:text-neutral-400 mb-6 text-center text-sm">
-          {t('Auto.text_1922bc')}
+          {t('key_1922bc')}
                           </p>
 
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -106,12 +106,12 @@ export default function ReviewPage() {
 
           <div>
             <label className="block text-sm font-semibold opacity-90 mb-2 dark:text-white">
-              {t('Auto.text_99fa06')}
+              {t('key_99fa06')}
                                       </label>
             <textarea
               value={text}
               onChange={(e) => setText(e.target.value)}
-              placeholder={t('Auto.text_0c198b')}
+              placeholder={t('key_0c198b')}
               rows={4}
               className="w-full rounded-xl px-4 py-3 bg-neutral-100 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-accent-500/20 focus:border-accent-500 resize-none transition-all"
             />
@@ -131,7 +131,7 @@ export default function ReviewPage() {
             {isSubmitting ? (
               <div className="w-5 h-5 border-2 border-white/30 dark:border-black/30 border-t-white dark:border-t-black rounded-full animate-spin" />
             ) : (
-              t('Auto.text_eaf992')
+              t('key_eaf992')
             )}
           </button>
         </form>

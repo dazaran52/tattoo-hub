@@ -124,6 +124,7 @@ class SendAcceptEmailData(BaseModel):
     start_time: Optional[str] = None
     end_time: Optional[str] = None
     date: Optional[str] = None
+    locale: str = "ru"
 
 @router.get("/clients")
 async def get_clients(
@@ -853,7 +854,26 @@ async def send_accept_email(
         master_res = await supabase.table("users").select("display_name, username").eq("id", current_user.user_id).single().execute()
         master_name = master_res.data.get("display_name") or master_res.data.get("username") or "Мастер"
         
-        price_text = f"{data.price} Kč" if data.price else "Стоимость обсудим индивидуально"
+        from app.services.i18n import get_text
+        lang = data.locale or "ru"
+        
+        t = {
+            'price_default': get_text(lang, "email.session_accepted.price_default") if get_text(lang, "email.session_accepted.price_default") != "email.session_accepted.price_default" else "Price to be discussed",
+            'subject': get_text(lang, "email.session_accepted.subject", master_name=master_name),
+            'title': get_text(lang, "email.session_accepted.title"),
+            'greeting': get_text(lang, "email.session_accepted.greeting"),
+            'news': get_text(lang, "email.session_accepted.news", master_name=master_name),
+            'details_title': get_text(lang, "email.session_accepted.details_title"),
+            'date_label': get_text(lang, "email.session_accepted.date_label"),
+            'time_label': get_text(lang, "email.session_accepted.time_label"),
+            'price_label': get_text(lang, "email.session_accepted.price_label"),
+            'questions': get_text(lang, "email.session_accepted.questions"),
+            'btn': get_text(lang, "email.session_accepted.btn"),
+            'footer': get_text(lang, "email.session_accepted.footer"),
+            'sys_accepted': "Сеанс принят!"
+        }
+
+        price_text = f"{data.price} Kč" if data.price else t['price_default']
         time_text = f"{data.start_time or '...'} - {data.end_time or '...'}"
         date_text = data.date or session_data.get("session_date") or ""
         
@@ -871,35 +891,35 @@ async def send_accept_email(
         except Exception as e:
             print(f"Warning: Failed to generate magiclink for {client_email}: {e}")
 
-        subject = f"Ваша заявка принята мастером {master_name}!"
+        subject = t['subject']
         
         html = f'''
         <div style="font-family: 'Helvetica Neue', Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #171717; background-color: #ffffff; border: 1px solid #e5e7eb; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
             <div style="background: linear-gradient(to right, #10b981, #059669); padding: 30px 20px; text-align: center;">
-                <h1 style="color: white; margin: 0; font-size: 24px; font-weight: 700;">Ваша заявка принята! 🎉</h1>
+                <h1 style="color: white; margin: 0; font-size: 24px; font-weight: 700;">{t['title']}</h1>
             </div>
             
             <div style="padding: 30px;">
-                <p style="font-size: 16px; line-height: 1.6; margin-top: 0;">Привет!</p>
-                <p style="font-size: 16px; line-height: 1.6;">Отличные новости: мастер <strong>{master_name}</strong> рассмотрел вашу идею и готов взять её в работу!</p>
+                <p style="font-size: 16px; line-height: 1.6; margin-top: 0;">{t['greeting']}</p>
+                <p style="font-size: 16px; line-height: 1.6;">{t['news']}</p>
                 
                 <div style="background-color: #f3f4f6; border-left: 4px solid #10b981; padding: 20px; border-radius: 0 12px 12px 0; margin: 25px 0;">
-                    <p style="margin: 0 0 10px 0; font-weight: bold; color: #374151;">Предварительные детали:</p>
+                    <p style="margin: 0 0 10px 0; font-weight: bold; color: #374151;">{t['details_title']}</p>
                     <ul style="list-style: none; padding: 0; margin: 0; line-height: 1.8; color: #4b5563;">
-                        <li>📅 <strong>Дата:</strong> {date_text}</li>
-                        <li>⏰ <strong>Время:</strong> {time_text}</li>
-                        <li>💰 <strong>Стоимость:</strong> {price_text}</li>
+                        <li>📅 <strong>{t['date_label']}</strong> {date_text}</li>
+                        <li>⏰ <strong>{t['time_label']}</strong> {time_text}</li>
+                        <li>💰 <strong>{t['price_label']}</strong> {price_text}</li>
                     </ul>
                 </div>
                 
-                <p style="font-size: 16px; line-height: 1.6; font-weight: bold; text-align: center; margin-bottom: 25px;">У мастера могут быть уточняющие вопросы.</p>
+                <p style="font-size: 16px; line-height: 1.6; font-weight: bold; text-align: center; margin-bottom: 25px;">{t['questions']}</p>
                 
                 <div style="text-align: center; margin: 35px 0;">
-                    <a href="{login_link}" style="background-color: #10b981; color: white; padding: 14px 28px; text-decoration: none; border-radius: 12px; font-weight: bold; font-size: 16px; display: inline-block;">Открыть чат с мастером</a>
+                    <a href="{login_link}" style="background-color: #10b981; color: white; padding: 14px 28px; text-decoration: none; border-radius: 12px; font-weight: bold; font-size: 16px; display: inline-block;">{t['btn']}</a>
                 </div>
                 
                 <p style="font-size: 14px; color: #6b7280; text-align: center; margin: 0; border-top: 1px solid #e5e7eb; padding-top: 20px;">
-                    Если у вас не получается войти, просто ответьте на это письмо.
+                    {t['footer']}
                 </p>
             </div>
         </div>
@@ -967,8 +987,8 @@ async def send_accept_email(
                             asyncio.create_task(asyncio.to_thread(
                                 send_push_notification,
                                 client_id,
-                                f"Сеанс принят!",
-                                f"Мастер {master_name} подтвердил заявку.",
+                                t['sys_accepted'],
+                                t['news'].replace('<strong>', '').replace('</strong>', ''),
                                 f"/dashboard?tab=messages"
                             ))
             except Exception as e:

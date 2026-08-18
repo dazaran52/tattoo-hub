@@ -1,0 +1,39 @@
+{
+  "email": {
+    "master_approved": {
+      "subject": "Your Tattoo Hub Master Account is Approved",
+      "body": "<h1>Welcome to Tattoo Hub!</h1><p>Your account has been approved. The status of your certificate verification is displayed separately in your profile.</p>"
+    },
+    "master_rejected": {
+      "subject": "Status of your Tattoo Hub profile",
+      "body": "<h1>Hello</h1><p>Unfortunately, we cannot approve your account at this time.</p>"
+    },
+    "balance_updated": {
+      "subject": "Your Tattoo Hub balance has been topped up!",
+      "body": "<h1>Your balance has been updated</h1><p>We received your transfer of {amount} {currency}. Your balance has been topped up by <strong>{credits} credits</strong>.</p>"
+    },
+    "session_accepted": {
+      "subject": "Your request was accepted by {master_name}!",
+      "title": "Your request was accepted! 🎉",
+      "greeting": "Hello!",
+      "news": "Great news: master <strong>{master_name}</strong> has reviewed your idea and is ready to work on it!",
+      "details_title": "Preliminary details:",
+      "date_label": "Date:",
+      "time_label": "Time:",
+      "price_label": "Price:",
+      "questions": "The master might have some clarifying questions.",
+      "btn": "Open chat with master",
+      "footer": "If you can't log in, just reply to this email."
+    }
+  },
+  "notification": {
+    "new_dispute": {
+      "title": "New Dispute",
+      "body": "A new dispute has been opened for a session."
+    },
+    "new_appeal": {
+      "title": "New Appeal",
+      "body": "A user has submitted an appeal for their ban."
+    }
+  }
+}

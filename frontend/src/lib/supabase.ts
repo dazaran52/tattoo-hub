@@ -25,6 +25,7 @@ export type Profile = {
   country_ids?: string[]
   can_create_leads?: boolean
   can_chat?: boolean
+  ban_reason?: string
   city_ids?: string[]
   discount_tokens: number
   unlocked_leads_count?: number

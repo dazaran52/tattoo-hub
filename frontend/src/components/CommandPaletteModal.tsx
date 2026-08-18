@@ -33,12 +33,12 @@ export function CommandPaletteModal({ isOpen, onClose, onSelectTab }: CommandPal
   if (!isOpen) return null
 
   const actions = [
-    { id: 'crm', label: t('Auto.text_ba3fcb'), icon: LayoutDashboard, category: t('Auto.text_ca76de'), action: () => { onSelectTab('crm'); onClose(); } },
-    { id: 'feed', label: t('Auto.text_c01af0'), icon: ShoppingBag, category: t('Auto.text_ca76de'), action: () => { onSelectTab('feed'); onClose(); } },
-    { id: 'portfolio', label: t('Auto.text_de901e'), icon: ImageIcon, category: t('Auto.text_ca76de'), action: () => { onSelectTab('portfolio'); onClose(); } },
-    { id: 'messages', label: t('Auto.text_b70074'), icon: MessageCircle, category: t('Auto.text_ca76de'), action: () => { onSelectTab('messages'); onClose(); } },
-    { id: 'profile', label: t('Auto.text_17722b'), icon: User, category: t('settings'), action: () => { router.push('/profile'); onClose(); } },
-    { id: 'topup', label: t('Auto.text_d8dbd5'), icon: Calendar, category: t('Auto.text_61586b'), action: () => { router.push('/top-up'); onClose(); } },
+    { id: 'crm', label: t('crm2'), icon: LayoutDashboard, category: t('key_ca76de'), action: () => { onSelectTab('crm'); onClose(); } },
+    { id: 'feed', label: t('key_c01af0'), icon: ShoppingBag, category: t('key_ca76de'), action: () => { onSelectTab('feed'); onClose(); } },
+    { id: 'portfolio', label: t('key_de901e'), icon: ImageIcon, category: t('key_ca76de'), action: () => { onSelectTab('portfolio'); onClose(); } },
+    { id: 'messages', label: t('key_b70074'), icon: MessageCircle, category: t('key_ca76de'), action: () => { onSelectTab('messages'); onClose(); } },
+    { id: 'profile', label: t('key_17722b'), icon: User, category: t('settings'), action: () => { router.push('/profile'); onClose(); } },
+    { id: 'topup', label: t('key_d8dbd5'), icon: Calendar, category: t('key_61586b'), action: () => { router.push('/top-up'); onClose(); } },
   ]
 
   const filteredActions = query
@@ -63,7 +63,7 @@ export function CommandPaletteModal({ isOpen, onClose, onSelectTab }: CommandPal
             <input
               type="text"
               autoFocus
-              placeholder={t('Auto.text_7bae3b')}
+              placeholder={t('esc')}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               className="w-full bg-transparent text-white placeholder-neutral-400 text-sm outline-none font-medium"

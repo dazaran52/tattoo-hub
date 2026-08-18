@@ -183,10 +183,11 @@ def _sync_check_emails(settings):
                         
                         # 3. Send Email
                         if target_user.get("email"):
+                            from app.services.i18n import get_text
                             send_transactional_email(
                                 to_email=target_user["email"],
-                                subject="Ваш баланс Tattoo Hub пополнен!",
-                                html_content=f"<h1>Ваш баланс обновлен</h1><p>Мы получили ваш перевод на сумму {amount} {currency}. Ваш баланс пополнен на <strong>{credits_to_add} кредитов</strong>.</p>"
+                                subject=get_text("ru", "email.balance_updated.subject"),
+                                html_content=get_text("ru", "email.balance_updated.body", amount=amount, currency=currency, credits=credits_to_add)
                             )
                 else:
                     print(f"⚠️ Could not find user for note: {note}")

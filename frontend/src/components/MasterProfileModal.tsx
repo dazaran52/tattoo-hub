@@ -53,7 +53,7 @@ export function MasterProfileModal({ username, onClose, onBook }: { username: st
       >
         {/* Header */}
         <div className="px-6 py-4 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between bg-white dark:bg-[#0a0a0a] z-10 sticky top-0">
-          <h2 className="text-lg font-bold">{t('Auto.text_d299dd')}</h2>
+          <h2 className="text-lg font-bold">{t('key_d299dd')}</h2>
           <button onClick={onClose} className="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-full transition-colors">
             <X className="w-5 h-5" />
           </button>
@@ -96,7 +96,7 @@ export function MasterProfileModal({ username, onClose, onBook }: { username: st
                     <div className="flex items-center justify-center sm:justify-start gap-1.5 mb-3 text-yellow-500">
                       <Star className="w-5 h-5 fill-current" />
                       <span className="font-bold text-lg">{master.rating}</span>
-                      <span className="text-neutral-500 dark:text-neutral-400 text-sm">({master.review_count} {t('Auto.text_f4d5ac')}</span>
+                      <span className="text-neutral-500 dark:text-neutral-400 text-sm">({master.review_count} {t('key_f4d5ac')}</span>
                     </div>
                   )}
 
@@ -116,7 +116,7 @@ export function MasterProfileModal({ username, onClose, onBook }: { username: st
                 }}
                 className="w-full py-4 mb-8 bg-primary-600 hover:bg-primary-700 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all"
               >
-                {t('Auto.text_a764d9')}
+                {t('key_a764d9')}
                                                 </button>
 
               {/* Tabs */}
@@ -139,7 +139,7 @@ export function MasterProfileModal({ username, onClose, onBook }: { username: st
                       : 'text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300 hover:bg-white/50 dark:hover:bg-neutral-800/50'
                   }`}
                 >
-                  {t('Auto.text_1c3fea')}
+                  {t('key_1c3fea')}
                                                       </button>
               </div>
 
@@ -173,7 +173,7 @@ export function MasterProfileModal({ username, onClose, onBook }: { username: st
                     })
                   ) : (
                     <div className="col-span-2 text-center py-12 text-neutral-500">
-                      {t('Auto.text_36aebb')}
+                      {t('key_36aebb')}
                                                                       </div>
                   )}
                 </div>
@@ -196,7 +196,7 @@ export function MasterProfileModal({ username, onClose, onBook }: { username: st
                     ))
                   ) : (
                     <div className="text-center py-12 text-neutral-500">
-                      {t('Auto.text_be9b89')}
+                      {t('key_be9b89')}
                                                                           </div>
                   )}
                 </div>

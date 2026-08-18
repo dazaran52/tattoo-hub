@@ -152,14 +152,14 @@ export function ClientDashboard({
     setAcceptingProposalId(proposalKey)
     try {
       const { data: { session } } = await supabase.auth.getSession()
-      if (!session) throw new Error(t('Auto.text_860869'))
+      if (!session) throw new Error(t('key_860869'))
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
       const response = await fetch(`${apiUrl}/api/leads/client/${leadId}/proposals/${proposal.master_id}/accept`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${session.access_token}` }
       })
       const payload = await response.json().catch(() => ({}))
-      if (!response.ok) throw new Error(payload.detail?.message || payload.detail || t('Auto.text_5568ac'))
+      if (!response.ok) throw new Error(payload.detail?.message || payload.detail || t('key_5568ac'))
       setLeads(current => current.map(lead => lead.id !== leadId ? lead : {
         ...lead,
         status: 'accepted',
@@ -169,13 +169,13 @@ export function ClientDashboard({
           status: item.master_id === proposal.master_id ? 'accepted' : 'rejected'
         }))
       }))
-      import('react-hot-toast').then(mod => mod.default.success(t('Auto.text_9bd039')))
+      import('react-hot-toast').then(mod => mod.default.success(t('key_9bd039')))
       const refreshed = await fetch(`${apiUrl}/api/leads/client`, {
         headers: { 'Authorization': `Bearer ${session.access_token}` }
       })
       if (refreshed.ok) setLeads(await refreshed.json())
     } catch (error) {
-      const message = error instanceof Error ? error.message : t('Auto.text_5568ac')
+      const message = error instanceof Error ? error.message : t('key_5568ac')
       import('react-hot-toast').then(mod => mod.default.error(message))
     } finally {
       setAcceptingProposalId(null)
@@ -189,13 +189,13 @@ export function ClientDashboard({
     setRejectingProposalId(proposalKey)
     try {
       const { data: { session } } = await supabase.auth.getSession()
-      if (!session) throw new Error(t('Auto.text_30af01'))
+      if (!session) throw new Error(t('key_30af01'))
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
       const response = await fetch(`${apiUrl}/api/leads/client/${leadId}/proposals/${proposal.master_id}/reject`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${session.access_token}` }
       })
-      if (!response.ok) throw new Error(t('Auto.text_3b3631'))
+      if (!response.ok) throw new Error(t('key_3b3631'))
       setLeads(current => current.map(lead => lead.id !== leadId ? lead : {
         ...lead,
         proposals: (lead.proposals || []).map((item: any) => ({
@@ -203,9 +203,9 @@ export function ClientDashboard({
           status: item.master_id === proposal.master_id ? 'rejected' : item.status
         }))
       }))
-      import('react-hot-toast').then(mod => mod.default.success(t('Auto.text_c4c7c7')))
+      import('react-hot-toast').then(mod => mod.default.success(t('key_c4c7c7')))
     } catch (error) {
-      const message = error instanceof Error ? error.message : t('Auto.text_ac2b09')
+      const message = error instanceof Error ? error.message : t('key_ac2b09')
       import('react-hot-toast').then(mod => mod.default.error(message))
     } finally {
       setRejectingProposalId(null)
@@ -402,15 +402,15 @@ export function ClientDashboard({
               <div className="w-16 h-16 bg-white dark:bg-neutral-800 rounded-full flex items-center justify-center mb-4 shadow-sm">
                 <PlusCircle className="w-8 h-8 text-primary-500" />
               </div>
-              <h3 className="text-lg font-bold text-neutral-900 dark:text-white mb-2">{t('Auto.text_ac3519')}</h3>
+              <h3 className="text-lg font-bold text-neutral-900 dark:text-white mb-2">{t('key_ac3519')}</h3>
               <p className="text-neutral-500 dark:text-neutral-400 mb-6 text-sm">
-                {t('Auto.text_a8c4fe')}
+                {t('key_a8c4fe')}
                                             </p>
               <button
                 onClick={() => { setSelectedMasterForDirectBooking(null); setIsFormOpen(true) }}
                 className="px-6 py-3 w-full max-w-[200px] bg-primary-600 hover:bg-primary-500 text-white font-bold rounded-xl transition-colors"
               >
-                {t('Auto.text_eeb063')}
+                {t('key_eeb063')}
                                             </button>
             </div>
 
@@ -418,15 +418,15 @@ export function ClientDashboard({
               <div className="w-16 h-16 bg-white dark:bg-neutral-800 rounded-full flex items-center justify-center mb-4 shadow-sm">
                 <Heart className="w-8 h-8 text-primary-500" />
               </div>
-              <h3 className="text-lg font-bold text-neutral-900 dark:text-white mb-2">{t('Auto.text_fdc1e8')}</h3>
+              <h3 className="text-lg font-bold text-neutral-900 dark:text-white mb-2">{t('key_fdc1e8')}</h3>
               <p className="text-neutral-500 dark:text-neutral-400 mb-6 text-sm">
-                {t('Auto.text_1b185c')}
+                {t('key_1b185c')}
                                             </p>
               <button
                 onClick={() => { setActiveTab('top_masters') }}
                 className="px-6 py-3 w-full max-w-[200px] bg-primary-600 hover:bg-primary-500 text-white font-bold rounded-xl transition-colors shadow-md shadow-primary-500/20"
               >
-                {t('Auto.text_91e9b6')}
+                {t('key_91e9b6')}
                                             </button>
             </div>
           </div>
@@ -445,7 +445,7 @@ export function ClientDashboard({
                   <div className="flex flex-wrap gap-2 items-center">
                     {lead.is_personal ? (
                       <span className="px-3 py-1 bg-fuchsia-100 dark:bg-fuchsia-500/10 border border-fuchsia-200 dark:border-fuchsia-500/20 text-fuchsia-700 dark:text-fuchsia-400 text-xs font-extrabold tracking-wide uppercase rounded-full">
-                        {t('Auto.text_70b7f8')}
+                        {t('key_70b7f8')}
                                                             </span>
                     ) : (
                       <span className="px-3 py-1 bg-blue-100 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20 text-blue-700 dark:text-blue-400 text-xs font-extrabold tracking-wide uppercase rounded-full">
@@ -524,7 +524,7 @@ export function ClientDashboard({
                       <span>
                         {lead.client_priority === 'fast' ? '⚡' : lead.client_priority === 'quality' ? '💎' : '💸'}
                       </span>
-                      {lead.client_priority === 'fast' ? t('fastPriority') : lead.client_priority === 'quality' ? t('Auto.text_03b5fe') : t('Auto.text_d511ac')}
+                      {lead.client_priority === 'fast' ? t('fastPriority') : lead.client_priority === 'quality' ? t('key_03b5fe') : t('key_d511ac')}
                     </span>
                   )}
                   {lead.session_date && (
@@ -533,13 +533,13 @@ export function ClientDashboard({
                       {new Date(lead.session_date).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' })}
                     </span>
                   )}
-                  {lead.style && lead.style !== t('Auto.text_0464ef') && (
+                  {lead.style && lead.style !== t('key_0464ef') && (
                     <span className="px-3 py-1.5 bg-neutral-100 dark:bg-neutral-800/50 text-neutral-700 dark:text-neutral-300 text-xs font-semibold rounded-lg flex items-center gap-1.5 border border-neutral-200/50 dark:border-white/5">
                       <Palette className="w-3.5 h-3.5" />
                       {lead.style}
                     </span>
                   )}
-                  {lead.body_place && lead.body_place !== t('Auto.text_0464ef') && (
+                  {lead.body_place && lead.body_place !== t('key_0464ef') && (
                     <span className="px-3 py-1.5 bg-neutral-100 dark:bg-neutral-800/50 text-neutral-700 dark:text-neutral-300 text-xs font-semibold rounded-lg flex items-center gap-1.5 border border-neutral-200/50 dark:border-white/5">
                       <PersonStanding className="w-3.5 h-3.5" />
                       {lead.body_place}
@@ -620,7 +620,7 @@ export function ClientDashboard({
                       <div className="flex flex-col sm:flex-row items-end sm:items-center gap-3">
                         {lead.session && lead.session.session_date ? (
                           <div className="text-left sm:text-right bg-white dark:bg-neutral-900 px-4 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-800 shadow-sm flex flex-col items-start sm:items-end">
-                            <p className="text-[10px] font-extrabold text-neutral-500 uppercase tracking-wider mb-1">{t(t('leadWizard.step2AccordionTitle')) || t('Auto.text_d86195')}</p>
+                            <p className="text-[10px] font-extrabold text-neutral-500 uppercase tracking-wider mb-1">{t(t('leadWizard.step2AccordionTitle')) || t('key_d86195')}</p>
                             <p className="text-sm font-bold text-neutral-900 dark:text-white flex items-center gap-1.5">
                               <Clock className="w-4 h-4 text-primary-500" />
                               {new Date(lead.session.session_date).toLocaleDateString()}
@@ -629,7 +629,7 @@ export function ClientDashboard({
                           </div>
                         ) : lead.chat_id ? (
                           <div className="text-left sm:text-right bg-neutral-100 dark:bg-neutral-900 px-3 py-2 rounded-xl">
-                            <p className="text-xs text-neutral-500 font-semibold whitespace-nowrap">{t('Auto.text_ae51c4')}</p>
+                            <p className="text-xs text-neutral-500 font-semibold whitespace-nowrap">{t('key_ae51c4')}</p>
                           </div>
                         ) : null}
 
@@ -645,7 +645,7 @@ export function ClientDashboard({
                             className="px-5 py-3 bg-primary-600 hover:bg-primary-500 text-white rounded-xl text-sm font-bold shadow-lg shadow-primary-500/20 transition-all hover:-translate-y-0.5 flex items-center gap-2"
                           >
                             <MessageCircle className="w-5 h-5" />
-                            {t('Auto.text_47d893')}
+                            {t('key_47d893')}
                                                                         </button>
                         )}
                       </div>
@@ -657,8 +657,8 @@ export function ClientDashboard({
                   <div className="mb-6 rounded-2xl border border-primary-200 bg-primary-50/70 p-4 dark:border-primary-500/20 dark:bg-primary-500/5">
                     <div className="mb-3 flex items-center justify-between gap-3">
                       <div>
-                        <p className="text-sm font-extrabold text-neutral-900 dark:text-white">{t('Auto.text_909fa9')}</p>
-                        <p className="text-xs text-neutral-500">{t('Auto.text_ba3381')}</p>
+                        <p className="text-sm font-extrabold text-neutral-900 dark:text-white">{t('key_909fa9')}</p>
+                        <p className="text-xs text-neutral-500">{t('key_ba3381')}</p>
                       </div>
                       <span className="rounded-full bg-white px-2.5 py-1 text-xs font-bold text-primary-700 shadow-sm dark:bg-neutral-900 dark:text-primary-300">{lead.proposals.length} / 5</span>
                     </div>
@@ -685,10 +685,10 @@ export function ClientDashboard({
                             <div className="mt-4 flex gap-2">
                               {proposal.master_username && <button onClick={() => setSelectedMasterUsernameForModal(proposal.master_username)} className="flex-1 rounded-xl bg-neutral-100 px-3 py-2 text-xs font-bold text-neutral-700 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-200">{t('portfolio')}</button>}
                               <button disabled={acceptingProposalId !== null || rejectingProposalId !== null} onClick={() => setProposalToConfirm({ leadId: lead.id, proposal })} className="flex-1 rounded-xl bg-primary-600 px-3 py-2 text-xs font-bold text-white hover:bg-primary-500 disabled:opacity-60">
-                                {acceptingProposalId === proposalKey ? <span className="inline-flex items-center gap-1"><Loader2 className="h-3.5 w-3.5 animate-spin" /> {t('Auto.text_518868')}</span> : t('Auto.text_91e9b6')}
+                                {acceptingProposalId === proposalKey ? <span className="inline-flex items-center gap-1"><Loader2 className="h-3.5 w-3.5 animate-spin" /> {t('key_518868')}</span> : t('key_91e9b6')}
                               </button>
                               <button disabled={acceptingProposalId !== null || rejectingProposalId !== null} onClick={() => handleRejectProposal(lead.id, proposal)} className="rounded-xl bg-red-100 px-3 py-2 text-xs font-bold text-red-600 hover:bg-red-200 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20 disabled:opacity-60 flex items-center justify-center min-w-[80px]">
-                                {rejectingProposalId === proposalKey ? <Loader2 className="h-4 w-4 animate-spin" /> : t('Auto.text_52ff8d')}
+                                {rejectingProposalId === proposalKey ? <Loader2 className="h-4 w-4 animate-spin" /> : t('key_52ff8d')}
                               </button>
                             </div>
                           </div>
@@ -757,15 +757,15 @@ export function ClientDashboard({
           <div className="bg-gradient-to-r from-primary-600 to-primary-600 rounded-3xl p-8 text-white shadow-xl relative overflow-hidden">
             <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
             <div className="relative z-10 max-w-2xl">
-              <h3 className="text-3xl font-extrabold mb-4">{t('Auto.text_385ce8')}</h3>
+              <h3 className="text-3xl font-extrabold mb-4">{t('key_385ce8')}</h3>
               <p className="text-primary-100 font-medium mb-6 text-lg">
-                {t('Auto.text_6565ce')}
+                {t('key_6565ce')}
                                                     </p>
               <button
                 onClick={() => setIsFormOpen(true)}
                 className="px-8 py-4 bg-white text-primary-900 font-extrabold rounded-xl hover:bg-primary-50 transition-colors shadow-lg hover:shadow-xl hover:scale-105"
               >
-                {t('Auto.text_a792e8')}
+                {t('key_a792e8')}
                                                     </button>
             </div>
           </div>
@@ -785,14 +785,14 @@ export function ClientDashboard({
                   onClick={() => setMasterTab('rating')}
                   className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${masterTab === 'rating' ? 'bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white shadow-sm' : 'text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'}`}
                 >
-                  {t('Auto.text_dac9cd')}
+                  {t('key_dac9cd')}
                                                           </button>
                 <button
                   onClick={() => setMasterTab('favorites')}
                   className={`px-4 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-1.5 ${masterTab === 'favorites' ? 'bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white shadow-sm' : 'text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'}`}
                 >
                   <Heart className={`w-4 h-4 ${masterTab === 'favorites' ? 'fill-red-500 text-red-500' : ''}`} />
-                  {t('Auto.text_274c67')}
+                  {t('key_274c67')}
                                                           </button>
               </div>
               <button
@@ -803,7 +803,7 @@ export function ClientDashboard({
                   }`}
               >
                 <Filter className="w-4 h-4" />
-                {t('Auto.text_f7ac6f')}
+                {t('key_f7ac6f')}
                                                     </button>
             </div>
           </div>
@@ -819,20 +819,20 @@ export function ClientDashboard({
                 <div className="p-4 bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 grid grid-cols-1 md:grid-cols-2 gap-4">
 
                   <div>
-                    <label className="block text-xs font-bold text-neutral-500 mb-2 uppercase">{t('Auto.text_d2fc7c')}</label>
+                    <label className="block text-xs font-bold text-neutral-500 mb-2 uppercase">{t('key_d2fc7c')}</label>
                     <select
                       value={masterSortBy}
                       onChange={(e) => setMasterSortBy(e.target.value as any)}
                       className="w-full bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg px-3 py-2 text-sm text-neutral-900 dark:text-white"
                     >
-                      <option value="rating_desc">{t('Auto.text_ac777d')}</option>
-                      <option value="rating_asc">{t('Auto.text_694441')}</option>
-                      <option value="reviews_desc">{t('Auto.text_74fbdf')}</option>
+                      <option value="rating_desc">{t('key_ac777d')}</option>
+                      <option value="rating_asc">{t('key_694441')}</option>
+                      <option value="reviews_desc">{t('key_74fbdf')}</option>
                     </select>
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-neutral-500 mb-2 uppercase">{t('Auto.text_349436')}{selectedMasterStyles.length})</label>
+                    <label className="block text-xs font-bold text-neutral-500 mb-2 uppercase">{t('key_349436')}{selectedMasterStyles.length})</label>
                     <select
                       className="w-full bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg px-3 py-2 text-sm text-neutral-900 dark:text-white"
                       onChange={(e) => {
@@ -842,7 +842,7 @@ export function ClientDashboard({
                         e.target.value = ''
                       }}
                     >
-                      <option value="">{t('Auto.text_6ed950')}</option>
+                      <option value="">{t('key_6ed950')}</option>
                       {TATTOO_STYLES.map(s => (
                         <option key={s} value={s}>{s}</option>
                       ))}
@@ -860,8 +860,8 @@ export function ClientDashboard({
                   
                   <div className="md:col-span-2 flex items-center justify-between p-3 bg-neutral-50 dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700">
                     <div className="flex flex-col">
-                      <span className="text-sm font-bold text-neutral-900 dark:text-white">{t('Auto.text_f6360d')}</span>
-                      <span className="text-xs text-neutral-500 dark:text-neutral-400">{t('Auto.text_3c6830')}</span>
+                      <span className="text-sm font-bold text-neutral-900 dark:text-white">{t('key_f6360d')}</span>
+                      <span className="text-xs text-neutral-500 dark:text-neutral-400">{t('key_3c6830')}</span>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
                       <input 
@@ -916,7 +916,7 @@ export function ClientDashboard({
 
                       <div className="flex items-center gap-1.5 text-yellow-500">
                         <span className="text-sm font-bold">★ {master.rating}</span>
-                        <span className="text-xs text-neutral-400">({master.review_count} {t('Auto.text_f4d5ac')}</span>
+                        <span className="text-xs text-neutral-400">({master.review_count} {t('key_f4d5ac')}</span>
                       </div>
                     </div>
                   </div>
@@ -936,7 +936,7 @@ export function ClientDashboard({
                       onClick={() => setSelectedMasterUsernameForModal(master.username)}
                       className="block w-full py-3 text-center bg-neutral-100 dark:bg-neutral-800 hover:bg-primary-600 hover:text-white dark:hover:bg-primary-600 text-neutral-900 dark:text-white font-bold rounded-xl transition-all"
                     >
-                      {t('Auto.text_a2d581')}
+                      {t('key_a2d581')}
                                                   </button>
                   </div>
                 </div>
@@ -946,10 +946,10 @@ export function ClientDashboard({
             <div className="text-center py-20 bg-neutral-50 dark:bg-neutral-900/50 rounded-3xl border border-dashed border-neutral-200 dark:border-neutral-800">
               <Heart className="w-16 h-16 text-neutral-300 dark:text-neutral-700 mx-auto mb-4" />
               <h3 className="text-xl font-bold text-neutral-500 mb-2">
-                {masterTab === 'favorites' ? t('noFavorites') || t('Auto.text_604a56') : t('Auto.text_465e91')}
+                {masterTab === 'favorites' ? t('noFavorites') || t('key_604a56') : t('key_465e91')}
               </h3>
               {masterTab === 'favorites' && (
-                <p className="text-neutral-400">{t('saveMastersDesc') || t('Auto.text_233df9')}</p>
+                <p className="text-neutral-400">{t('saveMastersDesc') || t('key_233df9')}</p>
               )}
             </div>
           )}
@@ -1004,15 +1004,15 @@ export function ClientDashboard({
                 <OnlineIndicator userId={proposalToConfirm.proposal.master_id || proposalToConfirm.proposal.user_id} lastSeen={proposalToConfirm.proposal.last_seen} size="md" className="-bottom-1 -right-1" />
               </div>
               <div>
-                <p className="text-xs font-extrabold uppercase tracking-wider text-primary-600">{t('Auto.text_31673a')}</p>
-                <h3 id="confirm-master-title" className="text-xl font-extrabold text-neutral-900 dark:text-white">{t('Auto.text_2b02ca')} {proposalToConfirm.proposal.master_name}?</h3>
+                <p className="text-xs font-extrabold uppercase tracking-wider text-primary-600">{t('key_31673a')}</p>
+                <h3 id="confirm-master-title" className="text-xl font-extrabold text-neutral-900 dark:text-white">{t('key_2b02ca')} {proposalToConfirm.proposal.master_name}?</h3>
               </div>
             </div>
-            <p className="mb-2 text-sm text-neutral-600 dark:text-neutral-300">{t('Auto.text_5f6898')}</p>
-            <p className="mb-6 text-sm font-bold text-neutral-900 dark:text-white">{t('Auto.text_d0f448')} {proposalToConfirm.proposal.price_offer} {proposalToConfirm.proposal.offer_currency}</p>
+            <p className="mb-2 text-sm text-neutral-600 dark:text-neutral-300">{t('key_5f6898')}</p>
+            <p className="mb-6 text-sm font-bold text-neutral-900 dark:text-white">{t('key_d0f448')} {proposalToConfirm.proposal.price_offer} {proposalToConfirm.proposal.offer_currency}</p>
             <div className="flex gap-3">
               <button onClick={() => setProposalToConfirm(null)} className="flex-1 rounded-2xl bg-neutral-100 px-4 py-3 font-bold text-neutral-700 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-200">{t('cancel')}</button>
-              <button onClick={() => { const choice = proposalToConfirm; setProposalToConfirm(null); handleAcceptProposal(choice.leadId, choice.proposal) }} className="flex-1 rounded-2xl bg-primary-600 px-4 py-3 font-bold text-white shadow-lg shadow-primary-500/20 hover:bg-primary-500">{t('Auto.text_480c5c')}</button>
+              <button onClick={() => { const choice = proposalToConfirm; setProposalToConfirm(null); handleAcceptProposal(choice.leadId, choice.proposal) }} className="flex-1 rounded-2xl bg-primary-600 px-4 py-3 font-bold text-white shadow-lg shadow-primary-500/20 hover:bg-primary-500">{t('key_480c5c')}</button>
             </div>
           </div>
         </div>
@@ -1038,10 +1038,10 @@ export function ClientDashboard({
             >
               <X className="w-5 h-5" />
             </button>
-            <h2 className="text-2xl font-bold mb-4 text-neutral-900 dark:text-white">{t('Auto.text_231e4d')}</h2>
+            <h2 className="text-2xl font-bold mb-4 text-neutral-900 dark:text-white">{t('key_231e4d')}</h2>
             <div className="flex-1 overflow-y-auto space-y-4">
               {topMasters.length === 0 ? (
-                <p className="text-neutral-500 text-center py-8">{t('Auto.text_b7bab4')}</p>
+                <p className="text-neutral-500 text-center py-8">{t('key_b7bab4')}</p>
               ) : (
                 topMasters.map(master => (
                   <div key={master.id} className="flex items-center justify-between p-4 bg-neutral-50 dark:bg-neutral-800/50 rounded-2xl border border-neutral-100 dark:border-neutral-800">
@@ -1068,7 +1068,7 @@ export function ClientDashboard({
                       }}
                       className="px-4 py-2 bg-primary-600 hover:bg-primary-500 text-white rounded-lg text-sm font-bold shadow-sm transition-colors"
                     >
-                      {t('Auto.text_2b02ca')}
+                      {t('key_2b02ca')}
                                                 </button>
                   </div>
                 ))

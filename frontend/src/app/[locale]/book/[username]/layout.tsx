@@ -11,7 +11,7 @@ export async function generateMetadata({ params }: { params: Promise<{ username:
     
     if (res.ok) {
       const data = await res.json()
-      const displayName = data.display_name || data.username || t('Auto.text_2bb1fb')
+      const displayName = data.display_name || data.username || t('key_2bb1fb')
       const title = `Запись к ${displayName} | TattooHUB`
       const description = data.bio || `Запишись на сеанс татуировки к мастеру ${displayName} через TattooHUB.`
       
@@ -36,8 +36,8 @@ export async function generateMetadata({ params }: { params: Promise<{ username:
   }
 
   return {
-    title: t('Auto.text_a559a7'),
-    description: t('Auto.text_3580a8')
+    title: t('tattoohub'),
+    description: t('key_3580a8')
   }
 }
 

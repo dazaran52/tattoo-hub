@@ -191,7 +191,7 @@ export function LeadWizard({ master, masterId, source = 'platform', isLoggedIn, 
       if (initialData.client_priority || initialData.priority) setClientPriority(initialData.client_priority || initialData.priority)
       if (initialData.budget || initialData.client_budget) {
         const b = String(initialData.budget || initialData.client_budget)
-        if (b.toLowerCase().includes(t('Auto.text_95c94f')) || b.toLowerCase().includes('negotiable')) {
+        if (b.toLowerCase().includes(t('key_95c94f')) || b.toLowerCase().includes('negotiable')) {
           setIsNegotiable(true)
         } else {
           setBudgetVal(String(parseInt(b, 10) || ''))
@@ -219,7 +219,7 @@ export function LeadWizard({ master, masterId, source = 'platform', isLoggedIn, 
           if (pending.body_place) setBodyPlace(pending.body_place)
           if (pending.size) setSize(pending.size)
           if (pending.client_priority || pending.priority) setClientPriority(pending.client_priority || pending.priority)
-          if (pending.is_negotiable_budget || (typeof pending.budget === 'string' && (pending.budget.toLowerCase().includes(t('Auto.text_95c94f')) || pending.budget.toLowerCase().includes('negotiable')))) {
+          if (pending.is_negotiable_budget || (typeof pending.budget === 'string' && (pending.budget.toLowerCase().includes(t('key_95c94f')) || pending.budget.toLowerCase().includes('negotiable')))) {
             setIsNegotiable(true)
           } else if (pending.budget_val) {
             setBudgetVal(String(pending.budget_val))
@@ -564,7 +564,7 @@ export function LeadWizard({ master, masterId, source = 'platform', isLoggedIn, 
         <h3 className="text-3xl sm:text-4xl font-extrabold mb-3 tracking-tight">{t('leadWizard.leadSentSuccess')}</h3>
         <p className="text-neutral-300 text-base mb-8 max-w-md mx-auto leading-relaxed">
           {resolvedMaster && source === 'personal' ? (
-            <>{t('leadWizard.ideaSentToMasterDesc')} <strong className="text-white font-bold">{resolvedMaster.full_name || resolvedMaster.username || t('Auto.text_1bf28c')}</strong>. {t('leadWizard.ideaSentToMasterSub')}</>
+            <>{t('leadWizard.ideaSentToMasterDesc')} <strong className="text-white font-bold">{resolvedMaster.full_name || resolvedMaster.username || t('key_1bf28c')}</strong>. {t('leadWizard.ideaSentToMasterSub')}</>
           ) : (
             <>{t('leadWizard.ideaPublishedToMarketplace')}</>
           )}

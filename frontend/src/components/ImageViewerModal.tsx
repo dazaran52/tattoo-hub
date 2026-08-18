@@ -74,14 +74,14 @@ export function ImageViewerModal({ isOpen, imageUrl, onClose, showActions = fals
                 className="flex items-center gap-2 px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-full text-white text-sm font-medium transition-colors backdrop-blur-md"
               >
                 <Printer className="w-4 h-4" />
-                <span>{t('Auto.text_034485')}</span>
+                <span>{t('key_034485')}</span>
               </button>
               <button 
                 onClick={handleDownload}
                 className="flex items-center gap-2 px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-full text-white text-sm font-medium transition-colors backdrop-blur-md"
               >
                 <Download className="w-4 h-4" />
-                <span>{t('Auto.text_5dad7b')}</span>
+                <span>{t('key_5dad7b')}</span>
               </button>
             </>
           )}
