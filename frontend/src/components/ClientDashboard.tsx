@@ -3,7 +3,7 @@
 import Image from 'next/image'
 import { useState, useEffect } from 'react'
 import { Profile, supabase } from '@/lib/supabase'
-import { PlusCircle, Heart, Clock, X, MoreVertical, Edit2, Pause, Play, Trash2, MessageCircle, DollarSign, ShieldCheck, Loader2, Filter, XCircle, Palette, PersonStanding, Maximize2, Calendar, MapPin } from 'lucide-react'
+import { PlusCircle, Search, Star, MessageCircle, Heart, X, CheckCircle, ShieldAlert, Sparkles, MapPin, Loader2, ArrowRight, PlayCircle, RefreshCw, Clock, MoreVertical, Edit2, Pause, Play, Trash2, DollarSign, ShieldCheck, Filter, XCircle, Palette, PersonStanding, Maximize2, Calendar } from 'lucide-react'
 import { LeadWizard } from '@/components/LeadWizard'
 import { CityMultiSelect } from '@/components/CityMultiSelect'
 import { ChatModal } from '@/components/ChatModal'
@@ -63,6 +63,7 @@ export function ClientDashboard({
   const [onlineOnly, setOnlineOnly] = useState(false)
   const { isOnline } = usePresence()
   const [acceptingProposalId, setAcceptingProposalId] = useState<string | null>(null)
+  const [refreshKey, setRefreshKey] = useState(0)
   const [proposalToConfirm, setProposalToConfirm] = useState<{ leadId: string; proposal: any } | null>(null)
   const [lightboxImage, setLightboxImage] = useState<string | null>(null)
 
@@ -330,7 +331,7 @@ export function ClientDashboard({
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [])
+  }, [refreshKey])
 
   let filteredMasters = topMasters
     .filter(m => masterTab === 'rating' || favoriteMasterIds.has(m.id))
@@ -350,13 +351,24 @@ export function ClientDashboard({
   return (
     <div className="w-full">
       <div className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center">
-        <div>
-          <h2 className="text-2xl font-bold text-neutral-900 dark:text-neutral-50">
-            {t('clientDashboardTitle')}, {profile.email.split('@')[0]}
-          </h2>
-          <p className="mt-1 text-neutral-500 dark:text-neutral-400">
-            {t('manageYourLeads')}
-          </p>
+        <div className="flex items-center gap-4">
+          <div>
+            <h2 className="text-2xl font-bold text-neutral-900 dark:text-neutral-50">
+              {t('clientDashboardTitle')}, {profile.email.split('@')[0]}
+            </h2>
+            <p className="mt-1 text-neutral-500 dark:text-neutral-400">
+              {t('manageYourLeads')}
+            </p>
+          </div>
+          <button
+            onClick={() => setRefreshKey(prev => prev + 1)}
+            disabled={isLoadingLeads || isLoadingMasters}
+            className="p-2 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded-lg transition-colors hidden md:block"
+            title={t('refresh')}
+            type="button"
+          >
+            <RefreshCw className={`w-5 h-5 text-neutral-600 dark:text-neutral-300 ${(isLoadingLeads || isLoadingMasters) ? 'animate-spin' : ''}`} />
+          </button>
         </div>
 
         <div className="mt-4 md:mt-0 hidden md:flex p-1 bg-neutral-100 dark:bg-neutral-800 rounded-lg">
@@ -395,7 +407,7 @@ export function ClientDashboard({
         </div>
       </div>
 
-      {activeTab === 'leads' ? (
+      <div className={activeTab === 'leads' ? 'block' : 'hidden'}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="col-span-1 md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="bg-neutral-100 dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 rounded-2xl p-8 flex flex-col items-center justify-center text-center shadow-sm">
@@ -740,7 +752,8 @@ export function ClientDashboard({
             </div>
           ))}
         </div>
-      ) : activeTab === 'messages' ? (
+      </div>
+      <div className={activeTab === 'messages' ? 'block' : 'hidden'}>
         <div className="w-full">
           <MessagesList 
             userRole="client" 
@@ -752,7 +765,8 @@ export function ClientDashboard({
             }}
           />
         </div>
-      ) : (
+      </div>
+      <div className={activeTab === 'top_masters' ? 'block' : 'hidden'}>
         <div className="space-y-6">
           <div className="bg-gradient-to-r from-primary-600 to-primary-600 rounded-3xl p-8 text-white shadow-xl relative overflow-hidden">
             <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
@@ -954,7 +968,7 @@ export function ClientDashboard({
             </div>
           )}
         </div>
-      )}
+      </div>
 
       {isFormOpen && (
         <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-sm p-4 sm:p-6" onClick={(e) => { if (e.target === e.currentTarget) setIsFormOpen(false) }}>

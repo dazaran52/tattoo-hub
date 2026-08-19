@@ -1,7 +1,7 @@
 import { useTranslations } from "next-intl";
 import Image from 'next/image'
 import { useState, useEffect, useRef } from 'react'
-import { MessageCircle, Clock, Send, AlertCircle, Search, ChevronLeft, Image as ImageIcon, Calendar, Paperclip, Check, CheckCheck, User } from 'lucide-react'
+import { MessageCircle, Clock, Send, AlertCircle, Search, ChevronLeft, Image as ImageIcon, Calendar, Paperclip, Check, CheckCheck, User, RefreshCw } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { supabase } from '@/lib/supabase'
 import { toast } from 'react-hot-toast'
@@ -397,13 +397,24 @@ export function MessagesList({ userRole = 'master', onViewLead, onViewSession }:
       {/* Left Sidebar - Chat List */}
       <div className={`w-full md:w-80 lg:w-96 border-r border-neutral-200 dark:border-white/5 flex flex-col transition-all duration-300 ${showMobileChat ? 'hidden md:flex' : 'flex'}`}>
         <div className="p-4 sm:p-6 border-b border-neutral-200 dark:border-white/5 shrink-0 bg-neutral-50/50 dark:bg-neutral-900/50">
-          <h2 className="text-xl font-bold text-neutral-900 dark:text-white flex items-center gap-2 mb-4">
-            <MessageCircle className="w-5 h-5 text-primary-500" />
-            {t('messages')}
-                                  {chats.reduce((sum, c: any) => sum + (c.unread_count || 0), 0) > 0 && (
-              <span className="w-2 h-2 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.6)] animate-pulse ml-1" />
-            )}
-          </h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold text-neutral-900 dark:text-white flex items-center gap-2">
+              <MessageCircle className="w-5 h-5 text-primary-500" />
+              {t('messages')}
+              {chats.reduce((sum, c: any) => sum + (c.unread_count || 0), 0) > 0 && (
+                <span className="w-2 h-2 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.6)] animate-pulse ml-1" />
+              )}
+            </h2>
+            <button
+              onClick={() => fetchChats(0, false)}
+              disabled={loading}
+              className="p-1.5 bg-neutral-200/50 dark:bg-neutral-800 hover:bg-neutral-300/50 dark:hover:bg-neutral-700 rounded-lg transition-colors"
+              title={t('refresh')}
+              type="button"
+            >
+              <RefreshCw className={`w-4 h-4 text-neutral-600 dark:text-neutral-300 ${loading ? 'animate-spin' : ''}`} />
+            </button>
+          </div>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
             <input
@@ -593,8 +604,21 @@ export function MessagesList({ userRole = 'master', onViewLead, onViewSession }:
                 </div>
               </div>
 
-              <div
-                className="hidden sm:flex shrink-0 cursor-pointer"
+              <div className="flex items-center gap-2 sm:gap-4 shrink-0">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    loadChatMessages(selectedChat.id, 0, false);
+                  }}
+                  disabled={loading}
+                  className="p-2 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded-full transition-colors hidden sm:block"
+                  title={t('refresh')}
+                  type="button"
+                >
+                  <RefreshCw className={`w-4 h-4 text-neutral-600 dark:text-neutral-300 ${loading ? 'animate-spin' : ''}`} />
+                </button>
+                <div
+                  className="hidden sm:flex shrink-0 cursor-pointer"
                 onClick={(e) => {
                   e.stopPropagation();
                   setShowSessionsModal(true);
@@ -605,6 +629,7 @@ export function MessagesList({ userRole = 'master', onViewLead, onViewSession }:
                 </span>
               </div>
             </div>
+          </div>
 
             <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
               <div className="bg-amber-500/10 text-amber-600 dark:text-amber-400 p-3 rounded-2xl text-xs flex gap-2 mx-auto max-w-lg mb-6">

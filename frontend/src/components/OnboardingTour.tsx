@@ -21,8 +21,7 @@ export function OnboardingTour({ startTour, onTourEnd }: OnboardingTourProps) {
       nextBtnText: t('guide.next'),
       prevBtnText: t('back'),
       onPopoverRender: (popover, { config, state }) => {
-        // Apply custom styling
-        popover.wrapper.classList.add('dark:bg-neutral-900', 'dark:text-white', 'dark:border-neutral-800')
+        // Classes are applied globally via globals.css
       },
       onDestroyed: () => {
         if (onTourEnd) {
@@ -33,8 +32,8 @@ export function OnboardingTour({ startTour, onTourEnd }: OnboardingTourProps) {
         {
           element: '#tour-balance',
           popover: {
-            title: t('yourBalance'),
-            description: t('yourCurrentFundBalance'),
+            title: t('guide.tourBalanceTitle'),
+            description: t('guide.tourBalanceDesc'),
             side: 'bottom',
             align: 'start'
           }
@@ -42,8 +41,8 @@ export function OnboardingTour({ startTour, onTourEnd }: OnboardingTourProps) {
         {
           element: '#tour-crm',
           popover: {
-            title: t('crm5'),
-            description: t('manageAllYourClients'),
+            title: t('guide.tourCrmTitle'),
+            description: t('guide.tourCrmDesc'),
             side: 'bottom',
             align: 'start'
           }
@@ -51,8 +50,8 @@ export function OnboardingTour({ startTour, onTourEnd }: OnboardingTourProps) {
         {
           element: '#tour-feed',
           popover: {
-            title: t('leadMarketplace'),
-            description: t('newRequestsAndOrders'),
+            title: t('guide.tourFeedTitle'),
+            description: t('guide.tourFeedDesc'),
             side: 'bottom',
             align: 'start'
           }
@@ -60,8 +59,8 @@ export function OnboardingTour({ startTour, onTourEnd }: OnboardingTourProps) {
         {
           element: '#tour-portfolio',
           popover: {
-            title: t('yourPortfolio'),
-            description: t('uploadPhotosOfYour'),
+            title: t('guide.tourPortfolioTitle'),
+            description: t('guide.tourPortfolioDesc'),
             side: 'bottom',
             align: 'start'
           }
@@ -69,8 +68,8 @@ export function OnboardingTour({ startTour, onTourEnd }: OnboardingTourProps) {
         {
           element: '#tour-messages',
           popover: {
-            title: t('messagesAndChats'),
-            description: t('hereYouCanCommunicate'),
+            title: t('guide.tourMessagesTitle'),
+            description: t('guide.tourMessagesDesc'),
             side: 'bottom',
             align: 'start'
           }
@@ -78,8 +77,8 @@ export function OnboardingTour({ startTour, onTourEnd }: OnboardingTourProps) {
         {
           element: '#tour-profile',
           popover: {
-            title: t('profileAndSettings'),
-            description: t('fillOutYourProfile'),
+            title: t('guide.tourProfileTitle'),
+            description: t('guide.tourProfileDesc'),
             side: 'left',
             align: 'start'
           }

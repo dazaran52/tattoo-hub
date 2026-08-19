@@ -1,6 +1,6 @@
 import Image from 'next/image'
 import { useState, useEffect } from 'react'
-import { Plus, Image as ImageIcon, Video, Trash2, Edit2, Loader2, X } from 'lucide-react'
+import { Plus, Trash2, X, Image as ImageIcon, Video, RefreshCw, Edit2, Loader2 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { PostModal, PortfolioPost } from './PostModal'
 import { useTranslations, useLocale } from 'next-intl'
@@ -139,9 +139,20 @@ export function PortfolioTab({ profile }: PortfolioTabProps) {
   return (
     <div className="bg-white dark:bg-neutral-900 rounded-3xl p-6 md:p-8 border border-neutral-200/50 dark:border-white/5 shadow-xl transition-colors duration-300">
       <div className="flex justify-between items-center mb-8">
-        <div>
-          <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">{t('portfolio')}</h2>
-          <p className="text-neutral-500 text-sm mt-1">{t('56')}</p>
+        <div className="flex items-center gap-4">
+          <div>
+            <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">{t('portfolio')}</h2>
+            <p className="text-neutral-500 text-sm mt-1">{t('56')}</p>
+          </div>
+          <button
+            onClick={() => fetchPosts()}
+            disabled={isLoading}
+            className="p-2 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded-lg transition-colors"
+            title={t('refresh')}
+            type="button"
+          >
+            <RefreshCw className={`w-5 h-5 text-neutral-600 dark:text-neutral-300 ${isLoading ? 'animate-spin' : ''}`} />
+          </button>
         </div>
         <button
           onClick={() => setIsCreating(true)}

@@ -327,8 +327,8 @@ export default function DashboardPage() {
             </div>
 
             {/* Content Rendering based on Tab */}
-            {activeTab === 'feed' && (
-              profile.can_create_leads === false ? (
+            <div className={activeTab === 'feed' ? 'block' : 'hidden'}>
+              {profile.can_create_leads === false ? (
                 <div className="flex flex-col items-center justify-center p-12 text-center bg-red-50/50 dark:bg-red-950/20 rounded-3xl border border-red-200/50 dark:border-red-900/30 backdrop-blur-sm mt-4">
                   <div className="w-16 h-16 rounded-full bg-red-100 dark:bg-red-900/50 flex items-center justify-center mb-4 border border-red-200 dark:border-red-800">
                     <svg className="w-8 h-8 text-red-600 dark:text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -368,13 +368,19 @@ export default function DashboardPage() {
                 </div>
               ) : (
                 <LeadsFeed onUnlockSuccess={handleUnlockSuccess} isAdmin={profile.is_admin} userCities={profile.city_ids || []} />
-              )
-            )}
+              )}
+            </div>
 
-          {activeTab === 'crm' && <CRMBoard initialViewLeadId={viewLeadId} initialViewSessionId={viewSessionId} />}
-          {activeTab === 'portfolio' && <PortfolioTab profile={profile} />}
-          {activeTab === 'messages' && (
-            profile.can_chat === false ? (
+            <div className={activeTab === 'crm' ? 'block' : 'hidden'}>
+              <CRMBoard initialViewLeadId={viewLeadId} initialViewSessionId={viewSessionId} />
+            </div>
+
+            <div className={activeTab === 'portfolio' ? 'block' : 'hidden'}>
+              <PortfolioTab profile={profile} />
+            </div>
+
+            <div className={activeTab === 'messages' ? 'block' : 'hidden'}>
+              {profile.can_chat === false ? (
                 <div className="flex flex-col items-center justify-center p-12 text-center bg-red-50/50 dark:bg-red-950/20 rounded-3xl border border-red-200/50 dark:border-red-900/30 backdrop-blur-sm mt-4">
                   <div className="w-16 h-16 rounded-full bg-red-100 dark:bg-red-900/50 flex items-center justify-center mb-4 border border-red-200 dark:border-red-800">
                     <svg className="w-8 h-8 text-red-600 dark:text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -412,89 +418,89 @@ export default function DashboardPage() {
                     Подать апелляцию
                   </button>
                 </div>
-            ) : (
-            <>
-              <MessagesList 
-                onViewLead={(lead, chat) => {
-                  const sessionObj = {
-                    id: chat?.client_session_id || lead?.id,
-                    lead_id: lead?.id,
-                    status: chat?.kanban_status || lead?.status || 'new',
-                    style: lead?.style || lead?.title,
-                    body_place: lead?.body_place,
-                    size: lead?.size,
-                    notes: lead?.description,
-                    session_date: lead?.session_date,
-                    reference_images: lead?.image_urls,
-                    master_clients: {
-                      id: chat?.id,
-                      lead_id: lead?.id,
-                      name: chat?.other_user_name || lead?.client_name || t('crmBoard.unknownClient'),
-                      email: chat?.other_user_email || lead?.email,
-                      phone: chat?.other_user_phone || lead?.contact,
-                      telegram: chat?.other_user_telegram,
-                      leads: lead
-                    }
-                  }
-                  setMessagesViewLead(sessionObj)
-                }}
-                onViewSession={(sessionId) => {
-                  setViewSessionId(sessionId)
-                  setViewLeadId(null)
-                  setActiveTab('crm')
-                }}
-              />
-              <LeadDetailsModal
-                isOpen={!!messagesViewLead}
-                onClose={() => setMessagesViewLead(null)}
-                session={messagesViewLead}
-                onAccept={async () => {
-                  try {
-                    const sessionId = messagesViewLead?.id
-                    if (sessionId) {
-                      const { data: { session: authSession } } = await supabase.auth.getSession()
-                      await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/crm/sessions/${sessionId}`, {
-                        method: 'PUT',
-                        headers: {
-                          'Authorization': `Bearer ${authSession?.access_token}`,
-                          'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({ status: 'in_progress' })
-                      })
-                      toast.success(t('theApplicationHasBeen3'))
-                    }
-                  } catch (e) {
-                    console.error(e)
-                  } finally {
-                    setMessagesViewLead(null)
-                  }
-                }}
-                onReject={async (reason) => {
-                  try {
-                    const sessionId = messagesViewLead?.id
-                    if (sessionId) {
-                      const { data: { session: authSession } } = await supabase.auth.getSession()
-                      await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/crm/sessions/${sessionId}`, {
-                        method: 'PUT',
-                        headers: {
-                          'Authorization': `Bearer ${authSession?.access_token}`,
-                          'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({ status: 'cancelled', reject_reason: reason })
-                      })
-                      toast.success(t('applicationRejected'))
-                    }
-                  } catch (e) {
-                    console.error(e)
-                  } finally {
-                    setMessagesViewLead(null)
-                  }
-                }}
-                onUpdate={() => setMessagesViewLead(null)}
-              />
-            </>
-          )
-          )}
+              ) : (
+                <>
+                  <MessagesList 
+                    onViewLead={(lead, chat) => {
+                      const sessionObj = {
+                        id: chat?.client_session_id || lead?.id,
+                        lead_id: lead?.id,
+                        status: chat?.kanban_status || lead?.status || 'new',
+                        style: lead?.style || lead?.title,
+                        body_place: lead?.body_place,
+                        size: lead?.size,
+                        notes: lead?.description,
+                        session_date: lead?.session_date,
+                        reference_images: lead?.image_urls,
+                        master_clients: {
+                          id: chat?.id,
+                          lead_id: lead?.id,
+                          name: chat?.other_user_name || lead?.client_name || t('crmBoard.unknownClient'),
+                          email: chat?.other_user_email || lead?.email,
+                          phone: chat?.other_user_phone || lead?.contact,
+                          telegram: chat?.other_user_telegram,
+                          leads: lead
+                        }
+                      }
+                      setMessagesViewLead(sessionObj)
+                    }}
+                    onViewSession={(sessionId) => {
+                      setViewSessionId(sessionId)
+                      setViewLeadId(null)
+                      setActiveTab('crm')
+                    }}
+                  />
+                  <LeadDetailsModal
+                    isOpen={!!messagesViewLead}
+                    onClose={() => setMessagesViewLead(null)}
+                    session={messagesViewLead}
+                    onAccept={async () => {
+                      try {
+                        const sessionId = messagesViewLead?.id
+                        if (sessionId) {
+                          const { data: { session: authSession } } = await supabase.auth.getSession()
+                          await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/crm/sessions/${sessionId}`, {
+                            method: 'PUT',
+                            headers: {
+                              'Authorization': `Bearer ${authSession?.access_token}`,
+                              'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ status: 'in_progress' })
+                          })
+                          toast.success(t('theApplicationHasBeen3'))
+                        }
+                      } catch (e) {
+                        console.error(e)
+                      } finally {
+                        setMessagesViewLead(null)
+                      }
+                    }}
+                    onReject={async (reason) => {
+                      try {
+                        const sessionId = messagesViewLead?.id
+                        if (sessionId) {
+                          const { data: { session: authSession } } = await supabase.auth.getSession()
+                          await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/crm/sessions/${sessionId}`, {
+                            method: 'PUT',
+                            headers: {
+                              'Authorization': `Bearer ${authSession?.access_token}`,
+                              'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ status: 'cancelled', reject_reason: reason })
+                          })
+                          toast.success(t('applicationRejected'))
+                        }
+                      } catch (e) {
+                        console.error(e)
+                      } finally {
+                        setMessagesViewLead(null)
+                      }
+                    }}
+                    onUpdate={() => setMessagesViewLead(null)}
+                  />
+                </>
+              )}
+            </div>
         </>
         )}
       </main>

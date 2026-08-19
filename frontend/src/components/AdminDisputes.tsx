@@ -6,7 +6,7 @@ import Image from 'next/image'
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import toast from 'react-hot-toast'
-import { AlertTriangle, CheckCircle, XCircle, ExternalLink } from 'lucide-react'
+import { AlertTriangle, CheckCircle, XCircle, ExternalLink, RefreshCw } from 'lucide-react'
 
 export function AdminDisputes() {
     const t = useTranslations();
@@ -96,6 +96,17 @@ export function AdminDisputes() {
 
   return (
     <div className="space-y-6">
+      <div className="flex justify-end">
+        <button
+          onClick={() => fetchDisputes()}
+          disabled={isLoading}
+          className="p-1.5 bg-neutral-200/50 dark:bg-neutral-800 hover:bg-neutral-300/50 dark:hover:bg-neutral-700 rounded-lg transition-colors"
+          title={t('refresh')}
+          type="button"
+        >
+          <RefreshCw className={`w-4 h-4 text-neutral-600 dark:text-neutral-300 ${isLoading ? 'animate-spin' : ''}`} />
+        </button>
+      </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {disputes.map((dispute) => (
           <div key={dispute.id} className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl overflow-hidden shadow-sm flex flex-col">

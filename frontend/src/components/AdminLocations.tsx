@@ -1,6 +1,6 @@
 import { useTranslations } from "next-intl";
 import { useState, useEffect, useMemo, useRef } from 'react'
-import { Plus, Trash2, Loader2, Globe, MapPin, Search } from 'lucide-react'
+import { Plus, Trash2, Loader2, Globe, MapPin, Search, RefreshCw, Edit2, Check, X } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import toast from 'react-hot-toast'
 import { ConfirmModal } from '@/components/ConfirmModal'
@@ -295,10 +295,21 @@ export function AdminLocations() {
     <div className="space-y-8">
       {/* Countries Section */}
       <div className="bg-white dark:bg-neutral-900 rounded-3xl border border-neutral-200 dark:border-white/5 p-6 md:p-8 shadow-sm">
-        <h3 className="text-xl font-extrabold text-neutral-900 dark:text-white mb-6 flex items-center gap-2">
-          <Globe className="w-6 h-6 text-primary-500" />
-          {t('countries')}
-                          </h3>
+        <div className="flex justify-between items-center mb-6">
+          <h3 className="text-xl font-extrabold text-neutral-900 dark:text-white flex items-center gap-2">
+            <Globe className="w-6 h-6 text-primary-500" />
+            {t('countries')}
+          </h3>
+          <button
+            onClick={fetchData}
+            disabled={actionLoadingId !== null}
+            className="p-2 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded-lg transition-colors"
+            title={t('refresh')}
+            type="button"
+          >
+            <RefreshCw className={`w-4 h-4 text-neutral-600 dark:text-neutral-300 ${actionLoadingId !== null ? 'animate-spin' : ''}`} />
+          </button>
+        </div>
         
         <form onSubmit={handleAddCountry} className="flex flex-col gap-4 mb-6">
           <div className="flex flex-col md:flex-row gap-4 items-start">

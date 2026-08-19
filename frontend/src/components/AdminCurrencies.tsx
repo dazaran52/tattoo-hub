@@ -92,6 +92,15 @@ export function AdminCurrencies() {
           <div className="flex items-center gap-2 mb-2">
             <ShieldCheck className="w-6 h-6 text-primary-500" />
             <h3 className="text-xl font-bold dark:text-white">{t('exchangeRateManagementEcb')}</h3>
+            <button
+              onClick={fetchRates}
+              disabled={isLoading}
+              className="p-1.5 ml-2 bg-white/20 dark:bg-neutral-800/50 hover:bg-white/40 dark:hover:bg-neutral-700/50 rounded-lg transition-colors"
+              title={t('refresh')}
+              type="button"
+            >
+              <RefreshCw className={`w-4 h-4 text-neutral-800 dark:text-neutral-300 ${isLoading ? 'animate-spin' : ''}`} />
+            </button>
           </div>
           <p className="text-sm text-neutral-600 dark:text-neutral-400 max-w-2xl">
             {t('eur10CzkFrankfurter')}

@@ -11,7 +11,7 @@ import { AdminCurrencies } from '@/components/AdminCurrencies'
 import { AdminLeads } from '@/components/AdminLeads'
 import { AdminAppeals } from '@/components/AdminAppeals'
 import { supabase, Profile } from '@/lib/supabase'
-import { CheckCircle, XCircle, Clock, Loader2, Plus, Edit2, Trash2, Link as LinkIcon, Search, Coins, Ban, Eye, MessageSquare, Shield, Lock, Unlock, UserCheck, FileText, X, Check, Users, ShieldAlert, Headphones, Database } from 'lucide-react'
+import { CheckCircle, XCircle, Clock, Loader2, Plus, Edit2, Trash2, Link as LinkIcon, Search, Coins, Ban, Eye, MessageSquare, Shield, Lock, Unlock, UserCheck, FileText, X, Check, Users, ShieldAlert, Headphones, Database, RefreshCw } from 'lucide-react'
 import { getTranslation, Language } from '@/lib/i18n'
 import toast from 'react-hot-toast'
 import { useTranslations, useLocale } from 'next-intl'
@@ -851,15 +851,29 @@ export default function AdminPage() {
           )}
         </div>
 
-        {activeTab === 'leads' && <AdminLeads />}
-        {activeTab === 'locations' && <AdminLocations />}
-        {activeTab === 'chats' && <AdminChat />}
-        {activeTab === 'ai-chats' && <AdminAiChats />}
-        {activeTab === 'disputes' && <AdminDisputes />}
-        {activeTab === 'appeals' && <AdminAppeals />}
-        {activeTab === 'currencies' && <AdminCurrencies />}
+        <div className={activeTab === 'leads' ? 'block' : 'hidden'}>
+          <AdminLeads />
+        </div>
+        <div className={activeTab === 'locations' ? 'block' : 'hidden'}>
+          <AdminLocations />
+        </div>
+        <div className={activeTab === 'chats' ? 'block' : 'hidden'}>
+          <AdminChat />
+        </div>
+        <div className={activeTab === 'ai-chats' ? 'block' : 'hidden'}>
+          <AdminAiChats />
+        </div>
+        <div className={activeTab === 'disputes' ? 'block' : 'hidden'}>
+          <AdminDisputes />
+        </div>
+        <div className={activeTab === 'appeals' ? 'block' : 'hidden'}>
+          <AdminAppeals />
+        </div>
+        <div className={activeTab === 'currencies' ? 'block' : 'hidden'}>
+          <AdminCurrencies />
+        </div>
         
-        {activeTab === 'security' && (
+        <div className={activeTab === 'security' ? 'block' : 'hidden'}>
           <div className="bg-white/40 dark:bg-neutral-900/40 backdrop-blur-md border border-neutral-200/50 dark:border-white/5 rounded-3xl p-6 shadow-xl animate-fade-in-up">
             <div className="flex items-center justify-between mb-6 border-b border-neutral-200/50 dark:border-white/5 pb-4">
               <div>
@@ -874,10 +888,11 @@ export default function AdminPage() {
 
               <button
                 onClick={fetchSecurityAlerts}
-                className="px-4 py-2 bg-neutral-200 dark:bg-neutral-800 hover:bg-neutral-300 font-bold text-xs rounded-xl transition-all cursor-pointer"
+                className="px-4 py-2 bg-neutral-200 dark:bg-neutral-800 hover:bg-neutral-300 font-bold text-xs rounded-xl transition-all cursor-pointer flex items-center gap-1.5"
               >
+                <RefreshCw className={`w-3.5 h-3.5 ${isLoadingSecurityAlerts ? 'animate-spin' : ''}`} />
                 {t('updateList')}
-                                            </button>
+              </button>
             </div>
 
             {isLoadingSecurityAlerts ? (
@@ -924,9 +939,9 @@ export default function AdminPage() {
               </div>
             )}
           </div>
-        )}
+        </div>
 
-        {activeTab === 'users' && (
+        <div className={activeTab === 'users' ? 'block' : 'hidden'}>
           <div className="bg-white/40 dark:bg-neutral-900/40 backdrop-blur-md border border-neutral-200/50 dark:border-white/5 rounded-3xl overflow-hidden shadow-xl animate-fade-in-up">
             <div className="p-4 border-b border-neutral-200/50 dark:border-white/5 bg-neutral-50/50 dark:bg-neutral-900/30">
               <div className="flex items-center gap-2 mb-4 overflow-x-auto pb-2">
@@ -943,28 +958,39 @@ export default function AdminPage() {
                 ))}
               </div>
               <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
-              <div className="relative w-full sm:w-96">
-                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
-                <input
-                  type="text"
-                  placeholder={t('email6')}
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 bg-white/40 dark:bg-neutral-950/40 border border-neutral-200 dark:border-white/10 rounded-xl text-sm text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-accent-500/20 focus:border-accent-500 transition-all shadow-inner"
-                />
-              </div>
-              <div className="w-full sm:w-auto">
-                <select
-                  value={sortOrder}
-                  onChange={(e: any) => setSortOrder(e.target.value)}
-                  className="w-full sm:w-auto px-4 py-2.5 bg-white/60 dark:bg-neutral-950/80 border border-neutral-200 dark:border-white/10 rounded-xl text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-accent-500/20 font-semibold cursor-pointer transition-all shadow-sm"
-                >
-                  <option value="newest">{t('newOnesFirst')}</option>
-                  <option value="oldest">{t('oldOnesFirst')}</option>
-                  <option value="balance_desc">{t('balanceDescending')}</option>
-                  <option value="balance_asc">{t('balanceAge')}</option>
-                </select>
-              </div>
+                <div className="flex items-center gap-3 w-full sm:w-auto">
+                  <div className="relative w-full sm:w-96">
+                    <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
+                    <input
+                      type="text"
+                      placeholder={t('email6')}
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="w-full pl-10 pr-4 py-2.5 bg-white/40 dark:bg-neutral-950/40 border border-neutral-200 dark:border-white/10 rounded-xl text-sm text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-accent-500/20 focus:border-accent-500 transition-all shadow-inner"
+                    />
+                  </div>
+                  <button
+                    onClick={() => fetchAdminUsers(userPage, userRoleTab)}
+                    disabled={isLoading}
+                    className="p-2.5 bg-white/60 dark:bg-neutral-950/80 border border-neutral-200 dark:border-white/10 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-xl transition-colors shadow-sm shrink-0"
+                    title={t('refresh')}
+                    type="button"
+                  >
+                    <RefreshCw className={`w-4 h-4 text-neutral-600 dark:text-neutral-300 ${isLoading ? 'animate-spin' : ''}`} />
+                  </button>
+                </div>
+                <div className="w-full sm:w-auto">
+                  <select
+                    value={sortOrder}
+                    onChange={(e: any) => setSortOrder(e.target.value)}
+                    className="w-full sm:w-auto px-4 py-2.5 bg-white/60 dark:bg-neutral-950/80 border border-neutral-200 dark:border-white/10 rounded-xl text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-accent-500/20 font-semibold cursor-pointer transition-all shadow-sm"
+                  >
+                    <option value="newest">{t('newOnesFirst')}</option>
+                    <option value="oldest">{t('oldOnesFirst')}</option>
+                    <option value="balance_desc">{t('balanceDescending')}</option>
+                    <option value="balance_asc">{t('balanceAge')}</option>
+                  </select>
+                </div>
               </div>
             </div>
             <div className="overflow-x-auto w-full pb-4">
@@ -1182,7 +1208,7 @@ export default function AdminPage() {
               </div>
             </div>
           </div>
-        )}
+        </div>
       </main>
 
       <CertificateReviewModal
@@ -1192,7 +1218,7 @@ export default function AdminPage() {
       />
 
       {balanceModalUser && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-200">
           <div className="bg-white/85 dark:bg-neutral-900/85 backdrop-blur-xl w-full max-w-md rounded-3xl shadow-2xl overflow-y-auto max-h-[90vh] animate-in zoom-in-95 duration-200 p-6 border border-neutral-200/50 dark:border-white/5">
             <h3 className="text-xl font-extrabold text-neutral-900 dark:text-white mb-1">{t('changeBalance')}</h3>
             <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-5 font-semibold">{balanceModalUser.email}</p>
@@ -1227,7 +1253,7 @@ export default function AdminPage() {
       )}
 
       {badgeModalUser && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-200" onClick={() => setBadgeModalUser(null)}>
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-200" onClick={() => setBadgeModalUser(null)}>
           <div className="bg-white/90 dark:bg-neutral-900/90 backdrop-blur-2xl w-full max-w-md rounded-3xl shadow-2xl overflow-y-auto max-h-[90vh] p-6 border border-neutral-200/50 dark:border-white/10" onClick={(e) => e.stopPropagation()}>
             <h3 className="text-xl font-extrabold text-neutral-900 dark:text-white mb-1">{t('proVip')}</h3>
             <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-6 font-semibold">{badgeModalUser.email}</p>

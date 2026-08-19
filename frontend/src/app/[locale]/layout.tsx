@@ -6,6 +6,7 @@ import { ChatWidget } from '@/components/ChatWidget'
 import { Toaster } from 'react-hot-toast'
 import { InstallPrompt } from '@/components/InstallPrompt'
 import { CustomCursor } from '@/components/CustomCursor'
+import BackgroundGlow from '@/components/BackgroundGlow'
 import { TouchEffect } from '@/components/TouchEffect'
 import { CookieBanner } from '@/components/CookieBanner'
 import { OnlinePresenceTracker } from '@/components/OnlinePresenceTracker'
@@ -124,6 +125,7 @@ export default async function RootLayout({
               <CustomCursor />
               <TouchEffect />
               <ThemeProvider />
+              <BackgroundGlow />
               <Toaster 
                 position="top-center" 
                 reverseOrder={false} 

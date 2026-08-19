@@ -4,7 +4,7 @@ import { useTranslations } from "next-intl";
 
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
-import { CheckCircle, XCircle, Clock, Search, Loader2 } from 'lucide-react'
+import { CheckCircle, XCircle, Clock, Search, Loader2, RefreshCw } from 'lucide-react'
 import { EmptyState } from '@/components/EmptyState'
 import toast from 'react-hot-toast'
 
@@ -103,9 +103,20 @@ export function AdminAppeals() {
 
   return (
     <div className="bg-white/40 dark:bg-neutral-900/40 backdrop-blur-md border border-neutral-200/50 dark:border-white/5 rounded-3xl overflow-hidden shadow-xl animate-fade-in-up">
-      <div className="p-6 border-b border-neutral-200/50 dark:border-white/5 bg-neutral-50/50 dark:bg-neutral-900/30">
-        <h3 className="text-xl font-extrabold text-neutral-900 dark:text-white mb-1">{t('banAppeals')}</h3>
-        <p className="text-xs text-neutral-500 font-medium">{t('considerationOfApplicationsFor')}</p>
+      <div className="p-6 border-b border-neutral-200/50 dark:border-white/5 bg-neutral-50/50 dark:bg-neutral-900/30 flex justify-between items-start">
+        <div>
+          <h3 className="text-xl font-extrabold text-neutral-900 dark:text-white mb-1">{t('banAppeals')}</h3>
+          <p className="text-xs text-neutral-500 font-medium">{t('considerationOfApplicationsFor')}</p>
+        </div>
+        <button
+          onClick={() => fetchAppeals()}
+          disabled={isLoading}
+          className="p-1.5 bg-neutral-200/50 dark:bg-neutral-800 hover:bg-neutral-300/50 dark:hover:bg-neutral-700 rounded-lg transition-colors"
+          title={t('refresh')}
+          type="button"
+        >
+          <RefreshCw className={`w-4 h-4 text-neutral-600 dark:text-neutral-300 ${isLoading ? 'animate-spin' : ''}`} />
+        </button>
       </div>
 
       <div className="overflow-x-auto w-full pb-4">

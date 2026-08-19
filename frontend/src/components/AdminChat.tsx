@@ -4,7 +4,7 @@ import { useTranslations } from "next-intl";
 
 import { useState, useEffect, useRef } from 'react'
 import { supabase, SupportMessage } from '@/lib/supabase'
-import { MessageCircle, Send, Loader2, User, Trash2, Ban, CheckCircle2, Coins, X } from 'lucide-react'
+import { Send, Image as ImageIcon, Check, CheckCheck, Loader2, MessageCircle, Info, Paperclip, MoreVertical, Shield, ExternalLink, RefreshCw, User, Trash2, Ban, CheckCircle2, Coins, X } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { ConfirmModal } from '@/components/ConfirmModal'
 import { SkeletonList } from '@/components/SkeletonCard'
@@ -21,6 +21,7 @@ export function AdminChat() {
   const [isLoadingChats, setIsLoadingChats] = useState(true)
   const [isLoadingMessages, setIsLoadingMessages] = useState(false)
   const [isSending, setIsSending] = useState(false)
+  const [refreshKey, setRefreshKey] = useState(0)
   
   // Custom Modals State
   const [balanceModalUser, setBalanceModalUser] = useState<{ id: string, email: string, balance: number } | null>(null)
@@ -119,7 +120,7 @@ export function AdminChat() {
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [session])
+  }, [session, refreshKey])
 
   useEffect(() => {
     if (!selectedUserId) return
@@ -285,10 +286,23 @@ export function AdminChat() {
     <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl overflow-hidden shadow-sm flex h-[600px] animate-fade-in-up">
       {/* Sidebar: Users List */}
       <div className="w-1/3 border-r border-neutral-200 dark:border-neutral-800 flex flex-col bg-neutral-50 dark:bg-neutral-900/50">
-        <div className="p-4 border-b border-neutral-200 dark:border-neutral-800 flex items-center gap-2 font-bold text-neutral-900 dark:text-white">
-          <MessageCircle className="w-5 h-5 text-accent-500" />
-          {t('activeChats')}
-                          </div>
+        <div className="p-4 border-b border-neutral-200 dark:border-neutral-800 flex justify-between items-center">
+          <div className="flex items-center gap-2 font-bold text-neutral-900 dark:text-white">
+            <MessageCircle className="w-5 h-5 text-accent-500" />
+            {t('activeChats')}
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setRefreshKey(prev => prev + 1)}
+              disabled={isLoadingChats}
+              className="p-1.5 bg-neutral-200/50 dark:bg-neutral-800 hover:bg-neutral-300/50 dark:hover:bg-neutral-700 rounded-lg transition-colors"
+              title={t('refresh')}
+              type="button"
+            >
+              <RefreshCw className={`w-4 h-4 text-neutral-600 dark:text-neutral-300 ${isLoadingChats ? 'animate-spin' : ''}`} />
+            </button>
+          </div>
+        </div>
         <div className="flex-1 overflow-y-auto">
           {isLoadingChats ? (
             <SkeletonList count={4} />

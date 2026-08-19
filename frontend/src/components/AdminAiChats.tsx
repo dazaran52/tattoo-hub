@@ -4,7 +4,7 @@ import { useTranslations } from "next-intl";
 
 import { useState, useEffect, useRef, useMemo } from 'react'
 import { supabase } from '@/lib/supabase'
-import { MessageCircle, User, Bot, Loader2, CheckCircle2, PauseCircle, PlayCircle, Filter } from 'lucide-react'
+import { Bot, MessageSquare, Search, Filter, Calendar, Clock, Loader2, ArrowRight, User, Hash, AlertTriangle, PlayCircle, RefreshCw, MessageCircle, CheckCircle2, PauseCircle } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { SkeletonList } from '@/components/SkeletonCard'
 import { EmptyState } from '@/components/EmptyState'
@@ -39,6 +39,7 @@ export function AdminAiChats() {
   const [isLoadingChats, setIsLoadingChats] = useState(true)
   const [isPausing, setIsPausing] = useState(false)
   const [countryFilter, setCountryFilter] = useState<string>('ALL')
+  const [refreshKey, setRefreshKey] = useState(0)
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
@@ -67,7 +68,7 @@ export function AdminAiChats() {
     }
 
     fetchConversations()
-  }, [session])
+  }, [session, refreshKey])
 
   useEffect(() => {
     if (selectedConv) {
@@ -123,7 +124,18 @@ export function AdminAiChats() {
               <Bot className="w-5 h-5 text-primary-500" />
               {t('aiParser')}
                                       </div>
-            <span className="text-xs bg-primary-100 dark:bg-primary-900/50 text-primary-700 dark:text-primary-400 border border-primary-200 dark:border-primary-800 px-2 py-1 rounded-full">{filteredConversations.length}</span>
+            <div className="flex items-center gap-2">
+              <span className="text-xs bg-primary-100 dark:bg-primary-900/50 text-primary-700 dark:text-primary-400 border border-primary-200 dark:border-primary-800 px-2 py-1 rounded-full">{filteredConversations.length}</span>
+              <button
+                onClick={() => setRefreshKey(prev => prev + 1)}
+                disabled={isLoadingChats}
+                className="p-1.5 bg-neutral-200/50 dark:bg-neutral-800 hover:bg-neutral-300/50 dark:hover:bg-neutral-700 rounded-lg transition-colors"
+                title={t('refresh')}
+                type="button"
+              >
+                <RefreshCw className={`w-4 h-4 text-neutral-600 dark:text-neutral-300 ${isLoadingChats ? 'animate-spin' : ''}`} />
+              </button>
+            </div>
           </div>
           {uniqueCountries.length > 0 && (
             <div className="flex items-center gap-2">
