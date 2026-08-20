@@ -81,7 +81,7 @@ export default function AnalyticsPage() {
 
   if (isLoading || !profile || !analytics) {
     return (
-      <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950">
+      <div className="min-h-screen bg-transparent">
         {profile ? <Header profile={profile} onLogout={handleLogout} /> : <div className="h-16 border-b border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900" />}
         <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-24 space-y-8">
           <div>
@@ -99,7 +99,7 @@ export default function AnalyticsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950">
+    <div className="min-h-screen bg-transparent">
       <Header profile={profile} onLogout={handleLogout} />
 
       <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-24">

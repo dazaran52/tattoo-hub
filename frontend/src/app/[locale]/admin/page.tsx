@@ -637,7 +637,7 @@ export default function AdminPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950">
+      <div className="min-h-screen bg-transparent">
         <div className="bg-white dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800 h-16 animate-pulse" />
         <main className="max-w-7xl mx-auto px-4 py-8">
           <div className="h-8 w-64 bg-neutral-200 dark:bg-neutral-800 rounded animate-pulse mb-8" />
@@ -652,12 +652,8 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-50 dark:bg-[#050505] text-neutral-900 dark:text-white transition-colors duration-300 relative overflow-hidden">
-      {/* Premium ambient glows */}
-      <div className="absolute top-0 left-0 w-full h-full pointer-events-none overflow-hidden z-0">
-        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-accent-500/5 dark:bg-accent-500/10 blur-[120px]" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-primary-500/5 dark:bg-primary-500/10 blur-[120px]" />
-      </div>
+    <div className="min-h-screen bg-transparent text-neutral-900 dark:text-white transition-colors duration-300 relative overflow-hidden">
+      
 
       <Header profile={profile} onLogout={handleLogout} />
 
@@ -1411,7 +1407,7 @@ export default function AdminPage() {
               <div className="space-y-6">
                 
                 {/* Role and Status Management */}
-                <div className="bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-white/5 rounded-2xl p-5">
+                <div className="bg-transparent border border-neutral-200 dark:border-white/5 rounded-2xl p-5">
                   <h4 className="text-xs font-extrabold uppercase tracking-wider text-neutral-500 mb-4">{t('roleAndStatusManagement')}</h4>
                   
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -1469,7 +1465,7 @@ export default function AdminPage() {
                 </div>
 
                 {/* Access Control Permissions */}
-                <div className="bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-white/5 rounded-2xl p-5">
+                <div className="bg-transparent border border-neutral-200 dark:border-white/5 rounded-2xl p-5">
                   <h4 className="text-xs font-extrabold uppercase tracking-wider text-neutral-500 mb-4">{t('blocksAndAccessRights')}</h4>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -1543,7 +1539,7 @@ export default function AdminPage() {
 
                 {/* Direct Wallet Balance Adjustment Section */}
                 {(detailModalUser.role === 'master' || detailModalUser.is_admin || detailModalUser.is_verified_master) && (
-                <div className="bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-white/5 rounded-2xl p-5 mt-6">
+                <div className="bg-transparent border border-neutral-200 dark:border-white/5 rounded-2xl p-5 mt-6">
                   <h4 className="text-xs font-extrabold uppercase tracking-wider text-neutral-500 mb-4 flex items-center gap-2">
                     <Coins className="w-4 h-4 text-amber-400" />
                     {t('directWalletBalanceAdjustment')}
@@ -1609,7 +1605,7 @@ export default function AdminPage() {
                 )}
 
                 {/* Additional Metadata */}
-                <div className="bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-white/5 rounded-2xl p-5 text-xs space-y-2">
+                <div className="bg-transparent border border-neutral-200 dark:border-white/5 rounded-2xl p-5 text-xs space-y-2">
                   {detailModalUser.role !== 'client' && (
                     <>
                       <div className="flex justify-between">
@@ -1652,7 +1648,7 @@ export default function AdminPage() {
                           <div
                             key={chat.id}
                             onClick={() => openChatInspector(chat.id, chat.leads?.title || t('dialogueOnTheApplication'))}
-                            className="p-4 bg-neutral-50 dark:bg-neutral-950 hover:bg-accent-500/10 border border-neutral-200 dark:border-white/5 rounded-2xl cursor-pointer transition-all flex items-center justify-between"
+                            className="p-4 bg-transparent hover:bg-accent-500/10 border border-neutral-200 dark:border-white/5 rounded-2xl cursor-pointer transition-all flex items-center justify-between"
                           >
                             <div>
                               <h5 className="font-bold text-sm text-neutral-900 dark:text-white">
@@ -1668,7 +1664,7 @@ export default function AdminPage() {
                     </div>
 
                     {/* Messages Viewer */}
-                    <div className="bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-white/5 rounded-2xl p-4 flex flex-col h-[400px]">
+                    <div className="bg-transparent border border-neutral-200 dark:border-white/5 rounded-2xl p-4 flex flex-col h-[400px]">
                       {isLoadingChatMessages ? (
                         <div className="my-auto text-center">
                           <Loader2 className="w-6 h-6 text-accent-500 animate-spin mx-auto mb-2" />
@@ -1729,7 +1725,7 @@ export default function AdminPage() {
                 ) : (
                   <div className="space-y-2 max-h-[450px] overflow-y-auto pr-1">
                     {userLeadsData.data.map((item: any) => (
-                      <div key={item.id} className="p-4 bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-white/5 rounded-2xl flex items-center justify-between">
+                      <div key={item.id} className="p-4 bg-transparent border border-neutral-200 dark:border-white/5 rounded-2xl flex items-center justify-between">
                         <div>
                           <h5 className="font-bold text-sm text-neutral-900 dark:text-white">
                             {userLeadsData.type === 'proposals' ? (item.leads?.title || t('responseToApplication')) : item.title}

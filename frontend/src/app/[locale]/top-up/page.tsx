@@ -212,12 +212,8 @@ export default function TopUpPage() {
   const customTotalCredit = Math.round(customNum * 1.30)
 
   return (
-    <div className="min-h-screen bg-neutral-50 dark:bg-[#050505] text-neutral-900 dark:text-white transition-colors duration-300 relative overflow-x-hidden pb-16">
-      {/* Premium ambient glows */}
-      <div className="absolute top-0 left-0 w-full h-full pointer-events-none overflow-hidden z-0">
-        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-accent-500/10 blur-[120px]" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-primary-500/10 blur-[120px]" />
-      </div>
+    <div className="min-h-screen bg-transparent text-neutral-900 dark:text-white transition-colors duration-300 relative overflow-x-hidden pb-16">
+      
 
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 relative z-10">
         <div className="flex items-center justify-between gap-4 mb-8">

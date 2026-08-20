@@ -46,7 +46,7 @@ export default function UpdatePasswordPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-neutral-50 dark:bg-[#050505] transition-colors duration-300">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-transparent transition-colors duration-300">
       <div className="w-full max-w-md bg-white/40 dark:bg-neutral-900/40 backdrop-blur-2xl border border-neutral-200/50 dark:border-white/5 shadow-2xl rounded-3xl overflow-hidden p-6 sm:p-8">
         <div className="text-center mb-8">
           <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">{t('newPassword')}</h1>

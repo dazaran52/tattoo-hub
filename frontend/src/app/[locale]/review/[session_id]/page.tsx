@@ -54,7 +54,7 @@ export default function ReviewPage() {
 
   if (isSuccess) {
     return (
-      <div className="min-h-screen bg-neutral-50 dark:bg-[#050505] flex flex-col items-center justify-center p-4">
+      <div className="min-h-screen bg-transparent flex flex-col items-center justify-center p-4">
         <div className="bg-white dark:bg-neutral-900 rounded-3xl p-8 max-w-md w-full text-center shadow-2xl border border-neutral-200 dark:border-neutral-800">
           <div className="w-20 h-20 bg-green-100 dark:bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
             <CheckCircle className="w-10 h-10 text-green-500" />
@@ -75,7 +75,7 @@ export default function ReviewPage() {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-50 dark:bg-[#050505] flex flex-col items-center justify-center p-4">
+    <div className="min-h-screen bg-transparent flex flex-col items-center justify-center p-4">
       <div className="bg-white dark:bg-neutral-900 rounded-3xl p-8 max-w-md w-full shadow-2xl border border-neutral-200 dark:border-neutral-800">
         <h1 className="text-2xl font-bold text-neutral-900 dark:text-white mb-2 text-center">{t('rateTheSession')}</h1>
         <p className="text-neutral-500 dark:text-neutral-400 mb-6 text-center text-sm">

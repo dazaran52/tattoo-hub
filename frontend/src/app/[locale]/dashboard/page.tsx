@@ -197,7 +197,7 @@ export default function DashboardPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950 transition-colors duration-200">
+      <div className="min-h-screen bg-transparent transition-colors duration-200">
         <div className="bg-white dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800 h-16 animate-pulse" />
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -212,7 +212,7 @@ export default function DashboardPage() {
 
   if (!profile) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-neutral-50 dark:bg-neutral-950">
+      <div className="min-h-screen flex items-center justify-center bg-transparent">
         <div className="text-center bg-white dark:bg-neutral-900 p-8 rounded-2xl shadow-xl max-w-md w-full mx-4 border border-red-100 dark:border-red-900">
           <h2 className="text-2xl font-bold text-red-600 dark:text-red-400 mb-4">{t('profileLoadError')}</h2>
           <p className="text-neutral-600 dark:text-neutral-400 mb-6">
@@ -238,21 +238,8 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-50 dark:bg-[#050505] text-neutral-900 dark:text-white transition-colors duration-300 relative overflow-x-clip">
-      {/* Premium ambient glows */}
-      <div className="absolute top-0 left-0 w-full h-full pointer-events-none overflow-hidden z-0">
-        {profile.role === 'master' ? (
-          <>
-            <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-orange-500/5 dark:bg-orange-500/10 blur-[120px]" />
-            <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-amber-500/5 dark:bg-amber-500/10 blur-[120px]" />
-          </>
-        ) : (
-          <>
-            <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-primary-500/5 dark:bg-primary-500/10 blur-[120px]" />
-            <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-primary-500/5 dark:bg-primary-500/10 blur-[120px]" />
-          </>
-        )}
-      </div>
+    <div className="min-h-screen bg-transparent text-neutral-900 dark:text-white transition-colors duration-300 relative overflow-x-clip">
+      
 
       <Header profile={profile} onLogout={handleLogout} maxWidthClass={activeTab === 'crm' ? 'max-w-[1600px]' : 'max-w-7xl'} onOpenCommandPalette={() => setIsCommandPaletteOpen(true)} />
 

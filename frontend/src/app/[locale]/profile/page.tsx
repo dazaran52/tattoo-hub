@@ -215,7 +215,7 @@ export default function ProfilePage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-neutral-50 dark:bg-[#050505] transition-colors duration-200">
+      <div className="min-h-screen bg-transparent transition-colors duration-200">
         <div className="h-16 border-b border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900" />
         <main className="max-w-4xl mx-auto px-4 py-8">
           <div className="h-40 w-full bg-neutral-200 dark:bg-neutral-800 rounded-3xl animate-pulse mb-8" />
@@ -228,7 +228,7 @@ export default function ProfilePage() {
   if (!profile) return null
 
   return (
-    <div className="min-h-screen bg-neutral-50 dark:bg-[#050505] text-neutral-900 dark:text-white transition-colors duration-300 relative overflow-hidden pb-20">
+    <div className="min-h-screen bg-transparent text-neutral-900 dark:text-white transition-colors duration-300 relative overflow-hidden pb-20">
       <Header profile={profile} onLogout={handleLogout} />
       
       <QRCodeModal 
@@ -239,7 +239,7 @@ export default function ProfilePage() {
       
       {/* Cool Background Gradients */}
       <div className="absolute top-0 left-0 w-full h-[500px] overflow-hidden pointer-events-none -z-10">
-        <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[80%] bg-primary-500/20 dark:bg-primary-600/20 blur-[120px] rounded-full mix-blend-multiply dark:mix-blend-screen opacity-70 animate-blob"></div>
+        
         <div className="absolute top-[10%] right-[-10%] w-[40%] h-[60%] bg-accent-400/20 dark:bg-accent-500/20 blur-[100px] rounded-full mix-blend-multiply dark:mix-blend-screen opacity-70 animate-blob animation-delay-2000"></div>
       </div>
 

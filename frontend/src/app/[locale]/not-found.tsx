@@ -5,7 +5,7 @@ import { ArrowLeft } from 'lucide-react'
 export default function NotFound() {
     const t = useTranslations();
   return (
-    <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950 flex flex-col items-center justify-center p-4 transition-colors duration-200">
+    <div className="min-h-screen bg-transparent flex flex-col items-center justify-center p-4 transition-colors duration-200">
       <div className="text-center space-y-6">
         <h1 className="text-8xl font-black text-neutral-200 dark:text-neutral-800 tracking-tighter">
           404

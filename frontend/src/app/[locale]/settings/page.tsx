@@ -228,7 +228,7 @@ export default function SettingsPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950 transition-colors duration-200">
+      <div className="min-h-screen bg-transparent transition-colors duration-200">
         <div className="h-16 border-b border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900" />
         <main className="max-w-4xl mx-auto px-4 py-8">
           <div className="h-8 w-48 bg-neutral-200 dark:bg-neutral-800 rounded animate-pulse mb-2" />
@@ -239,14 +239,14 @@ export default function SettingsPage() {
 
   if (!profile) {
     return (
-      <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950 flex items-center justify-center transition-colors duration-200">
+      <div className="min-h-screen bg-transparent flex items-center justify-center transition-colors duration-200">
         <div className="text-red-400">{t('failedToLoad')}</div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-neutral-50 dark:bg-[#050505] text-neutral-900 dark:text-white transition-colors duration-300 relative overflow-hidden">
+    <div className="min-h-screen bg-transparent text-neutral-900 dark:text-white transition-colors duration-300 relative overflow-hidden">
       <Header profile={profile} onLogout={handleLogout} />
       
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10">

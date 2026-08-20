@@ -17,7 +17,7 @@ export default function ErrorBoundary({
   const t = useTranslations();
 
   return (
-    <div className="min-h-screen bg-neutral-900 dark:bg-neutral-50 dark:bg-neutral-950 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-neutral-900 dark:bg-transparent flex items-center justify-center p-4">
       <div className="max-w-md w-full bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 p-8 text-center">
         <div className="w-16 h-16 bg-red-900/50 rounded-full mx-auto mb-4 flex items-center justify-center">
           <span className="text-2xl">⚠️</span>

@@ -120,7 +120,7 @@ export default function ClientPortalPage() {
   const isAnyAccepted = leadData.proposals.some(p => isSelectedStatus(p.status))
 
   return (
-    <div className="min-h-screen bg-neutral-50 dark:bg-neutral-900 pb-20">
+    <div className="min-h-screen bg-transparent pb-20">
       <div className="max-w-4xl mx-auto p-4 lg:p-8 space-y-8">
         
         <div className="bg-white dark:bg-neutral-800 rounded-3xl p-6 shadow-sm border border-neutral-200 dark:border-white/5">
@@ -240,7 +240,7 @@ export default function ClientPortalPage() {
                   <div ref={messagesEndRef} />
                 </div>
 
-                <div className="p-4 bg-neutral-50 dark:bg-neutral-900/50 border-t border-neutral-100 dark:border-white/5">
+                <div className="p-4 bg-transparent/50 border-t border-neutral-100 dark:border-white/5">
                   <form onSubmit={sendMessage} className="flex gap-2">
                     <input 
                       type="text"

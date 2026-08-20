@@ -63,7 +63,7 @@ const getThemeClasses = (theme: string) => {
     case 'system':
     default:
       return {
-        bg: 'bg-neutral-50 dark:bg-[#050505] text-neutral-900 dark:text-white',
+        bg: 'bg-transparent text-neutral-900 dark:text-white',
         card: 'bg-white/60 dark:bg-neutral-900/60 backdrop-blur-xl border border-neutral-200/50 dark:border-white/5 shadow-xl',
         input: 'bg-white dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-accent-500/20 focus:border-accent-500 shadow-inner',
         buttonPrimary: 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 hover:bg-neutral-800 dark:hover:bg-neutral-200 shadow-lg hover:shadow-xl hover:scale-[1.01] active:scale-[0.99] transition-all',
@@ -117,7 +117,7 @@ export default function BookMasterPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-neutral-50 dark:bg-[#050505] flex items-center justify-center">
+      <div className="min-h-screen bg-transparent flex items-center justify-center">
         <div className="animate-pulse flex flex-col items-center">
           <div className="w-24 h-24 bg-neutral-200 dark:bg-neutral-800 rounded-full mb-4"></div>
           <div className="w-48 h-6 bg-neutral-200 dark:bg-neutral-800 rounded mb-2"></div>
@@ -129,7 +129,7 @@ export default function BookMasterPage() {
 
   if (error || !master) {
     return (
-      <div className="min-h-screen bg-neutral-50 dark:bg-[#050505] flex flex-col items-center justify-center p-4">
+      <div className="min-h-screen bg-transparent flex flex-col items-center justify-center p-4">
         <div className="bg-white dark:bg-neutral-900 rounded-3xl p-8 max-w-md w-full text-center shadow-xl border border-neutral-200 dark:border-neutral-800">
           <User className="w-16 h-16 text-neutral-400 mx-auto mb-4" />
           <h1 className="text-2xl font-bold text-neutral-900 dark:text-white mb-2">{t('pageNotFound')}</h1>
@@ -152,8 +152,7 @@ export default function BookMasterPage() {
     <div className={`min-h-screen py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden transition-colors duration-500 ${tClasses.bg}`}>
       {/* Background Effects */}
       <div className="absolute top-0 left-0 w-full h-full pointer-events-none overflow-hidden z-0">
-        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-accent-500/10 blur-[120px]" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-primary-500/10 blur-[120px]" />
+        
       </div>
 
       <div className="max-w-2xl mx-auto relative z-10">

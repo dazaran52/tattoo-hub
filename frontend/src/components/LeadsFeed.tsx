@@ -265,7 +265,7 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
         return
       }
 
-      let endpoint = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/leads?offset=${(pageNum - 1) * 20}&limit=20`
+      endpoint = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/leads?offset=${(pageNum - 1) * 20}&limit=20`
       if (isAdmin && !isMarketplace) {
         endpoint = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/admin/leads?offset=${(pageNum - 1) * 20}&limit=20`
       } else if (isMarketplace) {

@@ -5,7 +5,7 @@ import { ArrowLeft } from 'lucide-react'
 export default function LegalLayout({ children }: { children: React.ReactNode }) {
     const t = useTranslations();
   return (
-    <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950 transition-colors duration-200">
+    <div className="min-h-screen bg-transparent transition-colors duration-200">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <Link 
           href="/login" 

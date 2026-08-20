@@ -218,7 +218,7 @@ function LoginContent() {
   const isForgotPassword = authMode === 'forgot_password'
   
   return (
-    <div className="min-h-[100dvh] flex flex-col md:flex-row overflow-hidden relative bg-neutral-50 dark:bg-[#050505] transition-colors duration-300">
+    <div className="min-h-[100dvh] flex flex-col md:flex-row overflow-hidden relative bg-transparent transition-colors duration-300">
       
       {/* LEFT SIDE: Visuals & Branding */}
       <div className="relative w-full md:w-1/2 min-h-[30vh] md:min-h-screen flex flex-col items-center justify-center p-8 lg:p-16 overflow-hidden border-b md:border-b-0 md:border-r border-neutral-200/50 dark:border-white/5 bg-neutral-100 dark:bg-[#0a0a0a] text-neutral-900 dark:text-white transition-colors duration-300 z-0">
@@ -608,7 +608,7 @@ function LoginContent() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-neutral-50 dark:bg-[#050505]" />}>
+    <Suspense fallback={<div className="min-h-screen bg-transparent" />}>
       <LoginContent />
     </Suspense>
   )
