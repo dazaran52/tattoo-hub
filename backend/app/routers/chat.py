@@ -40,27 +40,32 @@ SOCIAL_BYPASS_REGEX = re.compile(
     re.IGNORECASE
 )
 
-def apply_anti_bypass_filter(content: str) -> str:
-    """Mask phone numbers, emails, social handles, and external links to prevent platform bypass."""
+def apply_anti_bypass_filter(content: str) -> tuple[str, bool]:
+    """Mask phone numbers, emails, social handles, and external links to prevent platform bypass. Returns (masked_text, was_bypassed)."""
     text = content
+    was_bypassed = False
     
-    # 1. Advanced Phone number bypass (e.g. + 4 2 0 ...)
-    text = SPACE_PHONE_REGEX.sub('[СКРЫТЫЙ НОМЕР]', text)
+    # 1. Advanced Phone number bypass
+    if SPACE_PHONE_REGEX.search(text): was_bypassed = True
+    text = SPACE_PHONE_REGEX.sub('[HIDDEN_CONTACT]', text)
     
-    # 2. Advanced Social handle bypass (e.g. t g : master_name)
-    text = SOCIAL_BYPASS_REGEX.sub('[СКРЫТЫЙ КОНТАКТ]', text)
+    # 2. Advanced Social handle bypass
+    if SOCIAL_BYPASS_REGEX.search(text): was_bypassed = True
+    text = SOCIAL_BYPASS_REGEX.sub('[HIDDEN_CONTACT]', text)
     
     # 3. Standard masking
-    text = EMAIL_REGEX.sub('[СКРЫТЫЙ EMAIL]', text)
-    text = LINK_REGEX.sub('[СКРЫТАЯ ССЫЛКА]', text)
-    text = SOCIAL_REGEX.sub('[СКРЫТЫЙ КОНТАКТ]', text)
+    if EMAIL_REGEX.search(text) or LINK_REGEX.search(text) or SOCIAL_REGEX.search(text): was_bypassed = True
+    text = EMAIL_REGEX.sub('[HIDDEN_CONTACT]', text)
+    text = LINK_REGEX.sub('[HIDDEN_CONTACT]', text)
+    text = SOCIAL_REGEX.sub('[HIDDEN_CONTACT]', text)
     
-    # 4. Count digits (fallback standard logic)
+    # 4. Count digits
     digits = sum(c.isdigit() for c in text)
     if digits >= 8:
-        text = PHONE_REGEX.sub('[СКРЫТЫЙ НОМЕР]', text)
+        was_bypassed = True
+        text = PHONE_REGEX.sub('[HIDDEN_CONTACT]', text)
         
-    # 5. Check for spelled out numbers (e.g. один два три)
+    # 5. Check for spelled out numbers
     spelled_out = {
         'ноль', 'один', 'два', 'три', 'четыре', 'пять', 'шесть', 'семь', 'восемь', 'девять',
         'zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'
@@ -69,10 +74,9 @@ def apply_anti_bypass_filter(content: str) -> str:
     spelled_digits_count = sum(1 for w in words if w in spelled_out)
     
     if spelled_digits_count >= 7:
-         return "[ПОПЫТКА ОБХОДА: НОМЕР СЛОВАМИ]"
+         return "[HIDDEN_CONTACT]", True
          
-    return text
-
+    return text, was_bypassed
 def extract_prices(text: str) -> list[float]:
     """Extract price figures mentioned in master text to detect price undercutting/fraud."""
     cleaned = re.sub(r'(\d)\s+(\d)', r'\1\2', text)
@@ -439,7 +443,18 @@ async def send_message(
         raise HTTPException(status_code=403, detail="CHAT_AVAILABLE_AFTER_ACCEPTANCE")
 
     # 1. Mask contacts, emails and external links
-    content = apply_anti_bypass_filter(message.content)
+    content, was_bypassed = apply_anti_bypass_filter(message.content)
+    
+    if was_bypassed:
+        # Notify admins about bypass attempt
+        from app.services.notifications import notify_admins
+        notify_admins(
+            title="🚨 ПОПЫТКА ОБХОДА ПЛАТФОРМЫ",
+            body=f"Пользователь попытался передать контакты в чате {chat_id}.",
+            link="/admin?tab=security"
+        )
+
+
 
     # 2. Price Undercut Detection for Masters
     if sender_type == "master":

@@ -288,7 +288,14 @@ def get_personal_leads(
             # Assignment is the authorization boundary for direct/personal CRM leads.
             is_unlocked = True
             unlock_status = lead.get("status")
-            contacts = lead["contacts"]
+            contacts = lead.get("contacts")
+            
+            # Anti-fraud: Hide direct contacts for paid leads
+            if not lead.get("is_personal"):
+                contacts = "Доступно только во внутреннем чате"
+                lead["phone"] = "Скрыто"
+                lead["email"] = "Скрыто"
+
 
             # Format display budget
             display_budget = None

@@ -205,15 +205,25 @@ async def get_clients(
                 if client["leads"].get("is_personal"):
                     client["source"] = "direct"
                 else:
+                    client["source"] = "marketplace"
                     # It's a marketplace lead assigned to this master
                     if client["lead_id"] not in selected_lead_ids:
                         client["is_unlocked"] = False
                         client["chat_id"] = None
-                        client["phone"] = "Скрыто"
-                        client["email"] = "Скрыто"
-                        client["instagram"] = "Скрыто"
-                        client["contact_info"] = "Скрыто"
                         client["leads"]["contacts"] = "Скрыто до выбора мастера"
+                    else:
+                        client["leads"]["contacts"] = "Доступно только в чате"
+                        
+                    # MASK CONTACTS
+                    client["phone"] = "Скрыто платформой"
+                    client["email"] = "Скрыто платформой"
+                    client["instagram"] = "Скрыто"
+                    client["telegram"] = "Скрыто"
+                    client["contact_info"] = "Скрыто"
+                    if client.get("leads"):
+                        client["leads"]["phone"] = "Скрыто"
+                        client["leads"]["email"] = "Скрыто"
+                        
         
         return clients
     except Exception as e:

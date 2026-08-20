@@ -1362,6 +1362,8 @@ export function LeadWizard({ master, masterId, source = 'platform', isLoggedIn, 
                           <span className="text-accent-400 font-semibold flex items-center gap-1.5">
                             <Check className="w-4 h-4 inline" /> {t('leadWizard.addedContacts')} ({[phone ? t('leadWizard.phoneLabel') : '', telegram ? 'Telegram' : '', instagram ? 'Instagram' : ''].filter(Boolean).join(', ')})
                           </span>
+                        ) : source === 'platform' ? (
+                          t('leadWizard.step3AccordionDescOnlyEmail') || t('leadWizard.step3AccordionDesc')
                         ) : (
                           t('leadWizard.step3AccordionDesc')
                         )}

@@ -473,7 +473,8 @@
     "emailSimpleLabel": "Email",
     "phoneLabel": "Telefon",
     "submitBtnDirect": "Odeslat mistrovi",
-    "submitBtnMarketplace": "Příspěvek na tržiště"
+    "submitBtnMarketplace": "Příspěvek na tržiště",
+    "step3AccordionDescOnlyEmail": "Ke komunikaci použijeme váš e-mail."
   },
   "landing": {
     "welcome": "Vítejte",
@@ -1583,5 +1584,7 @@
   "doItAsSoon": "⚡️ Udělejte to co nejdříve",
   "shareYourImpressionsOf": "Podělte se o své dojmy z umělce a nového tetování.",
   "yourFeedbackWillHelp": "Vaše zpětná vazba pomůže hlavnímu a dalším klientům platformy.",
-  "everythingWentGreatSuper": "Všechno šlo skvěle! Super mistr..."
+  "everythingWentGreatSuper": "Všechno šlo skvěle! Super mistr...",
+  "hiddenContact": "Skryto platformou",
+  "antiFraudWarning": "Pozor! Sdílení přímých kontaktů (telefonní čísla, sociální sítě) je přísně zakázáno pravidly platformy a může vést k zablokování účtu. Veškerá komunikace musí probíhat v tomto chatu."
 }

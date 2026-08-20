@@ -731,7 +731,7 @@ export function MessagesList({ userRole = 'master', onViewLead, onViewSession }:
                         {msg.content.startsWith('http') && msg.content.includes('supabase') ? (
                           <Image src={msg.content || ''} alt="chat attachment" className="max-w-full rounded-lg mt-1 mb-2 max-h-48 object-cover cursor-pointer hover:opacity-90 transition-opacity" onClick={() => setViewerImage(msg.content)} width={800} height={800} />
                         ) : (
-                          <p className="whitespace-pre-wrap text-sm leading-relaxed">{msg.content}</p>
+                          <p className="whitespace-pre-wrap text-sm leading-relaxed">{msg.content.replace(/\[HIDDEN_CONTACT\]/g, `[${t('hiddenContact')}]`)}</p>
                         )}
                         <div className={`flex items-center justify-end gap-1 text-[10px] mt-1 ${msg.sender_type === userRole ? 'text-primary-200' : 'text-neutral-400'}`}>
                           <span>{new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>

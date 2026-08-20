@@ -509,7 +509,8 @@
     "emailSimpleLabel": "Email",
     "phoneLabel": "Телефон",
     "submitBtnDirect": "Отправить мастеру",
-    "submitBtnMarketplace": "Разместить на маркетплейсе"
+    "submitBtnMarketplace": "Разместить на маркетплейсе",
+    "step3AccordionDescOnlyEmail": "Для связи мы будем использовать вашу почту."
   },
   "or": "или",
   "continueWithGoogle": "Продолжить с Google",
@@ -1583,5 +1584,7 @@
   "manageUsersAndLeads": "Управление пользователями и заявками",
   "adminAccess": "Доступ администратора",
   "telegram": "Telegram",
-  "instagram": "Instagram"
+  "instagram": "Instagram",
+  "hiddenContact": "Скрыто платформой",
+  "antiFraudWarning": "Внимание! Обмен прямыми контактами (номерами телефонов, соцсетями) строго запрещен правилами платформы и может привести к блокировке аккаунта. Вся переписка должна вестись в этом чате."
 }

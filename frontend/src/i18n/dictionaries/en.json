@@ -503,7 +503,8 @@
     "emailSimpleLabel": "Email",
     "phoneLabel": "Telephone",
     "submitBtnDirect": "Send to master",
-    "submitBtnMarketplace": "Post on the marketplace"
+    "submitBtnMarketplace": "Post on the marketplace",
+    "step3AccordionDescOnlyEmail": "We will use your email to contact you."
   },
   "masters": "Masters",
   "errorDescShort": "Description must be at least 10 characters",
@@ -1583,5 +1584,7 @@
   "manageUsersAndLeads": "Manage users and leads",
   "adminAccess": "Admin Access",
   "telegram": "Telegram",
-  "instagram": "Instagram"
+  "instagram": "Instagram",
+  "hiddenContact": "Hidden by Platform",
+  "antiFraudWarning": "Warning! Sharing direct contacts (phone numbers, social media) is strictly prohibited by platform rules and may result in account suspension. All communication must take place in this chat."
 }
