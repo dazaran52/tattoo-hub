@@ -44,8 +44,12 @@ export default function SettingsPage() {
   
   // Settings state
   const [theme, setTheme] = useState('dark')
+  
   const [emailNotifications, setEmailNotifications] = useState(true)
   const [pushNotifications, setPushNotifications] = useState(false)
+  const [hapticsEnabled, setHapticsEnabled] = useState(true)
+  const [soundsEnabled, setSoundsEnabled] = useState(true)
+
   const [newLeadAlerts, setNewLeadAlerts] = useState(true)
   const [lowCreditAlerts, setLowCreditAlerts] = useState(true)
 

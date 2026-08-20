@@ -1,3 +1,4 @@
+import { vibrate } from '@/lib/haptics'
 import { motion } from 'framer-motion'
 import { LayoutDashboard, ShoppingBag, ImageIcon, MessageCircle, FileText, Users } from 'lucide-react'
 import { useTranslations } from 'next-intl'
@@ -25,9 +26,7 @@ export function BottomNav({ activeTab, setActiveTab, unreadMessagesCount = 0, us
 
   const handleTabClick = (tabId: string) => {
     try {
-      if (typeof window !== 'undefined' && window.navigator && typeof window.navigator.vibrate === 'function') {
-        window.navigator.vibrate(10)
-      }
+      vibrate('light')
     } catch (e) {}
     setActiveTab(tabId)
   }

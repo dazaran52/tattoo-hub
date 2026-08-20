@@ -1,4 +1,9 @@
-'use client'
+import re
+
+with open('frontend/src/components/BackgroundGlow.tsx', 'r') as f:
+    content = f.read()
+
+bg_replace = """'use client'
 
 import React, { useEffect, useState } from 'react'
 import { motion, useSpring, useMotionValue } from 'framer-motion'
@@ -104,3 +109,7 @@ export default function BackgroundGlow() {
     </div>
   )
 }
+"""
+
+with open('frontend/src/components/BackgroundGlow.tsx', 'w') as f:
+    f.write(bg_replace)

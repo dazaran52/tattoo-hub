@@ -5,6 +5,8 @@ import { MessageCircle, Clock, Send, AlertCircle, Search, ChevronLeft, Image as 
 import { motion, AnimatePresence } from 'framer-motion'
 import { supabase } from '@/lib/supabase'
 import { toast } from 'react-hot-toast'
+import { playSound } from '@/lib/sounds'
+import { vibrate } from '@/lib/haptics'
 import { ClientDetailsModal } from '@/components/ClientDetailsModal'
 import { ImageViewerModal } from '@/components/ImageViewerModal'
 import { ChatSessionsModal } from '@/components/ChatSessionsModal'
@@ -218,7 +220,14 @@ export function MessagesList({ userRole = 'master', onViewLead, onViewSession }:
           }
 
           if (changed) {
-            if (hasNew) setTimeout(scrollToBottom, 100)
+            if (hasNew) {
+               setTimeout(scrollToBottom, 100)
+               const hasNewFromOther = data.some((m: any) => m.sender_type !== userRole && !prev.find(p => p.id === m.id));
+               if (hasNewFromOther) {
+                 playSound('pop')
+                 vibrate('medium')
+               }
+            }
             const combined = Array.from(prevMap.values())
             return combined.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
           }

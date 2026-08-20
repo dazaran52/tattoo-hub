@@ -1,4 +1,6 @@
-export const playSuccessSound = () => {
+import re
+
+content = """export const playSuccessSound = () => {
   if (typeof window === 'undefined') return;
   const isEnabled = localStorage.getItem('tattoo_hub_sounds_enabled') !== 'false';
   if (!isEnabled) return;
@@ -88,39 +90,7 @@ export const triggerHaptic = (type: 'success' | 'error' | 'light' = 'success') =
     // Ignore
   }
 };
+"""
 
-export type SoundType = 'notification' | 'pop' | 'success' | 'error';
-export const playSound = (type: SoundType = 'notification') => {
-  if (typeof window === 'undefined') return;
-  const isEnabled = localStorage.getItem('tattoo_hub_sounds_enabled') !== 'false';
-  if (!isEnabled) return;
-  try {
-    const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
-    if (!AudioContext) return;
-    
-    const ctx = new AudioContext();
-    const osc = ctx.createOscillator();
-    const gainNode = ctx.createGain();
-    
-    osc.connect(gainNode);
-    gainNode.connect(ctx.destination);
-    
-    if (type === 'pop') {
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(600, ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(800, ctx.currentTime + 0.05);
-      gainNode.gain.setValueAtTime(0.1, ctx.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.05);
-      osc.start(ctx.currentTime);
-      osc.stop(ctx.currentTime + 0.05);
-    } else if (type === 'notification') {
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(500, ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(1000, ctx.currentTime + 0.1);
-      gainNode.gain.setValueAtTime(0.1, ctx.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
-      osc.start(ctx.currentTime);
-      osc.stop(ctx.currentTime + 0.3);
-    }
-  } catch(e) {}
-};
+with open('frontend/src/lib/sounds.ts', 'w') as f:
+    f.write(content)

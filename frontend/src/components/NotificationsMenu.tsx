@@ -3,6 +3,8 @@ import { useState, useEffect, useRef } from 'react'
 import { Bell, Check, Info, DollarSign, Settings, Archive, X, BellRing, ArrowLeft } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { toast } from 'react-hot-toast'
+import { playSound } from '@/lib/sounds'
+import { vibrate } from '@/lib/haptics'
 
 interface Notification {
   id: string
@@ -49,11 +51,13 @@ export function NotificationsMenu() {
           table: 'notifications',
           filter: `user_id=eq.${session?.user?.id}`
         },
-        (payload) => {
+                (payload) => {
           if (activeTab === 'active') {
             setNotifications(prev => [payload.new as Notification, ...prev])
           }
           setUnreadCount(prev => prev + 1)
+          playSound('notification')
+          vibrate('success')
         }
       )
       .subscribe()
