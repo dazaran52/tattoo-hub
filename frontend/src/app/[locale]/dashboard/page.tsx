@@ -178,12 +178,12 @@ export default function DashboardPage() {
 
   const copyPublicLink = () => {
     if (!profile?.username) {
-      toast.error(language === 'ru' ? t('username2') : 'Set username in profile first')
+      toast.error(t('username2'))
       return
     }
     const url = `${window.location.origin}/book/${profile.username}`
     navigator.clipboard.writeText(url)
-    toast.success(language === 'ru' ? t('theLinkToThe') : 'Booking link copied!')
+    toast.success(t('theLinkToThe'))
   }
 
   if (isLoading) {
@@ -264,7 +264,7 @@ export default function DashboardPage() {
                     className="inline-flex items-center gap-1.5 text-xs font-bold bg-primary-100 dark:bg-primary-500/20 text-primary-700 dark:text-primary-300 px-3 py-1.5 rounded-full hover:bg-primary-200 dark:hover:bg-primary-500/30 transition-colors"
                   >
                     <Share2 className="w-3.5 h-3.5" />
-                    {language === 'ru' ? t('shareBusinessCard') : 'Share Booking Link'}
+                    {t('shareBusinessCard')}
                   </button>
                 </div>
               </div>
@@ -305,7 +305,7 @@ export default function DashboardPage() {
                     }`}
                   >
                     <ImageIcon className="w-4 h-4" />
-                    {language === 'ru' ? t('portfolio') : 'Portfolio'}
+                    {t('portfolio')}
                   </button>
                   <button
                     id="tour-messages"

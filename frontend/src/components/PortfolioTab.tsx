@@ -48,7 +48,7 @@ export function PortfolioTab({ profile }: PortfolioTabProps) {
 
   const handleCreatePost = async () => {
     if (newFiles.length === 0) {
-      alert(lang === 'ru' ? t('selectAtLeastOne') : 'Select at least one file')
+      alert(t('selectAtLeastOne'))
       return
     }
 
@@ -115,7 +115,7 @@ export function PortfolioTab({ profile }: PortfolioTabProps) {
       setNewDescription('')
     } catch (err) {
       console.error(err)
-      alert(lang === 'ru' ? t('errorCreatingPost') : 'Error creating post')
+      alert(t('errorCreatingPost'))
     } finally {
       setIsUploading(false)
     }
@@ -125,7 +125,7 @@ export function PortfolioTab({ profile }: PortfolioTabProps) {
     if (e.target.files) {
       const filesArray = Array.from(e.target.files)
       if (newFiles.length + filesArray.length > 5) {
-        alert(lang === 'ru' ? t('52') : 'Max 5 files')
+        alert(t('52'))
         return
       }
       setNewFiles(prev => [...prev, ...filesArray])

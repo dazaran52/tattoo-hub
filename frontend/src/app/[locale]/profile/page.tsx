@@ -138,10 +138,10 @@ export default function ProfilePage() {
       
       setProfile(updated)
       setIsEditing(false)
-      toast.success(language === 'ru' ? t('profileSaved') : 'Profile saved')
+      toast.success(t('profileSaved'))
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to save profile')
-      toast.error(language === 'ru' ? t('saveError') : 'Save failed')
+      toast.error(t('saveError'))
     } finally {
       setIsSaving(false)
     }
@@ -171,9 +171,9 @@ export default function ProfilePage() {
       
       const updated = await api.updateProfile({ avatar_url: data.publicUrl })
       setProfile(updated)
-      toast.success(language === 'ru' ? t('avatarUpdated') : 'Avatar updated')
+      toast.success(t('avatarUpdated'))
     } catch (error: any) {
-      toast.error(language === 'ru' ? t('errorLoadingAvatar') : 'Upload error')
+      toast.error(t('errorLoadingAvatar'))
       console.error(error)
     } finally {
       setIsUploading(false)
@@ -190,7 +190,7 @@ export default function ProfilePage() {
 
   const copyPublicLink = async () => {
     if (!profile?.username) {
-      toast.error(language === 'ru' ? t('username3') : 'Set username first')
+      toast.error(t('username3'))
       return
     }
     const url = `${window.location.origin}/book/${profile.username}`
@@ -199,7 +199,7 @@ export default function ProfilePage() {
       try {
         await navigator.share({
           title: profile.display_name || 'Tattoo Master',
-          text: language === 'ru' ? t('signUpForA') : 'Book a session with me!',
+          text: t('signUpForA'),
           url: url
         })
         return
@@ -210,7 +210,7 @@ export default function ProfilePage() {
     }
 
     navigator.clipboard.writeText(url)
-    toast.success(language === 'ru' ? t('linkCopied') : 'Link copied')
+    toast.success(t('linkCopied'))
   }
 
   if (isLoading) {
@@ -264,7 +264,7 @@ export default function ProfilePage() {
                 : 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white border border-neutral-200 dark:border-neutral-700 hover:border-primary-500/50 hover:shadow-primary-500/10'
             }`}
           >
-            {isSaving ? '...' : isEditing ? (language === 'ru' ? t('save') : 'Save') : (language === 'ru' ? t('edit') : 'Edit')}
+            {isSaving ? '...' : isEditing ? (t('save')) : (t('edit'))}
           </button>
         </div>
 
@@ -335,7 +335,7 @@ export default function ProfilePage() {
                   <span>
                     {cities.find(c => c.id === profile.city_ids?.[0])?.name_ru || 
                      countries.find(c => c.id === profile.country_ids?.[0])?.name_ru || 
-                     (language === 'ru' ? t('city') : 'Location')}
+                     (t('city'))}
                   </span>
                 </div>
               )}
@@ -359,20 +359,20 @@ export default function ProfilePage() {
                   <button 
                     onClick={() => {
                       if (!profile.username) {
-                        toast.error(language === 'ru' ? t('username3') : 'Set username first')
+                        toast.error(t('username3'))
                         return
                       }
                       setIsQRModalOpen(true)
                     }}
                     className="p-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors tooltip"
-                    title={language === 'ru' ? t('qr2') : 'Show QR Code'}
+                    title={t('qr2')}
                   >
                     <QrCode className="w-4 h-4" />
                   </button>
                   <button 
                     onClick={copyPublicLink}
                     className="p-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors tooltip"
-                    title={language === 'ru' ? t('share') : 'Share'}
+                    title={t('share')}
                   >
                     <Share2 className="w-4 h-4" />
                   </button>

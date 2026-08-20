@@ -10,30 +10,11 @@ export function CookieBanner() {
   const [isVisible, setIsVisible] = useState(false)
   const lang = useLocale()
 
-  const copyMap = {
-    ru: {
-      before: t('cookie2'),
-      policy: t('privacyPolicy3'),
-      accept: t('guide.understand'),
-    },
-    cs: {
-      before: 'Používáme soubory cookie ke zlepšení funkčnosti webu. Pokračováním v používání webu souhlasíte s našimi ',
-      policy: 'Zásadami ochrany osobních údajů',
-      accept: 'Rozumím',
-    },
-    en: {
-      before: 'We use cookies to improve website functionality. By continuing to use the site, you agree to our ',
-      policy: 'Privacy Policy',
-      accept: 'Got it',
-    },
-    uk: {
-      before: t('cookie'),
-      policy: t('privacyPolicy2'),
-      accept: t('iVeRealized'),
-    },
-  } as Record<string, { before: string; policy: string; accept: string }>
-
-  const copy = copyMap[lang] || copyMap.en
+  const copy = {
+    before: t('cookie2') || 'We use cookies to improve website functionality. By continuing to use the site, you agree to our ',
+    policy: t('privacyPolicy3') || 'Privacy Policy',
+    accept: t('guide.understand') || 'Got it',
+  }
 
   useEffect(() => {
     const consent = localStorage.getItem('cookie_consent')
