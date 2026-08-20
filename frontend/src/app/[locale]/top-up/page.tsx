@@ -275,7 +275,9 @@ export default function TopUpPage() {
                   : t('receiveInstantNotificationsOf')}
               </p>
               <p className="text-xs text-neutral-400 font-medium">
-                {badgeExpiresAt ? `Действует до: ${new Date(badgeExpiresAt).toLocaleDateString('ru-RU')}` : t('306')}
+                {badgeTier !== 'none' && badgeExpiresAt 
+                  ? `Действует до: ${new Date(badgeExpiresAt).toLocaleDateString('ru-RU')}` 
+                  : 'Нет активного статуса'}
               </p>
             </div>
           </div>
