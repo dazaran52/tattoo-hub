@@ -227,7 +227,34 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
 
   const fetchLeads = async (background = false, pageNum = 1) => {
     try {
-      if (!background && pageNum === 1) setIsLoading(true)
+      let endpoint = '';
+      if (!background && pageNum === 1) {
+        // Find endpoint before setting loading so we can check cache
+        const { data: { session } } = await supabase.auth.getSession()
+        if (session) {
+          endpoint = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/leads?offset=0&limit=20`
+          if (isAdmin && !isMarketplace) {
+            endpoint = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/admin/leads?offset=0&limit=20`
+          } else if (isMarketplace) {
+            endpoint = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/leads/marketplace${viewMode === 'my-shared' ? '/my-shared' : ''}?offset=0&limit=20`
+          }
+          
+          const cached = localStorage.getItem(`leads_cache_${endpoint}`)
+          if (cached) {
+            try {
+              const parsed = JSON.parse(cached)
+              setLeads(parsed)
+              setHasMore(parsed.length === 20)
+              setIsLoading(false)
+            } catch(e) {}
+          } else {
+            setIsLoading(true)
+          }
+        } else {
+          setIsLoading(true)
+        }
+      }
+      
       if (pageNum > 1) setIsLoadingMore(true)
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) {
@@ -257,6 +284,10 @@ export function LeadsFeed({ onUnlockSuccess, isAdmin = false, isMarketplace = fa
       }
 
       const data = await response.json()
+      
+      if (pageNum === 1) {
+        localStorage.setItem(`leads_cache_${endpoint}`, JSON.stringify(data))
+      }
       const more = response.headers.get('X-Has-More') === 'true'
       setHasMore(more)
       setPage(pageNum)

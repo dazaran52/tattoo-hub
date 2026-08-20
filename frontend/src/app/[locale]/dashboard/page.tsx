@@ -102,6 +102,14 @@ export default function DashboardPage() {
 
   const fetchProfile = async () => {
     try {
+      const cachedProfile = localStorage.getItem('tattoo_hub_profile_cache')
+      if (cachedProfile) {
+        try {
+          setProfile(JSON.parse(cachedProfile))
+          setIsLoading(false)
+        } catch(e) {}
+      }
+      
       // Get current session
       const { data: { session } } = await supabase.auth.getSession()
       
@@ -142,6 +150,7 @@ export default function DashboardPage() {
         profileData.role = session.user.user_metadata.role
       }
       
+      localStorage.setItem('tattoo_hub_profile_cache', JSON.stringify(profileData))
       setProfile(profileData)
       setCurrentSession(session)
       

@@ -250,6 +250,7 @@ export function ClientDashboard({
         if (!response.ok) throw new Error('Failed to fetch leads')
 
         const data = await response.json()
+        localStorage.setItem('tattoo_client_leads_cache', JSON.stringify(data))
         setLeads(data)
       } catch (err) {
         console.error('Error fetching leads:', err)
@@ -260,10 +261,20 @@ export function ClientDashboard({
 
     async function fetchTopMasters() {
       try {
-        setIsLoadingMasters(true)
+        const cached = localStorage.getItem('tattoo_top_masters_cache')
+        if (cached) {
+          try {
+            setTopMasters(JSON.parse(cached))
+            setIsLoadingMasters(false)
+          } catch(e) {}
+        } else {
+          setIsLoadingMasters(true)
+        }
+        
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/public/masters`)
         if (response.ok) {
           const data = await response.json()
+          localStorage.setItem('tattoo_top_masters_cache', JSON.stringify(data))
           setTopMasters(data)
         }
       } catch (err) {
